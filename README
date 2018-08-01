@@ -1,0 +1,82 @@
+orbdetpy - Python library for orbit determination
+
+Author : Shiva Iyer <shiva.iyer AT utexas DOT edu>
+
+Introduction
+------------
+
+This is orbdetpy, a library of Python routines for orbit determination.
+It is built on top of the Orekit astrodynamics framework.
+
+orbdetpy is free software, distributed under the terms of the GNU
+General Public License <http://www.gnu.org/licenses/gpl.html>.
+
+Features
+--------
+
+The force model for orbit propagation currently includes:
+
+1) EGM96 gravity field up to degree and order 360.
+2) Solid tides owing to the Sun and Moon.
+3) FES 2004 ocean tide model up to degree and order 100.
+4) Simple exponential model for atmospheric drag.
+5) Solar radiation pressure.
+6) Third body perturbations from the Sun and Moon.
+
+The measurement model supports range and range-rate readings. Filtering
+is done using Orekit's Extended Kalman Filter or our Unscented Kalman
+Filter.
+
+Future Work
+-----------
+
+The following tasks are under consideration. Community contributions are
+always welcome.
+
+1) The addition of other atmospheric models supported by Orekit.
+2) Support for attitude dependent drag and solar radiation pressure.
+3) Other measurement types including angles data.
+4) A batch least squares implementation.
+5) Rauch-Tung-Striebel smoother.
+6) Estimation of dynamic parameters beyond just position and velocity.
+   Also, support for consider-only parameters.
+7) Parametric analysis i.e. the ability to pass-through certain
+   measurement types.
+
+Prerequisites
+-------------
+
+1) Python 3.6+ must be installed with the packages numpy, scipy, pyjnius.
+2) A Java compiler, development environment, and runtime must be
+   installed from <http://openjdk.java.net/>.
+3) Hipparchus 1.3+ <https://hipparchus.org/> and Orekit 9.2+
+   <https://www.orekit.org/> are used for all astrodynamics functions.
+   As a convenience, the JAR files for these libraries and associated
+   data files are provided under the lib/ and data/ folders, respectively.
+
+Configuration
+-------------
+
+orbdetpy uses JSON files to store settings, measurements and estimation
+results. The file examples/example_cfg.json is a sample. The JAVA_HOME
+variable in this file must point to your Java Development Kit installation.
+
+Examples
+--------
+
+The following example programs may be found in the 'examples' folder.
+
+1) radar.py : Shows how orbdetpy may be used for orbit determination from
+   radar measurements. The file example_cfg.json shows settings that drive
+   propagation and estimation. example_input.json contains dummy entries
+   to show the structure of the measurement inputs. Both JSON files must
+   be updated to include your own ground stations and measurement data.
+
+Bug Reports
+-----------
+
+Comments, criticisms and bug reports are very welcome and may be sent to
+the package maintainer by email or the project's website.
+
+Shiva Iyer
+shiva.iyer AT utexas DOT edu

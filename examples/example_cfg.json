@@ -1,0 +1,125 @@
+{
+    "environ" :
+    {
+	"JAVA_HOME" : "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.171-8.b10.el7_5.x86_64"
+    },
+
+    "Gravity" :
+    {
+	"Degree" : 20,
+	"Order" : 20
+    },
+
+    "OceanTides" :
+    {
+	"Degree" : -1,
+	"Order" : -1
+    },
+
+    "Drag" :
+    {
+	"Model" : "Exponential",
+	"ExpRho0" : 3.614E-13,
+	"ExpH0": 700000.0,
+	"ExpHScale" : 88667.0,
+	"Coeff" :
+	{
+	    "Value" : 2.0,
+	    "Estimation" : "Estimate"
+	}
+    },
+
+    "SolidTides" :
+    {
+	"Sun" : false,
+	"Moon" : false
+    },
+
+    "ThirdBodies" :
+    {
+	"Sun" : true,
+	"Moon" : true
+    },
+
+    "RadiationPressure" :
+    {
+	"Sun" : true
+    },
+
+    "SpaceObject" :
+    {
+	"Name" : "FLOCK 1C 5",
+	"NoradID" : 40038,
+	"Mass" : 5,
+	"Area" : 0.01,
+	"Cabs" : 0.54,
+	"Cspec" : 0.18
+    },
+
+    "Propagation" :
+    {
+	"Start" : "2018-07-23T11:34:16.343514Z",
+	"End" : "2018-07-31T23:00:02.000Z",
+	"InitialState" :
+	[
+	    2149562.121739773,
+	    -1708880.8800936656,
+	    6400252.11227463,
+	    3432.208494548845,
+	    -6145.440723272376,
+	    -2777.298797915526
+	]
+    },
+
+    "Stations" :
+    {
+	"Station1" :
+	{
+            "Latitude" : 1.1367315455605052,
+            "Longitude" : -2.5738551993402585,
+            "Altitude" : 213.0
+	},
+	"Station2" :
+	{
+            "Latitude" : 0.5578822780952235,
+            "Longitude" : -1.8017600227679735,
+            "Altitude" : 855.0
+	}
+    },
+
+    "Measurements" :
+    {
+	"Range" :
+	{
+	    "TwoWay" : true,
+	    "Enabled" : true,
+	    "Error" : 90.0,
+	    "Bias" :
+	    {
+		"Estimation" : "Estimate",
+		"Value" : 20.0,
+		"Min" : -40.0,
+		"Max" : 40.0
+	    }
+	},
+	"RangeRate" :
+	{
+	    "TwoWay" : true,
+	    "Enabled" : true,
+	    "Error" : 40.0,
+	    "Bias" :
+	    {
+		"Estimation" : "Estimate",
+		"Value" : 15.0,
+		"Min" : -30.0,
+		"Max" : 30.0
+	    }
+	}
+    },
+
+    "Estimation" :
+    {
+	"Covariance" : [25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2],
+	"ProcessNoise" : [1E-24, 1E-24, 1E-24, 1E-24, 1E-24, 1E-24]
+    }
+}
