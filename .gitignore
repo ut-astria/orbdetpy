@@ -1,9 +1,4 @@
 **/__pycache__
-**/*input.json
-**/*output.json
-examples/leoall.json
-examples/leocfg.json
-examples/leodata.json
-examples/leomeas.py
-examples/leomeas.sh
-examples/radarint.py
+**/*.class
+examples/data
+

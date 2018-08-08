@@ -1,4 +1,4 @@
-# radar.py - Example to demonstrate OD using radar measurements.
+# simtest.py - Test spacecraft measurement simulator.
 # Copyright (C) 2018 Shiva Iyer <shiva.iyer AT utexas DOT edu>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,9 +19,8 @@ import sys
 import time
 import json
 
-if (len(sys.argv) < 4):
-    print("Usage: python %s config_file measurement_file output_file [EKF|UKF]"
-          % sys.argv[0])
+if (len(sys.argv) < 3):
+    print("Usage: python %s config_file output_file" % sys.argv[0])
     exit()
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,16 +30,10 @@ from orbdetpy import init
 with open(sys.argv[1], "r") as f:
     init(json.load(f))
 
-if (len(sys.argv) > 4 and sys.argv[4].lower() == "ekf"):
-    filt = "EKF"
-    from orbdetpy.ekf import estimate
-else:
-    filt = "UKF"
-    from orbdetpy.ukf import estimate
+from orbdetpy.simdata import simulate
 
-print("%s start : %s" % (filt, time.strftime("%Y-%m-%d %H:%M:%S")))
-with open(sys.argv[2], "r") as fin:
-    res = estimate(json.load(fin))
-    with open(sys.argv[3], "w") as fout:
-        json.dump(res, fout, indent = 1)
-print("%s end   : %s" % (filt, time.strftime("%Y-%m-%d %H:%M:%S")))
+print("Simulation start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
+res = simulate()
+with open(sys.argv[2], "w") as fout:
+    json.dump(res, fout, indent = 1)
+print("Simulation end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))

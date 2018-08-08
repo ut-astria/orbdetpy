@@ -48,28 +48,57 @@
 
     "SpaceObject" :
     {
-	"Name" : "FLOCK 1C 5",
-	"NoradID" : 40038,
-	"Mass" : 5,
-	"Area" : 0.01,
+	"Name" : "GALAXY 15",
+	"NoradID" : 28884,
+	"Mass" : 2000.0,
+	"Area" : 20.0,
 	"Cabs" : 0.54,
 	"Cspec" : 0.18
     },
 
     "Propagation" :
     {
-	"Start" : "2018-07-23T11:34:16.343514Z",
-	"End" : "2018-07-31T23:00:02.000Z",
+	"Start" : "2018-01-01T00:02:54Z",
+	"End" : "2018-01-02T00:02:54Z",
+	"Step" : 300.0,
 	"InitialState" :
 	[
-	    2149562.121739773,
-	    -1708880.8800936656,
-	    6400252.11227463,
-	    3432.208494548845,
-	    -6145.440723272376,
-	    -2777.298797915526
+	    35796020.7669903,
+	    -22267515.537321,
+	    -87938.3477596335,
+            1625.07170292693,
+            2610.77460296534,
+	    -2.09170251623871
 	]
     },
+
+    "Maneuvers" :
+    [
+	{
+	    "Time" : "2018-01-01T06:02:54Z",
+	    "Duration" : 10.0,
+	    "Thrust" : 10.0,
+	    "Isp" : 300.0,
+	    "Direction" :
+	    [
+		1.0,
+		0.0,
+		0.0
+	    ]
+	},
+	{
+	    "Time" : "2018-01-01T12:02:54Z",
+	    "Duration" : 10.0,
+	    "Thrust" : 10.0,
+	    "Isp" : 300.0,
+	    "Direction" :
+	    [
+		0.0,
+		0.0,
+		1.0
+	    ]
+	}
+    ],
 
     "Stations" :
     {
@@ -92,34 +121,12 @@
 	"Range" :
 	{
 	    "TwoWay" : true,
-	    "Enabled" : true,
-	    "Error" : 90.0,
-	    "Bias" :
-	    {
-		"Estimation" : "Estimate",
-		"Value" : 20.0,
-		"Min" : -40.0,
-		"Max" : 40.0
-	    }
+	    "Error" : 10.0
 	},
 	"RangeRate" :
 	{
 	    "TwoWay" : true,
-	    "Enabled" : true,
-	    "Error" : 40.0,
-	    "Bias" :
-	    {
-		"Estimation" : "Estimate",
-		"Value" : 15.0,
-		"Min" : -30.0,
-		"Max" : 30.0
-	    }
+	    "Error" : 0.1
 	}
-    },
-
-    "Estimation" :
-    {
-	"Covariance" : [25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2],
-	"ProcessNoise" : [1E-24, 1E-24, 1E-24, 1E-24, 1E-24, 1E-24]
     }
 }

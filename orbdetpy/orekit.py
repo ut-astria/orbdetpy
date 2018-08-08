@@ -30,6 +30,7 @@ ArrayList = autoclass("java.util.ArrayList")
 Vector3D = autoclass("org.hipparchus.geometry.euclidean.threed.Vector3D")
 Array2DRowRealMatrix = autoclass("org.hipparchus.linear.Array2DRowRealMatrix")
 DiagonalMatrix = autoclass("org.hipparchus.linear.DiagonalMatrix")
+DormandPrince853Integrator = autoclass("org.hipparchus.ode.nonstiff.DormandPrince853Integrator")
 
 # Orekit classes
 CelestialBodyFactory = autoclass("org.orekit.bodies.CelestialBodyFactory")
@@ -56,6 +57,7 @@ OceanTides = autoclass("org.orekit.forces.gravity.OceanTides")
 SolidTides = autoclass("org.orekit.forces.gravity.SolidTides")
 NewtonianAttraction = autoclass("org.orekit.forces.gravity.NewtonianAttraction")
 ThirdBodyAttraction = autoclass("org.orekit.forces.gravity.ThirdBodyAttraction")
+ConstantThrustManeuver = autoclass("org.orekit.forces.maneuvers.ConstantThrustManeuver")
 SolarRadiationPressure = autoclass("org.orekit.forces.radiation.SolarRadiationPressure")
 IsotropicRadiationClassicalConvention = autoclass("org.orekit.forces.radiation.IsotropicRadiationClassicalConvention")
 

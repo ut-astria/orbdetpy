@@ -27,6 +27,9 @@ The measurement model supports range and range-rate readings. Filtering
 is done using Orekit's Extended Kalman Filter or our Unscented Kalman
 Filter.
 
+You can either use your own measurements or simulate observations using
+the simdata.py module.
+
 Future Work
 -----------
 
@@ -46,7 +49,8 @@ always welcome.
 Prerequisites
 -------------
 
-1) Python 3.6+ must be installed with the packages numpy, scipy, pyjnius.
+1) Python 3.6+ must be installed with the packages numpy, scipy, pyjnius,
+   matplotlib.
 2) A Java compiler, development environment, and runtime must be
    installed from <http://openjdk.java.net/>.
 3) Hipparchus 1.3+ <https://hipparchus.org/> and Orekit 9.2+
@@ -58,19 +62,23 @@ Configuration
 -------------
 
 orbdetpy uses JSON files to store settings, measurements and estimation
-results. The file examples/example_cfg.json is a sample. The JAVA_HOME
+results. The file examples/data/example_cfg.json is a sample. The JAVA_HOME
 variable in this file must point to your Java Development Kit installation.
 
 Examples
 --------
 
-The following example programs may be found in the 'examples' folder.
+The following example programs can be found in the 'examples' folder.
 
-1) radar.py : Shows how orbdetpy may be used for orbit determination from
-   radar measurements. The file example_cfg.json shows settings that drive
-   propagation and estimation. example_input.json contains dummy entries
-   to show the structure of the measurement inputs. Both JSON files must
-   be updated to include your own ground stations and measurement data.
+1) testsim.py : Demonstrates the measurement simulator for the Galaxy 15
+   satellite. examples/data/testsim.json is used to configure the simulation.
+   Note that maneuvers can be incorporated into the force model during
+   a simulation run.
+
+2) radar.py : Shows how orbdetpy can be used for orbit determination from
+   radar measurements. The file example_cfg.json contains settings that drive
+   propagation and estimation. testsim.py was used to simulate the
+   measurements in example_input.json for Galaxy 15.
 
 Bug Reports
 -----------

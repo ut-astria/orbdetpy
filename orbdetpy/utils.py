@@ -80,11 +80,18 @@ def forces(pointmass):
                     config["SpaceObject"]["Cabs"],
                     config["SpaceObject"]["Cspec"])))
 
+    mans = config.get("Maneuvers", [])
+    for man in mans:
+        fmod.append(ConstantThrustManeuver(strtodate(man["Time"]),
+                                           man["Duration"],
+                                           man["Thrust"], man["Isp"],
+                                           Vector3D(man["Direction"])))
+
     return(fmod)
 
 def stations():
-    dt = strtodate("2000-01-01T12:00:00Z")
     gsta = {}
+    dt = strtodate("2000-01-01T12:00:00Z")
     for k,v in config["Stations"].items():
         gsta[k] = GroundStation(TopocentricFrame(OneAxisEllipsoid(
             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

@@ -39,6 +39,8 @@ def estimate(meas):
     for i, m in enumerate(config["Measurements"]):
         R[i,i] = config["Measurements"][m]["Error"]**2
 
+    xhat = X0.copy()
+    tm = epoch
     tofm = 0.0
     wfil = 0.5/sdim
     dt = 30
@@ -48,29 +50,34 @@ def estimate(meas):
     supd = zeros([len(config["Measurements"]), 2*sdim])
     results = []
 
-    tm = strtodate(meas[0]["Time"])
-    xhat = array([prop.propagate(0, X0[:,0].tolist(),
-                                 tm.durationFrom(epoch))]).T
+    for midx in range(len(meas) + 1):
+        if (midx < len(meas)):
+            mea = meas[midx]
+            tm, t0 = strtodate(mea["Time"]), tm
+            res = {"Time" : mea["Time"], "PreFit" : {}, "PostFit" : {}}
 
-    for mea in meas:
-        tm, t0 = strtodate(mea["Time"]), tm
-        res = {"Time" : mea["Time"], "PreFit" : {}, "PostFit" : {}}
+            tmlt = AbsoluteDate(tm, -tofm)
+            pvs = TimeStampedPVCoordinates(tmlt,
+                                           Vector3D(xhat[0,0], xhat[1,0], xhat[2,0]),
+                                           Vector3D(xhat[3,0], xhat[4,0], xhat[5,0]))
+            pvi = gsta[mea["Station"]].getBaseFrame().getPVCoordinates(tm, frame)
+            tofm, tof0 = Range.signalTimeOfFlight(pvs, pvi.getPosition(), tm), tofm
+        else:
+            tm, t0 = strtodate(config["Propagation"]["End"]), tm
+            tofm, tof0 = 0.0, tofm
 
         sqrP = cholesky(P*sdim)
         for i in range(sdim):
             sigm[:,[i]] = xhat + sqrP[:,[i]]
             sigm[:,[sdim+i]] = xhat - sqrP[:,[i]]
 
-        tmlt = AbsoluteDate(tm, -tofm)
-        pvs = TimeStampedPVCoordinates(tmlt, Vector3D(xhat[0,0], xhat[1,0], xhat[2,0]),
-                                       Vector3D(xhat[3,0], xhat[4,0], xhat[5,0]))
-        pvi = gsta[mea["Station"]].getBaseFrame().getPVCoordinates(tm, frame)
-        tofm, tof0 = Range.signalTimeOfFlight(pvs, pvi.getPosition(), tm), tofm
-
         sppr = array([prop.propagate(t0.durationFrom(epoch) - tof0,
                                      sigm.ravel(order = "F").tolist(),
                                      tm.durationFrom(epoch) - tofm)]).reshape(
                                          (sdim, -1), order = "F")
+        xhatpre = sppr.sum(axis = 1, keepdims = True)*wfil
+        if (midx == len(meas)):
+            break
 
         raw, obs = [], []
         for key, val in config["Measurements"].items():
@@ -83,7 +90,6 @@ def estimate(meas):
                                      val["Error"], 1.0, val["TwoWay"]))
 
         Ppre = Qst.copy()
-        xhatpre = sppr.sum(axis = 1, keepdims = True)*wfil
         tmlt = AbsoluteDate(tm, -tofm)
         for i in range(2*sdim):
             y = sppr[:,[i]] - xhatpre
@@ -120,9 +126,6 @@ def estimate(meas):
             res["PostFit"][m] = obs[i].estimate(1, 1, ssta).getEstimatedValue()[0]
         results.append(res)
 
-    xhat = prop.propagate(tm.durationFrom(epoch) - tofm, xhat[:,0].tolist(),
-                          strtodate(config["Propagation"]["End"]).durationFrom(epoch))
-
     return({"Estimation" : results,
             "Propagation" : {"Time" : config["Propagation"]["End"],
-                             "State" : xhat}})
+                             "State" : xhatpre[:,0].tolist()}})
