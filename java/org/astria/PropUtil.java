@@ -49,6 +49,7 @@ public class PropUtil implements OrdinaryDifferentialEquation
     private int stadim;
     private int vecdim;
     private ODEIntegrator ode;
+    private Exception except;
 
     public PropUtil(AbsoluteDate e, double m, Frame r, ForceModel[] f,
 		    int sdim) throws Exception
@@ -80,9 +81,14 @@ public class PropUtil implements OrdinaryDifferentialEquation
     }
 
     public double[] propagate(double t0, double[] X0, double t1)
+	throws Exception
     {
+	except = null;
 	vecdim = X0.length;
-	return(ode.integrate(this, new ODEState(t0, X0), t1).getPrimaryState());
+	double[] retval = ode.integrate(this, new ODEState(t0, X0), t1).getPrimaryState();
+	if (except != null)
+	    throw(except);
+	return(retval);
     }
 
     public int getDimension()
@@ -118,7 +124,7 @@ public class PropUtil implements OrdinaryDifferentialEquation
 	}
 	catch (Exception exc)
 	{
-	    exc.printStackTrace();
+	    except = exc;
 	}
 
 	return(Xdot);
