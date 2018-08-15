@@ -19,18 +19,17 @@ if __name__ == "__main__":
 
 from numpy import *
 from numpy.linalg import *
-from orbdetpy import config
 from .orekit import *
 from .utils import *
 
-def estimate(meas):
+def estimate(config, meas):
     frame = FramesFactory.getEME2000()
-    gsta = stations()
+    gsta = stations(config)
 
     sdim = 6
     epoch = strtodate(config["Propagation"]["Start"])
     mass = config["SpaceObject"]["Mass"]
-    prop = PropUtil(epoch, mass, frame, forces(True), sdim)
+    prop = PropUtil(epoch, mass, frame, forces(config, True), sdim)
 
     X0 = array([config["Propagation"]["InitialState"]]).T
     P = diag(config["Estimation"]["Covariance"])

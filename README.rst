@@ -1,6 +1,6 @@
-orbdetpy - Python library for orbit determination
-
-Author : Shiva Iyer <shiva.iyer AT utexas DOT edu>
+========================================
+orbdetpy - Orbit determination in Python
+========================================
 
 Introduction
 ------------
@@ -8,8 +8,8 @@ Introduction
 This is orbdetpy, a library of Python routines for orbit determination.
 It is built on top of the Orekit astrodynamics framework.
 
-orbdetpy is free software, distributed under the terms of the GNU
-General Public License <http://www.gnu.org/licenses/gpl.html>.
+orbdetpy is free software, distributed under the terms of the `GNU
+General Public License <http://www.gnu.org/licenses/gpl.html>`_.
 
 Features
 --------
@@ -51,19 +51,20 @@ Prerequisites
 
 1) Python 3.6+ must be installed with the packages numpy, scipy, pyjnius,
    matplotlib.
-2) A Java compiler, development environment, and runtime must be
-   installed from <http://openjdk.java.net/>.
-3) Hipparchus 1.3+ <https://hipparchus.org/> and Orekit 9.2+
-   <https://www.orekit.org/> are used for all astrodynamics functions.
-   As a convenience, the JAR files for these libraries and associated
-   data files are provided under the lib/ and data/ folders, respectively.
+2) Install the Java Development Kit 8+ (1.8+) from `here
+   <http://openjdk.java.net/>`_. Set the JAVA_HOME environment variable
+   to point to your JDK installation.
+3) `Hipparchus 1.3+ <https://hipparchus.org/>`_ and `Orekit 9.2+
+   <https://www.orekit.org/>`_ are needed for astrodynamics functions.
+   As a convenience, the JAR files and associated data for these
+   libraries are provided under the lib/ and data/ folders, respectively.
 
 Configuration
 -------------
 
 orbdetpy uses JSON files to store settings, measurements and estimation
-results. The file examples/data/example_cfg.json is a sample. The JAVA_HOME
-variable in this file must point to your Java Development Kit installation.
+results. The file examples/data/example_cfg.json is a sample, which must
+be changed to describe your own orbit determination problems.
 
 Examples
 --------
@@ -86,5 +87,4 @@ Bug Reports
 Comments, criticisms and bug reports are very welcome and may be sent to
 the package maintainer by email or the project's website.
 
-Shiva Iyer
-shiva.iyer AT utexas DOT edu
+Shiva Iyer <shiva.iyer AT utexas DOT edu>

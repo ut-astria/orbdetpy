@@ -19,12 +19,11 @@ if __name__ == "__main__":
 
 from numpy.random import randn
 import jnius
-from orbdetpy import config
 from .orekit import *
 from .utils import *
 
-def simulate():
-    gsta = stations()
+def simulate(config):
+    gsta = stations(config)
     tm = strtodate(config["Propagation"]["Start"])
     prend = strtodate(config["Propagation"]["End"])
     tstep = config["Propagation"]["Step"]
@@ -35,7 +34,7 @@ def simulate():
     prop.setInitialState(SpacecraftState(CartesianOrbit(PVCoordinates(
         Vector3D(X0[:3]), Vector3D(X0[3:6])), FramesFactory.getEME2000(),
         tm, Constants.EGM96_EARTH_MU), config["SpaceObject"]["Mass"]))
-    for f in forces(False):
+    for f in forces(config, False):
         prop.addForceModel(f)
 
     res = []

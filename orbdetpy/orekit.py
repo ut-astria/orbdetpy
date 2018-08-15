@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
 import os
 from jnius import autoclass
-from orbdetpy import datadir
+from orbdetpy import _datadir
 
 # Java classes
 File = autoclass("java.io.File")
@@ -86,4 +86,4 @@ TimeStampedPVCoordinates = autoclass("org.orekit.utils.TimeStampedPVCoordinates"
 # Orbdetpy Java utilities class
 PropUtil = autoclass("org.astria.PropUtil")
 
-DataProvidersManager.getInstance().addProvider(DirectoryCrawler(File(String(datadir))))
+DataProvidersManager.getInstance().addProvider(DirectoryCrawler(File(String(_datadir))))

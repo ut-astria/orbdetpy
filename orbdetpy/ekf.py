@@ -18,7 +18,6 @@ if __name__ == "__main__":
     exit()
 
 import jnius
-from orbdetpy import config
 from .orekit import *
 from .utils import *
 
@@ -27,8 +26,9 @@ class observer(jnius.PythonJavaClass):
     __javainterfaces__ = [
         "org/orekit/estimation/sequential/KalmanObserver"]
 
-    def __init__(self, m):
+    def __init__(self, conf, m):
         super().__init__()
+        self.config = conf
         self.meas = m
         self.results = []
 
@@ -37,11 +37,11 @@ class observer(jnius.PythonJavaClass):
     def evaluationPerformed(self, est):
         n = (est.getCurrentMeasurementNumber() - 1)//2
         if (len(self.results) <= n):
-            k = list(config["Measurements"].keys())[0]
+            k = list(self.config["Measurements"].keys())[0]
             self.results.append({"Time" : self.meas[n]["Time"],
                                  "PreFit" : {}, "PostFit" : {}})
         else:
-            k = list(config["Measurements"].keys())[1]
+            k = list(self.config["Measurements"].keys())[1]
 
         res = self.results[n]
         res["PreFit"][k] = est.getPredictedMeasurement().getEstimatedValue()[0]
@@ -49,7 +49,7 @@ class observer(jnius.PythonJavaClass):
         res["EstimatedState"] = pvtolist(est.getPredictedSpacecraftStates()[0].getPVCoordinates())
         res["EstimatedCovariance"] = est.getPhysicalEstimatedCovarianceMatrix().getData()
 
-def estimate(meas):
+def estimate(config, meas):
     X0 = config["Propagation"]["InitialState"]
     X0 = CartesianOrbit(PVCoordinates(Vector3D(X0[:3]), Vector3D(X0[3:6])),
                         FramesFactory.getEME2000(),
@@ -59,7 +59,7 @@ def estimate(meas):
     prop = NumericalPropagatorBuilder(X0, DormandPrince853IntegratorBuilder(
         1E-3, 300.0, 1.0), PositionAngle.MEAN, 10.0)
     prop.setMass(config["SpaceObject"]["Mass"])
-    for f in forces(False):
+    for f in forces(config, False):
         prop.addForceModel(f)
 
     build = KalmanEstimatorBuilder()
@@ -68,8 +68,8 @@ def estimate(meas):
         DiagonalMatrix(config["Estimation"]["ProcessNoise"])))
     filt = build.build()
 
-    gsta = stations()
-    cbak = observer(meas)
+    gsta = stations(config)
+    cbak = observer(config, meas)
     filt.setObserver(cbak)
 
     allobs = ArrayList()

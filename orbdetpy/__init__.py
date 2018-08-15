@@ -16,21 +16,17 @@
 
 from os import environ, path, walk, sep
 
-def init(conf):
-    global config, rootdir, libsdir, datadir
+def init():
+    global _rootdir, _libsdir, _datadir
 
-    rootdir = path.dirname(path.dirname(path.abspath(__file__)))
-    libsdir = path.join(rootdir, "lib")
-    datadir = path.join(rootdir, "data")
+    _rootdir = path.dirname(path.dirname(path.abspath(__file__)))
+    _libsdir = path.join(_rootdir, "lib")
+    _datadir = path.join(_rootdir, "data")
 
     cpath = ""
     csc = ":" if sep == "/" else ";"
-    for r, d, files in walk(libsdir):
+    for r, d, files in walk(_libsdir):
         for file in files:
             if (file.endswith(".jar")):
                 cpath += path.join(r, file) + csc
-
-    config = conf
     environ["CLASSPATH"] = cpath
-    for k,v in config["environ"].items():
-        environ[k] = path.expandvars(v)

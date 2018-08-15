@@ -19,21 +19,22 @@ import sys
 import time
 import json
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from orbdetpy import init
+init()
+
 if (len(sys.argv) < 3):
     print("Usage: python %s config_file output_file" % sys.argv[0])
     exit()
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from orbdetpy import init
-
-with open(sys.argv[1], "r") as f:
-    init(json.load(f))
-
 from orbdetpy.simdata import simulate
 
+with open(sys.argv[1], "r") as f:
+    config = json.load(f)
+
 print("Simulation start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
-res = simulate()
+res = simulate(config)
 with open(sys.argv[2], "w") as fout:
     json.dump(res, fout, indent = 1)
 print("Simulation end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
