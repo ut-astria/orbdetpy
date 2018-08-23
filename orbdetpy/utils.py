@@ -17,6 +17,7 @@
 if __name__ == "__main__":
     exit()
 
+from numpy import array
 from .orekit import *
 
 def forces(config, pointmass):
@@ -46,7 +47,7 @@ def forces(config, pointmass):
             config["Drag"]["ExpRho0"], config["Drag"]["ExpH0"],
             config["Drag"]["ExpHScale"]),
             IsotropicDrag(config["SpaceObject"]["Area"],
-            config["Drag"]["Coeff"]["Value"])))
+            config["Drag"]["Coefficient"]["Value"])))
 
     if (config["SolidTides"]["Sun"] or config["SolidTides"]["Moon"]):
         fmod.append(PropUtil.solidtides(_itrf,
@@ -66,8 +67,9 @@ def forces(config, pointmass):
             149597870000.0, 4.56E-6, CelestialBodyFactory.getSun(),
             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
             IsotropicRadiationClassicalConvention(
-            config["SpaceObject"]["Area"], config["SpaceObject"]["Cabs"],
-            config["SpaceObject"]["Cspec"])))
+            config["SpaceObject"]["Area"],
+            config["RadiationPressure"]["Cabsorption"]["Value"],
+            config["RadiationPressure"]["Cspecular"]["Value"])))
 
     mans = config.get("Maneuvers", [])
     for man in mans:
@@ -90,6 +92,24 @@ def stations(config):
         gsta[k].getPolarOffsetYDriver().setReferenceDate(dt)
 
     return(gsta)
+
+def estparms(config):
+    sdim = 6
+    parm, pest = [], []
+    grps = [["Drag", "Coefficient", DragSensitive.DRAG_COEFFICIENT],
+            ["RadiationPressure", "Cabsorption",
+             RadiationSensitive.ABSORPTION_COEFFICIENT],
+            ["RadiationPressure", "Cspecular",
+             RadiationSensitive.REFLECTION_COEFFICIENT]]
+    for g in grps:
+        c = config[g[0]][g[1]]
+        if (c["Estimation"].lower() != "estimate"):
+            continue
+        sdim += 1
+        parm.append([c["Min"], c["Max"], c["Value"]])
+        pest.append(g[2])
+
+    return(sdim, array(parm), pest) 
 
 def strtodate(s):
     return(AbsoluteDate(DateTimeComponents.parseDateTime(String(s)),

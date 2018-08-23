@@ -1,4 +1,4 @@
-# plotres.py - Module to plot OD output.
+# plotodet.py - Module to plot OD output.
 # Copyright (C) 2018 Shiva Iyer <shiva.iyer AT utexas DOT edu>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ with open(sys.argv[2], "r") as f:
 with open(sys.argv[3], "r") as f:
     out = json.load(f)["Estimation"]
 
-tstamp, prefit, posfit, inocov = [], [], [], []
+tstamp, prefit, posfit, inocov, params = [], [], [], [], []
 for i, o in zip(inp, out):
     tstamp.append(datetime.strptime(i["Time"], "%Y-%m-%dT%H:%M:%S.%fZ"))
 
@@ -46,6 +46,9 @@ for i, o in zip(inp, out):
         p.append(i[k] - v)
     posfit.append(p)
 
+    if (len(o["EstimatedState"]) > 6):
+        params.append(o["EstimatedState"][6:])
+
     if ("InnovationCovariance" in o):
         p = []
         for j in range(len(o["InnovationCovariance"])):
@@ -55,6 +58,7 @@ for i, o in zip(inp, out):
 pre = numpy.array(prefit)
 pos = numpy.array(posfit)
 cov = numpy.array(inocov)
+par = numpy.array(params)
 key = list(cfg["Measurements"].keys())
 tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
 
@@ -85,5 +89,13 @@ if (len(cov) > 0):
 plt.xlabel("Time [hr]")
 plt.ylabel("%s residual" % key[1])
 plt.suptitle("Post-fit residuals")
+
+for i in range(par.shape[-1]):
+    if (i == 0):
+        fig = plt.figure(2)
+    plt.subplot(par.shape[1], 1, i + 1)
+    plt.semilogx(tim, par[:,i], "ob")
+    plt.xlabel("Time [hr]")
+    plt.ylabel("Parameter %d" % (i + 1))
 
 plt.show()

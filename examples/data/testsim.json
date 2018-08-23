@@ -17,10 +17,9 @@
 	"ExpRho0" : 3.614E-13,
 	"ExpH0": 700000.0,
 	"ExpHScale" : 88667.0,
-	"Coeff" :
+	"Coefficient" :
 	{
-	    "Value" : 2.0,
-	    "Estimation" : "Estimate"
+	    "Value" : 2.0
 	}
     },
 
@@ -38,7 +37,15 @@
 
     "RadiationPressure" :
     {
-	"Sun" : true
+	"Sun" : true,
+	"Cabsorption" :
+	{
+	    "Value" : 0.54
+	},
+	"Cspecular" :
+	{
+	    "Value" : 0.18
+	}
     },
 
     "SpaceObject" :
@@ -46,9 +53,7 @@
 	"Name" : "GALAXY 15",
 	"NoradID" : 28884,
 	"Mass" : 2000.0,
-	"Area" : 20.0,
-	"Cabs" : 0.54,
-	"Cspec" : 0.18
+	"Area" : 20.0
     },
 
     "Propagation" :

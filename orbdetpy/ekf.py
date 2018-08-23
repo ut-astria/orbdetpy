@@ -26,16 +26,20 @@ class observer(jnius.PythonJavaClass):
     __javainterfaces__ = [
         "org/orekit/estimation/sequential/KalmanObserver"]
 
-    def __init__(self, conf, m):
+    def __init__(self, conf, m, par):
         super().__init__()
         self.config = conf
         self.meas = m
+        self.pest = par
         self.results = []
 
     @jnius.java_method(
         "(Lorg/orekit/estimation/sequential/KalmanEstimation;)V")
     def evaluationPerformed(self, est):
         n = (est.getCurrentMeasurementNumber() - 1)//2
+        plst = est.getEstimatedPropagationParameters().getDrivers().toArray() + \
+               est.getEstimatedMeasurementsParameters().getDrivers().toArray()
+
         if (len(self.results) <= n):
             k = list(self.config["Measurements"].keys())[0]
             self.results.append({"Time" : self.meas[n]["Time"],
@@ -47,13 +51,19 @@ class observer(jnius.PythonJavaClass):
         res["PreFit"][k] = est.getPredictedMeasurement().getEstimatedValue()[0]
         res["PostFit"][k] = est.getCorrectedMeasurement().getEstimatedValue()[0]
         res["EstimatedState"] = pvtolist(est.getPredictedSpacecraftStates()[0].getPVCoordinates())
+        for p in self.pest:
+            for l in plst:
+                if l.getName() == p:
+                    res["EstimatedState"].append(l.getValue())
         res["EstimatedCovariance"] = est.getPhysicalEstimatedCovarianceMatrix().getData()
 
 def estimate(config, meas):
+    frame = FramesFactory.getEME2000()
+    gsta = stations(config)
+
     X0 = config["Propagation"]["InitialState"]
     X0 = CartesianOrbit(PVCoordinates(Vector3D(X0[:3]), Vector3D(X0[3:6])),
-                        FramesFactory.getEME2000(),
-                        strtodate(config["Propagation"]["Start"]),
+                        frame, strtodate(config["Propagation"]["Start"]),
                         Constants.EGM96_EARTH_MU)
 
     prop = NumericalPropagatorBuilder(X0, DormandPrince853IntegratorBuilder(
@@ -62,14 +72,20 @@ def estimate(config, meas):
     for f in forces(config, False):
         prop.addForceModel(f)
 
+    sdim, parm, pest = estparms(config)
+    plst = prop.getPropagationParametersDrivers()
+    for n, l in zip(pest, parm.tolist()):
+        pdrv = ParameterDriver(String(n), l[2], 1.0, l[0], l[1])
+        pdrv.setSelected(True)
+        plst.add(pdrv)
+
     build = KalmanEstimatorBuilder()
     build.addPropagationConfiguration(prop, ConstantProcessNoise(
         DiagonalMatrix(config["Estimation"]["Covariance"]),
         DiagonalMatrix(config["Estimation"]["ProcessNoise"])))
-    filt = build.build()
 
-    gsta = stations(config)
-    cbak = observer(config, meas)
+    cbak = observer(config, meas, pest)
+    filt = build.build()
     filt.setObserver(cbak)
 
     allobs = ArrayList()
@@ -83,12 +99,13 @@ def estimate(config, meas):
                 obs = RangeRate(gsta[m["Station"]], tm, m[k],
                                 v["Error"], 1.0, v["TwoWay"])
 
-            obs.setEnabled(v["Enabled"])
             allobs.add(obs)
 
     est = filt.processMeasurements(allobs)[0]
-    pvend = pvtolist(est.getPVCoordinates(strtodate(config["Propagation"]["End"]),
-                                          FramesFactory.getEME2000()))
+    pvend = pvtolist(est.getPVCoordinates(
+        strtodate(config["Propagation"]["End"]), frame))
+    if (sdim > 6):
+        pvend.extend(cbak.results[-1]["EstimatedState"][6:])
 
     return({"Estimation" : cbak.results,
             "Propagation" : {"Time" : config["Propagation"]["End"],

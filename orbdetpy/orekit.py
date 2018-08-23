@@ -49,6 +49,7 @@ ConstantProcessNoise = autoclass("org.orekit.estimation.sequential.ConstantProce
 KalmanEstimatorBuilder = autoclass("org.orekit.estimation.sequential.KalmanEstimatorBuilder")
 
 DragForce = autoclass("org.orekit.forces.drag.DragForce")
+DragSensitive = autoclass("org.orekit.forces.drag.DragSensitive")
 IsotropicDrag = autoclass("org.orekit.forces.drag.IsotropicDrag")
 SimpleExponentialAtmosphere = autoclass("org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere")
 GravityFieldFactory = autoclass("org.orekit.forces.gravity.potential.GravityFieldFactory")
@@ -58,8 +59,9 @@ SolidTides = autoclass("org.orekit.forces.gravity.SolidTides")
 NewtonianAttraction = autoclass("org.orekit.forces.gravity.NewtonianAttraction")
 ThirdBodyAttraction = autoclass("org.orekit.forces.gravity.ThirdBodyAttraction")
 ConstantThrustManeuver = autoclass("org.orekit.forces.maneuvers.ConstantThrustManeuver")
-SolarRadiationPressure = autoclass("org.orekit.forces.radiation.SolarRadiationPressure")
 IsotropicRadiationClassicalConvention = autoclass("org.orekit.forces.radiation.IsotropicRadiationClassicalConvention")
+RadiationSensitive = autoclass("org.orekit.forces.radiation.RadiationSensitive")
+SolarRadiationPressure = autoclass("org.orekit.forces.radiation.SolarRadiationPressure")
 
 Frame = autoclass("org.orekit.frames.Frame")
 FramesFactory = autoclass("org.orekit.frames.FramesFactory")
@@ -80,6 +82,8 @@ TimeScalesFactory = autoclass("org.orekit.time.TimeScalesFactory")
 
 Constants = autoclass("org.orekit.utils.Constants")
 IERSConventions = autoclass("org.orekit.utils.IERSConventions")
+ParameterDriver = autoclass("org.orekit.utils.ParameterDriver")
+ParameterDriversList = autoclass("org.orekit.utils.ParameterDriversList")
 PVCoordinates = autoclass("org.orekit.utils.PVCoordinates")
 TimeStampedPVCoordinates = autoclass("org.orekit.utils.TimeStampedPVCoordinates")
 

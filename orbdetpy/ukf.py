@@ -25,11 +25,11 @@ from .utils import *
 def estimate(config, meas):
     frame = FramesFactory.getEME2000()
     gsta = stations(config)
+    sdim, parm, pest = estparms(config)
 
-    sdim = 6
     epoch = strtodate(config["Propagation"]["Start"])
     mass = config["SpaceObject"]["Mass"]
-    prop = PropUtil(epoch, mass, frame, forces(config, True), sdim)
+    prop = PropUtil(epoch, mass, frame, forces(config, True), sdim, pest)
 
     X0 = array([config["Propagation"]["InitialState"]]).T
     P = diag(config["Estimation"]["Covariance"])
@@ -43,11 +43,14 @@ def estimate(config, meas):
     tofm = 0.0
     wfil = 0.5/sdim
     dt = 30
-    Qst = block([[Q[:3,:3]*dt**2/4, Q[:3,:3]*dt/2],
-                 [Q[:3,:3]*dt/2, Q[:3,:3]]])*dt**2
     sigm = zeros([sdim, 2*sdim])
     supd = zeros([len(config["Measurements"]), 2*sdim])
     results = []
+    Qst = block([[Q[:3,:3]*dt**2/4, Q[:3,:3]*dt/2],
+                 [Q[:3,:3]*dt/2, Q[:3,:3]]])*dt**2
+    if (sdim > 6):
+        Qst = pad(Qst, ((0, sdim - 6), (0, sdim - 6)),
+                  "constant", constant_values = 0)
 
     for midx in range(len(meas) + 1):
         if (midx < len(meas)):
@@ -69,6 +72,11 @@ def estimate(config, meas):
         for i in range(sdim):
             sigm[:,[i]] = xhat + sqrP[:,[i]]
             sigm[:,[sdim+i]] = xhat - sqrP[:,[i]]
+            if (sdim > 6):
+                sigm[6:,[i]] = fmin(fmax(sigm[6:,[i]],
+                                         parm[:,[0]]), parm[:,[1]])
+                sigm[6:,[sdim+i]] = fmin(fmax(sigm[6:,[sdim+i]],
+                                              parm[:,[0]]), parm[:,[1]])
 
         sppr = array([prop.propagate(t0.durationFrom(epoch) - tof0,
                                      sigm.ravel(order = "F").tolist(),

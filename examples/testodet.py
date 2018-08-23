@@ -1,4 +1,4 @@
-# radar.py - Example to demonstrate OD using radar measurements.
+# testodet.py - Example program for orbit determination.
 # Copyright (C) 2018 Shiva Iyer <shiva.iyer AT utexas DOT edu>
 #
 # This program is free software: you can redistribute it and/or modify

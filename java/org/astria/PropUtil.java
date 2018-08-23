@@ -37,6 +37,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.PVCoordinates;
 
 public class PropUtil implements OrdinaryDifferentialEquation
@@ -45,24 +46,22 @@ public class PropUtil implements OrdinaryDifferentialEquation
     private double mass;
     private Frame frame;
     private ForceModel[] forces;
-    private ArrayList<double []> params;
     private int stadim;
     private int vecdim;
+    private String[] params;
     private ODEIntegrator ode;
     private Exception except;
 
     public PropUtil(AbsoluteDate e, double m, Frame r, ForceModel[] f,
-		    int sdim) throws Exception
+		    int sdim, String[] estparam) throws Exception
     {
 	epoch = e;
 	mass = m;
 	frame = r;
 	forces = f;
 	stadim = sdim;
+	params = estparam;
 	ode = new DormandPrince853Integrator(1E-3, 300.0, 1E-14, 1E-12);
-	params = new ArrayList<>();
-	for (int i = 0; i < forces.length; i++)
-	    params.add(forces[i].getParameters());
     }
 
     public static SolidTides solidtides(Frame bdf, double ae, double mu,
@@ -110,9 +109,21 @@ public class PropUtil implements OrdinaryDifferentialEquation
 					   new Vector3D(X[i+3], X[i+4], X[i+5])),
 				       frame, tm, Constants.EGM96_EARTH_MU), mass);
 
+		int l = 6;
 		Vector3D acc = Vector3D.ZERO;
 		for (int j = 0; j < forces.length; j++)
-		    acc = acc.add(forces[j].acceleration(ss, params.get(j)));
+		{
+		    int k = 0;
+		    double[] fmp = forces[j].getParameters();
+		    for (ParameterDriver drv : forces[j].getParametersDrivers())
+		    {
+			for (String str : params)
+			    if (drv.getName().equals(str))
+				fmp[k] = X[i + l++];
+			k++;
+		    }
+		    acc = acc.add(forces[j].acceleration(ss, fmp));
+		}
 
 		Xdot[i]   = X[i+3];
 		Xdot[i+1] = X[i+4];

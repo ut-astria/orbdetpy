@@ -41,9 +41,7 @@ always welcome.
 3) Other measurement types including angles data.
 4) A batch least squares implementation.
 5) Rauch-Tung-Striebel smoother.
-6) Estimation of dynamic parameters beyond just position and velocity.
-   Also, support for consider-only parameters.
-7) Parametric analysis i.e. the ability to pass-through certain
+6) Parametric analysis i.e. the ability to pass-through certain
    measurement types.
 
 Prerequisites
@@ -76,10 +74,14 @@ The following example programs can be found in the 'examples' folder.
    Note that maneuvers can be incorporated into the force model during
    a simulation run.
 
-2) radar.py : Shows how orbdetpy can be used for orbit determination from
-   radar measurements. The file example_cfg.json contains settings that drive
+2) plotsim.py : Plots the results of simulations created using testsim.py.
+
+3) testodet.py : Demonstrates orbit determination in orbdetpy. The file
+   examples/data/example_cfg.json contains settings that drive
    propagation and estimation. testsim.py was used to simulate the
-   measurements in example_input.json for Galaxy 15.
+   measurements in examples/data/example_input.json for Galaxy 15.
+
+4) plotodet.py : Plots the results of fitting orbits using testodet.py.
 
 Bug Reports
 -----------
