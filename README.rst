@@ -23,9 +23,9 @@ The force model for orbit propagation currently includes:
 5) Solar radiation pressure.
 6) Third body perturbations from the Sun and Moon.
 
-The measurement model supports range and range-rate readings. Filtering
-is done using Orekit's Extended Kalman Filter or our Unscented Kalman
-Filter.
+The measurement model supports range, range-rate, and angles data.
+Filtering is done using Orekit's Extended Kalman Filter or our custom
+Unscented Kalman Filter.
 
 You can either use your own measurements or simulate observations using
 the simdata.py module.
@@ -38,10 +38,9 @@ always welcome.
 
 1) The addition of other atmospheric models supported by Orekit.
 2) Support for attitude dependent drag and solar radiation pressure.
-3) Other measurement types including angles data.
-4) A batch least squares implementation.
-5) Rauch-Tung-Striebel smoother.
-6) Parametric analysis i.e. the ability to pass-through certain
+3) A batch least squares implementation.
+4) Rauch-Tung-Striebel smoother.
+5) Parametric analysis i.e. the ability to pass-through certain
    measurement types.
 
 Prerequisites
@@ -57,31 +56,23 @@ Prerequisites
    As a convenience, the JAR files and associated data for these
    libraries are provided under the lib/ and data/ folders, respectively.
 
-Configuration
--------------
-
-orbdetpy uses JSON files to store settings, measurements and estimation
-results. The file examples/data/example_cfg.json is a sample, which must
-be changed to describe your own orbit determination problems.
-
 Examples
 --------
 
 The following example programs can be found in the 'examples' folder.
 
-1) testsim.py : Demonstrates the measurement simulator for the Galaxy 15
-   satellite. examples/data/testsim.json is used to configure the simulation.
-   Note that maneuvers can be incorporated into the force model during
-   a simulation run.
+1) testsim.py : Demonstrates the measurement simulator. Note that
+   maneuvers can be incorporated into the force model during simulation.
 
 2) plotsim.py : Plots the results of simulations created using testsim.py.
 
-3) testodet.py : Demonstrates orbit determination in orbdetpy. The file
-   examples/data/example_cfg.json contains settings that drive
-   propagation and estimation. testsim.py was used to simulate the
-   measurements in examples/data/example_input.json for Galaxy 15.
+3) testodet.py : Demonstrates orbit determination in orbdetpy.
 
 4) plotodet.py : Plots the results of fitting orbits using testodet.py.
+
+orbdetpy uses JSON files to store settings, measurements and estimation
+results. The files in examples/data show how to configure measurement
+simulation and orbit determination using radar or angles data.
 
 Bug Reports
 -----------

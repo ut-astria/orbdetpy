@@ -1,0 +1,119 @@
+{
+    "Gravity" :
+    {
+	"Degree" : 20,
+	"Order" : 20
+    },
+
+    "OceanTides" :
+    {
+	"Degree" : -1,
+	"Order" : -1
+    },
+
+    "Drag" :
+    {
+	"Model" : "Exponential",
+	"ExpRho0" : 3.614E-13,
+	"ExpH0": 700000.0,
+	"ExpHScale" : 88667.0,
+	"Coefficient" :
+	{
+	    "Value" : 2.0,
+	    "Min" : 1.5,
+	    "Max" : 2.5,
+	    "Estimation" : "Estimate"
+	}
+    },
+
+    "SolidTides" :
+    {
+	"Sun" : false,
+	"Moon" : false
+    },
+
+    "ThirdBodies" :
+    {
+	"Sun" : true,
+	"Moon" : true
+    },
+
+    "RadiationPressure" :
+    {
+	"Sun" : true,
+	"Cabsorption" :
+	{
+	    "Value" : 0.54,
+	    "Min" : 0.40,
+	    "Max" : 0.70,
+	    "Estimation" : "Estimate"
+	},
+	"Cspecular" :
+	{
+	    "Value" : 0.18,
+	    "Min" : 0.05,
+	    "Max" : 0.30,
+	    "Estimation" : "Estimate"
+	}
+    },
+
+    "SpaceObject" :
+    {
+	"Name" : "GALAXY 15",
+	"NoradID" : 28884,
+	"Mass" : 2000.0,
+	"Area" : 20.0
+    },
+
+    "Propagation" :
+    {
+	"Start" : "2018-01-01T00:02:54Z",
+	"End" : "2018-01-02T00:02:54Z",
+	"InitialState" :
+	[
+	    35796020.7669903,
+	    -22267515.537321,
+	    -87938.3477596335,
+            1625.07170292693,
+            2610.77460296534,
+	    -2.09170251623871,
+	    2.0,
+	    0.54,
+	    0.18
+	]
+    },
+
+    "Stations" :
+    {
+	"Station1" :
+	{
+            "Latitude" : 1.1367315455605052,
+            "Longitude" : -2.5738551993402585,
+            "Altitude" : 213.0
+	},
+	"Station2" :
+	{
+            "Latitude" : 0.5578822780952235,
+            "Longitude" : -1.8017600227679735,
+            "Altitude" : 855.0
+	}
+    },
+
+    "Measurements" :
+    {
+	"RightAscension" :
+	{
+	    "Error" : 4.8E-6
+	},
+	"Declination" :
+	{
+	    "Error" : 4.8E-6
+	}
+    },
+
+    "Estimation" :
+    {
+	"Covariance" : [25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 0.25, 0.01, 0.01],
+	"ProcessNoise" : [1E-24, 1E-24, 1E-24, 1E-24, 1E-24, 1E-24, 1E-24, 1E-24, 1E-24]
+    }
+}

@@ -32,25 +32,43 @@ class observer(jnius.PythonJavaClass):
         self.meas = m
         self.pest = par
         self.results = []
+        self.angles = ["Azimuth", "Elevation",
+                       "RightAscension", "Declination"]
 
     @jnius.java_method(
         "(Lorg/orekit/estimation/sequential/KalmanEstimation;)V")
     def evaluationPerformed(self, est):
-        n = (est.getCurrentMeasurementNumber() - 1)//2
-        plst = est.getEstimatedPropagationParameters().getDrivers().toArray() + \
-               est.getEstimatedMeasurementsParameters().getDrivers().toArray()
+        keys = list(self.config["Measurements"].keys())
+        if (keys[0] in self.angles):
+            n = est.getCurrentMeasurementNumber() - 1
+        else:
+            n = (est.getCurrentMeasurementNumber() - 1)//len(keys)
 
         if (len(self.results) <= n):
-            k = list(self.config["Measurements"].keys())[0]
+            k = keys[0]
             self.results.append({"Time" : self.meas[n]["Time"],
                                  "PreFit" : {}, "PostFit" : {}})
         else:
-            k = list(self.config["Measurements"].keys())[1]
+            k = keys[1]
 
         res = self.results[n]
-        res["PreFit"][k] = est.getPredictedMeasurement().getEstimatedValue()[0]
-        res["PostFit"][k] = est.getCorrectedMeasurement().getEstimatedValue()[0]
+        fitv = est.getPredictedMeasurement().getEstimatedValue()
+        if (keys[0] in self.angles):
+            res["PreFit"][keys[0]] = fitv[0]
+            res["PreFit"][keys[1]] = fitv[1]
+        else:
+            res["PreFit"][k] = fitv[0]
+
+        fitv = est.getCorrectedMeasurement().getEstimatedValue()
+        if (keys[0] in self.angles):
+            res["PostFit"][keys[0]] = fitv[0]
+            res["PostFit"][keys[1]] = fitv[1]
+        else:
+            res["PostFit"][k] = fitv[0]
+
         res["EstimatedState"] = pvtolist(est.getPredictedSpacecraftStates()[0].getPVCoordinates())
+        plst = est.getEstimatedPropagationParameters().getDrivers().toArray() + \
+               est.getEstimatedMeasurementsParameters().getDrivers().toArray()
         for p in self.pest:
             for l in plst:
                 if l.getName() == p:
@@ -89,17 +107,29 @@ def estimate(config, meas):
     filt.setObserver(cbak)
 
     allobs = ArrayList()
-    for m in meas:
-        tm = strtodate(m["Time"])
-        for k,v in config["Measurements"].items():
-            if (k == "Range"):
-                obs = Range(gsta[m["Station"]], tm, m[k],
-                            v["Error"], 1.0, v["TwoWay"])
-            elif (k == "RangeRate"):
-                obs = RangeRate(gsta[m["Station"]], tm, m[k],
-                                v["Error"], 1.0, v["TwoWay"])
-
-            allobs.add(obs)
+    for mea in meas:
+        tm = strtodate(mea["Time"])
+        for key, val in config["Measurements"].items():
+            if (key == "Range"):
+                allobs.add(Range(gsta[mea["Station"]], tm, mea[key],
+                                 val["Error"], 1.0, val["TwoWay"]))
+            elif (key == "RangeRate"):
+                allobs.add(RangeRate(gsta[mea["Station"]], tm, mea[key],
+                                     val["Error"], 1.0, val["TwoWay"]))
+            elif (key in ["Azimuth", "Elevation"]):
+                allobs.add(AngularAzEl(gsta[mea["Station"]], tm,
+                                       [mea["Azimuth"], mea["Elevation"]],
+                                       [config["Measurements"]["Azimuth"]["Error"],
+                                        config["Measurements"]["Elevation"]["Error"]],
+                                       [1.0, 1.0]))
+                break
+            elif (key in ["RightAscension", "Declination"]):
+                allobs.add(AngularRaDec(gsta[mea["Station"]], frame, tm,
+                                        [mea["RightAscension"], mea["Declination"]],
+                                        [config["Measurements"]["RightAscension"]["Error"],
+                                         config["Measurements"]["Declination"]["Error"]],
+                                        [1.0, 1.0]))
+                break
 
     est = filt.processMeasurements(allobs)[0]
     pvend = pvtolist(est.getPVCoordinates(

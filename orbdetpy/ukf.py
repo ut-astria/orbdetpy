@@ -88,13 +88,28 @@ def estimate(config, meas):
 
         raw, obs = [], []
         for key, val in config["Measurements"].items():
-            raw.append(mea[key])
             if (key == "Range"):
+                raw.append(mea[key])
                 obs.append(Range(gsta[mea["Station"]], tm, mea[key],
                                  val["Error"], 1.0, val["TwoWay"]))
             elif (key == "RangeRate"):
+                raw.append(mea[key])
                 obs.append(RangeRate(gsta[mea["Station"]], tm, mea[key],
                                      val["Error"], 1.0, val["TwoWay"]))
+            elif (key in ["Azimuth", "Elevation"]):
+                raw.extend([mea["Azimuth"], mea["Elevation"]])
+                obs.append(AngularAzEl(gsta[mea["Station"]], tm, raw,
+                                       [config["Measurements"]["Azimuth"]["Error"],
+                                        config["Measurements"]["Elevation"]["Error"]],
+                                       [1.0, 1.0]))
+                break
+            elif (key in ["RightAscension", "Declination"]):
+                raw.extend([mea["RightAscension"], mea["Declination"]])
+                obs.append(AngularRaDec(gsta[mea["Station"]], frame, tm, raw,
+                                        [config["Measurements"]["RightAscension"]["Error"],
+                                         config["Measurements"]["Declination"]["Error"]],
+                                        [1.0, 1.0]))
+                break
 
         Ppre = Qst.copy()
         tmlt = AbsoluteDate(tm, -tofm)
@@ -107,7 +122,10 @@ def estimate(config, meas):
                 Vector3D(sppr[3,i], sppr[4,i], sppr[5,i])),
                 frame, tmlt, Constants.EGM96_EARTH_MU), mass)]
             for j, o in enumerate(obs):
-                supd[j,i] = o.estimate(1, 1, ssta).getEstimatedValue()[0]
+                fitv = o.estimate(1, 1, ssta).getEstimatedValue()
+                supd[j,i] = fitv[0]
+                if (len(fitv) == 2):
+                    supd[1,i] = fitv[1]
 
         Pyy = R.copy()
         Pxy = zeros([sdim, len(config["Measurements"])])
@@ -129,8 +147,15 @@ def estimate(config, meas):
         res["EstimatedCovariance"] = P.tolist()
         res["InnovationCovariance"] = Pyy.tolist()
         for i, m in enumerate(config["Measurements"]):
-            res["PreFit"][m] = yhatpre[i,0]
-            res["PostFit"][m] = obs[i].estimate(1, 1, ssta).getEstimatedValue()[0]
+            fitv = obs[i].estimate(1, 1, ssta).getEstimatedValue()
+            if (len(fitv) == 2):
+                for ii, mm in enumerate(config["Measurements"]):
+                    res["PreFit"][mm] = yhatpre[ii,0]
+                    res["PostFit"][mm] = fitv[ii]
+                break
+            else:
+                res["PreFit"][m] = yhatpre[i,0]
+                res["PostFit"][m] = fitv[0]
         results.append(res)
 
     return({"Estimation" : results,
