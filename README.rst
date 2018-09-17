@@ -6,7 +6,7 @@ Introduction
 ------------
 
 This is orbdetpy, a library of Python routines for orbit determination.
-It is built on top of the Orekit astrodynamics framework.
+It is built on top of the Orekit astrodynamics package. 
 
 orbdetpy is free software, distributed under the terms of the `GNU
 General Public License <http://www.gnu.org/licenses/gpl.html>`_.
@@ -19,7 +19,7 @@ The force model for orbit propagation currently includes:
 1) EGM96 gravity field up to degree and order 360.
 2) Solid tides owing to the Sun and Moon.
 3) FES 2004 ocean tide model up to degree and order 100.
-4) Simple exponential model for atmospheric drag.
+4) The NRL MSISE-00 and simple exponential models for atmospheric drag.
 5) Solar radiation pressure.
 6) Third body perturbations from the Sun and Moon.
 
@@ -36,11 +36,10 @@ Future Work
 The following tasks are under consideration. Community contributions are
 always welcome.
 
-1) The addition of other atmospheric models supported by Orekit.
-2) Support for attitude dependent drag and solar radiation pressure.
-3) A batch least squares implementation.
-4) Rauch-Tung-Striebel smoother.
-5) Parametric analysis i.e. the ability to pass-through certain
+1) Support for attitude dependent drag and solar radiation pressure.
+2) A batch least squares implementation.
+3) Rauch-Tung-Striebel smoother.
+4) Parametric analysis i.e. the ability to pass-through certain
    measurement types.
 
 Prerequisites
@@ -53,8 +52,10 @@ Prerequisites
    to point to your JDK installation.
 3) `Hipparchus 1.3+ <https://hipparchus.org/>`_ and `Orekit 9.2+
    <https://www.orekit.org/>`_ are needed for astrodynamics functions.
-   As a convenience, the JAR files and associated data for these
-   libraries are provided under the lib/ and data/ folders, respectively.
+
+As a convenience, JAR files for Orekit and Hipparchus are provided under
+lib/ and data/, respectively. Space weather data found under data/ is
+obtained from `CelesTrak <http://www.celestrak.com/SpaceData/>`_.
 
 Examples
 --------
@@ -72,7 +73,8 @@ The following example programs can be found in the 'examples' folder.
 
 orbdetpy uses JSON files to store settings, measurements and estimation
 results. The files in examples/data show how to configure measurement
-simulation and orbit determination using radar or angles data.
+simulation and orbit determination using radar or angles data. The file
+docs/filefmt.rst documents the structure of the JSON files.
 
 Bug Reports
 -----------

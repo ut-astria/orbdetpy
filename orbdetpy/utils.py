@@ -18,6 +18,7 @@ if __name__ == "__main__":
     exit()
 
 from numpy import array
+from orbdetpy import _datadir
 from .orekit import *
 
 def forces(config, pointmass):
@@ -39,13 +40,29 @@ def forces(config, pointmass):
             config["OceanTides"]["Order"],
             IERSConventions.IERS_2010, ut1scale))
 
-    if (config["Drag"]["Model"].lower() == "exponential"):
-        fmod.append(DragForce(SimpleExponentialAtmosphere(
+    dragmod = config["Drag"]["Model"]
+    if (dragmod == "Exponential"):
+        atmos = SimpleExponentialAtmosphere(
             OneAxisEllipsoid(
             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
             Constants.WGS84_EARTH_FLATTENING, _itrf),
             config["Drag"]["ExpRho0"], config["Drag"]["ExpH0"],
-            config["Drag"]["ExpHScale"]),
+            config["Drag"]["ExpHScale"])
+    elif (dragmod == "MSISE"):
+        mindt, maxdt, swdata = spaceweather()
+        msise = MSISEInputs(mindt, maxdt, swdata)
+
+        atmos = NRLMSISE00(msise, CelestialBodyFactory.getSun(),
+            OneAxisEllipsoid(
+            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING, _itrf)).withSwitch(9, -1)
+        for s in config["Drag"].get("MSISEDisable", []):
+            atmos = atmos.withSwitch(s, 0)
+    else:
+        atmos = None
+
+    if (atmos is not None):
+        fmod.append(DragForce(atmos,
             IsotropicDrag(config["SpaceObject"]["Area"],
             config["Drag"]["Coefficient"]["Value"])))
 
@@ -102,14 +119,32 @@ def estparms(config):
             ["RadiationPressure", "Cspecular",
              RadiationSensitive.REFLECTION_COEFFICIENT]]
     for g in grps:
-        c = config[g[0]][g[1]]
-        if (c["Estimation"].lower() != "estimate"):
+        c = config.get(g[0], {}).get(g[1], {})
+        if (c.get("Estimation", "") != "Estimate"):
             continue
         sdim += 1
         parm.append([c["Min"], c["Max"], c["Value"]])
         pest.append(g[2])
 
     return(sdim, array(parm), pest) 
+
+def spaceweather():
+    with open(os.path.join(_datadir, "SpaceWeather.dat"), "r") as fp:
+        toks = []
+        for l in fp:
+            toks.append([t.strip() for t in l.split(",")])
+
+    mindt = strtodate("%s-%s-%sT00:00:00Z" % (
+        toks[0][0], toks[0][1], toks[0][2]))
+    maxdt = strtodate("%s-%s-%sT00:00:00Z" % (
+        toks[-1][0], toks[-1][1], toks[-1][2]))
+
+    swdata = Hashtable()
+    for tok in toks:
+        val = [float(t) if len(t) > 0 else 0.0 for t in tok]
+        swdata.put(String("%s%s%s" % (tok[0], tok[1], tok[2])), val)
+
+    return(mindt, maxdt, swdata)
 
 def strtodate(s):
     return(AbsoluteDate(DateTimeComponents.parseDateTime(String(s)),

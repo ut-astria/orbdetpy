@@ -25,6 +25,7 @@ from orbdetpy import _datadir
 File = autoclass("java.io.File")
 String = autoclass("java.lang.String")
 ArrayList = autoclass("java.util.ArrayList")
+Hashtable = autoclass("java.util.Hashtable")
 
 # Hipparchus classes
 Vector3D = autoclass("org.hipparchus.geometry.euclidean.threed.Vector3D")
@@ -51,6 +52,7 @@ KalmanEstimatorBuilder = autoclass("org.orekit.estimation.sequential.KalmanEstim
 DragForce = autoclass("org.orekit.forces.drag.DragForce")
 DragSensitive = autoclass("org.orekit.forces.drag.DragSensitive")
 IsotropicDrag = autoclass("org.orekit.forces.drag.IsotropicDrag")
+NRLMSISE00 = autoclass("org.orekit.forces.drag.atmosphere.NRLMSISE00")
 SimpleExponentialAtmosphere = autoclass("org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere")
 GravityFieldFactory = autoclass("org.orekit.forces.gravity.potential.GravityFieldFactory")
 HolmesFeatherstoneAttractionModel = autoclass("org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel")
@@ -89,5 +91,6 @@ TimeStampedPVCoordinates = autoclass("org.orekit.utils.TimeStampedPVCoordinates"
 
 # Orbdetpy Java utilities class
 PropUtil = autoclass("org.astria.PropUtil")
+MSISEInputs = autoclass("org.astria.MSISEInputs")
 
 DataProvidersManager.getInstance().addProvider(DirectoryCrawler(File(String(_datadir))))
