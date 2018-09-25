@@ -38,13 +38,11 @@
     "RadiationPressure" :
     {
 	"Sun" : true,
-	"Cabsorption" :
+	"Creflection" :
 	{
-	    "Value" : 0.54
-	},
-	"Cspecular" :
-	{
-	    "Value" : 0.18
+            "Value" : 1.5,
+            "Min" : 1.0,
+            "Max" : 2.0
 	}
     },
 

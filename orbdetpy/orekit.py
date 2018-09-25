@@ -61,7 +61,7 @@ SolidTides = autoclass("org.orekit.forces.gravity.SolidTides")
 NewtonianAttraction = autoclass("org.orekit.forces.gravity.NewtonianAttraction")
 ThirdBodyAttraction = autoclass("org.orekit.forces.gravity.ThirdBodyAttraction")
 ConstantThrustManeuver = autoclass("org.orekit.forces.maneuvers.ConstantThrustManeuver")
-IsotropicRadiationClassicalConvention = autoclass("org.orekit.forces.radiation.IsotropicRadiationClassicalConvention")
+IsotropicRadiationSingleCoefficient = autoclass("org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient")
 RadiationSensitive = autoclass("org.orekit.forces.radiation.RadiationSensitive")
 SolarRadiationPressure = autoclass("org.orekit.forces.radiation.SolarRadiationPressure")
 

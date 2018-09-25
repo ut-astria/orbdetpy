@@ -83,10 +83,11 @@ def forces(config, pointmass):
         fmod.append(SolarRadiationPressure(
             149597870000.0, 4.56E-6, CelestialBodyFactory.getSun(),
             Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-            IsotropicRadiationClassicalConvention(
+            IsotropicRadiationSingleCoefficient(
             config["SpaceObject"]["Area"],
-            config["RadiationPressure"]["Cabsorption"]["Value"],
-            config["RadiationPressure"]["Cspecular"]["Value"])))
+            config["RadiationPressure"]["Creflection"]["Value"],
+            config["RadiationPressure"]["Creflection"]["Min"],
+            config["RadiationPressure"]["Creflection"]["Max"])))
 
     mans = config.get("Maneuvers", [])
     for man in mans:
@@ -114,9 +115,7 @@ def estparms(config):
     sdim = 6
     parm, pest = [], []
     grps = [["Drag", "Coefficient", DragSensitive.DRAG_COEFFICIENT],
-            ["RadiationPressure", "Cabsorption",
-             RadiationSensitive.ABSORPTION_COEFFICIENT],
-            ["RadiationPressure", "Cspecular",
+            ["RadiationPressure", "Creflection",
              RadiationSensitive.REFLECTION_COEFFICIENT]]
     for g in grps:
         c = config.get(g[0], {}).get(g[1], {})

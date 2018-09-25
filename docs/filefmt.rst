@@ -76,7 +76,7 @@ Configuration files are needed for both simulation and orbit determination.
 
  "Sun" : false to disable the Sun's contribution or true to enable.
  
- "Cabsorption" : Coefficient of absorption {
+ "Creflection" : Coefficient of reflection {
 
   "Value" : Initial value.
  
@@ -88,18 +88,6 @@ Configuration files are needed for both simulation and orbit determination.
   
   }
 
- "Cspecular" : Coefficient of specular reflection {
- 
-  "Value" : Initial value.
- 
-  "Min" : Minimum value.
-
-  "Max" : Maximum value.
-
-  "Estimation" : "Estimate" to estimate parameter or any other string to prevent estimation.
-
-  }
-  
  }
 
 "SpaceObject" : Details about the Resident Space Object {
