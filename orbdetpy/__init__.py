@@ -16,17 +16,32 @@
 
 from os import environ, path, walk, sep
 
-def init():
-    global _rootdir, _libsdir, _datadir
+_rootdir = path.dirname(path.dirname(path.abspath(__file__)))
+_libsdir = path.join(_rootdir, "lib")
+_datadir = path.join(_rootdir, "data")
 
-    _rootdir = path.dirname(path.dirname(path.abspath(__file__)))
-    _libsdir = path.join(_rootdir, "lib")
-    _datadir = path.join(_rootdir, "data")
+cpath = ""
+csc = ":" if sep == "/" else ";"
+for r, d, files in walk(_libsdir):
+    for file in files:
+        if (file.endswith(".jar")):
+            cpath += path.join(r, file) + csc
 
-    cpath = ""
-    csc = ":" if sep == "/" else ";"
-    for r, d, files in walk(_libsdir):
-        for file in files:
-            if (file.endswith(".jar")):
-                cpath += path.join(r, file) + csc
-    environ["CLASSPATH"] = cpath
+environ["CLASSPATH"] = cpath
+
+from jnius import autoclass
+
+_String = autoclass("java.lang.String")
+_DataManager = autoclass("org.astria.DataManager")
+_Estimation = autoclass("org.astria.Estimation")
+_Simulation = autoclass("org.astria.Simulation")
+
+_DataManager.initialize(_String(_datadir))
+
+def determineOrbit(config, meas):
+    filt = _Estimation(_String(config), _String(meas))
+    return(filt.determineOrbit())
+
+def simulateMeasurements(config):
+    sim = _Simulation(_String(config))
+    return(sim.simulateMeasurements())

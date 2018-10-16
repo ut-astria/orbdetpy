@@ -18,7 +18,7 @@
 
 package org.astria;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 import org.orekit.forces.drag.atmosphere.NRLMSISE00InputParameters;
 import org.orekit.time.AbsoluteDate;
 
@@ -26,13 +26,19 @@ public class MSISEInputs implements NRLMSISE00InputParameters
 {
     protected AbsoluteDate mindate;
     protected AbsoluteDate maxdate;
-    protected Hashtable swdata;
+    protected HashMap<String, double[]> swdata;
+    protected double[] apvals;
     
-    public MSISEInputs(AbsoluteDate min, AbsoluteDate max, Hashtable sw)
+    public MSISEInputs(AbsoluteDate min, AbsoluteDate max,
+		       HashMap<String, double[]> sw, int apflag)
     {
-	this.mindate = min;
-	this.maxdate = max;
-	this.swdata = sw;
+	mindate = min;
+	maxdate = max;
+	swdata = sw;
+	if (apflag == 1)
+	    apvals = new double[1];
+	else
+	    apvals = new double[7];
     }
 
     public AbsoluteDate getMinDate()
@@ -49,7 +55,7 @@ public class MSISEInputs implements NRLMSISE00InputParameters
     {
 	String p = new AbsoluteDate(date, -86400.0).toString();
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-	float[] v = (float[]) swdata.get(k);
+	double[] v = swdata.get(k);
 	return(v[26]);
     }
 
@@ -57,28 +63,27 @@ public class MSISEInputs implements NRLMSISE00InputParameters
     {
 	String p = date.toString();
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-	float[] v = (float[]) swdata.get(k);
+	double[] v = swdata.get(k);
 	return(v[28]);
     }
 
     public double[] getAp(AbsoluteDate date)
     {
-	double[] ap = new double[7];
-	for (int i = 0; i <= 6; i++)
+	for (int i = 0; i < apvals.length; i++)
 	{
 	    if (i == 0)
 	    {
 		String p = date.toString();
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		float[] v = (float[]) swdata.get(k);
-		ap[0] = v[22];
+		double[] v = swdata.get(k);
+		apvals[0] = v[22];
 	    }
 	    else if (i <= 4)
 	    {
 		String p = (new AbsoluteDate(date, -10800.0*(i - 1))).toString();
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		float[] v = (float[]) swdata.get(k);
-		ap[i] = v[Integer.parseInt(p.substring(11, 13)) % 3 + 14];
+		double[] v = swdata.get(k);
+		apvals[i] = v[Integer.parseInt(p.substring(11, 13)) % 3 + 14];
 	    }
 	    else
 	    {
@@ -86,13 +91,13 @@ public class MSISEInputs implements NRLMSISE00InputParameters
 		{
 		    String p = (new AbsoluteDate(date, -10800.0*(j - 1))).toString();
 		    String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		    float[] v = (float[]) swdata.get(k);
-		    ap[i] += v[Integer.parseInt(p.substring(11, 13)) % 3 + 14];
+		    double[] v = swdata.get(k);
+		    apvals[i] += v[Integer.parseInt(p.substring(11, 13)) % 3 + 14];
 		}
-		ap[i] = ap[i]/8;
+		apvals[i] = apvals[i]/8;
 	    }
 	}
 
-	return(ap);
+	return(apvals);
     }
 }

@@ -1,12 +1,13 @@
-========================================
-orbdetpy - Orbit determination in Python
-========================================
+=================================================
+orbdetpy - Orbit determination in Python and Java
+=================================================
 
 Introduction
 ------------
 
-This is orbdetpy, a library of Python routines for orbit determination.
-It is built on top of the Orekit astrodynamics package. 
+This is orbdetpy, a library of Python and Java routines for orbit
+determination. It is a thin Python wrapper for our estimation tools
+and Orekit, which are both written in Java. 
 
 orbdetpy is free software, distributed under the terms of the `GNU
 General Public License <http://www.gnu.org/licenses/gpl.html>`_.
@@ -25,7 +26,9 @@ The force model for orbit propagation currently includes:
 
 The measurement model supports range, range-rate, and angles data.
 Filtering is done using Orekit's Extended Kalman Filter or our custom
-Unscented Kalman Filter.
+Unscented Kalman Filter. Dynamic Model Compensation (DMC) can be used
+with either filter to estimate additional perturbing acclerations such
+as those that result from maneuvers etc.
 
 You can either use your own measurements or simulate observations using
 the simdata.py module.
@@ -46,7 +49,7 @@ Prerequisites
 -------------
 
 1) Python 3.6+ must be installed with the packages numpy, scipy, pyjnius,
-   matplotlib.
+   matplotlib, json.
 2) Install the Java Development Kit 8+ (1.8+) from `here
    <http://openjdk.java.net/>`_. Set the JAVA_HOME environment variable
    to point to your JDK installation.
@@ -61,6 +64,8 @@ Examples
 --------
 
 The following example programs can be found in the 'examples' folder.
+These examples use the Python wrapper interface but calling the
+underlying Java implementation directly is quite straightforward.
 
 1) testsim.py : Demonstrates the measurement simulator. Note that
    maneuvers can be incorporated into the force model during simulation.
@@ -73,8 +78,8 @@ The following example programs can be found in the 'examples' folder.
 
 orbdetpy uses JSON files to store settings, measurements and estimation
 results. The files in examples/data show how to configure measurement
-simulation and orbit determination using radar or angles data. The file
-docs/filefmt.rst documents the structure of the JSON files.
+simulation and orbit determination using radar or telescope data. The
+file docs/filefmt.rst documents the structure of the JSON files.
 
 Bug Reports
 -----------

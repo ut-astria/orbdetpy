@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import math
 import json
 import numpy
 from datetime import datetime
@@ -32,62 +33,73 @@ with open(sys.argv[2], "r") as f:
 with open(sys.argv[3], "r") as f:
     out = json.load(f)["Estimation"]
 
-tstamp, prefit, posfit, inocov, params = [], [], [], [], []
+key = list(cfg["Measurements"].keys())
+dmcrun = (cfg["Estimation"].get("DMCCorrTime", 0.0) > 0.0 and
+          cfg["Estimation"].get("DMCSigmaPert", 0.0) > 0.0)
+
+tstamp, prefit, posfit, inocov, params, estmacc = [], [], [], [], [], []
 for i, o in zip(inp, out):
     tstamp.append(datetime.strptime(i["Time"], "%Y-%m-%dT%H:%M:%S.%fZ"))
 
-    p = []
-    for k, v in o["PreFit"].items():
-        p.append(i[k] - v)
-    prefit.append(p)
+    prefit.append([i[key[0]] - o["PreFit"][key[0]],
+                   i[key[1]] - o["PreFit"][key[1]]])
+    posfit.append([i[key[0]] - o["PostFit"][key[0]],
+                   i[key[1]] - o["PostFit"][key[1]]])
 
-    p = []
-    for k, v in o["PostFit"].items():
-        p.append(i[k] - v)
-    posfit.append(p)
+    inocov.append([3.0*numpy.sqrt(o["InnovationCovariance"][0][0]),
+                   3.0*numpy.sqrt(o["InnovationCovariance"][1][1])])
 
     if (len(o["EstimatedState"]) > 6):
-        params.append(o["EstimatedState"][6:])
+        if (dmcrun):
+            params.append(o["EstimatedState"][6:-3])
+        else:
+            params.append(o["EstimatedState"][6:])
 
-    if ("InnovationCovariance" in o):
-        p = []
-        for j in range(len(o["InnovationCovariance"])):
-            p.append(3.0*numpy.sqrt(o["InnovationCovariance"][j][j]))
-        inocov.append(p)
+    if (dmcrun):
+        estmacc.append(o["EstimatedState"][-3:])
 
 pre = numpy.array(prefit)
 pos = numpy.array(posfit)
 cov = numpy.array(inocov)
 par = numpy.array(params)
-key = list(cfg["Measurements"].keys())
+estmacc = numpy.array(estmacc)
 tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
+
+angles = ["Azimuth", "Elevation", "RightAscension", "Declination"]
+if (key[0] in angles and key[1] in angles):
+    pre *= 648000.0/math.pi
+    pos *= 648000.0/math.pi
+    cov *= 648000.0/math.pi
+    units = ["arcsec", "arcsec"]
+else:
+    units = ["m", "m/s"]
 
 fig = plt.figure(0)
 plt.subplot(211)
 plt.semilogx(tim, pre[:,0], "ob")
 plt.xlabel("Time [hr]")
-plt.ylabel("%s residual" % key[0])
+plt.ylabel("%s residual [%s]" % (key[0], units[0]))
 plt.subplot(212)
 plt.semilogx(tim, pre[:,1], "ob")
 plt.xlabel("Time [hr]")
-plt.ylabel("%s residual" % key[1])
+plt.ylabel("%s residual [%s]" % (key[1], units[1]))
 plt.suptitle("Pre-fit residuals")
 
 fig = plt.figure(1)
 plt.subplot(211)
 plt.semilogx(tim, pos[:,0], "ob")
-if (len(cov) > 0):
-    plt.semilogx(tim, -cov[:,0], "-r")
-    plt.semilogx(tim,  cov[:,0], "-r")
+plt.semilogx(tim, -cov[:,0], "-r")
+plt.semilogx(tim,  cov[:,0], "-r", label = r"Innov. 3$\sigma$")
 plt.xlabel("Time [hr]")
-plt.ylabel("%s residual" % key[0])
+plt.ylabel("%s residual [%s]" % (key[0], units[0]))
+plt.legend(loc = "upper left")
 plt.subplot(212)
 plt.semilogx(tim, pos[:,1], "ob")
-if (len(cov) > 0):
-    plt.semilogx(tim, -cov[:,1], "-r")
-    plt.semilogx(tim,  cov[:,1], "-r")
+plt.semilogx(tim, -cov[:,1], "-r")
+plt.semilogx(tim,  cov[:,1], "-r", label = r"Innov. 3$\sigma$")
 plt.xlabel("Time [hr]")
-plt.ylabel("%s residual" % key[1])
+plt.ylabel("%s residual [%s]" % (key[1], units[1]))
+plt.legend(loc = "upper left")
 plt.suptitle("Post-fit residuals")
 
 for i in range(par.shape[-1]):
@@ -97,5 +109,17 @@ for i in range(par.shape[-1]):
     plt.semilogx(tim, par[:,i], "ob")
     plt.xlabel("Time [hr]")
     plt.ylabel("Parameter %d" % (i + 1))
+
+if (dmcrun):
+    fig = plt.figure(3)
+    lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]",
+           r"Cross track [$\frac{m}{s^2}$]"]
+    for i in range(3):
+        plt.subplot(3, 1, i+1)
+        plt.semilogx(tim, estmacc[:,i], "-b")
+        plt.xlabel("Time [hr]")
+        plt.ylabel(lab[i])
+
+    plt.suptitle("DMC estimated acceleration")
 
 plt.show()

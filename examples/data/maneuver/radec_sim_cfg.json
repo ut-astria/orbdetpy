@@ -13,10 +13,7 @@
 
     "Drag" :
     {
-	"Model" : "Exponential",
-	"ExpRho0" : 3.614E-13,
-	"ExpH0": 700000.0,
-	"ExpHScale" : 88667.0,
+	"Model" : "MSISE",
 	"Coefficient" :
 	{
 	    "Value" : 2.0
@@ -69,6 +66,82 @@
 	    -2.09170251623871
 	]
     },
+
+    "Maneuvers" :
+    [
+	{
+	    "Time" : "2018-01-01T02:02:54Z",
+	    "Duration" : 10.0,
+	    "Thrust" : 10.0,
+	    "Isp" : 300.0,
+	    "Direction" :
+	    [
+		0.0,
+		0.0,
+		1.0
+	    ]
+	},
+	{
+	    "Time" : "2018-01-01T04:02:54Z",
+	    "Duration" : 10.0,
+	    "Thrust" : 10.0,
+	    "Isp" : 300.0,
+	    "Direction" :
+	    [
+		0.0,
+		0.0,
+		1.0
+	    ]
+	},
+	{
+	    "Time" : "2018-01-01T06:02:54Z",
+	    "Duration" : 10.0,
+	    "Thrust" : 10.0,
+	    "Isp" : 300.0,
+	    "Direction" :
+	    [
+		0.0,
+		0.0,
+		1.0
+	    ]
+	},
+	{
+	    "Time" : "2018-01-01T08:02:54Z",
+	    "Duration" : 10.0,
+	    "Thrust" : 10.0,
+	    "Isp" : 300.0,
+	    "Direction" :
+	    [
+		1.0,
+		0.0,
+		0.0
+	    ]
+	},
+	{
+	    "Time" : "2018-01-01T10:02:54Z",
+	    "Duration" : 10.0,
+	    "Thrust" : 10.0,
+	    "Isp" : 300.0,
+	    "Direction" :
+	    [
+		0.0,
+		1.0,
+		0.0
+	    ]
+	},
+	{
+	    "Time" : "2018-01-01T12:02:54Z",
+	    "Duration" : 10.0,
+	    "Thrust" : 10.0,
+	    "Isp" : 300.0,
+	    "Direction" :
+	    [
+		0.0,
+		0.0,
+		1.0
+	    ]
+	}
+    ],
 
     "Stations" :
     {

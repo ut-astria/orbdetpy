@@ -74,12 +74,6 @@
     {
 	"Station1" :
 	{
-            "Latitude" : 1.1367315455605052,
-            "Longitude" : -2.5738551993402585,
-            "Altitude" : 213.0
-	},
-	"Station2" :
-	{
             "Latitude" : 0.5578822780952235,
             "Longitude" : -1.8017600227679735,
             "Altitude" : 855.0

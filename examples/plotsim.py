@@ -35,7 +35,7 @@ with open(sys.argv[2], "r") as f:
 mu = 398600.4418
 tstamp, hvec, hmag, ener, alt, ecc, inc = [], [], [], [], [], [], []
 for o in out:
-    rv = [x/1000.0 for x in o["State"]]
+    rv = [x/1000.0 for x in o["TrueState"][:6]]
     r, v = norm(rv[:3]), norm(rv[3:])
     h = numpy.cross(rv[:3], rv[3:])
     hn = norm(h)

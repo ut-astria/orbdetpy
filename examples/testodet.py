@@ -17,31 +17,25 @@
 import os
 import sys
 import time
-import json
+
+if (len(sys.argv) < 4):
+    print("Usage: python %s config_file measurement_file output_file" %
+          sys.argv[0])
+    exit()
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from orbdetpy import init
-init()
+from orbdetpy import determineOrbit
 
-if (len(sys.argv) < 4):
-    print("Usage: python %s config_file measurement_file output_file [EKF|UKF]"
-          % sys.argv[0])
-    exit()
+print("OD start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
 
-if (len(sys.argv) > 4 and sys.argv[4].lower() == "ekf"):
-    filt = "EKF"
-    from orbdetpy.ekf import estimate
-else:
-    filt = "UKF"
-    from orbdetpy.ukf import estimate
+with open(sys.argv[1], "r") as fp:
+    config = fp.read()
 
-with open(sys.argv[1], "r") as f:
-    config = json.load(f)
+with open(sys.argv[2], "r") as fp:
+    output = determineOrbit(config, fp.read())
 
-print("%s start : %s" % (filt, time.strftime("%Y-%m-%d %H:%M:%S")))
-with open(sys.argv[2], "r") as fin:
-    res = estimate(config, json.load(fin))
-    with open(sys.argv[3], "w") as fout:
-        json.dump(res, fout, indent = 1)
-print("%s end   : %s" % (filt, time.strftime("%Y-%m-%d %H:%M:%S")))
+with open(sys.argv[3], "w") as fp:
+    fp.write(output)
+
+print("OD end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))

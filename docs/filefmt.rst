@@ -6,8 +6,8 @@ orbdetpy uses JSON files to store settings and measurements for both
 data simulation and orbit determination. The following sections describe
 the formatting requirements for these files.
 
-Note that all strings in JSON files are case sensitive. Timestamps
-must be in UTC and given by the format "yyyy-MM-ddThh:mm:ss.fffZ".
+All strings in key names and values are case sensitive. Timestamps must be
+in UTC and given using the ISO 8601 format "yyyy-MM-ddThh:mm:ss.fffZ".
 
 Configuration Files
 -------------------
@@ -34,7 +34,7 @@ Configuration files are needed for both simulation and orbit determination.
 
  "Model" : "MSISE" for NRL MSISE-00 or "Exponential" for exponential drag.
 
- "MSISEDisable" : Array of integers in [1,23] to disable various MSISE-00 settings. Click `here <https://www.orekit.org/site-orekit-development/apidocs/org/orekit/forces/drag/atmosphere/NRLMSISE00.html>`_ for details.
+ "MSISEFlags" : nx2 array of integers where n is in [1,23]. The first column is the flag number and the second column is the value of the corresponding MSISE flag. See `here <https://www.orekit.org/site-orekit-development/apidocs/org/orekit/forces/drag/atmosphere/NRLMSISE00.html>`_ for details. All flags default to 1.
 
  "ExpRho0" : Density constant [kg/m^3] for exponential drag.
  
@@ -104,7 +104,7 @@ Configuration files are needed for both simulation and orbit determination.
 
  "End" : End time for RSO state propagation.
 
- "InitialState" : Initial state vector in J2000. Must be of size six + number of estimated parameters. Units are [m] and [m/s] for first six elements.
+ "InitialState" : Initial state vector in J2000. Units are [m] and [m/s] for position and velocity, respectively.
 
  }
 
@@ -205,9 +205,27 @@ Valid combinations of measurements are as follows:
  
 "Estimation" : Configure parameters for estimation filters {
 
- "Covariance" : Diagonal elements of covariance matrix with the same dimensions as InitialState.
+ "Filter" : Must be either "UKF" or "EKF".
 
- "ProcessNoise" : Diagonal elements of process noise matrix with the same dimensions as InitialState.
+ "Covariance" : Diagonal elements of covariance matrix with dimension 6 plus number of estimated parameters.
+
+ "ProcessNoise" : Diagonal elements of process noise matrix with dimension 6. Not used when DMC is in effect.
+
+ "NoiseTimeDelta" : Delta-T to use for computing the SNC and DMC process noise matrices.
+
+ "DMCCorrTime" : DMC correlation time. Setting this to zero disables DMC.
+
+ "DMCSigmaPert" : Sigma for DMC acceleration. Setting this to zero disables DMC.
+
+ "DMCAcceleration" : DMC acceleration bounds {
+ 
+    "Value" : Initial value [m/s^2].
+    
+    "Min" : Minimum value [m/s^2].
+    
+    "Max" : Maximum value [m/s^2].
+    
+    }
 
  }
 
