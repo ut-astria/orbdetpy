@@ -84,7 +84,7 @@ public class ManualPropagation implements OrdinaryDifferentialEquation
     {
 	try
 	{
-	    int i,k,l;
+	    int i,j;
 	    AbsoluteDate tm = new AbsoluteDate(epoch, t);
 
 	    for (i = 0; i < X.length; i += statedim)
@@ -96,20 +96,15 @@ public class ManualPropagation implements OrdinaryDifferentialEquation
 				       DataManager.eme2000, tm, Constants.EGM96_EARTH_MU),
 		    odcfg.SpaceObject.Mass);
 
-		l = 6;
 		Vector3D acc = Vector3D.ZERO;
 		for (ForceModel fmod : odcfg.forces)
 		{
-		    k = 0;
 		    double[] fpar = fmod.getParameters();
-		    for (ParameterDriver drv : fmod.getParametersDrivers())
+		    for (j = 0; j < odcfg.estparams.size(); j++)
 		    {
-			for (Settings.EstimatedParameter emp : odcfg.estparams)
-			{
-			    if (drv.getName().equals(emp.name))
-				fpar[k] = X[i + l++];
-			}
-			k++;
+			Settings.EstimatedParameter emp = odcfg.estparams.get(j);
+			if (fmod.isSupported(emp.name))
+			    fpar[0] = X[i + j + 6];
 		    }
 
 		    acc = acc.add(fmod.acceleration(ss, fpar));

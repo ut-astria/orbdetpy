@@ -286,12 +286,15 @@ public class Estimation
 		{
 		    sigma.setColumnVector(i, xhat.add(sqrP.getColumnVector(i)));
 		    sigma.setColumnVector(numsta+i, xhat.subtract(sqrP.getColumnVector(i)));
-		    for (j = 6; j < numsta; j++)
+		}
+
+		for (j = 0; j < odcfg.estparams.size(); j++)
+		{
+		    Settings.EstimatedParameter tempep = odcfg.estparams.get(j);
+		    for (i = 0; i < numsig; i++)
 		    {
-			Settings.EstimatedParameter tempep = odcfg.estparams.get(j - 6);
-			double tempdbl = sigma.getEntry(i, j);
-			sigma.setEntry(j, i, Math.min(Math.max(tempdbl, tempep.min), tempep.max));
-			sigma.setEntry(j, numsta+i, Math.min(Math.max(tempdbl, tempep.min), tempep.max));
+			double tempdbl = sigma.getEntry(j + 6, i);
+			sigma.setEntry(j + 6, i, Math.min(Math.max(tempdbl, tempep.min), tempep.max));
 		    }
 		}
 
@@ -354,7 +357,7 @@ public class Estimation
 								 DataManager.eme2000, tmlt, Constants.EGM96_EARTH_MU),
 						  odcfg.SpaceObject.Mass);
 
-		odout.EstimatedState = xhat.toArray();
+		odout.EstimatedState = pv;
 		odout.EstimatedCovariance = P.getData();
 		odout.InnovationCovariance = Pyy.getData();
 		odout.PreFit.put(meanames[0], yhatpre.getEntry(0));

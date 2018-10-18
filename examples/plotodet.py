@@ -102,13 +102,19 @@ plt.ylabel("%s residual [%s]" % (key[1], units[1]))
 plt.legend(loc = "upper left")
 plt.suptitle("Post-fit residuals")
 
+parnames = []
+if (cfg["Drag"]["Coefficient"]["Estimation"] == "Estimate"):
+    parnames.append(r"$C_D$")
+if (cfg["RadiationPressure"]["Creflection"]["Estimation"] == "Estimate"):
+    parnames.append(r"$C_R$")
+
 for i in range(par.shape[-1]):
     if (i == 0):
         fig = plt.figure(2)
     plt.subplot(par.shape[1], 1, i + 1)
     plt.semilogx(tim, par[:,i], "ob")
     plt.xlabel("Time [hr]")
-    plt.ylabel("Parameter %d" % (i + 1))
+    plt.ylabel(parnames[i])
 
 if (dmcrun):
     fig = plt.figure(3)
