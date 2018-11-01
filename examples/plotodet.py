@@ -29,7 +29,7 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     with open(outfile, "r") as fp:
         out = json.load(fp)["Estimation"]
 
-    key = list(cfg["Measurements"].keys())
+    key = tuple(cfg["Measurements"].keys())
     dmcrun = (cfg["Estimation"].get("DMCCorrTime", 0.0) > 0.0 and
               cfg["Estimation"].get("DMCSigmaPert", 0.0) > 0.0)
 
@@ -37,13 +37,21 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     for i, o in zip(inp, out):
         tstamp.append(datetime.strptime(i["Time"], "%Y-%m-%dT%H:%M:%S.%fZ"))
 
-        prefit.append([i[key[0]] - o["PreFit"][key[0]],
-                       i[key[1]] - o["PreFit"][key[1]]])
-        posfit.append([i[key[0]] - o["PostFit"][key[0]],
-                       i[key[1]] - o["PostFit"][key[1]]])
+        if ("PositionVelocity" in key):
+            prefit.append([ix - ox for ix, ox in zip(i["PositionVelocity"],
+                                                     o["PreFit"]["PositionVelocity"])])
+            posfit.append([ix - ox for ix, ox in zip(i["PositionVelocity"],
+                                                     o["PostFit"]["PositionVelocity"])])
+        else:
+            prefit.append([i[key[0]] - o["PreFit"][key[0]][-1],
+                           i[key[1]] - o["PreFit"][key[1]][-1]])
+            posfit.append([i[key[0]] - o["PostFit"][key[0]][-1],
+                           i[key[1]] - o["PostFit"][key[1]][-1]])
 
-        inocov.append([3.0*numpy.sqrt(o["InnovationCovariance"][0][0]),
-                       3.0*numpy.sqrt(o["InnovationCovariance"][1][1])])
+        p = []
+        for m in range(len(o["InnovationCovariance"])):
+            p.append(3.0*numpy.sqrt(o["InnovationCovariance"][m][m]))
+        inocov.append(p)
 
         if (len(o["EstimatedState"]) > 6):
             if (dmcrun):
@@ -67,27 +75,38 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     #estmcov = numpy.array(estmcov)
     tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
 
-    angles = ["Azimuth", "Elevation", "RightAscension", "Declination"]
+    angles = ("Azimuth", "Elevation", "RightAscension", "Declination")
     if (key[0] in angles and key[1] in angles):
         pre *= 648000.0/math.pi
         pos *= 648000.0/math.pi
         cov *= 648000.0/math.pi
-        units = ["arcsec", "arcsec"]
+        units = ("arcsec", "arcsec")
     else:
-        units = ["m", "m/s"]
+        if ("PositionVelocity" in key):
+            units = ("m", "m", "m", "m/s", "m/s", "m/s")
+        else:
+            units = ("m", "m/s")
+
+    if ("PositionVelocity" in key):
+        ylabs = (r"$\Delta x$", r"$\Delta y$", r"$\Delta z$",
+                 r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$")
+        order = (1, 3, 5, 2, 4, 6)
+    else:
+        ylabs = key
 
     outfiles = []
 
     plt.figure(0)
     plt.suptitle("Pre-fit residuals")
-    plt.subplot(211)
-    plt.semilogx(tim, pre[:,0], "ob")
-    plt.xlabel("Time [hr]")
-    plt.ylabel("%s [%s]" % (key[0], units[0]))
-    plt.subplot(212)
-    plt.semilogx(tim, pre[:,1], "ob")
-    plt.xlabel("Time [hr]")
-    plt.ylabel("%s [%s]" % (key[1], units[1]))
+    for i in range(pre.shape[-1]):
+        if ("PositionVelocity" in key):
+            plt.subplot(3, 2, order[i])
+        else:
+            plt.subplot(2, 1, i + 1)
+        plt.semilogx(tim, pre[:,i], "ob")
+        plt.xlabel("Time [hr]")
+        plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (filepath is not None):
         outfiles.append(filepath + "_prefit.png")
@@ -95,22 +114,20 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
 
     plt.figure(1) 
     plt.suptitle("Post-fit residuals")
-    plt.subplot(211)
-    plt.semilogx(tim, pos[:,0], "ob")
-    plt.semilogx(tim, -cov[:,0], "-r")
-    plt.semilogx(tim,  cov[:,0], "-r", label = r"Innov. 3$\sigma$")
-    plt.xlabel("Time [hr]")
-    plt.ylabel("%s [%s]" % (key[0], units[0]))
-    plt.legend(loc = "best")
-    plt.ylim(-cov[1,0], cov[1,0])
-    plt.subplot(212)
-    plt.semilogx(tim, pos[:,1], "ob")
-    plt.semilogx(tim, -cov[:,1], "-r")
-    plt.semilogx(tim,  cov[:,1], "-r", label = r"Innov. 3$\sigma$")
-    plt.xlabel("Time [hr]")
-    plt.ylabel("%s [%s]" % (key[1], units[1]))
-    plt.legend(loc = "best")
-    plt.ylim(-cov[1,1], cov[1,1])
+    for i in range(pre.shape[-1]):
+        if ("PositionVelocity" in key):
+            plt.subplot(3, 2, order[i])
+        else:
+            plt.subplot(2, 1, i + 1)
+        plt.semilogx(tim, pos[:,i], "ob")
+        plt.semilogx(tim, -cov[:,i], "-r")
+        plt.semilogx(tim,  cov[:,i], "-r", label = r"Innov. 3$\sigma$")
+        plt.xlabel("Time [hr]")
+        plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        plt.legend(loc = "best")
+        if ("PositionVelocity" not in key):
+            plt.ylim(-cov[i,0], cov[i,0])
+
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (filepath is not None):
         outfiles.append(filepath + "_postfit.png")
@@ -150,7 +167,7 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
                r"Cross track [$\frac{m}{s^2}$]"]
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.semilogx(tim, estmacc[:,i], "ob")
+            plt.semilogx(tim, estmacc[:,i], "-b")
     #        plt.semilogx(tim, -estmcov[:,i-3], "-r")
     #        plt.semilogx(tim,  estmcov[:,i-3], "-r", label = r"Covariance 3$\sigma$")
             plt.xlabel("Time [hr]")

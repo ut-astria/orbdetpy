@@ -108,7 +108,7 @@ Configuration files are needed for both simulation and orbit determination.
 
  }
 
-"Stations" : One or more ground stations for measurement processing {
+"Stations" : Ground stations for measurements. Not required for "PositionVelocity" measurements {
 
  "Station1" : {
  
@@ -145,8 +145,6 @@ Configuration files are needed for both simulation and orbit determination.
 
   "TwoWay" : true or false.
 
-  "Enabled" : true or false. Functionality is not currently implemented.
-
   "Error" : Theoretical measurement error [m].
   
  }
@@ -155,15 +153,11 @@ Configuration files are needed for both simulation and orbit determination.
 
   "TwoWay" : true or false.
 
-  "Enabled" : true or false. Functionality is not currently implemented.
-
   "Error" : Theoretical measurement error [m/s].
 
  }
 
  "Azimuth" : {
-
-  "Enabled" : true or false. Functionality is not currently implemented.
 
   "Error" : Theoretical measurement error [rad].
 
@@ -171,15 +165,11 @@ Configuration files are needed for both simulation and orbit determination.
 
  "Elevation" : {
 
-  "Enabled" : true or false. Functionality is not currently implemented.
-
   "Error" : Theoretical measurement error [rad].
 
  }
 
  "RightAscension" : {
-
-  "Enabled" : true or false. Functionality is not currently implemented.
 
   "Error" : Theoretical measurement error [rad].
 
@@ -187,12 +177,16 @@ Configuration files are needed for both simulation and orbit determination.
 
  "Declination" : {
 
-  "Enabled" : true or false. Functionality is not currently implemented.
-
   "Error" : Theoretical measurement error [rad].
 
  }
 
+ "PositionVelocity" : {
+
+  "Error" : Theoretical measurement error [m, m, m, m/s, m/s, m/s].
+
+ }
+ 
  }
 
 Valid combinations of measurements are as follows:
@@ -202,6 +196,7 @@ Valid combinations of measurements are as follows:
 3) Range + RangeRate
 4) Azimuth + Elevation
 5) RightAscension + Declination
+6) PositionVelocity
  
 "Estimation" : Configure parameters for estimation filters {
 
@@ -256,6 +251,8 @@ valid combinations listed  above.
   "RightAscension" : Optional based on measurements configured in "Measurements" [rad].
 
   "Declination" : Optional based on measurements configured in "Measurements" [rad].
+
+  "PositionVelocity" : Optional based on measurements configured in "Measurements" [m, m, m, m/s, m/s, m/s].
 
  }
 

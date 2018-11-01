@@ -105,28 +105,28 @@ public class Simulation
 
 		    if (name.equals("Range"))
 		    {
-			obs = new Range(obj, tm, 0.0, val.Error, 1.0, val.TwoWay).
+			obs = new Range(obj, tm, 0.0, val.Error[0], 1.0, val.TwoWay).
 			    estimate(1, 1, sta).getEstimatedValue();
-			json.Range = obs[0] + rand.nextGaussian()*val.Error;
+			json.Range = obs[0] + rand.nextGaussian()*val.Error[0];
 		    }
 		    else if (name.equals("RangeRate"))
 		    {
-			obs = new RangeRate(obj, tm, 0.0, val.Error, 1.0, val.TwoWay).
+			obs = new RangeRate(obj, tm, 0.0, val.Error[0], 1.0, val.TwoWay).
 			    estimate(1, 1, sta).getEstimatedValue();
-			json.RangeRate = obs[0] + rand.nextGaussian()*val.Error;
+			json.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0];
 		    }
 		    else if (name.equals("RightAscension") || name.equals("Declination"))
 		    {
 			obs = new AngularRaDec(obj, DataManager.eme2000, tm, new double[]{0.0, 0.0},
-					       new double[]{val.Error, val.Error}, new double[]{1.0, 1.0}).
+					       new double[]{val.Error[0], val.Error[0]}, new double[]{1.0, 1.0}).
 			    estimate(1, 1, sta).getEstimatedValue();
-			json.RightAscension = obs[0] + rand.nextGaussian()*val.Error;
-			json.Declination = obs[1] + rand.nextGaussian()*val.Error;
+			json.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0];
+			json.Declination = obs[1] + rand.nextGaussian()*val.Error[0];
 		    }
 		    else if (name.equals("Azimuth") || name.equals("Elevation"))
 		    {
-			json.Azimuth = obs[0] + rand.nextGaussian()*val.Error;
-			json.Elevation = obs[1] + rand.nextGaussian()*val.Error;
+			json.Azimuth = obs[0] + rand.nextGaussian()*val.Error[0];
+			json.Elevation = obs[1] + rand.nextGaussian()*val.Error[0];
 		    }
 		}
 

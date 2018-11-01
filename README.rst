@@ -24,11 +24,11 @@ The force model for orbit propagation currently includes:
 5) Solar radiation pressure.
 6) Third body perturbations from the Sun and Moon.
 
-The measurement model supports range, range-rate, and angles data.
-Filtering is done using Orekit's Extended Kalman Filter or our custom
-Unscented Kalman Filter. Dynamic Model Compensation (DMC) can be used
-with either filter to estimate additional perturbing acclerations such
-as those that result from maneuvers etc.
+The measurement model supports range, range-rate, angles, and inertial
+Cartesian coordinates. Filtering is done using Orekit's Extended Kalman
+Filter or our custom Unscented Kalman Filter. Dynamic Model Compensation
+(DMC) can be used with either filter to estimate additional perturbing
+acclerations such as those that result from maneuvers etc.
 
 You can either use your own measurements or simulate observations using
 the simdata.py module.

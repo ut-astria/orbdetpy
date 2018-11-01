@@ -87,11 +87,11 @@
     {
 	"Azimuth" :
 	{
-	    "Error" : 4.8E-6
+	    "Error" : [4.8E-6]
 	},
 	"Elevation" :
 	{
-	    "Error" : 4.8E-6
+	    "Error" : [4.8E-6]
 	}
     },
 

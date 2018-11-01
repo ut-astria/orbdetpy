@@ -43,13 +43,12 @@ public class ManualPropagation implements OrdinaryDifferentialEquation
     protected Settings odcfg;
     protected int intvecdim;
     protected int statedim;
-    protected AbsoluteDate epoch;
+
     protected double[] Xdot;
+    protected AbsoluteDate epoch;
     protected Array2DRowRealMatrix ecirot;
 
     protected ODEIntegrator odeint;
-
-    protected Exception except;
 
     public ManualPropagation(Settings cfg, int vecdim)
     {
@@ -57,22 +56,17 @@ public class ManualPropagation implements OrdinaryDifferentialEquation
 	intvecdim = vecdim;
 	statedim = odcfg.estparams.size() + 6;
 
+	Xdot = new double[intvecdim];
 	epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
 				 DataManager.utcscale);
-	Xdot = new double[intvecdim];
 	ecirot = new Array2DRowRealMatrix(3, 3);
 
 	odeint = new DormandPrince853Integrator(1E-3, 300.0, 1E-14, 1E-12);
     }
 
-    public double[] propagate(double t0, double[] X0, double t1) throws Exception
+    public double[] propagate(double t0, double[] X0, double t1)
     {
-	except = null;
-	double[] retval = odeint.integrate(this, new ODEState(t0, X0), t1).getPrimaryState();
-
-	if (except != null)
-	    throw(except);
-	return(retval);
+	return(odeint.integrate(this, new ODEState(t0, X0), t1).getPrimaryState());
     }
 
     public int getDimension()
@@ -86,6 +80,7 @@ public class ManualPropagation implements OrdinaryDifferentialEquation
 	{
 	    int i,j;
 	    AbsoluteDate tm = new AbsoluteDate(epoch, t);
+	    Arrays.fill(Xdot, 0.0);
 
 	    for (i = 0; i < X.length; i += statedim)
 	    {
@@ -100,11 +95,14 @@ public class ManualPropagation implements OrdinaryDifferentialEquation
 		for (ForceModel fmod : odcfg.forces)
 		{
 		    double[] fpar = fmod.getParameters();
-		    for (j = 0; j < odcfg.estparams.size(); j++)
+		    if (X.length > statedim)
 		    {
-			Settings.EstimatedParameter emp = odcfg.estparams.get(j);
-			if (fmod.isSupported(emp.name))
-			    fpar[0] = X[i + j + 6];
+			for (j = 0; j < odcfg.estparams.size(); j++)
+			{
+			    Settings.EstimatedParameter emp = odcfg.estparams.get(j);
+			    if (fmod.isSupported(emp.name))
+				fpar[0] = X[i + j + 6];
+			}
 		    }
 
 		    acc = acc.add(fmod.acceleration(ss, fpar));
@@ -117,7 +115,8 @@ public class ManualPropagation implements OrdinaryDifferentialEquation
 		Xdot[i+4] = acc.getY();
 		Xdot[i+5] = acc.getZ();
 
-		if (odcfg.Estimation.DMCCorrTime > 0.0 && odcfg.Estimation.DMCSigmaPert > 0.0)
+		if (X.length > statedim && odcfg.Estimation.DMCCorrTime > 0.0 &&
+		    odcfg.Estimation.DMCSigmaPert > 0.0)
 		{
 		    TimeStampedPVCoordinates pvc = ss.getPVCoordinates();
 		    Vector3D r = pvc.getPosition().normalize();
@@ -138,7 +137,7 @@ public class ManualPropagation implements OrdinaryDifferentialEquation
 	}
 	catch (Exception exc)
 	{
-	    except = exc;
+	    throw(new RuntimeException(exc.getMessage()));
 	}
 
 	return(Xdot);

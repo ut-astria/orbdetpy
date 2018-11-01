@@ -138,7 +138,7 @@ public class Settings
     class JSONMeasurement
     {
 	boolean TwoWay;
-	double Error;
+	double[] Error;
     }
 
     class JSONEstimation
@@ -196,7 +196,14 @@ public class Settings
 
     private void loadGroundStations()
     {
-	stations = new HashMap<String, GroundStation>(Stations.size());
+	if (Stations != null)
+	    stations = new HashMap<String, GroundStation>(Stations.size());
+	else
+	{
+	    stations = new HashMap<String, GroundStation>();
+	    return;
+	}
+
 	for (Map.Entry<String, JSONStation> kv : Stations.entrySet())
 	{
 	    String k = kv.getKey();

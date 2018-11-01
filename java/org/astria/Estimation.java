@@ -19,6 +19,7 @@
 package org.astria;
 
 import com.google.gson.GsonBuilder;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,8 +65,9 @@ public class Estimation
     protected Measurements odobs;
 
     protected String[] meanames;
-    protected boolean angles;
+    protected boolean combmeas;
 
+    protected int currmeas;
     protected JSONResults results;
 
     public final static String DMC_ACC_ESTM = "DMCaccest";
@@ -86,19 +88,35 @@ public class Estimation
 	odobs = Measurements.loadJSON(obsjson, odcfg.stations, odcfg.Measurements);
 
 	meanames = odcfg.Measurements.keySet().toArray(new String[0]);
-	angles = meanames[0].equals("Azimuth") || meanames[0].equals("Elevation") ||
-	    meanames[0].equals("RightAscension") || meanames[0].equals("Declination");
+	combmeas = meanames[0].equals("Azimuth") || meanames[0].equals("Elevation") ||
+	    meanames[0].equals("RightAscension") || meanames[0].equals("Declination") ||
+	    meanames[0].equals("PositionVelocity");
     }
 
     public String determineOrbit() throws Exception
     {
+	currmeas = 0;
 	results = new JSONResults();
 	results.Filter = odcfg.Estimation.Filter;
 
-	if (odcfg.Estimation.Filter.equals("UKF"))
-	    new UnscentedKalmanFilter().determineOrbit();
-	else
-	    new ExtendedKalmanFilter().determineOrbit();
+	try
+	{
+	    if (odcfg.Estimation.Filter.equals("UKF"))
+		new UnscentedKalmanFilter().determineOrbit();
+	    else
+		new ExtendedKalmanFilter().determineOrbit();
+	}
+	catch (Exception exc)
+	{
+	    String msg = exc.getMessage();
+	    if (currmeas < odobs.rawmeas.length)
+		msg = String.format("Measurement %d (%s) : %s", currmeas,
+				    odobs.rawmeas[currmeas].Time, msg);
+	    else
+		msg = String.format("Propagation : %s", msg);
+
+	    throw(new Exception(msg));
+	}
 
 	return(new GsonBuilder().setPrettyPrinting().create().toJson(results));
     }
@@ -139,6 +157,7 @@ public class Estimation
 
 	    results.Propagation.Time = odcfg.Propagation.End;
 	    results.Propagation.State = new double[odcfg.estparams.size() + 6];
+
 	    PVCoordinates pvc = est.getPVCoordinates(new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
 								      DataManager.utcscale), DataManager.eme2000);
 	    System.arraycopy(pvc.getPosition().toArray(), 0, results.Propagation.State, 0, 3);
@@ -148,11 +167,12 @@ public class Estimation
 		results.Propagation.State, 6, odcfg.estparams.size());
 	}
 
-	public void evaluationPerformed​(KalmanEstimation est)
+	public void evaluationPerformed(KalmanEstimation est)
 	{
-	    int n = est.getCurrentMeasurementNumber()-1;
-	    if (!angles)
+	    int n = est.getCurrentMeasurementNumber() - 1;
+	    if (!combmeas)
 		n /= meanames.length;
+	    currmeas = n;
 
 	    String k;
 	    JSONResults.JSONEstimation res;
@@ -171,6 +191,8 @@ public class Estimation
 
 	    SpacecraftState ssta = est.getPredictedSpacecraftStates()[0];
 	    PVCoordinates pvc = ssta.getPVCoordinates();
+	    if (ssta.getE() >= 1.0)
+		throw(new RuntimeException(String.format("Hyperbolic orbit e = %f", ssta.getE())));
 
 	    res.EstimatedState = new double[odcfg.estparams.size() + 6];
 	    System.arraycopy(pvc.getPosition().toArray(), 0, res.EstimatedState, 0, 3);
@@ -194,24 +216,37 @@ public class Estimation
 
 	    double[] pre = est.getPredictedMeasurement().getEstimatedValue();
 	    double[] pos = est.getCorrectedMeasurement().getEstimatedValue();
-	    if (angles)
+
+	    if (combmeas)
 	    {
-		res.PreFit.put(meanames[0], pre[0]);
-		res.PreFit.put(meanames[1], pre[1]);
-		res.PostFit.put(meanames[0], pos[0]);
-		res.PostFit.put(meanames[1], pos[1]);
+		for (i = 0; i < meanames.length; i++)
+		{
+		    if (meanames.length == 1)
+		    {
+			res.PreFit.put(meanames[i], pre);
+			res.PostFit.put(meanames[i], pos);
+		    }
+		    else
+		    {
+			res.PreFit.put(meanames[i], new double[] {pre[i]});
+			res.PostFit.put(meanames[i], new double[] {pos[i]});
+		    }
+		}
+
 		res.InnovationCovariance = est.getPhysicalInnovationCovarianceMatrix().getData();
 	    }
 	    else
 	    {
-		res.PreFit.put(k, pre[0]);
-		res.PostFit.put(k, pos[0]);
+		res.PreFit.put(k, pre);
+		res.PostFit.put(k, pos);
+
 		if (res.InnovationCovariance == null)
 		    res.InnovationCovariance = new double[][]{{
 			    est.getPhysicalInnovationCovarianceMatrix().getData()[0][0], 0.0}, {0.0, 0.0}};
 		else
 		    res.InnovationCovariance[1][1] = est.getPhysicalInnovationCovarianceMatrix().getData()[0][0];
 	    }
+
 	    res.EstimatedCovariance = est.getPhysicalEstimatedCovarianceMatrix().getData();
 	}
     }
@@ -224,35 +259,58 @@ public class Estimation
 	    int numsig = 2*numsta;
 	    int veclen = numsta*numsig;
 
-	    ManualPropagation prop = new ManualPropagation(odcfg, veclen);
-
 	    RealMatrix P = new DiagonalMatrix(odcfg.Estimation.Covariance);
 	    RealMatrix Q = odcfg.getProcessNoiseMatrix();
-	    Array2DRowRealMatrix R = new Array2DRowRealMatrix(odcfg.Measurements.size(), odcfg.Measurements.size());
-	    int i = 0, j = 0;
-	    for (i = 0; i < 2; i++)
+
+	    int Rsize = 0;
+	    for (String s: meanames)
+		Rsize += odcfg.Measurements.get(s).Error.length;
+
+	    Array2DRowRealMatrix R = new Array2DRowRealMatrix(Rsize, Rsize);
+	    for (int i = 0, j = 0; i < meanames.length; i++)
 	    {
-		Settings.JSONMeasurement m = odcfg.Measurements.get(meanames[i]);
-		R.setEntry(i, i, m.Error*m.Error);
+		Settings.JSONMeasurement jm = odcfg.Measurements.get(meanames[i]);
+		for (int k = 0; k < jm.Error.length; k++)
+		{
+		    R.setEntry(j, j, jm.Error[k]*jm.Error[k]);
+		    j++;
+		}
 	    }
 
 	    double[] Xi = odcfg.getInitialState();
+	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
+						  DataManager.utcscale);
+
+	    if (odobs.rawmeas.length > 0)
+	    {
+		AbsoluteDate tmto = new AbsoluteDate(DateTimeComponents.parseDateTime(odobs.rawmeas[0].Time),
+						     DataManager.utcscale);
+		if (Math.abs(tmto.durationFrom(epoch)) > 1.0)
+		{
+		    ManualPropagation prop0 = new ManualPropagation(odcfg, 6);
+		    double[] Xout = prop0.propagate(0, Arrays.copyOfRange(Xi, 0, 6), tmto.durationFrom(epoch));
+		    epoch = new AbsoluteDate(tmto, 0.0);
+		    System.arraycopy(Xout, 0, Xi, 0, 6);
+		}
+	    }
+
 	    Array2DRowRealMatrix sigma = new Array2DRowRealMatrix(numsta, numsig);
 	    Array2DRowRealMatrix sigpr = new Array2DRowRealMatrix(numsta, numsig);
-	    Array2DRowRealMatrix spupd = new Array2DRowRealMatrix(odcfg.Measurements.size(), numsig);
+	    Array2DRowRealMatrix spupd = new Array2DRowRealMatrix(Rsize, numsig);
 	    ArrayRealVector xhat = new ArrayRealVector(Xi);
 	    RealVector xhatpre = new ArrayRealVector(Xi);
 	    double weight = 0.5/numsta;
 	    double[] spvec = new double[veclen];
 
 	    double tofm = 0.0;
-	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
-						  DataManager.utcscale);
 	    AbsoluteDate tm = new AbsoluteDate(epoch, 0.0);
 	    SpacecraftState[] ssta = new SpacecraftState[1];
 
+	    ManualPropagation prop = new ManualPropagation(odcfg, veclen);
+
 	    for (int mix = 0; mix <= odobs.rawmeas.length; mix++)
 	    {
+		currmeas = mix;
 		JSONResults.JSONEstimation odout = results.new JSONEstimation();
 
 		double tof0 = tofm;
@@ -267,9 +325,14 @@ public class Estimation
 		    TimeStampedPVCoordinates pvs = new TimeStampedPVCoordinates(tmlt,
 										new Vector3D(pv[0], pv[1], pv[2]),
 										new Vector3D(pv[3], pv[4], pv[5]));
-		    PVCoordinates pvi = odcfg.stations.get(odobs.rawmeas[mix].Station).getBaseFrame().
-			getPVCoordinates(tm, DataManager.eme2000);
-		    tofm = Range.signalTimeOfFlight(pvs, pvi.getPosition(), tm);
+
+		    tofm = 0.0;
+		    if (odcfg.stations != null && odobs.rawmeas[mix].Station != null)
+		    {
+			PVCoordinates pvi = odcfg.stations.get(odobs.rawmeas[mix].Station).getBaseFrame().
+			    getPVCoordinates(tm, DataManager.eme2000);
+			tofm = Range.signalTimeOfFlight(pvs, pvi.getPosition(), tm);
+		    }
 
 		    odout.Time = odobs.rawmeas[mix].Time;
 		}
@@ -280,26 +343,33 @@ public class Estimation
 					  DataManager.utcscale);
 		}
 
-		RealMatrix sqrP = new CholeskyDecomposition(P.scalarMultiply(numsta), 1E-6,
-							    CholeskyDecomposition.DEFAULT_ABSOLUTE_POSITIVITY_THRESHOLD).getL();
-		for (i = 0; i < numsta; i++)
+		RealMatrix Ptemp = P.scalarMultiply(numsta);
+		RealMatrix sqrP = new CholeskyDecomposition(
+		    Ptemp.add(Ptemp.transpose()).scalarMultiply(0.5), 1E-6, 1E-14).getL();
+
+		for (int i = 0; i < numsta; i++)
 		{
 		    sigma.setColumnVector(i, xhat.add(sqrP.getColumnVector(i)));
-		    sigma.setColumnVector(numsta+i, xhat.subtract(sqrP.getColumnVector(i)));
+		    sigma.setColumnVector(numsta + i, xhat.subtract(sqrP.getColumnVector(i)));
 		}
 
-		for (j = 0; j < odcfg.estparams.size(); j++)
+		if (odcfg.estparams.size() > 0)
 		{
-		    Settings.EstimatedParameter tempep = odcfg.estparams.get(j);
-		    for (i = 0; i < numsig; i++)
+		    double[][] sigdata = sigma.getData();
+
+		    for (int j = 6; j < odcfg.estparams.size() + 6; j++)
 		    {
-			double tempdbl = sigma.getEntry(j + 6, i);
-			sigma.setEntry(j + 6, i, Math.min(Math.max(tempdbl, tempep.min), tempep.max));
+			Settings.EstimatedParameter tempep = odcfg.estparams.get(j - 6);
+			for (int i = 0; i < numsig; i++)
+			    sigdata[j][i] = Math.min(Math.max(sigdata[j][i], tempep.min), tempep.max);
 		    }
+
+		    sigma.setSubMatrix(sigdata, 0, 0);
 		}
 
 		unstack(sigpr, prop.propagate(t0.durationFrom(epoch) - tof0, stack(sigma, spvec),
 					      tm.durationFrom(epoch) - tofm));
+
 		xhatpre = addColumns(sigpr).mapMultiplyToSelf(weight);
 		if (mix == odobs.rawmeas.length)
 		    break;
@@ -307,7 +377,7 @@ public class Estimation
 		RealVector raw = null;
 		RealMatrix Ppre = Q.copy();
 		AbsoluteDate tmlt = new AbsoluteDate(tm, -tofm);
-		for (i = 0; i < numsig; i++)
+		for (int i = 0; i < numsig; i++)
 		{
 		    RealVector y = sigpr.getColumnVector(i).subtract(xhatpre);
 		    Ppre = Ppre.add(y.outerProduct(y).scalarMultiply(weight));
@@ -318,7 +388,7 @@ public class Estimation
 								     DataManager.eme2000, tmlt, Constants.EGM96_EARTH_MU),
 						  odcfg.SpaceObject.Mass);
 
-		    if (angles)
+		    if (combmeas)
 		    {
 			double[] fitv = odobs.measobjs.get(mix).estimate(1, 1, ssta).getEstimatedValue();
 			spupd.setColumn(i, fitv);
@@ -338,9 +408,9 @@ public class Estimation
 		}
 
 		RealMatrix Pyy = R.copy();
-		RealMatrix Pxy = new Array2DRowRealMatrix(numsta, odcfg.Measurements.size());
+		RealMatrix Pxy = new Array2DRowRealMatrix(numsta, Rsize);
 		RealVector yhatpre = addColumns(spupd).mapMultiplyToSelf(weight);
-		for (i = 0; i < numsig; i++)
+		for (int i = 0; i < numsig; i++)
 		{
 		    RealVector y = spupd.getColumnVector(i).subtract(yhatpre);
 		    Pyy = Pyy.add(y.outerProduct(y).scalarMultiply(weight));
@@ -356,24 +426,38 @@ public class Estimation
 										   new Vector3D(pv[3], pv[4], pv[5])),
 								 DataManager.eme2000, tmlt, Constants.EGM96_EARTH_MU),
 						  odcfg.SpaceObject.Mass);
+		if (ssta[0].getE() >= 1.0)
+		    throw(new RuntimeException(String.format("Hyperbolic orbit e = %f", ssta[0].getE())));
 
 		odout.EstimatedState = pv;
 		odout.EstimatedCovariance = P.getData();
 		odout.InnovationCovariance = Pyy.getData();
-		odout.PreFit.put(meanames[0], yhatpre.getEntry(0));
-		odout.PreFit.put(meanames[1], yhatpre.getEntry(1));
-		if (angles)
+		if (combmeas)
 		{
-		    double[] fitv = odobs.measobjs.get(mix).estimate(1, 1, ssta).getEstimatedValue();
-		    odout.PostFit.put(meanames[0], fitv[0]);
-		    odout.PostFit.put(meanames[1], fitv[1]);
+		    for (int i = 0; i < meanames.length; i++)
+		    {
+			double[] fitv = odobs.measobjs.get(mix).estimate(1, 1, ssta).getEstimatedValue();
+			if (meanames.length == 1)
+			{
+			    odout.PreFit.put(meanames[i], yhatpre.toArray());
+			    odout.PostFit.put(meanames[i], fitv);
+			}
+			else
+			{
+			    odout.PreFit.put(meanames[i], new double[] {yhatpre.getEntry(i)});
+			    odout.PostFit.put(meanames[i], new double[] {fitv[i]});
+			}
+		    }
 		}
 		else
 		{
+		    odout.PreFit.put(meanames[0], new double[] {yhatpre.getEntry(0)});
+		    odout.PreFit.put(meanames[1], new double[] {yhatpre.getEntry(1)});
+
 		    double[] fitv = odobs.measobjs.get(mix*2).estimate(1, 1, ssta).getEstimatedValue();
-		    odout.PostFit.put(meanames[0], fitv[0]);
+		    odout.PostFit.put(meanames[0], fitv);
 		    fitv = odobs.measobjs.get(mix*2 + 1).estimate(1, 1, ssta).getEstimatedValue();
-		    odout.PostFit.put(meanames[1], fitv[0]);
+		    odout.PostFit.put(meanames[1], fitv);
 		}
 
 		results.Estimation.add(odout);
@@ -399,13 +483,11 @@ public class Estimation
 
 	RealMatrix unstack(RealMatrix mat, double[] arr)
 	{
-	    int i,j;
 	    int m = mat.getRowDimension();
 	    int n = mat.getColumnDimension();
 
-	    for (i = 0; i < n; i++)
-		for (j = 0; j < m; j++)
-		    mat.setEntry(j, i, arr[i*m + j]);
+	    for (int i = 0; i < n; i++)
+		mat.setColumn(i, Arrays.copyOfRange(arr, i*m, (i+1)*m));
 
 	    return(mat);
 	}
@@ -436,8 +518,8 @@ public class Estimation
 	class JSONEstimation
 	{
 	    String Time;
-	    HashMap<String, Double> PreFit;
-	    HashMap<String, Double> PostFit;
+	    HashMap<String, double[]> PreFit;
+	    HashMap<String, double[]> PostFit;
 	    double[] EstimatedState;
 	    double[] EstimatedAcceleration;
 	    double[][] EstimatedCovariance;
@@ -445,8 +527,8 @@ public class Estimation
 
 	    public JSONEstimation()
 	    {
-		PreFit = new HashMap<String, Double>();
-		PostFit = new HashMap<String, Double>();
+		PreFit = new HashMap<String, double[]>();
+		PostFit = new HashMap<String, double[]>();
 	    }
 	}
 

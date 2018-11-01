@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import org.astria.DataManager;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.time.AbsoluteDate;
@@ -44,6 +46,7 @@ public class Measurements
 	Double RangeRate;
 	Double RightAscension;
 	Double Declination;
+	Double[] PositionVelocity;
 	Double[] TrueState;
     }
 
@@ -65,15 +68,17 @@ public class Measurements
 	measobjs = new ArrayList<ObservedMeasurement<?>>();
 	for (JSONMeasurement m: rawmeas)
 	{
-	    GroundStation gs = gsta.get(m.Station);
+	    GroundStation gs = null;
+	    if (m.Station != null)
+		gs = gsta.get(m.Station);
 	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time),
 						 DataManager.utcscale);
 
 	    if (m.Azimuth != null)
 	    {
                 measobjs.add(new AngularAzEl(gs, time, new double[]{m.Azimuth, m.Elevation},
-					     new double[]{mcfg.get("Azimuth").Error,
-							  mcfg.get("Elevation").Error},
+					     new double[]{mcfg.get("Azimuth").Error[0],
+							  mcfg.get("Elevation").Error[0]},
 					     new double[]{1.0, 1.0}));
 	    }
 
@@ -81,21 +86,31 @@ public class Measurements
 	    {
                 measobjs.add(new AngularRaDec(gs, DataManager.eme2000, time,
 					      new double[]{m.RightAscension, m.Declination},
-					      new double[]{mcfg.get("RightAscension").Error,
-							   mcfg.get("Declination").Error},
+					      new double[]{mcfg.get("RightAscension").Error[0],
+							   mcfg.get("Declination").Error[0]},
 					      new double[]{1.0, 1.0}));
 	    }
 
 	    if (m.Range != null)
 	    {
 		Settings.JSONMeasurement c = mcfg.get("Range");
-		measobjs.add(new Range(gs, time, m.Range, c.Error, 1.0, c.TwoWay));
+		measobjs.add(new Range(gs, time, m.Range, c.Error[0], 1.0, c.TwoWay));
 	    }
 
 	    if (m.RangeRate != null)
 	    {
 		Settings.JSONMeasurement c = mcfg.get("RangeRate");
-		measobjs.add(new RangeRate(gs, time, m.RangeRate, c.Error, 1.0, c.TwoWay));
+		measobjs.add(new RangeRate(gs, time, m.RangeRate, c.Error[0], 1.0, c.TwoWay));
+	    }
+
+	    if (m.PositionVelocity != null)
+	    {
+		measobjs.add(new PV(time,
+				    new Vector3D(m.PositionVelocity[0],
+						 m.PositionVelocity[1], m.PositionVelocity[2]),
+				    new Vector3D(m.PositionVelocity[3], m.PositionVelocity[4],
+						 m.PositionVelocity[5]),
+				    mcfg.get("PositionVelocity").Error, 1.0));
 	    }
 	}
     }

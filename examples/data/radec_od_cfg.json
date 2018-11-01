@@ -87,11 +87,11 @@
     {
 	"RightAscension" :
 	{
-	    "Error" : 4.8E-6
+	    "Error" : [4.8E-6]
 	},
 	"Declination" :
 	{
-	    "Error" : 4.8E-6
+	    "Error" : [4.8E-6]
 	}
     },
 
