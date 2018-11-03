@@ -158,8 +158,12 @@ public class Estimation
 	    results.Propagation.Time = odcfg.Propagation.End;
 	    results.Propagation.State = new double[odcfg.estparams.size() + 6];
 
-	    PVCoordinates pvc = est.getPVCoordinates(new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
-								      DataManager.utcscale), DataManager.eme2000);
+	    SpacecraftState ssta = est.propagate(new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
+								  DataManager.utcscale));
+	    if (ssta.getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
+		throw(new RuntimeException(String.format("Invalid semi-major axis %f", ssta.getA())));
+
+	    PVCoordinates pvc = ssta.getPVCoordinates(DataManager.eme2000);
 	    System.arraycopy(pvc.getPosition().toArray(), 0, results.Propagation.State, 0, 3);
 	    System.arraycopy(pvc.getVelocity().toArray(), 0, results.Propagation.State, 3, 3);
 	    if (odcfg.estparams.size() > 0)
@@ -190,10 +194,10 @@ public class Estimation
 	    }
 
 	    SpacecraftState ssta = est.getPredictedSpacecraftStates()[0];
-	    PVCoordinates pvc = ssta.getPVCoordinates();
-	    if (ssta.getE() >= 1.0)
-		throw(new RuntimeException(String.format("Hyperbolic orbit e = %f", ssta.getE())));
+	    if (ssta.getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
+		throw(new RuntimeException(String.format("Invalid semi-major axis %f", ssta.getA())));
 
+	    PVCoordinates pvc = ssta.getPVCoordinates();
 	    res.EstimatedState = new double[odcfg.estparams.size() + 6];
 	    System.arraycopy(pvc.getPosition().toArray(), 0, res.EstimatedState, 0, 3);
 	    System.arraycopy(pvc.getVelocity().toArray(), 0, res.EstimatedState, 3, 3);
@@ -426,8 +430,8 @@ public class Estimation
 										   new Vector3D(pv[3], pv[4], pv[5])),
 								 DataManager.eme2000, tmlt, Constants.EGM96_EARTH_MU),
 						  odcfg.SpaceObject.Mass);
-		if (ssta[0].getE() >= 1.0)
-		    throw(new RuntimeException(String.format("Hyperbolic orbit e = %f", ssta[0].getE())));
+		if (ssta[0].getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
+		    throw(new RuntimeException(String.format("Invalid semi-major axis %f", ssta[0].getA())));
 
 		odout.EstimatedState = pv;
 		odout.EstimatedCovariance = P.getData();
@@ -463,8 +467,18 @@ public class Estimation
 		results.Estimation.add(odout);
 	    }
 
+	    double[] pv = xhatpre.toArray();
+	    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
+				  DataManager.utcscale);
+
+	    CartesianOrbit cart  = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
+									new Vector3D(pv[3], pv[4], pv[5])),
+						      DataManager.eme2000, tm, Constants.EGM96_EARTH_MU);
+	    if (cart.getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
+		throw(new RuntimeException(String.format("Invalid semi-major axis %f", cart.getA())));
+
 	    results.Propagation.Time = odcfg.Propagation.End;
-	    results.Propagation.State = xhatpre.toArray();
+	    results.Propagation.State = pv;
 	}
 
 	double[] stack(RealMatrix mat, double[] arr)
