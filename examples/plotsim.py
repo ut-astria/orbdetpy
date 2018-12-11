@@ -19,7 +19,7 @@ import math
 import json
 import numpy
 from numpy.linalg import norm
-from datetime import datetime
+import dateutil.parser
 import matplotlib.pyplot as plt
 
 if (len(sys.argv) < 3):
@@ -43,7 +43,7 @@ for o in out:
     e = math.sqrt(1 - hn*hn/(mu*a))
     i = math.acos(h[2]/hn)*180.0/math.pi
 
-    tstamp.append(datetime.strptime(o["Time"], "%Y-%m-%dT%H:%M:%S.%fZ"))
+    tstamp.append(dateutil.parser.isoparse(o["Time"]))
     hvec.append(h)
     hmag.append(hn)
     ener.append(v**2/2.0 - mu/r)

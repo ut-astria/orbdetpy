@@ -18,7 +18,7 @@ Features
 The force model for orbit propagation currently includes:
 
 1) EGM96 gravity field up to degree and order 360.
-2) Solid tides owing to the Sun and Moon.
+2) Earth solid tides due to the influence of the Sun and Moon.
 3) FES 2004 ocean tide model up to degree and order 100.
 4) The NRL MSISE-00 and simple exponential models for atmospheric drag.
 5) Solar radiation pressure.
@@ -28,10 +28,10 @@ The measurement model supports range, range-rate, angles, and inertial
 Cartesian coordinates. Filtering is done using Orekit's Extended Kalman
 Filter or our custom Unscented Kalman Filter. Dynamic Model Compensation
 (DMC) can be used with either filter to estimate additional perturbing
-acclerations such as those that result from maneuvers etc.
+acclerations that result from unmodeled dynamics, maneuvers etc.
 
 You can either use your own measurements or simulate observations using
-the simdata.py module.
+the simulateMeasurements() function.
 
 Future Work
 -----------
@@ -39,10 +39,9 @@ Future Work
 The following tasks are under consideration. Community contributions are
 always welcome.
 
-1) Support for attitude dependent drag and solar radiation pressure.
-2) A batch least squares implementation.
-3) Rauch-Tung-Striebel smoother.
-4) Parametric analysis i.e. the ability to pass-through certain
+1) A batch least squares implementation.
+2) Rauch-Tung-Striebel smoother.
+3) Parametric analysis i.e. the ability to pass-through certain
    measurement types.
 
 Prerequisites

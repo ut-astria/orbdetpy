@@ -27,6 +27,7 @@ import org.astria.Measurements;
 import org.astria.Settings;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.ForceModel;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
@@ -63,9 +64,15 @@ public class Simulation
 	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(simcfg.Propagation.End),
 					      DataManager.utcscale);
 
-	NumericalPropagator prop = new NumericalPropagator(new DormandPrince853Integrator(1E-3, 300.0, 1E-14, 1E-12));
+	NumericalPropagator prop = new NumericalPropagator(
+	    new DormandPrince853Integrator(simcfg.Integration.MinTimeStep, simcfg.Integration.MaxTimeStep,
+					   simcfg.Integration.AbsTolerance, simcfg.Integration.RelTolerance));
 	for (ForceModel fm : simcfg.forces)
 	    prop.addForceModel(fm);
+
+	AttitudeProvider attpro = simcfg.getAttitudeProvider();
+	if (attpro != null)
+	    prop.setAttitudeProvider(attpro);
 
 	prop.setInitialState(new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
 										      new Vector3D(Xi[3], Xi[4], Xi[5])),

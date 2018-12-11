@@ -36,6 +36,7 @@ import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
@@ -134,7 +135,8 @@ public class Estimation
 						       DataManager.utcscale), Constants.EGM96_EARTH_MU);
 
 	    PropagatorBuilder prop = new PropagatorBuilder(odcfg, X0, new DormandPrince853IntegratorBuilder(
-							       1E-3, 300.0, 1.0), PositionAngle.MEAN, 10.0);
+							       odcfg.Integration.MinTimeStep, odcfg.Integration.MaxTimeStep, 1.0),
+							   PositionAngle.MEAN, 10.0);
 	    prop.setMass(odcfg.SpaceObject.Mass);
 	    for (ForceModel fm : odcfg.forces)
 		prop.addForceModel(fm);
@@ -146,6 +148,10 @@ public class Estimation
 		pdrv.setSelected(true);
 		plst.add(pdrv);
 	    }
+
+	    AttitudeProvider attprov = odcfg.getAttitudeProvider();
+	    if (attprov != null)
+		prop.setAttitudeProvider(attprov);
 
 	    KalmanEstimatorBuilder build = new KalmanEstimatorBuilder();
 	    build.addPropagationConfiguration(prop, new ConstantProcessNoise(new DiagonalMatrix(odcfg.Estimation.Covariance),
@@ -319,6 +325,7 @@ public class Estimation
 
 		double tof0 = tofm;
 		AbsoluteDate t0 = new AbsoluteDate(tm, 0.0);
+
 		if (mix < odobs.rawmeas.length)
 		{
 		    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odobs.rawmeas[mix].Time),
@@ -381,6 +388,7 @@ public class Estimation
 		RealVector raw = null;
 		RealMatrix Ppre = Q.copy();
 		AbsoluteDate tmlt = new AbsoluteDate(tm, -tofm);
+
 		for (int i = 0; i < numsig; i++)
 		{
 		    RealVector y = sigpr.getColumnVector(i).subtract(xhatpre);
@@ -390,7 +398,7 @@ public class Estimation
 		    ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 										       new Vector3D(pv[3], pv[4], pv[5])),
 								     DataManager.eme2000, tmlt, Constants.EGM96_EARTH_MU),
-						  odcfg.SpaceObject.Mass);
+						  prop.getAttitude(tmlt, pv), odcfg.SpaceObject.Mass);
 
 		    if (combmeas)
 		    {
@@ -429,13 +437,14 @@ public class Estimation
 		ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 										   new Vector3D(pv[3], pv[4], pv[5])),
 								 DataManager.eme2000, tmlt, Constants.EGM96_EARTH_MU),
-						  odcfg.SpaceObject.Mass);
+					      prop.getAttitude(tmlt, pv), odcfg.SpaceObject.Mass);
 		if (ssta[0].getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
 		    throw(new RuntimeException(String.format("Invalid semi-major axis %f", ssta[0].getA())));
 
 		odout.EstimatedState = pv;
 		odout.EstimatedCovariance = P.getData();
 		odout.InnovationCovariance = Pyy.getData();
+
 		if (combmeas)
 		{
 		    for (int i = 0; i < meanames.length; i++)

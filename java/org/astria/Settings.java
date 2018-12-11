@@ -23,14 +23,22 @@ import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.stream.Stream;
 import org.astria.DataManager;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.attitudes.FixedRate;
+import org.orekit.attitudes.NadirPointing;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
@@ -47,11 +55,16 @@ import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
+import org.orekit.frames.LocalOrbitalFrame;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
 public class Settings
 {
@@ -101,6 +114,26 @@ public class Settings
     {
 	boolean Sun;
 	JSONParameter Creflection;
+	Double Cabsorption;
+    }
+
+    class JSONFacet
+    {
+	double[] Normal;
+	double Area;
+    }
+
+    class JSONSolarArray
+    {
+	double[] Axis;
+	double Area;
+    }
+
+    class JSONAttitude
+    {
+	String Provider;
+	Double[] SpinVelocity;
+	Double[] SpinAcceleration;
     }
 
     class JSONSpaceObject
@@ -109,6 +142,9 @@ public class Settings
 	String ID;
 	double Mass;
 	double Area;
+	JSONFacet[] Facets;
+	JSONSolarArray SolarArray;
+	JSONAttitude Attitude;
     }
 
     class JSONPropagation
@@ -119,6 +155,29 @@ public class Settings
 	double[] InitialState;
     }
 
+    class JSONIntegration
+    {
+	Double MinTimeStep;
+	Double MaxTimeStep;
+	Double AbsTolerance;
+	Double RelTolerance;
+
+	public JSONIntegration()
+	{
+	    if (MinTimeStep == null)
+		MinTimeStep = 1E-3;
+
+	    if (MaxTimeStep == null)
+		MaxTimeStep = 300.0;
+
+	    if (AbsTolerance == null)
+		AbsTolerance  = 1E-14;
+
+	    if (RelTolerance == null)
+		RelTolerance = 1E-12;
+	}
+    }
+    
     class JSONManeuver
     {
 	String Time;
@@ -176,6 +235,7 @@ public class Settings
     JSONRadiationPressure RadiationPressure;
     JSONSpaceObject SpaceObject;
     JSONPropagation Propagation;
+    JSONIntegration Integration;
     JSONManeuver[] Maneuvers;
     Map<String, JSONStation> Stations;
     Map<String, JSONMeasurement> Measurements;
@@ -188,9 +248,14 @@ public class Settings
     public static Settings loadJSON(String json) throws Exception
     {
 	Settings set = new Gson().fromJson(json, Settings.class);
+
+	if (set.Integration == null)
+	    set.Integration = set.new JSONIntegration();
+
 	set.loadGroundStations();
 	set.loadForces();
 	set.loadEstimatedParameters();
+
 	return(set);
     }
 
@@ -256,6 +321,35 @@ public class Settings
 	if (ThirdBodies.Moon)
 	    forces.add(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
+	DragSensitive dragsc = null;
+	RadiationSensitive radnsc = null;
+
+	if (SpaceObject.Facets != null && SpaceObject.SolarArray != null)
+	{
+	    BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[
+		SpaceObject.Facets.length];
+	    for (int i = 0; i < SpaceObject.Facets.length; i++)
+		facets[i] = new BoxAndSolarArraySpacecraft.Facet(new Vector3D(SpaceObject.Facets[i].Normal),
+								 SpaceObject.Facets[i].Area);
+
+	    dragsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), SpaceObject.SolarArray.Area,
+						    new Vector3D(SpaceObject.SolarArray.Axis), Drag.Coefficient.Value,
+						    RadiationPressure.Cabsorption, RadiationPressure.Creflection.Value);
+
+	    radnsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), SpaceObject.SolarArray.Area,
+						    new Vector3D(SpaceObject.SolarArray.Axis), Drag.Coefficient.Value,
+						    RadiationPressure.Cabsorption, RadiationPressure.Creflection.Value);
+	}
+	else
+	{
+	    dragsc = new IsotropicDrag(SpaceObject.Area, Drag.Coefficient.Value);
+
+	    radnsc = new IsotropicRadiationSingleCoefficient(SpaceObject.Area,
+							     RadiationPressure.Creflection.Value,
+							     RadiationPressure.Creflection.Min,
+							     RadiationPressure.Creflection.Max);
+	}
+
 	Atmosphere atm = null;
 	if (Drag.Model.equals("Exponential"))
 	{
@@ -288,36 +382,26 @@ public class Settings
 	    if (Drag.MSISEFlags != null)
 	    {
 		for (int i = 0; i < Drag.MSISEFlags.length; i++)
-		{
-		    atm = ((NRLMSISE00)atm).withSwitch(Drag.MSISEFlags[i][0],
-						       Drag.MSISEFlags[i][1]);
-		}
+		    atm = ((NRLMSISE00) atm).withSwitch(Drag.MSISEFlags[i][0],
+							Drag.MSISEFlags[i][1]);
 	    }
 	}
 
 	if (atm != null)
-	    forces.add(new DragForce(atm, new IsotropicDrag(SpaceObject.Area,
-							    Drag.Coefficient.Value)));
+	    forces.add(new DragForce(atm, dragsc));
 
 	if (RadiationPressure.Sun)
 	    forces.add(new SolarRadiationPressure(
 			   149597870000.0, 4.56E-6, CelestialBodyFactory.getSun(),
-			   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-			   new IsotropicRadiationSingleCoefficient(
-			       SpaceObject.Area,
-			       RadiationPressure.Creflection.Value,
-			       RadiationPressure.Creflection.Min,
-			       RadiationPressure.Creflection.Max)));
+			   Constants.WGS84_EARTH_EQUATORIAL_RADIUS, radnsc));
 
 	if (Maneuvers != null)
 	{
 	    for (JSONManeuver m : Maneuvers)
-	    {
 		forces.add(new ConstantThrustManeuver(
 			       new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time),
 						DataManager.utcscale),
 			       m.Duration, m.Thrust, m.Isp, new Vector3D(m.Direction)));
-	    }
 	}
     }
 
@@ -363,6 +447,46 @@ public class Settings
 	return(X0);
     }
 
+    public AttitudeProvider getAttitudeProvider()
+    {
+	AttitudeProvider attpro = null;
+	if (SpaceObject.Attitude == null)
+	    return(attpro);
+
+	OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+						      Constants.WGS84_EARTH_FLATTENING, DataManager.itrf);
+
+	if (SpaceObject.Attitude.Provider.equals("NadirPointing"))
+	    attpro = new NadirPointing(DataManager.eme2000, shape);
+
+	if (SpaceObject.Attitude.Provider.equals("BodyCenterPointing"))
+	    attpro = new BodyCenterPointing(DataManager.eme2000, shape);
+
+	if (SpaceObject.Attitude.Provider.equals("FixedRate") && SpaceObject.Attitude.SpinVelocity != null &&
+	    SpaceObject.Attitude.SpinAcceleration != null)
+	{
+	    double[] X0 = Propagation.InitialState;
+	    AbsoluteDate t0 = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start),
+					       DataManager.utcscale);
+
+	    KeplerianPropagator prop = new KeplerianPropagator(new CartesianOrbit(
+								   new PVCoordinates(
+								       new Vector3D(X0[0], X0[1], X0[2]),
+								       new Vector3D(X0[3], X0[4], X0[5])),
+								   DataManager.eme2000, t0, Constants.EGM96_EARTH_MU));
+
+	    LocalOrbitalFrame lof = new LocalOrbitalFrame(DataManager.eme2000, LOFType.VVLH, prop, "");
+
+	    attpro = new FixedRate(new Attitude(t0, lof, Rotation.IDENTITY,
+						new Vector3D(Stream.of(SpaceObject.Attitude.SpinVelocity).
+							     mapToDouble(Double::doubleValue).toArray()),
+						new Vector3D(Stream.of(SpaceObject.Attitude.SpinAcceleration).
+							     mapToDouble(Double::doubleValue).toArray())));
+	}
+
+	return(attpro);
+    }
+    
     public RealMatrix getProcessNoiseMatrix()
     {
 	int i;

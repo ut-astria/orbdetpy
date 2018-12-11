@@ -18,7 +18,7 @@ import sys
 import math
 import json
 import numpy
-from datetime import datetime
+import dateutil.parser
 import matplotlib.pyplot as plt
 
 def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
@@ -35,7 +35,7 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
 
     tstamp, prefit, posfit, inocov, params, estmacc, estmcov = [], [], [], [], [], [], []
     for i, o in zip(inp, out):
-        tstamp.append(datetime.strptime(i["Time"], "%Y-%m-%dT%H:%M:%S.%fZ"))
+        tstamp.append(dateutil.parser.isoparse(i["Time"]))
 
         if ("PositionVelocity" in key):
             prefit.append([ix - ox for ix, ox in zip(i["PositionVelocity"],
@@ -59,11 +59,6 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
             else:
                 params.append(o["EstimatedState"][6:])
 
-    #        p = []
-    #        for m in range(6, len(o["EstimatedState"])):
-    #            p.append(3.0*numpy.sqrt(o["EstimatedCovariance"][m][m]))
-    #        estmcov.append(p)
-
         if (dmcrun):
             estmacc.append(o["EstimatedState"][-3:])
 
@@ -72,7 +67,6 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     cov = numpy.array(inocov)
     par = numpy.array(params)
     estmacc = numpy.array(estmacc)
-    #estmcov = numpy.array(estmcov)
     tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
 
     angles = ("Azimuth", "Elevation", "RightAscension", "Declination")
@@ -124,9 +118,6 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         plt.semilogx(tim,  cov[:,i], "-r", label = r"Innov. 3$\sigma$")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
-        plt.legend(loc = "best")
-        if ("PositionVelocity" not in key):
-            plt.ylim(-cov[i,0], cov[i,0])
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (filepath is not None):
@@ -136,11 +127,9 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     parnames, parmvals = [], []
     if (cfg["Drag"]["Coefficient"]["Estimation"] == "Estimate"):
         parnames.append(r"$C_D$")
-#        parmvals.append(cfg["Drag"]["Coefficient"]["Value"])
 
     if (cfg["RadiationPressure"]["Creflection"]["Estimation"] == "Estimate"):
         parnames.append(r"$C_R$")
-#        parmvals.append(cfg["RadiationPressure"]["Creflection"]["Value"])
 
     for i in range(par.shape[-1]):
         if (i == 0):
@@ -149,8 +138,6 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
 
         plt.subplot(par.shape[1], 1, i + 1)
         plt.semilogx(tim, par[:,i], "ob")
-    #    plt.semilogx(tim, -parmvals[i] - estmcov[:,i], "-r")
-    #    plt.semilogx(tim,  parmvals[i] + estmcov[:,i], "-r", label = r"Covariance 3$\sigma$")
         plt.xlabel("Time [hr]")
         plt.ylabel(parnames[i])
 
@@ -168,8 +155,6 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         for i in range(3):
             plt.subplot(3, 1, i+1)
             plt.semilogx(tim, estmacc[:,i], "-b")
-    #        plt.semilogx(tim, -estmcov[:,i-3], "-r")
-    #        plt.semilogx(tim,  estmcov[:,i-3], "-r", label = r"Covariance 3$\sigma$")
             plt.xlabel("Time [hr]")
             plt.ylabel(lab[i])
 
