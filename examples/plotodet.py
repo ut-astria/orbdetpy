@@ -118,6 +118,8 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         plt.semilogx(tim,  cov[:,i], "-r", label = r"Innov. 3$\sigma$")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        if ("PositionVelocity" not in key):
+            plt.ylim(-cov[i,0], cov[i,0])
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (filepath is not None):

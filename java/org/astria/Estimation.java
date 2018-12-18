@@ -411,11 +411,19 @@ public class Estimation
 		    {
 			double[] fitv = odobs.measobjs.get(mix*2).estimate(1, 1, ssta).getEstimatedValue();
 			spupd.setEntry(0, i, fitv[0]);
-			fitv = odobs.measobjs.get(mix*2 + 1).estimate(1, 1, ssta).getEstimatedValue();
-			spupd.setEntry(1, i, fitv[0]);
-			if (raw == null)
-			    raw = new ArrayRealVector(new double[]{odobs.measobjs.get(mix*2).getObservedValue()[0],
-								   odobs.measobjs.get(mix*2 + 1).getObservedValue()[0]});
+
+			if (Rsize > 1)
+			{
+			    fitv = odobs.measobjs.get(mix*2 + 1).estimate(1, 1, ssta).getEstimatedValue();
+			    spupd.setEntry(1, i, fitv[0]);
+			    if (raw == null)
+				raw = new ArrayRealVector(new double[]{odobs.measobjs.get(mix*2).getObservedValue()[0],
+								       odobs.measobjs.get(mix*2 + 1).getObservedValue()[0]});
+			}
+			else if (raw == null)
+			{
+			    raw = new ArrayRealVector(new double[]{odobs.measobjs.get(mix*2).getObservedValue()[0]});
+			}
 		    }
 		}
 
@@ -464,13 +472,16 @@ public class Estimation
 		}
 		else
 		{
-		    odout.PreFit.put(meanames[0], new double[] {yhatpre.getEntry(0)});
-		    odout.PreFit.put(meanames[1], new double[] {yhatpre.getEntry(1)});
-
 		    double[] fitv = odobs.measobjs.get(mix*2).estimate(1, 1, ssta).getEstimatedValue();
+		    odout.PreFit.put(meanames[0], new double[] {yhatpre.getEntry(0)});
 		    odout.PostFit.put(meanames[0], fitv);
-		    fitv = odobs.measobjs.get(mix*2 + 1).estimate(1, 1, ssta).getEstimatedValue();
-		    odout.PostFit.put(meanames[1], fitv);
+
+		    if (Rsize > 1)
+		    {
+			fitv = odobs.measobjs.get(mix*2 + 1).estimate(1, 1, ssta).getEstimatedValue();
+			odout.PreFit.put(meanames[1], new double[] {yhatpre.getEntry(1)});
+			odout.PostFit.put(meanames[1], fitv);
+		    }
 		}
 
 		results.Estimation.add(odout);
