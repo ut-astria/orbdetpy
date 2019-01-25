@@ -35,13 +35,16 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class Simulation
 {
@@ -51,7 +54,7 @@ public class Simulation
     {
 	simcfg = Settings.loadJSON(cfgjson);
 	if (simcfg.Propagation.Step <= 0.0)
-	    simcfg.Propagation.Step = 30.0;
+	    simcfg.Propagation.Step = 60.0;
     }
 
     public String simulateMeasurements()
@@ -92,18 +95,32 @@ public class Simulation
 		GroundStation obj = kv.getValue();
 		double[] obs = new AngularAzEl(obj, tm, new double[]{0.0, 0.0}, new double[]{5E-6, 5E-6},
 					       new double[]{1.0, 1.0}).estimate(1, 1, sta).getEstimatedValue();
-		if (obs[1] <= 5E-6)
+		if ((simcfg.Simulation == null || simcfg.Simulation.SkipUnobservable) && obs[1] <= 5E-6)
 		    continue;
 
+		Orbit orb = sta[0].getOrbit();
+		KeplerianOrbit keporb = new KeplerianOrbit(orb);
+		TimeStampedPVCoordinates pvc = sta[0].getPVCoordinates();
+		Vector3D pos = pvc.getPosition();
+		Vector3D vel = pvc.getVelocity();
+		Vector3D acc = pvc.getAcceleration();
+
 		Measurements.JSONMeasurement json = meas.new JSONMeasurement();
-		Vector3D pos = sta[0].getPVCoordinates().getPosition();
-		Vector3D vel = sta[0].getPVCoordinates().getVelocity();
-		Vector3D acc = sta[0].getPVCoordinates().getAcceleration();
 		json.Time = tm.toString() + "Z";
 		json.Station = str;
-		json.TrueState = new Double[]{pos.getX(), pos.getY(), pos.getZ(),
-					      vel.getX(), vel.getY(), vel.getZ(),
-					      acc.getX(), acc.getY(), acc.getZ()};
+
+		json.TrueState = meas.new JSONState();
+		json.TrueState.Cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(),
+							vel.getX(), vel.getY(), vel.getZ(),
+							acc.getX(), acc.getY(), acc.getZ()};
+
+		json.TrueState.Kepler = meas.new JSONKepler(keporb.getA(), keporb.getE(), keporb.getI(),
+							    keporb.getRightAscensionOfAscendingNode(),
+							    keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
+
+		json.TrueState.Equinoctial = meas.new JSONEquinoctial(orb.getA(), orb.getEquinoctialEx(),
+								      orb.getEquinoctialEy(), orb.getHx(),
+								      orb.getHy(), orb.getLM());
 
 		for (Map.Entry<String, Settings.JSONMeasurement> nvp : simcfg.Measurements.entrySet())
 		{

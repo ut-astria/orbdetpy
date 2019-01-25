@@ -23,8 +23,7 @@ import dateutil.parser
 import matplotlib.pyplot as plt
 
 if (len(sys.argv) < 3):
-    print("Usage: python %s config_file simulated_data_file"
-          % sys.argv[0])
+    print("Usage: python %s config_file simulated_data_file" % sys.argv[0])
     exit()
 
 with open(sys.argv[1], "r") as f:
@@ -33,9 +32,9 @@ with open(sys.argv[2], "r") as f:
     out = json.load(f)
 
 mu = 398600.4418
-tstamp, hvec, hmag, ener, alt, ecc, inc = [], [], [], [], [], [], []
+tstamp, hvec, hmag, ener, sma, ecc, inc = [], [], [], [], [], [], []
 for o in out:
-    rv = [x/1000.0 for x in o["TrueState"][:6]]
+    rv = [x/1000.0 for x in o["TrueState"]["Cartesian"][:6]]
     r, v = norm(rv[:3]), norm(rv[3:])
     h = numpy.cross(rv[:3], rv[3:])
     hn = norm(h)
@@ -47,7 +46,7 @@ for o in out:
     hvec.append(h)
     hmag.append(hn)
     ener.append(v**2/2.0 - mu/r)
-    alt.append(a*(1.0 - e) - 6378.137)
+    sma.append(a)
     ecc.append(e)
     inc.append(i)
 
@@ -81,9 +80,9 @@ plt.ylabel("Specific energy")
 
 fig = plt.figure(2)
 plt.subplot(311)
-plt.plot(tim, alt, "-b")
+plt.plot(tim, sma, "-b")
 plt.xlabel("Time [hr]")
-plt.ylabel("Altitude [km]")
+plt.ylabel("SMA [km]")
 plt.subplot(312)
 plt.plot(tim, ecc, "-b")
 plt.xlabel("Time [hr]")

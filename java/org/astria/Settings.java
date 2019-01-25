@@ -47,6 +47,7 @@ import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.forces.drag.atmosphere.NRLMSISE00;
 import org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.OceanTides;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -211,6 +212,11 @@ public class Settings
 	JSONParameter DMCAcceleration;
     }
 
+    class JSONSimulation
+    {
+	boolean SkipUnobservable;
+    }
+
     class EstimatedParameter
     {
 	String name;
@@ -240,6 +246,7 @@ public class Settings
     Map<String, JSONStation> Stations;
     Map<String, JSONMeasurement> Measurements;
     JSONEstimation Estimation;
+    JSONSimulation Simulation;
 
     HashMap<String, GroundStation> stations;
     ArrayList<ForceModel> forces;
@@ -293,10 +300,14 @@ public class Settings
     {
 	forces = new ArrayList<ForceModel>();
 
-	NormalizedSphericalHarmonicsProvider grav =
-	    GravityFieldFactory.getNormalizedProvider(
-		Gravity.Degree, Gravity.Order);
-	forces.add(new HolmesFeatherstoneAttractionModel(DataManager.itrf, grav));
+	NormalizedSphericalHarmonicsProvider grav = null;
+	if (Gravity.Degree >= 2 && Gravity.Order >= 0)
+	{
+	    grav = GravityFieldFactory.getNormalizedProvider(Gravity.Degree, Gravity.Order);
+	    forces.add(new HolmesFeatherstoneAttractionModel(DataManager.itrf, grav));
+	}
+	else
+	    forces.add(new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
 	if (OceanTides.Degree >= 0 && OceanTides.Order >= 0)
 	    forces.add(new OceanTides(DataManager.itrf,
@@ -306,7 +317,7 @@ public class Settings
 				      OceanTides.Order,
 				      IERSConventions.IERS_2010, DataManager.ut1scale));
 
-	if (SolidTides.Sun || SolidTides.Moon)
+	if ((SolidTides.Sun || SolidTides.Moon) && grav != null)
 	    forces.add(new org.orekit.forces.gravity.SolidTides(
 			   DataManager.itrf,
 			   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

@@ -36,6 +36,53 @@ import org.orekit.time.DateTimeComponents;
 
 public class Measurements
 {
+    class JSONKepler
+    {
+	double SMA;
+	double Ecc;
+	double Inc;
+	double RAAN;
+	double ArgP;
+	double MeanAnom;
+
+	public JSONKepler(double a, double e, double i, double W, double o, double M)
+	{
+	    this.SMA = a;
+	    this.Ecc = e;
+	    this.Inc = i;
+	    this.RAAN = W;
+	    this.ArgP = o;
+	    this.MeanAnom = M;
+	}
+    }
+
+    class JSONEquinoctial
+    {
+	double SMA;
+	double Ex;
+	double Ey;
+	double Hx;
+	double Hy;
+	double Lm;
+
+	public JSONEquinoctial(double a, double ex, double ey, double hx, double hy, double lm)
+	{
+	    this.SMA = a;
+	    this.Ex = ex;
+	    this.Ey = ey;
+	    this.Hx = hx;
+	    this.Hy = hy;
+	    this.Lm = lm;
+	}
+    }
+
+    class JSONState
+    {
+	double[] Cartesian;
+	JSONKepler Kepler;
+	JSONEquinoctial Equinoctial;
+    }
+
     class JSONMeasurement
     {
 	String Time;
@@ -47,7 +94,7 @@ public class Measurements
 	Double RightAscension;
 	Double Declination;
 	Double[] PositionVelocity;
-	Double[] TrueState;
+	JSONState TrueState;
     }
 
     JSONMeasurement[] rawmeas;

@@ -83,7 +83,7 @@ public class Estimation
 	if (odcfg.Estimation.NoiseTimeDelta <= 0.0)
 	    throw(new Exception("Invalid configuration parameter Estimation.NoiseTimeDelta"));
 
-	if (odcfg.Estimation.Filter.equals("UKF"))
+	if (odcfg.Estimation.Filter.equals("UKF") && odcfg.Gravity.Degree >= 2 && odcfg.Gravity.Order >= 0)
 	    odcfg.forces.add(0, new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
 	odobs = Measurements.loadJSON(obsjson, odcfg.stations, odcfg.Measurements);
