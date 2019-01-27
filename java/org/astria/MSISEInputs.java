@@ -83,16 +83,17 @@ public class MSISEInputs implements NRLMSISE00InputParameters
 		String p = (new AbsoluteDate(date, -10800.0*(i - 1))).toString();
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 		double[] v = swdata.get(k);
-		apvals[i] = v[Integer.parseInt(p.substring(11, 13)) % 3 + 14];
+		apvals[i] = v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];
 	    }
 	    else
 	    {
+		apvals[i] = 0.0;
 		for (int j = 8*i - 36; j <= 8*i - 29; j++)
 		{
 		    String p = (new AbsoluteDate(date, -10800.0*(j - 1))).toString();
 		    String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 		    double[] v = swdata.get(k);
-		    apvals[i] += v[Integer.parseInt(p.substring(11, 13)) % 3 + 14];
+		    apvals[i] += v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];
 		}
 		apvals[i] = apvals[i]/8;
 	    }
