@@ -33,21 +33,21 @@ import org.orekit.utils.IERSConventions;
 
 public class DataManager
 {
-    static class MSISEData
+    public static class MSISEData
     {
-	AbsoluteDate mindate;
-	AbsoluteDate maxdate;
-	HashMap<String, double[]> data;
+	public AbsoluteDate mindate;
+	public AbsoluteDate maxdate;
+	public HashMap<String, double[]> data;
     }
 
-    static String datapath;
+    public static String datapath;
 
-    static Frame itrf;
-    static Frame eme2000;
-    static TimeScale utcscale;
-    static UT1Scale ut1scale;
+    public static Frame itrf;
+    public static Frame eme2000;
+    public static TimeScale utcscale;
+    public static UT1Scale ut1scale;
 
-    static MSISEData msisedata;
+    public static MSISEData msisedata;
 
     public static void initialize(String path) throws Exception
     {

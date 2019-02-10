@@ -83,7 +83,7 @@ public class Simulation
 						 simcfg.SpaceObject.Mass));
 
 	Measurements meas = new Measurements();
-	ArrayList<Measurements.JSONMeasurement> mall = new ArrayList<Measurements.JSONMeasurement>();
+	ArrayList<Measurements.JSONSimulatedMeasurement> mall = new ArrayList<Measurements.JSONSimulatedMeasurement>();
 
 	while (true)
 	{
@@ -105,7 +105,7 @@ public class Simulation
 		Vector3D vel = pvc.getVelocity();
 		Vector3D acc = pvc.getAcceleration();
 
-		Measurements.JSONMeasurement json = meas.new JSONMeasurement();
+		Measurements.JSONSimulatedMeasurement json = meas.new JSONSimulatedMeasurement();
 		json.Time = tm.toString() + "Z";
 		json.Station = str;
 
@@ -121,6 +121,9 @@ public class Simulation
 		json.TrueState.Equinoctial = meas.new JSONEquinoctial(orb.getA(), orb.getEquinoctialEx(),
 								      orb.getEquinoctialEy(), orb.getHx(),
 								      orb.getHy(), orb.getLM());
+
+		if (simcfg.atmmodel != null)
+		    json.AtmDensity = simcfg.atmmodel.getDensity(tm, pos, DataManager.eme2000);
 
 		for (Map.Entry<String, Settings.JSONMeasurement> nvp : simcfg.Measurements.entrySet())
 		{
@@ -164,7 +167,7 @@ public class Simulation
 		break;
 	}
 
-	meas.rawmeas = mall.toArray(new Measurements.JSONMeasurement[0]);
+	meas.rawmeas = mall.toArray(new Measurements.JSONSimulatedMeasurement[0]);
 	return(new GsonBuilder().setPrettyPrinting().create().toJson(meas.rawmeas));
     }
 }

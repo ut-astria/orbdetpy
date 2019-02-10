@@ -94,7 +94,12 @@ public class Measurements
 	Double RightAscension;
 	Double Declination;
 	Double[] PositionVelocity;
+    }
+
+    class JSONSimulatedMeasurement extends JSONMeasurement
+    {
 	JSONState TrueState;
+	Double AtmDensity;
     }
 
     JSONMeasurement[] rawmeas;

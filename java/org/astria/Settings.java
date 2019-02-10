@@ -248,6 +248,8 @@ public class Settings
     JSONEstimation Estimation;
     JSONSimulation Simulation;
 
+    Atmosphere atmmodel = null;
+
     HashMap<String, GroundStation> stations;
     ArrayList<ForceModel> forces;
     ArrayList<Settings.EstimatedParameter> estparams;
@@ -361,10 +363,9 @@ public class Settings
 							     RadiationPressure.Creflection.Max);
 	}
 
-	Atmosphere atm = null;
 	if (Drag.Model.equals("Exponential"))
 	{
-	    atm = new SimpleExponentialAtmosphere(
+	    atmmodel = new SimpleExponentialAtmosphere(
 		new OneAxisEllipsoid(
 		    Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 		    Constants.WGS84_EARTH_FLATTENING, DataManager.itrf),
@@ -382,7 +383,7 @@ public class Settings
 		}
 	    }
 
-	    atm = new NRLMSISE00(
+	    atmmodel = new NRLMSISE00(
 		new MSISEInputs(DataManager.msisedata.mindate,
 				DataManager.msisedata.maxdate,
 				DataManager.msisedata.data, apflag),
@@ -390,16 +391,17 @@ public class Settings
 		    Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 		    Constants.WGS84_EARTH_FLATTENING,
 		    DataManager.itrf));
+
 	    if (Drag.MSISEFlags != null)
 	    {
 		for (int i = 0; i < Drag.MSISEFlags.length; i++)
-		    atm = ((NRLMSISE00) atm).withSwitch(Drag.MSISEFlags[i][0],
-							Drag.MSISEFlags[i][1]);
+		    atmmodel = ((NRLMSISE00) atmmodel).withSwitch(Drag.MSISEFlags[i][0],
+								  Drag.MSISEFlags[i][1]);
 	    }
 	}
 
-	if (atm != null)
-	    forces.add(new DragForce(atm, dragsc));
+	if (atmmodel != null)
+	    forces.add(new DragForce(atmmodel, dragsc));
 
 	if (RadiationPressure.Sun)
 	    forces.add(new SolarRadiationPressure(
