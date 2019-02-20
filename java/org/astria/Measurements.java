@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
@@ -131,7 +132,7 @@ public class Measurements
                 measobjs.add(new AngularAzEl(gs, time, new double[]{m.Azimuth, m.Elevation},
 					     new double[]{mcfg.get("Azimuth").Error[0],
 							  mcfg.get("Elevation").Error[0]},
-					     new double[]{1.0, 1.0}));
+					     new double[]{1.0, 1.0}, new ObservableSatellite(0)));
 	    }
 
 	    if (m.RightAscension != null)
@@ -140,19 +141,21 @@ public class Measurements
 					      new double[]{m.RightAscension, m.Declination},
 					      new double[]{mcfg.get("RightAscension").Error[0],
 							   mcfg.get("Declination").Error[0]},
-					      new double[]{1.0, 1.0}));
+					      new double[]{1.0, 1.0}, new ObservableSatellite(0)));
 	    }
 
 	    if (m.Range != null)
 	    {
 		Settings.JSONMeasurement c = mcfg.get("Range");
-		measobjs.add(new Range(gs, time, m.Range, c.Error[0], 1.0, c.TwoWay));
+		measobjs.add(new Range(gs, c.TwoWay, time, m.Range, c.Error[0], 1.0,
+				       new ObservableSatellite(0)));
 	    }
 
 	    if (m.RangeRate != null)
 	    {
 		Settings.JSONMeasurement c = mcfg.get("RangeRate");
-		measobjs.add(new RangeRate(gs, time, m.RangeRate, c.Error[0], 1.0, c.TwoWay));
+		measobjs.add(new RangeRate(gs, time, m.RangeRate, c.Error[0], 1.0, c.TwoWay,
+					   new ObservableSatellite(0)));
 	    }
 
 	    if (m.PositionVelocity != null)
@@ -162,7 +165,8 @@ public class Measurements
 						 m.PositionVelocity[1], m.PositionVelocity[2]),
 				    new Vector3D(m.PositionVelocity[3], m.PositionVelocity[4],
 						 m.PositionVelocity[5]),
-				    mcfg.get("PositionVelocity").Error, 1.0));
+				    mcfg.get("PositionVelocity").Error, 1.0,
+				    new ObservableSatellite(0)));
 	    }
 	}
     }

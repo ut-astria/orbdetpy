@@ -32,6 +32,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
@@ -94,7 +95,8 @@ public class Simulation
 		String str = kv.getKey();
 		GroundStation obj = kv.getValue();
 		double[] obs = new AngularAzEl(obj, tm, new double[]{0.0, 0.0}, new double[]{5E-6, 5E-6},
-					       new double[]{1.0, 1.0}).estimate(1, 1, sta).getEstimatedValue();
+					       new double[]{1.0, 1.0}, new ObservableSatellite(0)).
+		    estimate(1, 1, sta).getEstimatedValue();
 		if ((simcfg.Simulation == null || simcfg.Simulation.SkipUnobservable) && obs[1] <= 5E-6)
 		    continue;
 
@@ -132,21 +134,21 @@ public class Simulation
 
 		    if (name.equals("Range"))
 		    {
-			obs = new Range(obj, tm, 0.0, val.Error[0], 1.0, val.TwoWay).
-			    estimate(1, 1, sta).getEstimatedValue();
+			obs = new Range(obj, val.TwoWay, tm, 0.0, val.Error[0], 1.0,
+					new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
 			json.Range = obs[0] + rand.nextGaussian()*val.Error[0];
 		    }
 		    else if (name.equals("RangeRate"))
 		    {
-			obs = new RangeRate(obj, tm, 0.0, val.Error[0], 1.0, val.TwoWay).
-			    estimate(1, 1, sta).getEstimatedValue();
+			obs = new RangeRate(obj, tm, 0.0, val.Error[0], 1.0, val.TwoWay,
+					    new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
 			json.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0];
 		    }
 		    else if (name.equals("RightAscension") || name.equals("Declination"))
 		    {
 			obs = new AngularRaDec(obj, DataManager.eme2000, tm, new double[]{0.0, 0.0},
-					       new double[]{val.Error[0], val.Error[0]}, new double[]{1.0, 1.0}).
-			    estimate(1, 1, sta).getEstimatedValue();
+					       new double[]{val.Error[0], val.Error[0]}, new double[]{1.0, 1.0},
+					       new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
 			json.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0];
 			json.Declination = obs[1] + rand.nextGaussian()*val.Error[0];
 		    }

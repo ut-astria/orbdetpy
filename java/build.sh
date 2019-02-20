@@ -5,7 +5,7 @@ pushd $(dirname "$0") > /dev/null
 export CLASSPATH=`find ../lib -name "*.jar" | tr "\n" ":"`
 
 find . -name "*.class" | xargs rm
-find . -name "*.java" | xargs javac -Xlint:unchecked
+find . -name "*.java" | xargs javac -Xlint:unchecked -Xlint:deprecation
 
 CLASS=`find . -name "*.class" | tr "\n" " "`
 jar cf ../lib/astria.jar $CLASS
