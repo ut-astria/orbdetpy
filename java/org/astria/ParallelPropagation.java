@@ -18,6 +18,7 @@
 
 package org.astria;
 
+import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 import org.astria.Settings;
@@ -44,17 +45,34 @@ public class ParallelPropagation
 	stepHandler = hnd;
     }
 
-    public void propagate(String[] cfgjson, String propStart, String propEnd) throws Exception
+    public List<SpacecraftState> propagate(String[] cfgjson, String propStart,
+					   String propEnd, double propStep) throws Exception
     {
 	List<Propagator> props = new ArrayList<Propagator>(cfgjson.length);
 	for (int i = 0; i < cfgjson.length; i++)
-	{
 	    props.add(buildPropagator(Settings.loadJSON(cfgjson[i])));
+
+	List<SpacecraftState> ssta = null;
+	PropagatorsParallelizer plel = new PropagatorsParallelizer(props, stepHandler);
+
+	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart),
+					   DataManager.utcscale);
+	AbsoluteDate tmprev = tm.shiftedBy(-0.1);
+	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(propEnd),
+					      DataManager.utcscale);
+
+	while (true)
+	{
+	    ssta = plel.propagate(tmprev, tm);
+
+	    double dt = prend.durationFrom(tm);
+	    tmprev = tm.shiftedBy(0.0);
+	    tm = new AbsoluteDate(tm, Math.min(dt, propStep));
+	    if (dt <= 0.0)
+		break;
 	}
 
-	PropagatorsParallelizer plel = new PropagatorsParallelizer(props, stepHandler);
-	plel.propagate(new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.utcscale),
-		       new AbsoluteDate(DateTimeComponents.parseDateTime(propEnd), DataManager.utcscale));
+	return(ssta);
     }
 
     protected NumericalPropagator buildPropagator(Settings obj)
@@ -69,10 +87,13 @@ public class ParallelPropagation
 	for (ForceModel fm : obj.forces)
 	    prop.addForceModel(fm);
 
-	prop.setInitialState(new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
-										      new Vector3D(Xi[3], Xi[4], Xi[5])),
-								    DataManager.eme2000, tm, Constants.EGM96_EARTH_MU),
-						 obj.SpaceObject.Mass));
+	prop.setInitialState(
+	    new SpacecraftState(new CartesianOrbit(
+				    new PVCoordinates(
+					new Vector3D(Xi[0], Xi[1], Xi[2]),
+					new Vector3D(Xi[3], Xi[4], Xi[5])),
+				    DataManager.eme2000, tm, Constants.EGM96_EARTH_MU),
+				obj.SpaceObject.Mass));
 
 	return(prop);
     }
