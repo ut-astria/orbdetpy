@@ -215,6 +215,7 @@ public class Settings
     class JSONSimulation
     {
 	boolean SkipUnobservable;
+	boolean IncludeExtras;
     }
 
     class EstimatedParameter

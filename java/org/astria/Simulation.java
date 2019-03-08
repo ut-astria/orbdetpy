@@ -124,8 +124,43 @@ public class Simulation
 								      orb.getEquinoctialEy(), orb.getHx(),
 								      orb.getHy(), orb.getLM());
 
-		if (simcfg.atmmodel != null)
-		    json.AtmDensity = simcfg.atmmodel.getDensity(tm, pos, DataManager.eme2000);
+		if (simcfg.Simulation != null && simcfg.Simulation.IncludeExtras)
+		{
+		    if (simcfg.atmmodel != null)
+			json.AtmDensity = simcfg.atmmodel.getDensity(tm, pos, DataManager.eme2000);
+
+		    for (ForceModel fmod : simcfg.forces)
+		    {
+			double[] facc = fmod.acceleration(sta[0], fmod.getParameters()).toArray();
+
+			String ftype = fmod.getClass().getSimpleName();
+			if (ftype.equals("NewtonianAttraction") ||
+			    ftype.equals("HolmesFeatherstoneAttractionModel"))
+			    json.AccGravity = facc;
+			if (ftype.equals("DragForce"))
+			    json.AccDrag = facc;
+			if (ftype.equals("OceanTides"))
+			    json.AccOceanTides = facc;
+			if (ftype.equals("SolidTides"))
+			    json.AccSolidTides = facc;
+
+			if (ftype.equals("ThirdBodyAttraction"))
+			{
+			    if (json.AccThirdBodies == null)
+				json.AccThirdBodies = facc;
+			    else
+			    {
+				for (int ii = 0; ii < 3; ii++)
+				    json.AccThirdBodies[ii] += facc[ii];
+			    }
+			}
+
+			if (ftype.equals("SolarRadiationPressure"))
+			    json.AccRadiationPressure = facc;
+			if (ftype.equals("ConstantThrustManeuver"))
+			    json.AccThrust = facc;
+		    }
+		}
 
 		for (Map.Entry<String, Settings.JSONMeasurement> nvp : simcfg.Measurements.entrySet())
 		{

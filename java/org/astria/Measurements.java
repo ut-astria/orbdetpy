@@ -101,6 +101,13 @@ public class Measurements
     {
 	JSONState TrueState;
 	Double AtmDensity;
+	double[] AccGravity;
+	double[] AccDrag;
+	double[] AccOceanTides;
+	double[] AccSolidTides;
+	double[] AccThirdBodies;
+	double[] AccRadiationPressure;
+	double[] AccThrust;
     }
 
     JSONMeasurement[] rawmeas;
