@@ -61,6 +61,8 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
@@ -154,6 +156,7 @@ public class Settings
 	String End;
 	double Step;
 	double[] InitialState;
+	String[] InitialTLE;
     }
 
     class JSONIntegration
@@ -167,13 +170,10 @@ public class Settings
 	{
 	    if (MinTimeStep == null)
 		MinTimeStep = 1E-3;
-
 	    if (MaxTimeStep == null)
 		MaxTimeStep = 300.0;
-
 	    if (AbsTolerance == null)
-		AbsTolerance  = 1E-14;
-
+		AbsTolerance = 1E-14;
 	    if (RelTolerance == null)
 		RelTolerance = 1E-12;
 	}
@@ -214,8 +214,9 @@ public class Settings
 
     class JSONSimulation
     {
-	boolean SkipUnobservable;
-	boolean IncludeExtras;
+	Boolean SimulateMeasurements;
+	Boolean SkipUnobservable;
+	Boolean IncludeExtras;
     }
 
     class EstimatedParameter
@@ -449,11 +450,33 @@ public class Settings
 
     public double[] getInitialState()
     {
+	double[] state0 = Propagation.InitialState;
+	if (state0 == null)
+	{
+	    TLE parser = new TLE(Propagation.InitialTLE[0], Propagation.InitialTLE[1]);
+	    TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
+
+	    AbsoluteDate epoch;
+	    if (Propagation.Start != null)
+		epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start),
+					 DataManager.utcscale);
+	    else
+	    {
+		epoch = parser.getDate().shiftedBy(0.0);
+		Propagation.Start = new String(epoch.toString()) + "Z";
+	    }
+
+	    PVCoordinates pv = prop.getPVCoordinates(epoch, DataManager.eme2000);
+	    Vector3D p = pv.getPosition();
+	    Vector3D v = pv.getVelocity();
+	    state0 = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
+	}
+
 	double[] X0 = new double[estparams.size() + 6];
 	for (int i = 0; i < X0.length; i++)
 	{
 	    if (i < 6)
-		X0[i] = Propagation.InitialState[i];
+		X0[i] = state0[i];
 	    else
 		X0[i] = estparams.get(i - 6).value;
 	}

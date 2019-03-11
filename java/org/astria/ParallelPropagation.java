@@ -77,7 +77,7 @@ public class ParallelPropagation
 
     protected NumericalPropagator buildPropagator(Settings obj)
     {
-	double[] Xi = obj.Propagation.InitialState;
+	double[] Xi = obj.getInitialState();
 	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(obj.Propagation.Start),
 					   DataManager.utcscale);
 

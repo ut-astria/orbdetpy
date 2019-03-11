@@ -62,7 +62,18 @@ public class Simulation
     {
 	Random rand = new Random();
 
-	double[] Xi = simcfg.Propagation.InitialState;
+	boolean simulmeas = true, skipunobs = true, inclextra = false;
+	if (simcfg.Simulation != null)
+	{
+	    if (simcfg.Simulation.SimulateMeasurements != null && !simcfg.Simulation.SimulateMeasurements)
+		simulmeas = false;
+	    if (simcfg.Simulation.SkipUnobservable != null && !simcfg.Simulation.SkipUnobservable)
+		skipunobs = false;
+	    if (simcfg.Simulation.IncludeExtras != null && simcfg.Simulation.IncludeExtras)
+		inclextra = true;
+	}
+
+	double[] Xi = simcfg.getInitialState();
 	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(simcfg.Propagation.Start),
 					   DataManager.utcscale);
 	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(simcfg.Propagation.End),
@@ -89,33 +100,22 @@ public class Simulation
 	while (true)
 	{
 	    SpacecraftState[] sta = new SpacecraftState[]{prop.propagate(tm)};
+	    Orbit orb = sta[0].getOrbit();
+	    KeplerianOrbit keporb = new KeplerianOrbit(orb);
+	    TimeStampedPVCoordinates pvc = sta[0].getPVCoordinates();
+	    Vector3D pos = pvc.getPosition();
+	    Vector3D vel = pvc.getVelocity();
+	    Vector3D acc = pvc.getAcceleration();
 
-	    for (Map.Entry<String, GroundStation> kv : simcfg.stations.entrySet())
+	    Measurements.JSONSimulatedMeasurement json = meas.new JSONSimulatedMeasurement();
+	    json.Time = tm.toString() + "Z";
+	    json.TrueState = meas.new JSONState();
+	    json.TrueState.Cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(),
+						    vel.getX(), vel.getY(), vel.getZ(),
+						    acc.getX(), acc.getY(), acc.getZ()};
+
+	    if (inclextra)
 	    {
-		String str = kv.getKey();
-		GroundStation obj = kv.getValue();
-		double[] obs = new AngularAzEl(obj, tm, new double[]{0.0, 0.0}, new double[]{5E-6, 5E-6},
-					       new double[]{1.0, 1.0}, new ObservableSatellite(0)).
-		    estimate(1, 1, sta).getEstimatedValue();
-		if ((simcfg.Simulation == null || simcfg.Simulation.SkipUnobservable) && obs[1] <= 5E-6)
-		    continue;
-
-		Orbit orb = sta[0].getOrbit();
-		KeplerianOrbit keporb = new KeplerianOrbit(orb);
-		TimeStampedPVCoordinates pvc = sta[0].getPVCoordinates();
-		Vector3D pos = pvc.getPosition();
-		Vector3D vel = pvc.getVelocity();
-		Vector3D acc = pvc.getAcceleration();
-
-		Measurements.JSONSimulatedMeasurement json = meas.new JSONSimulatedMeasurement();
-		json.Time = tm.toString() + "Z";
-		json.Station = str;
-
-		json.TrueState = meas.new JSONState();
-		json.TrueState.Cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(),
-							vel.getX(), vel.getY(), vel.getZ(),
-							acc.getX(), acc.getY(), acc.getZ()};
-
 		json.TrueState.Kepler = meas.new JSONKepler(keporb.getA(), keporb.getE(), keporb.getI(),
 							    keporb.getRightAscensionOfAscendingNode(),
 							    keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
@@ -124,79 +124,94 @@ public class Simulation
 								      orb.getEquinoctialEy(), orb.getHx(),
 								      orb.getHy(), orb.getLM());
 
-		if (simcfg.Simulation != null && simcfg.Simulation.IncludeExtras)
+		if (simcfg.atmmodel != null)
+		    json.AtmDensity = simcfg.atmmodel.getDensity(tm, pos, DataManager.eme2000);
+
+		for (ForceModel fmod : simcfg.forces)
 		{
-		    if (simcfg.atmmodel != null)
-			json.AtmDensity = simcfg.atmmodel.getDensity(tm, pos, DataManager.eme2000);
+		    double[] facc = fmod.acceleration(sta[0], fmod.getParameters()).toArray();
 
-		    for (ForceModel fmod : simcfg.forces)
+		    String ftype = fmod.getClass().getSimpleName();
+		    if (ftype.equals("NewtonianAttraction") ||
+			ftype.equals("HolmesFeatherstoneAttractionModel"))
+			json.AccGravity = facc;
+		    if (ftype.equals("DragForce"))
+			json.AccDrag = facc;
+		    if (ftype.equals("OceanTides"))
+			json.AccOceanTides = facc;
+		    if (ftype.equals("SolidTides"))
+			json.AccSolidTides = facc;
+
+		    if (ftype.equals("ThirdBodyAttraction"))
 		    {
-			double[] facc = fmod.acceleration(sta[0], fmod.getParameters()).toArray();
-
-			String ftype = fmod.getClass().getSimpleName();
-			if (ftype.equals("NewtonianAttraction") ||
-			    ftype.equals("HolmesFeatherstoneAttractionModel"))
-			    json.AccGravity = facc;
-			if (ftype.equals("DragForce"))
-			    json.AccDrag = facc;
-			if (ftype.equals("OceanTides"))
-			    json.AccOceanTides = facc;
-			if (ftype.equals("SolidTides"))
-			    json.AccSolidTides = facc;
-
-			if (ftype.equals("ThirdBodyAttraction"))
+			if (json.AccThirdBodies == null)
+			    json.AccThirdBodies = facc;
+			else
 			{
-			    if (json.AccThirdBodies == null)
-				json.AccThirdBodies = facc;
-			    else
-			    {
-				for (int ii = 0; ii < 3; ii++)
-				    json.AccThirdBodies[ii] += facc[ii];
-			    }
+			    for (int ii = 0; ii < 3; ii++)
+				json.AccThirdBodies[ii] += facc[ii];
 			}
-
-			if (ftype.equals("SolarRadiationPressure"))
-			    json.AccRadiationPressure = facc;
-			if (ftype.equals("ConstantThrustManeuver"))
-			    json.AccThrust = facc;
 		    }
+
+		    if (ftype.equals("SolarRadiationPressure"))
+			json.AccRadiationPressure = facc;
+		    if (ftype.equals("ConstantThrustManeuver"))
+			json.AccThrust = facc;
 		}
-
-		for (Map.Entry<String, Settings.JSONMeasurement> nvp : simcfg.Measurements.entrySet())
-		{
-		    String name = nvp.getKey();
-		    Settings.JSONMeasurement val = nvp.getValue();
-
-		    if (name.equals("Range"))
-		    {
-			obs = new Range(obj, val.TwoWay, tm, 0.0, val.Error[0], 1.0,
-					new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
-			json.Range = obs[0] + rand.nextGaussian()*val.Error[0];
-		    }
-		    else if (name.equals("RangeRate"))
-		    {
-			obs = new RangeRate(obj, tm, 0.0, val.Error[0], 1.0, val.TwoWay,
-					    new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
-			json.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0];
-		    }
-		    else if (name.equals("RightAscension") || name.equals("Declination"))
-		    {
-			obs = new AngularRaDec(obj, DataManager.eme2000, tm, new double[]{0.0, 0.0},
-					       new double[]{val.Error[0], val.Error[0]}, new double[]{1.0, 1.0},
-					       new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
-			json.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0];
-			json.Declination = obs[1] + rand.nextGaussian()*val.Error[0];
-		    }
-		    else if (name.equals("Azimuth") || name.equals("Elevation"))
-		    {
-			json.Azimuth = obs[0] + rand.nextGaussian()*val.Error[0];
-			json.Elevation = obs[1] + rand.nextGaussian()*val.Error[0];
-		    }
-		}
-
-		mall.add(json);
-		break;
 	    }
+
+	    if (simulmeas)
+	    {
+		for (Map.Entry<String, GroundStation> kv : simcfg.stations.entrySet())
+		{
+		    String str = kv.getKey();
+		    GroundStation obj = kv.getValue();
+		    json.Station = str;
+
+		    double[] obs = new AngularAzEl(obj, tm, new double[]{0.0, 0.0}, new double[]{5E-6, 5E-6},
+						   new double[]{1.0, 1.0}, new ObservableSatellite(0)).
+			estimate(1, 1, sta).getEstimatedValue();
+		    if (skipunobs && obs[1] <= 5E-6)
+			continue;
+
+		    for (Map.Entry<String, Settings.JSONMeasurement> nvp : simcfg.Measurements.entrySet())
+		    {
+			String name = nvp.getKey();
+			Settings.JSONMeasurement val = nvp.getValue();
+
+			if (name.equals("Range"))
+			{
+			    obs = new Range(obj, val.TwoWay, tm, 0.0, val.Error[0], 1.0,
+					    new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
+			    json.Range = obs[0] + rand.nextGaussian()*val.Error[0];
+			}
+			else if (name.equals("RangeRate"))
+			{
+			    obs = new RangeRate(obj, tm, 0.0, val.Error[0], 1.0, val.TwoWay,
+						new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
+			    json.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0];
+			}
+			else if (name.equals("RightAscension") || name.equals("Declination"))
+			{
+			    obs = new AngularRaDec(obj, DataManager.eme2000, tm, new double[]{0.0, 0.0},
+						   new double[]{val.Error[0], val.Error[0]}, new double[]{1.0, 1.0},
+						   new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
+			    json.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0];
+			    json.Declination = obs[1] + rand.nextGaussian()*val.Error[0];
+			}
+			else if (name.equals("Azimuth") || name.equals("Elevation"))
+			{
+			    json.Azimuth = obs[0] + rand.nextGaussian()*val.Error[0];
+			    json.Elevation = obs[1] + rand.nextGaussian()*val.Error[0];
+			}
+		    }
+
+		    mall.add(json);
+		    break;
+		}
+	    }
+	    else
+		mall.add(json);
 
 	    double dt = prend.durationFrom(tm);
 	    tm = new AbsoluteDate(tm, Math.min(dt, simcfg.Propagation.Step));
