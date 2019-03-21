@@ -1,6 +1,6 @@
 /*
  * Estimation.java - Implementation of estimation algorithms.
- * Copyright (C) 2018 Shiva Iyer <shiva.iyer AT utexas DOT edu>
+ * Copyright (C) 2018-2019 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

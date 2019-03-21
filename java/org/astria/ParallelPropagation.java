@@ -1,6 +1,6 @@
 /*
  * ParallelPropagation.java - Multiple object propagation functions.
- * Copyright (C) 2019 Shiva Iyer <shiva.iyer AT utexas DOT edu>
+ * Copyright (C) 2018-2019 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

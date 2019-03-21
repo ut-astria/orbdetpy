@@ -33,31 +33,23 @@ acclerations that result from unmodeled dynamics, maneuvers etc.
 You can either use your own measurements or simulate observations using
 the simulateMeasurements() function.
 
-Future Work
------------
-
-The following tasks are under consideration. Community contributions are
-always welcome.
-
-1) A batch least squares implementation.
-2) Rauch-Tung-Striebel smoother.
-3) Parametric analysis i.e. the ability to pass-through certain
-   measurement types.
-
-Prerequisites
--------------
+Installation
+------------
 
 1) Python 3.6+ must be installed with the packages numpy, scipy, pyjnius,
-   matplotlib, json.
+   and matplotlib.
 2) Install the Java Development Kit 8+ (1.8+) from `here
-   <http://openjdk.java.net/>`_. Set the JAVA_HOME environment variable
+   <http://openjdk.java.net>`_. Set the JAVA_HOME environment variable
    to point to your JDK installation.
-3) `Hipparchus 1.3+ <https://hipparchus.org/>`_ and `Orekit 9.2+
-   <https://www.orekit.org/>`_ are needed for astrodynamics functions.
 
-As a convenience, JAR files for Orekit and Hipparchus are provided under
-lib/ and data/, respectively. Space weather data found under data/ is
-obtained from `CelesTrak <http://www.celestrak.com/SpaceData/>`_.
+The lib/ folder contains JAR files for the following libraries, which are
+imported by orbdetpy automatically.
+
+1) `Google gson <https://github.com/google/gson>`_
+2) `Hipparchus 1.4+ <https://hipparchus.org>`_ 
+3) `Orekit 9.3+ <https://www.orekit.org>`_
+
+Space weather data in data/ is obtained from `CelesTrak <http://www.celestrak.com/SpaceData/>`_.
 
 Examples
 --------
@@ -79,6 +71,47 @@ orbdetpy uses JSON files to store settings, measurements and estimation
 results. The files in examples/data show how to configure measurement
 simulation and orbit determination using radar or telescope data. The
 file docs/filefmt.rst documents the structure of the JSON files.
+
+The following are some typical use cases. It is assumed that the current
+working directory is examples/data.
+
+1) Simulate state vectors and radar measurements:
+
+   python ../testsim.py radar_sim_cfg.json sim_data.json
+
+   This will run the simulation configured in radar_sim_cfg.json and
+   write simulated output to sim_data.json.
+
+2) Plot simulation results:
+
+   python ../plotsim.py radar_sim_cfg.json sim_data.json
+
+   This will plot the simulated data generated in (1).
+
+3) Run OD on simulated radar data:
+
+   python ../testodet.py radar_od_cfg.json sim_data.json od_output.json
+
+   This will run OD on the simulated radar data generated in (1)
+   using the OD configuration in radar_od_cfg.json and write OD
+   output to od_output.json.
+
+4) Plot OD results:
+
+   python ../plotodet.py radar_od_cfg.json sim_data.json od_output.json
+
+   This will plot the OD results from (3).
+
+Future Work
+-----------
+
+The following tasks are under consideration. Community contributions are
+always welcome.
+
+1) A batch least squares implementation.
+2) Rauch-Tung-Striebel smoother.
+3) Parametric analysis i.e. the ability to pass-through certain
+   measurement types.
 
 Bug Reports
 -----------
