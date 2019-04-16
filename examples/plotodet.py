@@ -18,6 +18,7 @@ import sys
 import math
 import json
 import numpy
+from numpy.linalg import norm
 import dateutil.parser
 import matplotlib.pyplot as plt
 
@@ -60,7 +61,13 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
                 params.append(o["EstimatedState"][6:])
 
         if (dmcrun):
-            estmacc.append(o["EstimatedState"][-3:])
+            r = numpy.array(o["EstimatedState"][:3])
+            r /= norm(r)
+            v = numpy.array(o["EstimatedState"][3:6])
+            v /= norm(v)
+            h = numpy.cross(r, v)
+            rot = numpy.vstack((r, numpy.cross(h, r), h))
+            estmacc.append(rot.dot(o["EstimatedState"][-3:]))
 
     pre = numpy.array(prefit)
     pos = numpy.array(posfit)

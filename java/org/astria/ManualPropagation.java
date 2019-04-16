@@ -22,7 +22,6 @@ import java.util.Arrays;
 import org.astria.DataManager;
 import org.astria.Settings;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.ODEStateAndDerivative;
@@ -53,7 +52,6 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 
     protected double[] Xdot;
     protected AbsoluteDate epoch;
-    protected Array2DRowRealMatrix ecirot;
 
     protected ODEIntegrator odeint;
 
@@ -73,7 +71,6 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 	Xdot = new double[intvecdim];
 	epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
 				 DataManager.utcscale);
-	ecirot = new Array2DRowRealMatrix(3, 3);
 
 	odeint = new DormandPrince853Integrator(cfg.Integration.MinTimeStep, cfg.Integration.MaxTimeStep,
 						cfg.Integration.AbsTolerance, cfg.Integration.RelTolerance);
@@ -144,17 +141,9 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 		if (X.length > statedim && odcfg.Estimation.DMCCorrTime > 0.0 &&
 		    odcfg.Estimation.DMCSigmaPert > 0.0)
 		{
-		    TimeStampedPVCoordinates pvc = ss.getPVCoordinates();
-		    Vector3D r = pvc.getPosition().normalize();
-		    Vector3D h = pvc.getMomentum().normalize();
-		    ecirot.setColumn(0, r.toArray());
-		    ecirot.setColumn(1, h.crossProduct(r).toArray());
-		    ecirot.setColumn(2, h.toArray());
-		    double[] rot = ecirot.operate(Arrays.copyOfRange(X, i+statedim-3, i+statedim));
-
-		    Xdot[i+3] += rot[0];
-		    Xdot[i+4] += rot[1];
-		    Xdot[i+5] += rot[2];
+		    Xdot[i+3] += X[i+statedim-3];
+		    Xdot[i+4] += X[i+statedim-2];
+		    Xdot[i+5] += X[i+statedim-1];
 		    Xdot[i+statedim-3] = -X[i+statedim-3]/odcfg.Estimation.DMCCorrTime;
 		    Xdot[i+statedim-2] = -X[i+statedim-2]/odcfg.Estimation.DMCCorrTime;
 		    Xdot[i+statedim-1] = -X[i+statedim-1]/odcfg.Estimation.DMCCorrTime;

@@ -21,8 +21,6 @@ package org.astria;
 import java.util.Arrays;
 import org.astria.Estimation;
 import org.astria.Settings;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -32,7 +30,6 @@ import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class PropagatorBuilder extends NumericalPropagatorBuilder
 {
@@ -65,12 +62,10 @@ public class PropagatorBuilder extends NumericalPropagatorBuilder
     class DMCEquations implements AdditionalEquations
     {
 	private double[] acceci;
-	private Array2DRowRealMatrix ecirot;
 
 	public DMCEquations()
 	{
 	    acceci = new double[6];
-	    ecirot = new Array2DRowRealMatrix(3, 3);
 	}
 
 	public void init(SpacecraftState sta, AbsoluteDate tgt)
@@ -84,21 +79,13 @@ public class PropagatorBuilder extends NumericalPropagatorBuilder
 
 	public double[] computeDerivatives(SpacecraftState sta, double[] pdot)
 	{
-	    double[] accric = sta.getAdditionalState(Estimation.DMC_ACC_PROP);
+	    double[] acc = sta.getAdditionalState(Estimation.DMC_ACC_PROP);
 	    for (int i = 0; i < 3; i++)
-		pdot[i] = -accric[i]/odcfg.Estimation.DMCCorrTime;
+	    {
+		acceci[i+3] = acc[i];
+		pdot[i] = -acc[i]/odcfg.Estimation.DMCCorrTime;
+	    }
 
-	    TimeStampedPVCoordinates pvc = sta.getPVCoordinates();
-	    Vector3D r = pvc.getPosition().normalize();
-	    Vector3D h = pvc.getMomentum().normalize();
-	    ecirot.setColumn(0, r.toArray());
-	    ecirot.setColumn(1, h.crossProduct(r).toArray());
-	    ecirot.setColumn(2, h.toArray());
-
-	    double[] rot = ecirot.operate(accric);
-	    acceci[3] = rot[0];
-	    acceci[4] = rot[1];
-	    acceci[5] = rot[2];
 	    return(acceci);
 	}
     }
