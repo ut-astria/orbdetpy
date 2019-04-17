@@ -92,7 +92,7 @@ public class ParallelPropagation
 				    new PVCoordinates(
 					new Vector3D(Xi[0], Xi[1], Xi[2]),
 					new Vector3D(Xi[3], Xi[4], Xi[5])),
-				    DataManager.eme2000, tm, Constants.EGM96_EARTH_MU),
+				    obj.propframe, tm, Constants.EGM96_EARTH_MU),
 				obj.SpaceObject.Mass));
 
 	return(prop);

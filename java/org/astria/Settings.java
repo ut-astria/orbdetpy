@@ -56,9 +56,11 @@ import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
+import org.orekit.frames.Frame;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -141,8 +143,6 @@ public class Settings
 
     class JSONSpaceObject
     {
-	String Name;
-	String ID;
 	double Mass;
 	double Area;
 	JSONFacet[] Facets;
@@ -157,6 +157,8 @@ public class Settings
 	double Step;
 	double[] InitialState;
 	String[] InitialTLE;
+	String InitialStateFrame;
+	String InertialFrame;
     }
 
     class JSONIntegration
@@ -199,6 +201,7 @@ public class Settings
     {
 	boolean TwoWay;
 	double[] Error;
+	String ReferenceFrame;
     }
 
     class JSONEstimation
@@ -256,12 +259,19 @@ public class Settings
     ArrayList<ForceModel> forces;
     ArrayList<Settings.EstimatedParameter> estparams;
 
+    Frame propframe;
+
     public static Settings loadJSON(String json) throws Exception
     {
 	Settings set = new Gson().fromJson(json, Settings.class);
 
 	if (set.Integration == null)
 	    set.Integration = set.new JSONIntegration();
+
+	if (set.Propagation.InertialFrame != null && set.Propagation.InertialFrame.equals("GCRF"))
+	    set.propframe = DataManager.gcrf;
+	else
+	    set.propframe = DataManager.eme2000;
 
 	set.loadGroundStations();
 	set.loadForces();
@@ -406,8 +416,7 @@ public class Settings
 	    forces.add(new DragForce(atmmodel, dragsc));
 
 	if (RadiationPressure.Sun)
-	    forces.add(new SolarRadiationPressure(
-			   149597870000.0, 4.56E-6, CelestialBodyFactory.getSun(),
+	    forces.add(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
 			   Constants.WGS84_EARTH_EQUATORIAL_RADIUS, radnsc));
 
 	if (Maneuvers != null)
@@ -450,7 +459,9 @@ public class Settings
 
     public double[] getInitialState()
     {
+	PVCoordinates topv;
 	double[] state0 = Propagation.InitialState;
+
 	if (state0 == null)
 	{
 	    TLE parser = new TLE(Propagation.InitialTLE[0], Propagation.InitialTLE[1]);
@@ -466,11 +477,31 @@ public class Settings
 		Propagation.Start = new String(epoch.toString()) + "Z";
 	    }
 
-	    PVCoordinates pv = prop.getPVCoordinates(epoch, DataManager.eme2000);
-	    Vector3D p = pv.getPosition();
-	    Vector3D v = pv.getVelocity();
-	    state0 = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
+	    topv = prop.getPVCoordinates(epoch, propframe);
 	}
+	else
+	{
+	    Frame fromframe = DataManager.eme2000;
+	    if (Propagation.InitialStateFrame != null)
+	    {
+		if (Propagation.InitialStateFrame.equals("GCRF"))
+		    fromframe = DataManager.gcrf;
+		else if (Propagation.InitialStateFrame.equals("ITRF"))
+		    fromframe = DataManager.itrf;
+	    }
+
+	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start),
+						  DataManager.utcscale);
+	    Transform xfm = fromframe.getTransformTo(propframe, epoch);
+
+	    PVCoordinates frompv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]),
+						     new Vector3D(state0[3], state0[4], state0[5]));
+	    topv = xfm.transformPVCoordinates(frompv);
+	}
+
+	Vector3D p = topv.getPosition();
+	Vector3D v = topv.getVelocity();
+	state0 = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
 
 	double[] X0 = new double[estparams.size() + 6];
 	for (int i = 0; i < X0.length; i++)
@@ -494,10 +525,10 @@ public class Settings
 						      Constants.WGS84_EARTH_FLATTENING, DataManager.itrf);
 
 	if (SpaceObject.Attitude.Provider.equals("NadirPointing"))
-	    attpro = new NadirPointing(DataManager.eme2000, shape);
+	    attpro = new NadirPointing(propframe, shape);
 
 	if (SpaceObject.Attitude.Provider.equals("BodyCenterPointing"))
-	    attpro = new BodyCenterPointing(DataManager.eme2000, shape);
+	    attpro = new BodyCenterPointing(propframe, shape);
 
 	if (SpaceObject.Attitude.Provider.equals("FixedRate") && SpaceObject.Attitude.SpinVelocity != null &&
 	    SpaceObject.Attitude.SpinAcceleration != null)
@@ -510,9 +541,9 @@ public class Settings
 								   new PVCoordinates(
 								       new Vector3D(X0[0], X0[1], X0[2]),
 								       new Vector3D(X0[3], X0[4], X0[5])),
-								   DataManager.eme2000, t0, Constants.EGM96_EARTH_MU));
+								   propframe, t0, Constants.EGM96_EARTH_MU));
 
-	    LocalOrbitalFrame lof = new LocalOrbitalFrame(DataManager.eme2000, LOFType.VVLH, prop, "");
+	    LocalOrbitalFrame lof = new LocalOrbitalFrame(propframe, LOFType.VVLH, prop, "");
 
 	    attpro = new FixedRate(new Attitude(t0, lof, Rotation.IDENTITY,
 						new Vector3D(Stream.of(SpaceObject.Attitude.SpinVelocity).

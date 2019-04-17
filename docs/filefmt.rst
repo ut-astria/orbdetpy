@@ -100,11 +100,21 @@ Configuration files are needed for both simulation and orbit determination.
 
 "Propagation" : Propagation settings {
 
- "Start" : Epoch for InitialState.
+ "Start" : Epoch for InitialState; optional if InitialTLE is provided.
 
  "End" : End time for RSO state propagation.
 
- "InitialState" : Initial state vector in J2000. Units are [m] and [m/s] for position and velocity, respectively.
+ "Step" : Time step size [s]; used only for simulation runs.
+
+ "InitialState" : Initial state vector. Units are [m] and [m/s] for position and velocity, respectively.
+
+ "InitialTLE" : Array of 2 TLE strings which may me provided instead of InitialState.
+
+ "InitialStateFrame" : Reference frame for InitialState. Valid values are ["GCRF", "EME2000", "ITRF"];
+                       defaults to "EME2000".
+ 
+ "InertialFrame" : Inertial reference frame to use for propagation and all state vector outputs. Valid
+                   values are ["GCRF", "EME2000"]; defaults to "EME2000".
 
  }
 
@@ -184,6 +194,9 @@ Configuration files are needed for both simulation and orbit determination.
  "PositionVelocity" : {
 
   "Error" : Theoretical measurement error [m, m, m, m/s, m/s, m/s].
+
+  "ReferenceFrame" : Reference frame in which position/velocity vectors are expressed.
+                     Valid values are ["GCRF", "EME2000", "ITRF"]; defaults to "EME2000".  
 
  }
  

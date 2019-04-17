@@ -66,7 +66,7 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 	statedim = odcfg.estparams.size() + 6;
 
 	attprov = cfg.getAttitudeProvider();
-	loframe = new LofOffset(DataManager.eme2000, LOFType.VVLH);
+	loframe = new LofOffset(odcfg.propframe, LOFType.VVLH);
 
 	Xdot = new double[intvecdim];
 	epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
@@ -88,9 +88,9 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 						 new Vector3D(X[3], X[4], X[5]));
 
 	if (attprov != null)
-	    return(attprov.getAttitude(this, time, DataManager.eme2000));
+	    return(attprov.getAttitude(this, time, odcfg.propframe));
 	else
-	    return(loframe.getAttitude(this, time, DataManager.eme2000));
+	    return(loframe.getAttitude(this, time, odcfg.propframe));
     }
 
     public int getDimension()
@@ -111,7 +111,7 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 		    new CartesianOrbit(new PVCoordinates(
 					   new Vector3D(X[i],   X[i+1], X[i+2]),
 					   new Vector3D(X[i+3], X[i+4], X[i+5])),
-				       DataManager.eme2000, tm, Constants.EGM96_EARTH_MU),
+				       odcfg.propframe, tm, Constants.EGM96_EARTH_MU),
 		    getAttitude(tm, Arrays.copyOfRange(X, i, i+6)), odcfg.SpaceObject.Mass);
 
 		Vector3D acc = Vector3D.ZERO;
@@ -160,7 +160,7 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 
     public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
     {
-	return(DataManager.eme2000.getTransformTo(frame, date).
+	return(odcfg.propframe.getTransformTo(frame, date).
 	       transformPVCoordinates(savedposv.shiftedBy(date.durationFrom(savedtime))));
     }
 }

@@ -91,7 +91,7 @@ public class Simulation
 
 	prop.setInitialState(new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
 										      new Vector3D(Xi[3], Xi[4], Xi[5])),
-								    DataManager.eme2000, tm, Constants.EGM96_EARTH_MU),
+								    simcfg.propframe, tm, Constants.EGM96_EARTH_MU),
 						 simcfg.SpaceObject.Mass));
 
 	Measurements meas = new Measurements();
@@ -125,7 +125,7 @@ public class Simulation
 								      orb.getHy(), orb.getLM());
 
 		if (simcfg.atmmodel != null)
-		    json.AtmDensity = simcfg.atmmodel.getDensity(tm, pos, DataManager.eme2000);
+		    json.AtmDensity = simcfg.atmmodel.getDensity(tm, pos, simcfg.propframe);
 
 		for (ForceModel fmod : simcfg.forces)
 		{
@@ -193,7 +193,7 @@ public class Simulation
 			}
 			else if (name.equals("RightAscension") || name.equals("Declination"))
 			{
-			    obs = new AngularRaDec(obj, DataManager.eme2000, tm, new double[]{0.0, 0.0},
+			    obs = new AngularRaDec(obj, simcfg.propframe, tm, new double[]{0.0, 0.0},
 						   new double[]{val.Error[0], val.Error[0]}, new double[]{1.0, 1.0},
 						   new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
 			    json.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0];

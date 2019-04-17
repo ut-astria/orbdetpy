@@ -86,7 +86,7 @@ public class Estimation
 	if (odcfg.Estimation.Filter.equals("UKF") && odcfg.Gravity.Degree >= 2 && odcfg.Gravity.Order >= 0)
 	    odcfg.forces.add(0, new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
-	odobs = Measurements.loadJSON(obsjson, odcfg.stations, odcfg.Measurements);
+	odobs = Measurements.loadJSON(odcfg, obsjson);
 
 	meanames = odcfg.Measurements.keySet().toArray(new String[0]);
 	combmeas = meanames[0].equals("Azimuth") || meanames[0].equals("Elevation") ||
@@ -130,7 +130,7 @@ public class Estimation
 	    CartesianOrbit X0 = new CartesianOrbit(new PVCoordinates(
 						       new Vector3D(Xi[0], Xi[1], Xi[2]),
 						       new Vector3D(Xi[3], Xi[4], Xi[5])),
-						   DataManager.eme2000, new AbsoluteDate(
+						   odcfg.propframe, new AbsoluteDate(
 						       DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
 						       DataManager.utcscale), Constants.EGM96_EARTH_MU);
 
@@ -169,7 +169,7 @@ public class Estimation
 	    if (ssta.getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
 		throw(new RuntimeException(String.format("Invalid semi-major axis %f", ssta.getA())));
 
-	    PVCoordinates pvc = ssta.getPVCoordinates(DataManager.eme2000);
+	    PVCoordinates pvc = ssta.getPVCoordinates(odcfg.propframe);
 	    System.arraycopy(pvc.getPosition().toArray(), 0, results.Propagation.State, 0, 3);
 	    System.arraycopy(pvc.getVelocity().toArray(), 0, results.Propagation.State, 3, 3);
 	    if (odcfg.estparams.size() > 0)
@@ -341,7 +341,7 @@ public class Estimation
 		    if (odcfg.stations != null && odobs.rawmeas[mix].Station != null)
 		    {
 			PVCoordinates pvi = odcfg.stations.get(odobs.rawmeas[mix].Station).getBaseFrame().
-			    getPVCoordinates(tm, DataManager.eme2000);
+			    getPVCoordinates(tm, odcfg.propframe);
 			tofm = Range.signalTimeOfFlight(pvs, pvi.getPosition(), tm);
 		    }
 
@@ -397,7 +397,7 @@ public class Estimation
 		    double[] pv = sigpr.getColumn(i);
 		    ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 										       new Vector3D(pv[3], pv[4], pv[5])),
-								     DataManager.eme2000, tmlt, Constants.EGM96_EARTH_MU),
+								     odcfg.propframe, tmlt, Constants.EGM96_EARTH_MU),
 						  prop.getAttitude(tmlt, pv), odcfg.SpaceObject.Mass);
 
 		    if (combmeas)
@@ -444,7 +444,7 @@ public class Estimation
 		double[] pv = xhat.toArray();
 		ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 										   new Vector3D(pv[3], pv[4], pv[5])),
-								 DataManager.eme2000, tmlt, Constants.EGM96_EARTH_MU),
+								 odcfg.propframe, tmlt, Constants.EGM96_EARTH_MU),
 					      prop.getAttitude(tmlt, pv), odcfg.SpaceObject.Mass);
 		if (ssta[0].getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
 		    throw(new RuntimeException(String.format("Invalid semi-major axis %f", ssta[0].getA())));
@@ -493,7 +493,7 @@ public class Estimation
 
 	    CartesianOrbit cart  = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 									new Vector3D(pv[3], pv[4], pv[5])),
-						      DataManager.eme2000, tm, Constants.EGM96_EARTH_MU);
+						      odcfg.propframe, tm, Constants.EGM96_EARTH_MU);
 	    if (cart.getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
 		throw(new RuntimeException(String.format("Invalid semi-major axis %f", cart.getA())));
 

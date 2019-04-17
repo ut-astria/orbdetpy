@@ -32,8 +32,11 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.utils.PVCoordinates;
 
 public class Measurements
 {
@@ -113,24 +116,25 @@ public class Measurements
     JSONMeasurement[] rawmeas;
     ArrayList<ObservedMeasurement<?>> measobjs;
 
-    public static Measurements loadJSON(String json, HashMap<String, GroundStation> gsta,
-					Map<String, Settings.JSONMeasurement> mcfg)
+    public static Measurements loadJSON(Settings odcfg, String json)
     {
 	Measurements m = new Measurements();
 	m.rawmeas = new Gson().fromJson(json, JSONMeasurement[].class);
-	m.getMeasurementObjects(gsta, mcfg);
+	m.getMeasurementObjects(odcfg.stations, odcfg.Measurements, odcfg.propframe);
 	return(m);
     }
 
     private void getMeasurementObjects(HashMap<String, GroundStation> gsta,
-				       Map<String, Settings.JSONMeasurement> mcfg)
+				       Map<String, Settings.JSONMeasurement> mcfg, Frame propframe)
     {
 	measobjs = new ArrayList<ObservedMeasurement<?>>();
+
 	for (JSONMeasurement m: rawmeas)
 	{
 	    GroundStation gs = null;
 	    if (m.Station != null)
 		gs = gsta.get(m.Station);
+
 	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time),
 						 DataManager.utcscale);
 
@@ -167,13 +171,29 @@ public class Measurements
 
 	    if (m.PositionVelocity != null)
 	    {
-		measobjs.add(new PV(time,
-				    new Vector3D(m.PositionVelocity[0],
-						 m.PositionVelocity[1], m.PositionVelocity[2]),
-				    new Vector3D(m.PositionVelocity[3], m.PositionVelocity[4],
-						 m.PositionVelocity[5]),
-				    mcfg.get("PositionVelocity").Error, 1.0,
-				    new ObservableSatellite(0)));
+		Double[] X = m.PositionVelocity;
+		Settings.JSONMeasurement c = mcfg.get("PositionVelocity");
+		if (c.ReferenceFrame != null)
+		{
+		    Frame fromframe = DataManager.eme2000;
+		    if (c.ReferenceFrame.equals("GCRF"))
+			fromframe = DataManager.gcrf;
+		    else if (c.ReferenceFrame.equals("ITRF"))
+			fromframe = DataManager.itrf;
+
+		    Transform xfm = fromframe.getTransformTo(propframe, time);
+		    PVCoordinates frompv = new PVCoordinates(new Vector3D(X[0], X[1], X[2]),
+							     new Vector3D(X[3], X[4], X[5]));
+		    PVCoordinates topv = xfm.transformPVCoordinates(frompv);
+
+		    Vector3D p = topv.getPosition();
+		    Vector3D v = topv.getVelocity();
+		    X = new Double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
+		}
+
+		measobjs.add(new PV(time, new Vector3D(X[0], X[1], X[2]),
+				    new Vector3D(X[3], X[4], X[5]),
+				    c.Error, 1.0, new ObservableSatellite(0)));
 	    }
 	}
     }

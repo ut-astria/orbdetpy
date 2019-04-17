@@ -25,6 +25,7 @@ import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -42,6 +43,7 @@ public class DataManager
 
     public static String datapath;
 
+    public static Frame gcrf;
     public static Frame itrf;
     public static Frame eme2000;
     public static TimeScale utcscale;
@@ -55,7 +57,8 @@ public class DataManager
 	DataProvidersManager.getInstance().addProvider(
 	    new DirectoryCrawler(new File(path)));
 
-	itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+	gcrf = FramesFactory.getGCRF();
+	itrf = FramesFactory.getITRF(ITRFVersion.ITRF_2014, IERSConventions.IERS_2010, false);
 	eme2000 = FramesFactory.getEME2000();
 	utcscale = TimeScalesFactory.getUTC();
 	ut1scale = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
