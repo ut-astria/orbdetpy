@@ -35,6 +35,7 @@ _String = autoclass("java.lang.String")
 _DataManager = autoclass("org.astria.DataManager")
 _Estimation = autoclass("org.astria.Estimation")
 _Simulation = autoclass("org.astria.Simulation")
+_ReferenceFrame = autoclass("org.astria.ReferenceFrame")
 
 _DataManager.initialize(_String(_datadir))
 
@@ -45,3 +46,7 @@ def determineOrbit(config, meas):
 def simulateMeasurements(config):
     sim = _Simulation(_String(config))
     return(sim.simulateMeasurements())
+
+def transformFrame(srcframe, time, pv, destframe):
+    return(_ReferenceFrame.transform(_String(srcframe), _String(time),
+                                     pv, _String(destframe)))

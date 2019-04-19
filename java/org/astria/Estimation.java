@@ -378,8 +378,12 @@ public class Estimation
 		    sigma.setSubMatrix(sigdata, 0, 0);
 		}
 
-		unstack(sigpr, prop.propagate(t0.durationFrom(epoch) - tof0, stack(sigma, spvec),
-					      tm.durationFrom(epoch) - tofm));
+		double propt0 = t0.durationFrom(epoch) - tof0;
+		double propt1 = tm.durationFrom(epoch) - tofm;
+		if (propt0 == propt1)
+		    sigpr.setSubMatrix(sigma.getData(), 0, 0);
+		else
+		    unstack(sigpr, prop.propagate(propt0, stack(sigma, spvec), propt1));
 
 		xhatpre = addColumns(sigpr).mapMultiplyToSelf(weight);
 		if (mix == odobs.rawmeas.length)
@@ -421,9 +425,7 @@ public class Estimation
 								       odobs.measobjs.get(mix*2 + 1).getObservedValue()[0]});
 			}
 			else if (raw == null)
-			{
 			    raw = new ArrayRealVector(new double[]{odobs.measobjs.get(mix*2).getObservedValue()[0]});
-			}
 		    }
 		}
 

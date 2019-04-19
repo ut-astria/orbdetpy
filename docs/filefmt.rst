@@ -118,6 +118,29 @@ Configuration files are needed for both simulation and orbit determination.
 
  }
 
+"Simulation" : Optional simulation settings; not used for orbit determination runs {
+
+ "SimulateMeasurements" : true to simulate measurements or false to only output state vectors;
+                          defaults to true.
+
+ "SkipUnobservable" : true to skip instants when the object is below the local horizon; defaults to true.
+
+ "IncludeExtras" : true to generate additional simulated data; defaults to false.
+
+ }
+
+"Integration" : Optional tolerances for numerical integration {
+
+ "MinTimeStep" : Minimum integration time step [s]; defaults to 1.0E-3 s.
+
+ "MaxTimeStep" : Maximum integration time step [s]; defaults to 300.0 s.
+
+ "AbsTolerance" : Integration absolute tolerance; defaults to 1.0E-14.
+
+ "RelTolerance" : Integration relative tolerance; defaults to 1.0E-12.
+
+}
+ 
 "Stations" : Ground stations for measurements. Not required for "PositionVelocity" measurements {
 
  "Station1" : {
