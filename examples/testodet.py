@@ -17,25 +17,27 @@
 import os
 import sys
 import time
-
-if (len(sys.argv) < 4):
-    print("Usage: python %s config_file measurement_file output_file" %
-          sys.argv[0])
-    exit()
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+import argparse
 from orbdetpy import determineOrbit
 
-print("OD start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
 
-with open(sys.argv[1], "r") as fp:
-    config = fp.read()
+def main(args):
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    print("OD start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
+    with open(args.config, "r") as fp:
+        config = fp.read()
+    with open(args.input, "r") as fp:
+        output = determineOrbit(config, fp.read())
+    with open(args.output, "w") as fp:
+        fp.write(output)
+    print("OD end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
 
-with open(sys.argv[2], "r") as fp:
-    output = determineOrbit(config, fp.read())
 
-with open(sys.argv[3], "w") as fp:
-    fp.write(output)
-
-print("OD end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Test script for orbit determination.')
+    parser.add_argument('config', help='Path to config file.')
+    parser.add_argument('input', help='Path to input file.')
+    parser.add_argument('output', help='Path to output file.')
+    args = parser.parse_args()
+    main(args)
