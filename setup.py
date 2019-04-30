@@ -1,11 +1,16 @@
 from setuptools import setup
 from distutils.util import convert_path
-from os import path
+from os import path, environ
 
 
 here = path.abspath(path.dirname(__file__))
 version_dict = {}
 version_path = convert_path('orbdetpy/_version.py')
+java_path = convert_path('java')
+
+# Set environment variables for Java.
+class_path = environ['CLASSPATH']
+environ['CLASSPATH'] = class_path + ';' + java_path
 
 # Get the version number from the version path.
 with open(version_path, 'r') as ver_file:
