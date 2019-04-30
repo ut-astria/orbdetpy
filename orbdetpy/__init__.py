@@ -18,7 +18,7 @@ from os import environ, path, walk, sep
 
 _rootdir = path.dirname(path.abspath(__file__))
 _libsdir = path.join(_rootdir, "lib")
-_datadir = path.join(path.dirname(_rootdir), "data")
+_datadir = path.join(_rootdir, "data")
 
 cpath = ""
 csc = ":" if sep == "/" else ";"
