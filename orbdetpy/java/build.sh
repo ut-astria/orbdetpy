@@ -19,7 +19,7 @@ pushd $(dirname "$0") > /dev/null
 
 export CLASSPATH=`find ../lib -name "*.jar" | tr "\n" ":"`
 
-find . -name "*.class" | xargs rm
+find . -name "*.class" | xargs -0 rm -f
 find . -name "*.java" | xargs javac -Xlint:unchecked -Xlint:deprecation
 
 CLASS=`find . -name "*.class" | tr "\n" " "`

@@ -1,3 +1,5 @@
 **/__pycache__
 **/*.class
-
+**/*_input.json
+**/*_output*.json
+**/*_data*.json

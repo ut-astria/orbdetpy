@@ -17,12 +17,12 @@ Features
 
 The force model for orbit propagation currently includes:
 
-1) EGM96 gravity field up to degree and order 360.
-2) Earth solid tides due to the influence of the Sun and Moon.
-3) FES 2004 ocean tide model up to degree and order 100.
-4) The NRL MSISE-00 and simple exponential models for atmospheric drag.
-5) Solar radiation pressure.
-6) Third body perturbations from the Sun and Moon.
+1. EGM96 gravity field up to degree and order 360.
+2. Earth solid tides due to the influence of the Sun and Moon.
+3. FES 2004 ocean tide model up to degree and order 100.
+4. The NRL MSISE-00 and simple exponential models for atmospheric drag.
+5. Solar radiation pressure.
+6. Third body perturbations from the Sun and Moon.
 
 The measurement model supports range, range-rate, angles, and inertial
 Cartesian coordinates. Filtering is done using Orekit's Extended Kalman
@@ -31,25 +31,38 @@ Filter or our custom Unscented Kalman Filter. Dynamic Model Compensation
 acclerations that result from unmodeled dynamics, maneuvers etc.
 
 You can either use your own measurements or simulate observations using
-the simulateMeasurements() function.
+the ``simulateMeasurements()`` function.
 
 Installation
 ------------
 
-1) Python 3.6+ must be installed with the packages numpy, scipy, pyjnius,
-   and matplotlib.
-2) Install the Java Development Kit 8+ (1.8+) from `here
-   <http://openjdk.java.net>`_. Set the JAVA_HOME environment variable
-   to point to your JDK installation.
+``orbdetpy`` requires ``pyjnius``, which requires the Java Development
+Kit 8+ and ``Cython`` to install.
 
-The lib/ folder contains JAR files for the following libraries, which are
+1. Install the Java Development Kit 8+ (1.8+) from `here
+   <http://openjdk.java.net>`_
+2. Set the ``JAVA_HOME`` environment variable to point to your JDK
+   installation.
+3. Add ``$JAVA_HOME\bin`` and ``$JAVA_HOME\jre\bin\server`` to your
+   ``PATH`` evironment variable
+4. Install ``Cython``::
+
+    pip install cython
+    
+5. Install ``orbdetpy`` with Python 3.6 or later::
+
+    git clone https://github.com/ut-astria/orbdetpy
+    pip install orbdetpy
+
+The ``lib/`` folder contains JAR files for the following libraries, which are
 imported by orbdetpy automatically.
 
-1) `Google gson <https://github.com/google/gson>`_
-2) `Hipparchus 1.4+ <https://hipparchus.org>`_ 
-3) `Orekit 9.3+ <https://www.orekit.org>`_
+1. `Google gson <https://github.com/google/gson>`_
+2. `Hipparchus 1.4+ <https://hipparchus.org>`_ 
+3. `Orekit 9.3+ <https://www.orekit.org>`_
 
-Space weather data in data/ is obtained from `CelesTrak <http://www.celestrak.com/SpaceData/>`_.
+Space weather data in ``data/`` is obtained from
+`CelesTrak <http://www.celestrak.com/SpaceData/>`_.
 
 Examples
 --------
@@ -75,30 +88,30 @@ file docs/filefmt.rst documents the structure of the JSON files.
 The following are some typical use cases. It is assumed that the current
 working directory is examples/data.
 
-1) Simulate state vectors and radar measurements:
+1) Simulate state vectors and radar measurements::
 
-   python ../testsim.py radar_sim_cfg.json sim_data.json
+    python ../testsim.py radar_sim_cfg.json sim_data.json
 
    This will run the simulation configured in radar_sim_cfg.json and
    write simulated output to sim_data.json.
 
-2) Plot simulation results:
+2) Plot simulation results::
 
-   python ../plotsim.py radar_sim_cfg.json sim_data.json
+    python ../plotsim.py radar_sim_cfg.json sim_data.json
 
    This will plot the simulated data generated in (1).
 
-3) Run OD on simulated radar data:
+3) Run OD on simulated radar data::
 
-   python ../testodet.py radar_od_cfg.json sim_data.json od_output.json
+    python ../testodet.py radar_od_cfg.json sim_data.json od_output.json
 
    This will run OD on the simulated radar data generated in (1)
    using the OD configuration in radar_od_cfg.json and write OD
    output to od_output.json.
 
-4) Plot OD results:
+4) Plot OD results::
 
-   python ../plotodet.py radar_od_cfg.json sim_data.json od_output.json
+    python ../plotodet.py radar_od_cfg.json sim_data.json od_output.json
 
    This will plot the OD results from (3).
 
