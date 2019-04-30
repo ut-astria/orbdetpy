@@ -18,15 +18,16 @@ import os
 import sys
 import time
 import argparse
-from orbdetpy import simulateMeasurements
+from orbdetpy import simulate_measurements
 
 
 def main(args):
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    print("Simulation start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
+    print("Simulation start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"),
+          flush=True)
     with open(sys.argv[1], "r") as fp:
         config = fp.read()
-    output = simulateMeasurements(config)
+    output = simulate_measurements(config)
     with open(sys.argv[2], "w") as fp:
         fp.write(output)
     print("Simulation end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
