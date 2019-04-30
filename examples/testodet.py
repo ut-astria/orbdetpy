@@ -18,16 +18,17 @@ import os
 import sys
 import time
 import argparse
-from orbdetpy import determineOrbit
+from orbdetpy import determine_orbit
 
 
 def main(args):
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    print("OD start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
+    print("OD start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"),
+          flush=True)
     with open(args.config, "r") as fp:
         config = fp.read()
     with open(args.input, "r") as fp:
-        output = determineOrbit(config, fp.read())
+        output = determine_orbit(config, fp.read())
     with open(args.output, "w") as fp:
         fp.write(output)
     print("OD end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))

@@ -39,14 +39,14 @@ _ReferenceFrame = autoclass("org.astria.ReferenceFrame")
 
 _DataManager.initialize(_String(_datadir))
 
-def determineOrbit(config, meas):
+def determine_orbit(config, meas):
     filt = _Estimation(_String(config), _String(meas))
     return(filt.determineOrbit())
 
-def simulateMeasurements(config):
+def simulate_measurements(config):
     sim = _Simulation(_String(config))
     return(sim.simulateMeasurements())
 
-def transformFrame(srcframe, time, pv, destframe):
+def transform_frame(srcframe, time, pv, destframe):
     return(_ReferenceFrame.transform(_String(srcframe), _String(time),
                                      pv, _String(destframe)))
