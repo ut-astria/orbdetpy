@@ -17,12 +17,12 @@ Features
 
 The force model for orbit propagation currently includes:
 
-1) EGM96 gravity field up to degree and order 360.
-2) Earth solid tides due to the influence of the Sun and Moon.
-3) FES 2004 ocean tide model up to degree and order 100.
-4) The NRL MSISE-00 and simple exponential models for atmospheric drag.
-5) Solar radiation pressure.
-6) Third body perturbations from the Sun and Moon.
+1. EGM96 gravity field up to degree and order 360.
+2. Earth solid tides due to the influence of the Sun and Moon.
+3. FES 2004 ocean tide model up to degree and order 100.
+4. The NRL MSISE-00 and simple exponential models for atmospheric drag.
+5. Solar radiation pressure.
+6. Third body perturbations from the Sun and Moon.
 
 The measurement model supports range, range-rate, angles, and inertial
 Cartesian coordinates. Filtering is done using Orekit's Extended Kalman
@@ -31,34 +31,38 @@ Filter or our custom Unscented Kalman Filter. Dynamic Model Compensation
 acclerations that result from unmodeled dynamics, maneuvers etc.
 
 You can either use your own measurements or simulate observations using
-the simulateMeasurements() function.
+the ``simulateMeasurements()`` function.
 
 Installation
 ------------
 
-`orbdetpy` requires `pyjnius`, which requires the Java Development Kit 8+
-and `Cython` to install.
+``orbdetpy`` requires ``pyjnius``, which requires the Java Development
+Kit 8+ and ``Cython`` to install.
 
 1. Install the Java Development Kit 8+ (1.8+) from `here
-   <http://openjdk.java.net>`_. Set the JAVA_HOME environment variable
-   to point to your JDK installation.
-2. Install `Cython`::
+   <http://openjdk.java.net>`_
+2. Set the ``JAVA_HOME`` environment variable to point to your JDK
+   installation.
+3. Add ``$JAVA_HOME\bin`` and ``$JAVA_HOME\jre\bin\server`` to your
+   ``PATH`` evironment variable
+4. Install ``Cython``::
 
     pip install cython
     
-3. Install `orbdetpy` with Python 3.6 or later::
+5. Install ``orbdetpy`` with Python 3.6 or later::
 
     git clone https://github.com/ut-astria/orbdetpy
     pip install orbdetpy
 
-The lib/ folder contains JAR files for the following libraries, which are
+The ``lib/`` folder contains JAR files for the following libraries, which are
 imported by orbdetpy automatically.
 
-1) `Google gson <https://github.com/google/gson>`_
-2) `Hipparchus 1.4+ <https://hipparchus.org>`_ 
-3) `Orekit 9.3+ <https://www.orekit.org>`_
+1. `Google gson <https://github.com/google/gson>`_
+2. `Hipparchus 1.4+ <https://hipparchus.org>`_ 
+3. `Orekit 9.3+ <https://www.orekit.org>`_
 
-Space weather data in data/ is obtained from `CelesTrak <http://www.celestrak.com/SpaceData/>`_.
+Space weather data in ``data/`` is obtained from
+`CelesTrak <http://www.celestrak.com/SpaceData/>`_.
 
 Examples
 --------
