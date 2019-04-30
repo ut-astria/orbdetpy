@@ -6,11 +6,6 @@ from os import path, environ
 here = path.abspath(path.dirname(__file__))
 version_dict = {}
 version_path = convert_path('orbdetpy/_version.py')
-java_path = convert_path('java')
-
-# Set environment variables for Java.
-class_path = environ['CLASSPATH']
-environ['CLASSPATH'] = class_path + ';' + java_path
 
 # Get the version number from the version path.
 with open(version_path, 'r') as ver_file:
@@ -43,6 +38,7 @@ CLASSIFIERS = ['Development Status :: 5 - Production/Stable',
 PROJECT_URLS = {'Documentation': 'https://github.com/ut-astria/orbdetpy',
                 'Source': 'https://github.com/ut-astria/orbdetpy',
                 'Tracker': 'https://github.com/ut-astria/orbdetpy/issues'}
+PACKAGE_DATA = {'orbdetpy': ['data/**/*', 'java/**/*.java', 'lib/**/*']}
 
 setup(name='orbdetpy',
       packages=['orbdetpy'],
@@ -56,4 +52,5 @@ setup(name='orbdetpy',
       project_urls=PROJECT_URLS,
       keywords=['orbit_determination utilities orbit space'],
       classifiers=CLASSIFIERS,
+      package_data=PACKAGE_DATA,
       install_requires=requirements)
