@@ -36,11 +36,19 @@ the simulateMeasurements() function.
 Installation
 ------------
 
-1) Python 3.6+ must be installed with the packages numpy, scipy, pyjnius,
-   and matplotlib.
-2) Install the Java Development Kit 8+ (1.8+) from `here
+`orbdetpy` requires `pyjnius`, which requires the Java Development Kit 8+
+and `Cython` to install.
+
+1. Install the Java Development Kit 8+ (1.8+) from `here
    <http://openjdk.java.net>`_. Set the JAVA_HOME environment variable
    to point to your JDK installation.
+2. Install `Cython`::
+
+    pip install cython
+    
+3. Install `orbdetpy` with Python 3.6 or later::
+
+    pip install orbdetpy
 
 The lib/ folder contains JAR files for the following libraries, which are
 imported by orbdetpy automatically.
@@ -75,30 +83,30 @@ file docs/filefmt.rst documents the structure of the JSON files.
 The following are some typical use cases. It is assumed that the current
 working directory is examples/data.
 
-1) Simulate state vectors and radar measurements:
+1) Simulate state vectors and radar measurements::
 
-   python ../testsim.py radar_sim_cfg.json sim_data.json
+    python ../testsim.py radar_sim_cfg.json sim_data.json
 
    This will run the simulation configured in radar_sim_cfg.json and
    write simulated output to sim_data.json.
 
-2) Plot simulation results:
+2) Plot simulation results::
 
-   python ../plotsim.py radar_sim_cfg.json sim_data.json
+    python ../plotsim.py radar_sim_cfg.json sim_data.json
 
    This will plot the simulated data generated in (1).
 
-3) Run OD on simulated radar data:
+3) Run OD on simulated radar data::
 
-   python ../testodet.py radar_od_cfg.json sim_data.json od_output.json
+    python ../testodet.py radar_od_cfg.json sim_data.json od_output.json
 
    This will run OD on the simulated radar data generated in (1)
    using the OD configuration in radar_od_cfg.json and write OD
    output to od_output.json.
 
-4) Plot OD results:
+4) Plot OD results::
 
-   python ../plotodet.py radar_od_cfg.json sim_data.json od_output.json
+    python ../plotodet.py radar_od_cfg.json sim_data.json od_output.json
 
    This will plot the OD results from (3).
 
