@@ -16,7 +16,7 @@
 
 from os import environ, path, walk, sep
 
-_rootdir = path.dirname(path.dirname(path.abspath(__file__)))
+_rootdir = path.dirname(path.abspath(__file__))
 _libsdir = path.join(_rootdir, "lib")
 _datadir = path.join(_rootdir, "data")
 
