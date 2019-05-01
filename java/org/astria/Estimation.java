@@ -68,25 +68,24 @@ public class Estimation
     protected String[] meanames;
     protected boolean combmeas;
 
-    protected int currmeas;
     protected JSONResults results;
 
     public final static String DMC_ACC_ESTM = "DMCaccest";
     public final static String DMC_ACC_PROP = "DMCaccprop";
 
-    public Estimation(String cfgjson, String obsjson) throws Exception
+    public Estimation(String cfgjson, String obsjson)
     {
 	odcfg = Settings.loadJSON(cfgjson);
+	odobs = Measurements.loadJSON(odcfg, obsjson);
 
 	if (odcfg.Estimation.Filter == null)
-	    throw(new Exception("Missing configuration parameter Estimation.Filter"));
-	if (odcfg.Estimation.NoiseTimeDelta <= 0.0)
-	    throw(new Exception("Invalid configuration parameter Estimation.NoiseTimeDelta"));
+	    odcfg.Estimation.Filter = "UKF";
 
 	if (odcfg.Estimation.Filter.equals("UKF") && odcfg.Gravity.Degree >= 2 && odcfg.Gravity.Order >= 0)
 	    odcfg.forces.add(0, new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
-	odobs = Measurements.loadJSON(odcfg, obsjson);
+	if (odcfg.Estimation.NoiseTimeDelta <= 0.0)
+	    odcfg.Estimation.NoiseTimeDelta = 10.0;
 
 	meanames = odcfg.Measurements.keySet().toArray(new String[0]);
 	combmeas = meanames[0].equals("Azimuth") || meanames[0].equals("Elevation") ||
@@ -94,30 +93,15 @@ public class Estimation
 	    meanames[0].equals("PositionVelocity");
     }
 
-    public String determineOrbit() throws Exception
+    public String determineOrbit()
     {
-	currmeas = 0;
 	results = new JSONResults();
 	results.Filter = odcfg.Estimation.Filter;
 
-	try
-	{
-	    if (odcfg.Estimation.Filter.equals("UKF"))
-		new UnscentedKalmanFilter().determineOrbit();
-	    else
-		new ExtendedKalmanFilter().determineOrbit();
-	}
-	catch (Exception exc)
-	{
-	    String msg = exc.getMessage();
-	    if (currmeas < odobs.rawmeas.length)
-		msg = String.format("Measurement %d (%s) : %s", currmeas,
-				    odobs.rawmeas[currmeas].Time, msg);
-	    else
-		msg = String.format("Propagation : %s", msg);
-
-	    throw(new Exception(msg));
-	}
+	if (odcfg.Estimation.Filter.equals("UKF"))
+	    new UnscentedKalmanFilter().determineOrbit();
+	else
+	    new ExtendedKalmanFilter().determineOrbit();
 
 	return(new GsonBuilder().setPrettyPrinting().create().toJson(results));
     }
@@ -182,7 +166,6 @@ public class Estimation
 	    int n = est.getCurrentMeasurementNumber() - 1;
 	    if (!combmeas)
 		n /= meanames.length;
-	    currmeas = n;
 
 	    String k;
 	    JSONResults.JSONEstimation res;
@@ -263,7 +246,7 @@ public class Estimation
 
     protected class UnscentedKalmanFilter
     {
-	protected void determineOrbit() throws Exception
+	protected void determineOrbit()
 	{
 	    int numsta = odcfg.estparams.size() + 6;
 	    int numsig = 2*numsta;
@@ -320,7 +303,6 @@ public class Estimation
 
 	    for (int mix = 0; mix <= odobs.rawmeas.length; mix++)
 	    {
-		currmeas = mix;
 		JSONResults.JSONEstimation odout = results.new JSONEstimation();
 
 		double tof0 = tofm;

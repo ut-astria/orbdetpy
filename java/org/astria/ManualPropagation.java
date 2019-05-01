@@ -100,59 +100,52 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 
     public double[] computeDerivatives(double t, double[] X)
     {
-	try
-	{
-	    Arrays.fill(Xdot, 0.0);
-	    AbsoluteDate tm = new AbsoluteDate(epoch, t);
+	Arrays.fill(Xdot, 0.0);
+	AbsoluteDate tm = new AbsoluteDate(epoch, t);
 
-	    for (int i = 0; i < X.length; i += statedim)
+	for (int i = 0; i < X.length; i += statedim)
+	{
+	    SpacecraftState ss = new SpacecraftState(
+		new CartesianOrbit(new PVCoordinates(
+				       new Vector3D(X[i],   X[i+1], X[i+2]),
+				       new Vector3D(X[i+3], X[i+4], X[i+5])),
+				   odcfg.propframe, tm, Constants.EGM96_EARTH_MU),
+		getAttitude(tm, Arrays.copyOfRange(X, i, i+6)), odcfg.SpaceObject.Mass);
+
+	    Vector3D acc = Vector3D.ZERO;
+	    for (ForceModel fmod : odcfg.forces)
 	    {
-		SpacecraftState ss = new SpacecraftState(
-		    new CartesianOrbit(new PVCoordinates(
-					   new Vector3D(X[i],   X[i+1], X[i+2]),
-					   new Vector3D(X[i+3], X[i+4], X[i+5])),
-				       odcfg.propframe, tm, Constants.EGM96_EARTH_MU),
-		    getAttitude(tm, Arrays.copyOfRange(X, i, i+6)), odcfg.SpaceObject.Mass);
-
-		Vector3D acc = Vector3D.ZERO;
-		for (ForceModel fmod : odcfg.forces)
+		double[] fpar = fmod.getParameters();
+		if (X.length > statedim)
 		{
-		    double[] fpar = fmod.getParameters();
-		    if (X.length > statedim)
+		    for (int j = 0; j < odcfg.estparams.size(); j++)
 		    {
-			for (int j = 0; j < odcfg.estparams.size(); j++)
-			{
-			    Settings.EstimatedParameter emp = odcfg.estparams.get(j);
-			    if (fmod.isSupported(emp.name))
-				fpar[0] = X[i + j + 6];
-			}
+			Settings.EstimatedParameter emp = odcfg.estparams.get(j);
+			if (fmod.isSupported(emp.name))
+			    fpar[0] = X[i + j + 6];
 		    }
-
-		    acc = acc.add(fmod.acceleration(ss, fpar));
 		}
 
-		Xdot[i]   = X[i+3];
-		Xdot[i+1] = X[i+4];
-		Xdot[i+2] = X[i+5];
-		Xdot[i+3] = acc.getX();
-		Xdot[i+4] = acc.getY();
-		Xdot[i+5] = acc.getZ();
-
-		if (X.length > statedim && odcfg.Estimation.DMCCorrTime > 0.0 &&
-		    odcfg.Estimation.DMCSigmaPert > 0.0)
-		{
-		    Xdot[i+3] += X[i+statedim-3];
-		    Xdot[i+4] += X[i+statedim-2];
-		    Xdot[i+5] += X[i+statedim-1];
-		    Xdot[i+statedim-3] = -X[i+statedim-3]/odcfg.Estimation.DMCCorrTime;
-		    Xdot[i+statedim-2] = -X[i+statedim-2]/odcfg.Estimation.DMCCorrTime;
-		    Xdot[i+statedim-1] = -X[i+statedim-1]/odcfg.Estimation.DMCCorrTime;
-		}
+		acc = acc.add(fmod.acceleration(ss, fpar));
 	    }
-	}
-	catch (Exception exc)
-	{
-	    throw(new RuntimeException(exc.getMessage()));
+
+	    Xdot[i]   = X[i+3];
+	    Xdot[i+1] = X[i+4];
+	    Xdot[i+2] = X[i+5];
+	    Xdot[i+3] = acc.getX();
+	    Xdot[i+4] = acc.getY();
+	    Xdot[i+5] = acc.getZ();
+
+	    if (X.length > statedim && odcfg.Estimation.DMCCorrTime > 0.0 &&
+		odcfg.Estimation.DMCSigmaPert > 0.0)
+	    {
+		Xdot[i+3] += X[i+statedim-3];
+		Xdot[i+4] += X[i+statedim-2];
+		Xdot[i+5] += X[i+statedim-1];
+		Xdot[i+statedim-3] = -X[i+statedim-3]/odcfg.Estimation.DMCCorrTime;
+		Xdot[i+statedim-2] = -X[i+statedim-2]/odcfg.Estimation.DMCCorrTime;
+		Xdot[i+statedim-1] = -X[i+statedim-1]/odcfg.Estimation.DMCCorrTime;
+	    }
 	}
 
 	return(Xdot);

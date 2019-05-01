@@ -261,7 +261,7 @@ public class Settings
 
     Frame propframe;
 
-    public static Settings loadJSON(String json) throws Exception
+    public static Settings loadJSON(String json)
     {
 	Settings set = new Gson().fromJson(json, Settings.class);
 
@@ -295,13 +295,10 @@ public class Settings
 	    String k = kv.getKey();
 	    JSONStation v = kv.getValue();
 
-	    GroundStation sta = new GroundStation(
-		new TopocentricFrame(
-		    new OneAxisEllipsoid(
-			Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-			Constants.WGS84_EARTH_FLATTENING, DataManager.itrf),
-		    new GeodeticPoint(v.Latitude, v.Longitude,
-				      v.Altitude), k));
+	    GroundStation sta = new GroundStation(new TopocentricFrame(new OneAxisEllipsoid(
+									   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+									   Constants.WGS84_EARTH_FLATTENING, DataManager.itrf),
+								       new GeodeticPoint(v.Latitude, v.Longitude, v.Altitude), k));
 	    sta.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
@@ -310,7 +307,7 @@ public class Settings
 	}
     }
 
-    private void loadForces() throws Exception
+    private void loadForces()
     {
 	forces = new ArrayList<ForceModel>();
 
@@ -324,21 +321,15 @@ public class Settings
 	    forces.add(new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
 	if (OceanTides.Degree >= 0 && OceanTides.Order >= 0)
-	    forces.add(new OceanTides(DataManager.itrf,
-				      Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-				      Constants.EGM96_EARTH_MU,
-				      OceanTides.Degree,
-				      OceanTides.Order,
-				      IERSConventions.IERS_2010, DataManager.ut1scale));
+	    forces.add(new OceanTides(DataManager.itrf, Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+				      Constants.EGM96_EARTH_MU, OceanTides.Degree,
+				      OceanTides.Order, IERSConventions.IERS_2010, DataManager.ut1scale));
 
 	if ((SolidTides.Sun || SolidTides.Moon) && grav != null)
-	    forces.add(new org.orekit.forces.gravity.SolidTides(
-			   DataManager.itrf,
-			   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-			   Constants.EGM96_EARTH_MU, grav.getTideSystem(),
-			   IERSConventions.IERS_2010, DataManager.ut1scale,
-			   CelestialBodyFactory.getSun(),
-			   CelestialBodyFactory.getMoon()));
+	    forces.add(new org.orekit.forces.gravity.SolidTides(DataManager.itrf, Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+								Constants.EGM96_EARTH_MU, grav.getTideSystem(),
+								IERSConventions.IERS_2010, DataManager.ut1scale,
+								CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon()));
 
 	if (ThirdBodies.Sun)
 	    forces.add(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
@@ -369,19 +360,15 @@ public class Settings
 	{
 	    dragsc = new IsotropicDrag(SpaceObject.Area, Drag.Coefficient.Value);
 
-	    radnsc = new IsotropicRadiationSingleCoefficient(SpaceObject.Area,
-							     RadiationPressure.Creflection.Value,
-							     RadiationPressure.Creflection.Min,
-							     RadiationPressure.Creflection.Max);
+	    radnsc = new IsotropicRadiationSingleCoefficient(SpaceObject.Area, RadiationPressure.Creflection.Value,
+							     RadiationPressure.Creflection.Min, RadiationPressure.Creflection.Max);
 	}
 
 	if (Drag.Model.equals("Exponential"))
 	{
-	    atmmodel = new SimpleExponentialAtmosphere(
-		new OneAxisEllipsoid(
-		    Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-		    Constants.WGS84_EARTH_FLATTENING, DataManager.itrf),
-		Drag.ExpRho0, Drag.ExpH0, Drag.ExpHScale);
+	    atmmodel = new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+									    Constants.WGS84_EARTH_FLATTENING, DataManager.itrf),
+						       Drag.ExpRho0, Drag.ExpH0, Drag.ExpHScale);
 	}
 	else if (Drag.Model.equals("MSISE"))
 	{
@@ -395,20 +382,15 @@ public class Settings
 		}
 	    }
 
-	    atmmodel = new NRLMSISE00(
-		new MSISEInputs(DataManager.msisedata.mindate,
-				DataManager.msisedata.maxdate,
-				DataManager.msisedata.data, apflag),
-		CelestialBodyFactory.getSun(), new OneAxisEllipsoid(
-		    Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-		    Constants.WGS84_EARTH_FLATTENING,
-		    DataManager.itrf));
+	    atmmodel = new NRLMSISE00(new MSISEInputs(DataManager.msisedata.mindate, DataManager.msisedata.maxdate,
+						      DataManager.msisedata.data, apflag),
+		CelestialBodyFactory.getSun(), new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+								    Constants.WGS84_EARTH_FLATTENING, DataManager.itrf));
 
 	    if (Drag.MSISEFlags != null)
 	    {
 		for (int i = 0; i < Drag.MSISEFlags.length; i++)
-		    atmmodel = ((NRLMSISE00) atmmodel).withSwitch(Drag.MSISEFlags[i][0],
-								  Drag.MSISEFlags[i][1]);
+		    atmmodel = ((NRLMSISE00) atmmodel).withSwitch(Drag.MSISEFlags[i][0], Drag.MSISEFlags[i][1]);
 	    }
 	}
 
@@ -416,16 +398,13 @@ public class Settings
 	    forces.add(new DragForce(atmmodel, dragsc));
 
 	if (RadiationPressure.Sun)
-	    forces.add(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
-			   Constants.WGS84_EARTH_EQUATORIAL_RADIUS, radnsc));
+	    forces.add(new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS, radnsc));
 
 	if (Maneuvers != null)
 	{
 	    for (JSONManeuver m : Maneuvers)
-		forces.add(new ConstantThrustManeuver(
-			       new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time),
-						DataManager.utcscale),
-			       m.Duration, m.Thrust, m.Isp, new Vector3D(m.Direction)));
+		forces.add(new ConstantThrustManeuver(new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale),
+						      m.Duration, m.Thrust, m.Isp, new Vector3D(m.Direction)));
 	}
     }
 
@@ -435,25 +414,19 @@ public class Settings
 
 	if (Drag.Coefficient.Estimation != null &&
 	    Drag.Coefficient.Estimation.equals("Estimate"))
-	    estparams.add(new EstimatedParameter(DragSensitive.DRAG_COEFFICIENT,
-						 Drag.Coefficient.Min,
-						 Drag.Coefficient.Max,
-						 Drag.Coefficient.Value));
+	    estparams.add(new EstimatedParameter(DragSensitive.DRAG_COEFFICIENT, Drag.Coefficient.Min,
+						 Drag.Coefficient.Max, Drag.Coefficient.Value));
 
 	if (RadiationPressure.Creflection.Estimation != null &&
 	    RadiationPressure.Creflection.Estimation.equals("Estimate"))
-	    estparams.add(new EstimatedParameter(RadiationSensitive.REFLECTION_COEFFICIENT,
-						 RadiationPressure.Creflection.Min,
-						 RadiationPressure.Creflection.Max,
-						 RadiationPressure.Creflection.Value));
+	    estparams.add(new EstimatedParameter(RadiationSensitive.REFLECTION_COEFFICIENT, RadiationPressure.Creflection.Min,
+						 RadiationPressure.Creflection.Max, RadiationPressure.Creflection.Value));
 
 	if (Estimation != null && Estimation.DMCCorrTime > 0.0 && Estimation.DMCSigmaPert > 0.0)
 	{
 	    for (int i = 0; i < 3; i++)
-		estparams.add(new EstimatedParameter(org.astria.Estimation.DMC_ACC_ESTM+i,
-						     Estimation.DMCAcceleration.Min,
-						     Estimation.DMCAcceleration.Max,
-						     Estimation.DMCAcceleration.Value));
+		estparams.add(new EstimatedParameter(org.astria.Estimation.DMC_ACC_ESTM+i, Estimation.DMCAcceleration.Min,
+						     Estimation.DMCAcceleration.Max, Estimation.DMCAcceleration.Value));
 	}
     }
 
@@ -469,8 +442,7 @@ public class Settings
 
 	    AbsoluteDate epoch;
 	    if (Propagation.Start != null)
-		epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start),
-					 DataManager.utcscale);
+		epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start), DataManager.utcscale);
 	    else
 	    {
 		epoch = parser.getDate().shiftedBy(0.0);
@@ -490,8 +462,7 @@ public class Settings
 		    fromframe = DataManager.itrf;
 	    }
 
-	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start),
-						  DataManager.utcscale);
+	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start), DataManager.utcscale);
 	    Transform xfm = fromframe.getTransformTo(propframe, epoch);
 
 	    PVCoordinates frompv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]),
@@ -537,11 +508,9 @@ public class Settings
 	    AbsoluteDate t0 = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start),
 					       DataManager.utcscale);
 
-	    KeplerianPropagator prop = new KeplerianPropagator(new CartesianOrbit(
-								   new PVCoordinates(
-								       new Vector3D(X0[0], X0[1], X0[2]),
-								       new Vector3D(X0[3], X0[4], X0[5])),
-								   propframe, t0, Constants.EGM96_EARTH_MU));
+	    KeplerianPropagator prop = new KeplerianPropagator(new CartesianOrbit(new PVCoordinates(new Vector3D(X0[0], X0[1], X0[2]),
+												    new Vector3D(X0[3], X0[4], X0[5])),
+										  propframe, t0, Constants.EGM96_EARTH_MU));
 
 	    LocalOrbitalFrame lof = new LocalOrbitalFrame(propframe, LOFType.VVLH, prop, "");
 
