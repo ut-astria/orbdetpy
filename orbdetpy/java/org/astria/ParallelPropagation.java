@@ -46,7 +46,7 @@ public class ParallelPropagation
     }
 
     public List<SpacecraftState> propagate(String[] cfgjson, String propStart,
-					   String propEnd, double propStep) throws Exception
+					   String propEnd, double propStep)
     {
 	List<Propagator> props = new ArrayList<Propagator>(cfgjson.length);
 	for (int i = 0; i < cfgjson.length; i++)

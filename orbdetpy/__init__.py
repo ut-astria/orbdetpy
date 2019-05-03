@@ -35,7 +35,7 @@ _String = autoclass("java.lang.String")
 _DataManager = autoclass("org.astria.DataManager")
 _Estimation = autoclass("org.astria.Estimation")
 _Simulation = autoclass("org.astria.Simulation")
-_ReferenceFrame = autoclass("org.astria.ReferenceFrame")
+_Utilities = autoclass("org.astria.Utilities")
 
 _DataManager.initialize(_String(_datadir))
 
@@ -48,5 +48,9 @@ def simulate_measurements(config):
     return(sim.simulateMeasurements())
 
 def transform_frame(srcframe, time, pv, destframe):
-    return(_ReferenceFrame.transform(_String(srcframe), _String(time),
+    return(_Utilities.transformFrame(_String(srcframe), _String(time),
                                      pv, _String(destframe)))
+
+def iod_gooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
+    return(_Utilities.iodGooding(gslat, gslon, gsalt, tmstr, azi, ele,
+                                 rho1init, rho3init))

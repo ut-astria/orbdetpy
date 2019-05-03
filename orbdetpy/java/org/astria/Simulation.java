@@ -51,9 +51,10 @@ public class Simulation
 {
     private Settings simcfg;
 
-    public Simulation(String cfgjson) throws Exception
+    public Simulation(String cfgjson)
     {
 	simcfg = Settings.loadJSON(cfgjson);
+
 	if (simcfg.Propagation.Step <= 0.0)
 	    simcfg.Propagation.Step = 60.0;
     }
