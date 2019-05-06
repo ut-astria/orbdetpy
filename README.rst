@@ -9,9 +9,6 @@ This is orbdetpy, a library of Python and Java routines for orbit
 determination. It is a thin Python wrapper for our estimation tools
 and Orekit, which are both written in Java. 
 
-orbdetpy is free software, distributed under the terms of the `GNU
-General Public License <http://www.gnu.org/licenses/gpl.html>`_.
-
 Features
 --------
 

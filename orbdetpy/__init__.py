@@ -31,25 +31,21 @@ environ["CLASSPATH"] = cpath
 
 from jnius import autoclass
 
-_String = autoclass("java.lang.String")
 _DataManager = autoclass("org.astria.DataManager")
 _Estimation = autoclass("org.astria.Estimation")
 _Simulation = autoclass("org.astria.Simulation")
 _Utilities = autoclass("org.astria.Utilities")
 
-_DataManager.initialize(_String(_datadir))
+_DataManager.initialize(_datadir)
 
 def determineOrbit(config, meas):
-    filt = _Estimation(_String(config), _String(meas))
-    return(filt.determineOrbit())
+    return(_Estimation(config, meas).determineOrbit())
 
 def simulateMeasurements(config):
-    sim = _Simulation(_String(config))
-    return(sim.simulateMeasurements())
+    return(_Simulation(config).simulateMeasurements())
 
 def transformFrame(srcframe, time, pv, destframe):
-    return(_Utilities.transformFrame(_String(srcframe), _String(time),
-                                     pv, _String(destframe)))
+    return(_Utilities.transformFrame(srcframe, time, pv, destframe))
 
 def iodGooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
     return(_Utilities.iodGooding(gslat, gslon, gsalt, tmstr, azi, ele,
