@@ -38,7 +38,7 @@ _Utilities = autoclass("org.astria.Utilities")
 
 _DataManager.initialize(_datadir)
 
-def determine_orbit(config, meas):
+def determineOrbit(config, meas):
     """ Performs orbit determination given config and input data files.
 
     Args:
@@ -55,7 +55,7 @@ def determine_orbit(config, meas):
     """
     return(_Estimation(config, meas).determineOrbit())
 
-def simulate_measurements(config):
+def simulateMeasurements(config):
     """ Simulates measurement data given a config file.
 
     Args:
@@ -71,7 +71,7 @@ def simulate_measurements(config):
     """
     return(_Simulation(config).simulateMeasurements())
 
-def transform_frame(srcframe, time, pv, destframe):
+def transformFrame(srcframe, time, pv, destframe):
     """ Transforms a measurement from one frame to another.
 
     Args:
@@ -86,7 +86,7 @@ def transform_frame(srcframe, time, pv, destframe):
     """
     return(_Utilities.transformFrame(srcframe, time, pv, destframe))
 
-def iod_gooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
+def iodGooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
     """ Perform Gooding initial orbit determination. """
     return(_Utilities.iodGooding(gslat, gslon, gsalt, tmstr, azi, ele,
                                  rho1init, rho3init))
