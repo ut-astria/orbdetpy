@@ -16,7 +16,7 @@
 
 from os import environ, path, walk, sep
 
-_rootdir = path.dirname(path.dirname(path.abspath(__file__)))
+_rootdir = path.dirname(path.abspath(__file__))
 _libsdir = path.join(_rootdir, "lib")
 _datadir = path.join(_rootdir, "data")
 
@@ -38,15 +38,55 @@ _Utilities = autoclass("org.astria.Utilities")
 
 _DataManager.initialize(_datadir)
 
-def determineOrbit(config, meas):
+def determine_orbit(config, meas):
+    """ Performs orbit determination given config and input data files.
+
+    Args:
+        config_path: path to config JSON file.
+        input_path: path to input (measurement) JSON file.
+
+    Keyword Args:
+        output_path: if specified, results are written to this path. Default
+            is None.
+
+    Returns:
+        Orbit determination results as string.
+
+    """
     return(_Estimation(config, meas).determineOrbit())
 
-def simulateMeasurements(config):
+def simulate_measurements(config):
+    """ Simulates measurement data given a config file.
+
+    Args:
+        config_path: path to config JSON file.
+
+    Keyword Args:
+        output_path: if specified, simulated data is written to this path.
+            Default is None.
+
+    Returns:
+        Simulated data results as string.
+
+    """
     return(_Simulation(config).simulateMeasurements())
 
-def transformFrame(srcframe, time, pv, destframe):
+def transform_frame(srcframe, time, pv, destframe):
+    """ Transforms a measurement from one frame to another.
+
+    Args:
+        source_frame: source measurement frame.
+        time: the time of the measurement.
+        pv: pointing vector for the measurement.
+        dest_frame: the destination measurement frame.
+
+    Returns:
+        Pointing vector transformed to the destination frame.
+
+    """
     return(_Utilities.transformFrame(srcframe, time, pv, destframe))
 
-def iodGooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
+def iod_gooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
+    """ Perform Gooding initial orbit determination. """
     return(_Utilities.iodGooding(gslat, gslon, gsalt, tmstr, azi, ele,
                                  rho1init, rho3init))
