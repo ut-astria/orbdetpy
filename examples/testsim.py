@@ -17,23 +17,26 @@
 import os
 import sys
 import time
+import argparse
+from orbdetpy import simulate_measurements
 
-if (len(sys.argv) < 3):
-    print("Usage: python %s config_file output_file" % sys.argv[0])
-    exit()
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+def main(args):
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    print("Simulation start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"),
+          flush=True)
+    with open(sys.argv[1], "r") as fp:
+        config = fp.read()
+    output = simulate_measurements(config)
+    with open(sys.argv[2], "w") as fp:
+        fp.write(output)
+    print("Simulation end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
 
-from orbdetpy import simulateMeasurements
 
-print("Simulation start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
-
-with open(sys.argv[1], "r") as fp:
-    config = fp.read()
-
-output = simulateMeasurements(config)
-
-with open(sys.argv[2], "w") as fp:
-    fp.write(output)
-
-print("Simulation end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Test script for simulating measurement output.')
+    parser.add_argument('config', help='Path to config file.')
+    parser.add_argument('output', help='Path to output file.')
+    args = parser.parse_args()
+    main(args)
