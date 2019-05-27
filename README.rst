@@ -34,7 +34,7 @@ Installation
 ------------
 
 1) Python 3.6+ must be installed with the packages numpy, scipy, pyjnius,
-   and matplotlib.
+   matplotlib, requests.
 2) Install the Java Development Kit 8+ (1.8+) from `here
    <http://openjdk.java.net>`_. Set the JAVA_HOME environment variable
    to point to your JDK installation.
@@ -47,6 +47,8 @@ imported by orbdetpy automatically.
 3) `Orekit 9.3+ <https://www.orekit.org>`_
 
 Space weather data in data/ is obtained from `CelesTrak <http://www.celestrak.com/SpaceData/>`_.
+The astrodynamics data in data/ must be periodically updated using the
+script examples/update_data.py.
 
 Examples
 --------
