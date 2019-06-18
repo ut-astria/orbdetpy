@@ -45,8 +45,6 @@
 
     "SpaceObject" :
     {
-	"Name" : "GALAXY 15",
-	"NoradID" : 28884,
 	"Mass" : 2000.0,
 	"Area" : 20.0
     },

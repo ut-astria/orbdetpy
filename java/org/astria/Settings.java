@@ -201,6 +201,7 @@ public class Settings
     {
 	boolean TwoWay;
 	double[] Error;
+	double[] Bias;
 	String ReferenceFrame;
     }
 
