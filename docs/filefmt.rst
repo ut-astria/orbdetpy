@@ -127,6 +127,8 @@ Configuration files are needed for both simulation and orbit determination.
 
  "IncludeExtras" : true to generate additional simulated data; defaults to false.
 
+ "IncludeStationState" : true to include station inertial coordinates; defaults to false.
+
  }
 
 "Integration" : Optional tolerances for numerical integration {

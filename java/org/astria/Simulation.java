@@ -61,7 +61,7 @@ public class Simulation
     public String simulateMeasurements()
     {
 	Random rand = new Random();
-	boolean simulmeas = true, skipunobs = true, inclextra = false;
+	boolean simulmeas = true, skipunobs = true, inclextra = false, inclstapos = false;
 	if (simcfg.Simulation != null)
 	{
 	    if (simcfg.Simulation.SimulateMeasurements != null && !simcfg.Simulation.SimulateMeasurements)
@@ -70,6 +70,8 @@ public class Simulation
 		skipunobs = false;
 	    if (simcfg.Simulation.IncludeExtras != null && simcfg.Simulation.IncludeExtras)
 		inclextra = true;
+	    if (simcfg.Simulation.IncludeStationState != null && simcfg.Simulation.IncludeStationState)
+		inclstapos = true;
 	}
 
 	double[] Xi = simcfg.getInitialState();
@@ -165,6 +167,16 @@ public class Simulation
 
 		    Measurements.JSONSimulatedMeasurement clone = meas.new JSONSimulatedMeasurement(json);
 		    clone.Station = kv.getKey();
+		    if (inclstapos)
+		    {
+			pvc = obj.getBaseFrame().getPVCoordinates(tm, simcfg.propframe);
+			pos = pvc.getPosition();
+			vel = pvc.getVelocity();
+			acc = pvc.getAcceleration();
+			clone.StationState = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(),
+							  vel.getZ(), acc.getX(), acc.getY(), acc.getZ()};
+		    }
+
 		    for (Map.Entry<String, Settings.JSONMeasurement> nvp : simcfg.Measurements.entrySet())
 		    {
 			String name = nvp.getKey();
@@ -186,7 +198,8 @@ public class Simulation
 			    if (val.Bias != null)
 				clone.RangeRate += val.Bias[0];
 			}
-			else if (name.equals("RightAscension") || name.equals("Declination"))
+			else if (name.equals("RightAscension") || name.equals("Declination") &&
+				 clone.RightAscension == null)
 			{
 			    obs = new AngularRaDec(obj, simcfg.propframe, tm, new double[]{0.0, 0.0},
 						   new double[]{val.Error[0], val.Error[0]}, new double[]{1.0, 1.0},
@@ -199,7 +212,7 @@ public class Simulation
 				clone.Declination += val.Bias[0];
 			    }
 			}
-			else if (name.equals("Azimuth") || name.equals("Elevation"))
+			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.Azimuth == null)
 			{
 			    clone.Azimuth = obs[0] + rand.nextGaussian()*val.Error[0];
 			    clone.Elevation = obs[1] + rand.nextGaussian()*val.Error[0];

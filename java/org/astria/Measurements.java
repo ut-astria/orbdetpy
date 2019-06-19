@@ -128,6 +128,7 @@ public class Measurements
 	double[] AccThirdBodies;
 	double[] AccRadiationPressure;
 	double[] AccThrust;
+	double[] StationState;
 
 	public JSONSimulatedMeasurement()
 	{
@@ -145,6 +146,7 @@ public class Measurements
 	    AccThirdBodies = src.AccThirdBodies;
 	    AccRadiationPressure = src.AccRadiationPressure;
 	    AccThrust = src.AccThrust;
+	    StationState = src.StationState;
 	}
     }
 
