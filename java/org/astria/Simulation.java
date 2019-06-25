@@ -22,9 +22,6 @@ import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
-import org.astria.DataManager;
-import org.astria.Measurements;
-import org.astria.Settings;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.attitudes.AttitudeProvider;
@@ -95,6 +92,7 @@ public class Simulation
 								    simcfg.propframe, tm, Constants.EGM96_EARTH_MU),
 						 simcfg.SpaceObject.Mass));
 
+	Measurements meas = new Measurements();
 	ArrayList<Measurements.JSONSimulatedMeasurement> mall = new ArrayList<Measurements.JSONSimulatedMeasurement>();
 	while (true)
 	{
@@ -104,7 +102,6 @@ public class Simulation
 	    Vector3D vel = pvc.getVelocity();
 	    Vector3D acc = pvc.getAcceleration();
 
-	    Measurements meas = new Measurements();
 	    Measurements.JSONSimulatedMeasurement json = meas.new JSONSimulatedMeasurement();
 	    json.Time = tm.toString() + "Z";
 	    json.TrueState = meas.new JSONState();
@@ -246,8 +243,7 @@ public class Simulation
 		break;
 	}
 
-	Measurements meas = new Measurements();
-	meas.rawmeas = mall.toArray(new Measurements.JSONSimulatedMeasurement[0]);
-	return(new GsonBuilder().setPrettyPrinting().create().toJson(meas.rawmeas));
+	Measurements.JSONMeasurement[] rawmeas = mall.toArray(new Measurements.JSONSimulatedMeasurement[0]);
+	return(new GsonBuilder().setPrettyPrinting().create().toJson(rawmeas));
     }
 }

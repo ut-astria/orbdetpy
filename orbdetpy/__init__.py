@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from os import environ, path, walk, sep
+from glob import iglob
+from os import environ, path, sep
 
 _rootdir = path.dirname(path.dirname(path.abspath(__file__)))
 _libsdir = path.join(_rootdir, "lib")
@@ -22,20 +23,18 @@ _datadir = path.join(_rootdir, "data")
 
 cpath = ""
 csc = ":" if sep == "/" else ";"
-for r, d, files in walk(_libsdir):
-    for file in files:
-        if (file.endswith(".jar")):
-            cpath += path.join(r, file) + csc
+jars = iglob(path.join(_libsdir, "**"), recursive = True)
+for jar in jars:
+    if (jar.endswith(".jar")):
+        cpath += jar + csc
 
 environ["CLASSPATH"] = cpath
-
 from jnius import autoclass
 
 _DataManager = autoclass("org.astria.DataManager")
 _Estimation = autoclass("org.astria.Estimation")
 _Simulation = autoclass("org.astria.Simulation")
 _Utilities = autoclass("org.astria.Utilities")
-
 _DataManager.initialize(_datadir)
 
 def determineOrbit(config, meas):
