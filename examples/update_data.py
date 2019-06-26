@@ -31,13 +31,11 @@ def format_weather(lines):
             break
         if (len(line) == 0 or not line[0].isnumeric()):
             continue
-
         fmtdata += ",".join([line[i:j] for i,j in zip(c1, c2)]) + "\n"
 
     return(fmtdata)
 
 datadir = path.join(path.dirname(path.dirname(path.abspath(__file__))), "data")
-
 updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
             path.join(datadir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
            ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
@@ -49,7 +47,7 @@ updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980
 
 for u in updates:
     print("Updating %s" % u[1])
-    resp = requests.get(u[0])
+    resp = requests.get(u[0], timeout = 180.0)
     if (resp.status_code != 200):
         print("Error %s in %s", (resp.status_code, u[0]))
         continue
