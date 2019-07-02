@@ -20,6 +20,11 @@ from datetime import datetime
 from jnius import autoclass
 
 def format_data(cfg, obs):
+    for s in cfg["Stations"].values():
+        s["Latitude"] *= 180.0/math.pi
+        s["Longitude"] *= 180.0/math.pi
+        s["Altitude"] /= 1000.0
+
     mit = cfg["Measurements"].keys()
     for o in obs:
         for i in mit:
@@ -28,46 +33,57 @@ def format_data(cfg, obs):
             else:
                 o[i] *= 180.0/math.pi
 
-def export_TDM(obj_id_list, cfg_json_list, obs_json_list):
+def export_TDM(obj_id, cfg_file, obs_file):
+    with open(cfg_file, "r") as fh:
+        cfg = json.load(fh)
+    with open(obs_file, "r") as fh:
+        obs = json.load(fh)
+    format_data(cfg, obs)
+
+    miter = cfg["Measurements"].keys()
+    if ("RightAscension" in miter and "Declination" in miter):
+        frame = cfg["Propagation"].get("InertialFrame", "EME2000")
+        if (frame == "GCRF"):
+            frame = "ICRF"
+        obstype = "ANGLE_TYPE = RADEC\nREFERENCE_FRAME = %s" % frame
+        obspath = "1,2"
+    if ("Azimuth" in miter and "Elevation" in miter):
+        obstype = "ANGLE_TYPE = AZEL"
+        obspath = "1,2"
+    if ("Range" in miter):
+        obspath = "2,1,2"
+        if ("Azimuth" in miter and "Elevation" in miter):
+            obstype = "RANGE_UNITS = km\nANGLE_TYPE = AZEL"
+        else:
+            obstype = "RANGE_UNITS = km"
+
     utcnow = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     tdm_data = "CCSDS_TDM_VERS = 1.0\nCREATION_DATE = {utc_time}\n" \
                "ORIGINATOR = UT-ASTRIA\n\n""".format(utc_time = utcnow)
 
-    for obj_id, cfg_json, obs_json in zip(obj_id_list, cfg_json_list, obs_json_list):
-        cfg = json.loads(cfg_json)
-        obs = json.loads(obs_json)
-        format_data(cfg, obs)
-
-        miter = cfg["Measurements"].keys()
-        if ("RightAscension" in miter):
-            obstype = "ANGLE_TYPE = RADEC\nREFERENCE_FRAME = EME2000"
-            obspath = "1,2"
-        elif ("Azimuth" in miter):
-            obstype = "ANGLE_TYPE = AZEL"
-            obspath = "1,2"
-        elif ("Range" in miter):
-            obstype = "RANGE_UNITS = km"
-            obspath = "2,1,2"
-        else:
-            return(None)
-
-        block_header = "META_START\nTIME_SYSTEM = UTC\nSTART_TIME = {start_time}\n" \
-                       "STOP_TIME = {stop_time}\nPARTICIPANT_1 = {part1}\nPARTICIPANT_2 = {sensor}\n" \
+    for sname, sinfo in cfg["Stations"].items():
+        sensor = "%s (Lat: %f, Lon: %f, Alt: %f km)" % (
+            sname, sinfo["Latitude"], sinfo["Longitude"], sinfo["Altitude"])
+        block_header = "META_START\nTIME_SYSTEM = UTC\n" \
+                       "PARTICIPANT_1 = {part1}\nPARTICIPANT_2 = {sensor}\n" \
                        "MODE = SEQUENTIAL\nPATH = {part_path}\n{obs_opt}\nMETA_STOP\n\n".format(
-                        start_time=obs[0]["Time"], stop_time=obs[-1]["Time"],part1=obj_id,
-                        part_path=obspath, obs_opt=obstype, sensor=list(cfg["Stations"].keys())[0])
+                           part1=obj_id, part_path=obspath, obs_opt=obstype, sensor=sensor)
 
         block_ent = "DATA_START\n"
         for o in obs:
-            if ("RightAscension" in miter):
-                block_ent += "ANGLE_1 = {Time} {RightAscension}\n".format(**o)
-                block_ent += "ANGLE_2 = {Time} {Declination}\n".format(**o)
-            elif ("Azimuth" in miter):
-                block_ent += "ANGLE_1 = {Time} {Azimuth}\n".format(**o)
-                block_ent += "ANGLE_2 = {Time} {Elevation}\n".format(**o)
-            else:
+            if (o["Station"] != sname):
+                continue
+            if ("Range" in o):
                 block_ent += "RANGE = {Time} {Range}\n".format(**o)
-                block_ent += "DOPPLER_INSTANTANEOUS = {Time} {RangeRate}\n".format(**o)
+                if ("RangeRate" in o):
+                    block_ent += "DOPPLER_INSTANTANEOUS = {Time} {RangeRate}\n".format(**o)
+            if ("Azimuth" in o and "Elevation" in o):
+                block_ent += "ANGLE_1 = {Time} {Azimuth}\n" \
+                                "ANGLE_2 = {Time} {Elevation}\n".format(**o)
+            if ("RightAscension" in o and "Declination" in o):
+                block_ent += "ANGLE_1 = {Time} {RightAscension}\n" \
+                                "ANGLE_2 = {Time} {Declination}\n".format(**o)
+
         tdm_data += block_header + block_ent + "DATA_STOP\n\n"
 
     return(tdm_data)

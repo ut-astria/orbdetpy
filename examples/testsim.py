@@ -19,11 +19,11 @@ import sys
 import time
 
 if (len(sys.argv) < 3):
-    print("Usage: python %s config_file output_file [TDM_export_file]" % sys.argv[0])
+    print("Usage: python %s config_file output_file" % sys.argv[0])
     exit()
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from orbdetpy import simulateMeasurements, ccsds
+from orbdetpy import simulateMeasurements
 
 print("Simulation start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
 with open(sys.argv[1], "r") as fp:
@@ -32,10 +32,5 @@ with open(sys.argv[1], "r") as fp:
 output = simulateMeasurements(config)
 with open(sys.argv[2], "w") as fp:
     fp.write(output)
-
-if (len(sys.argv) > 3):
-    tdm = ccsds.export_TDM(["28884"], [config], [output])
-    with open(sys.argv[3], "w") as fp:
-        fp.write(tdm)
 
 print("Simulation end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))

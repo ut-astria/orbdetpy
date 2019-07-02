@@ -143,16 +143,30 @@ Configuration files are needed for both simulation and orbit determination.
 
 }
  
-"Stations" : Ground stations for measurements. Not required for "PositionVelocity" measurements {
+"Stations" : Ground stations for measurements. {
 
- "Station1" : {
+ "Station_Name" : {
  
   "Latitude" : Geodetic latitude [rad].
   
   "Longitude" : Geodetic longitude [rad].
   
-  "Altitude" : Height above Mean Sea Level [m].
-  
+  "Altitude" : Height above mean sea level [m].
+
+  "AzimuthBias" : Optional sensor bias [rad].
+
+  "ElevationBias" : Optional sensor bias [rad].
+
+  "RangeBias" : Optional sensor bias [m].
+
+  "RangeRateBias" : Optional sensor bias [m/s].
+
+  "RightAscensionBias" : Optional sensor bias [rad].
+
+  "DeclinationBias" : Optional sensor bias [rad].
+
+  "PositionVelocityBias" : Optional sensor bias [m, m, m, m/s, m/s, m/s].
+
   }
   
  }
@@ -181,8 +195,6 @@ Configuration files are needed for both simulation and orbit determination.
   "TwoWay" : true or false.
 
   "Error" : Theoretical measurement error [m].
-
-  "Bias" : Theoretical sensor bias [m].
   
  }
 
@@ -192,48 +204,36 @@ Configuration files are needed for both simulation and orbit determination.
 
   "Error" : Theoretical measurement error [m/s].
 
-  "Bias" : Theoretical sensor bias [m/s].
-  
  }
 
  "Azimuth" : {
 
   "Error" : Theoretical measurement error [rad].
 
-  "Bias" : Theoretical sensor bias [rad].
-  
  }
 
  "Elevation" : {
 
   "Error" : Theoretical measurement error [rad].
 
-  "Bias" : Theoretical sensor bias [rad].
-  
  }
 
  "RightAscension" : {
 
   "Error" : Theoretical measurement error [rad].
 
-  "Bias" : Theoretical sensor bias [rad].
-  
  }
 
  "Declination" : {
 
   "Error" : Theoretical measurement error [rad].
 
-  "Bias" : Theoretical sensor bias [rad].
-  
  }
 
  "PositionVelocity" : {
 
   "Error" : Theoretical measurement error [m, m, m, m/s, m/s, m/s].
 
-  "Bias" : Theoretical sensor bias [m, m, m, m/s, m/s, m/s].
-  
   "ReferenceFrame" : Reference frame in which position/velocity vectors are expressed.
                      Valid values are ["GCRF", "EME2000", "ITRF"]; defaults to "EME2000".  
 

@@ -155,8 +155,9 @@ public class Simulation
 	    {
 		for (Map.Entry<String, GroundStation> kv : simcfg.stations.entrySet())
 		{
-		    GroundStation obj = kv.getValue();
-		    double[] obs = new AngularAzEl(obj, tm, new double[]{0.0, 0.0}, new double[]{5E-6, 5E-6},
+		    GroundStation gst = kv.getValue();
+		    Settings.JSONStation jsn = simcfg.Stations.get(kv.getKey());
+		    double[] obs = new AngularAzEl(gst, tm, new double[]{0.0, 0.0}, new double[]{0.0, 0.0},
 						   new double[]{1.0, 1.0}, new ObservableSatellite(0)).
 			estimate(1, 1, sta).getEstimatedValue();
 		    if (skipunobs && obs[1] <= 5E-6)
@@ -166,7 +167,7 @@ public class Simulation
 		    clone.Station = kv.getKey();
 		    if (inclstapos)
 		    {
-			pvc = obj.getBaseFrame().getPVCoordinates(tm, simcfg.propframe);
+			pvc = gst.getBaseFrame().getPVCoordinates(tm, simcfg.propframe);
 			pos = pvc.getPosition();
 			vel = pvc.getVelocity();
 			acc = pvc.getAcceleration();
@@ -181,52 +182,40 @@ public class Simulation
 
 			if (name.equals("Range"))
 			{
-			    obs = new Range(obj, val.TwoWay, tm, 0.0, val.Error[0], 1.0,
-					    new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
-			    clone.Range = obs[0] + rand.nextGaussian()*val.Error[0];
-			    if (val.Bias != null)
-				clone.Range += val.Bias[0];
+			    obs = new Range(gst, val.TwoWay, tm, 0.0, 0.0, 1.0, new ObservableSatellite(0)).
+				estimate(1, 1, sta).getEstimatedValue();
+			    clone.Range = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeBias;
 			}
 			else if (name.equals("RangeRate"))
 			{
-			    obs = new RangeRate(obj, tm, 0.0, val.Error[0], 1.0, val.TwoWay,
-						new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
-			    clone.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0];
-			    if (val.Bias != null)
-				clone.RangeRate += val.Bias[0];
+			    obs = new RangeRate(gst, tm, 0.0, 0.0, 1.0, val.TwoWay, new ObservableSatellite(0)).
+				estimate(1, 1, sta).getEstimatedValue();
+			    clone.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeRateBias;
 			}
 			else if (name.equals("RightAscension") || name.equals("Declination") &&
 				 clone.RightAscension == null)
 			{
-			    obs = new AngularRaDec(obj, simcfg.propframe, tm, new double[]{0.0, 0.0},
-						   new double[]{val.Error[0], val.Error[0]}, new double[]{1.0, 1.0},
+			    obs = new AngularRaDec(gst, simcfg.propframe, tm, new double[]{0.0, 0.0},
+						   new double[]{0.0, 0.0}, new double[]{1.0, 1.0},
 						   new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
-			    clone.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0];
-			    clone.Declination = obs[1] + rand.nextGaussian()*val.Error[0];
-			    if (val.Bias != null)
-			    {
-				clone.RightAscension += val.Bias[0];
-				clone.Declination += val.Bias[0];
-			    }
+			    clone.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RightAscensionBias;
+			    clone.Declination = obs[1] + rand.nextGaussian()*val.Error[0] + jsn.DeclinationBias;
 			}
 			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.Azimuth == null)
 			{
-			    clone.Azimuth = obs[0] + rand.nextGaussian()*val.Error[0];
-			    clone.Elevation = obs[1] + rand.nextGaussian()*val.Error[0];
-			    if (val.Bias != null)
-			    {
-				clone.Azimuth += val.Bias[0];
-				clone.Elevation += val.Bias[0];
-			    }
+			    obs = new AngularAzEl(gst, tm, new double[]{0.0, 0.0}, new double[]{0.0, 0.0},
+						  new double[]{1.0, 1.0}, new ObservableSatellite(0)).
+				estimate(1, 1, sta).getEstimatedValue();
+			    clone.Azimuth = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.AzimuthBias;
+			    clone.Elevation = obs[1] + rand.nextGaussian()*val.Error[0] + jsn.ElevationBias;
 			}
 			else if (name.equals("PositionVelocity"))
 			{
 			    clone.PositionVelocity = new Double[6];
 			    for (int i = 0; i < 6; i++)
 			    {
-				clone.PositionVelocity[i] = clone.TrueState.Cartesian[i]+rand.nextGaussian()*val.Error[i];
-				if (val.Bias != null)
-				    clone.PositionVelocity[i] += val.Bias[i];
+				clone.PositionVelocity[i] = clone.TrueState.Cartesian[i] +
+				    rand.nextGaussian()*val.Error[i] + jsn.PositionVelocityBias[i];
 			    }
 			}
 		    }

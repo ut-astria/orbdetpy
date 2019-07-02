@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.stream.Stream;
-import org.astria.DataManager;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -195,13 +194,19 @@ public class Settings
 	double Latitude;
 	double Longitude;
 	double Altitude;
+	double AzimuthBias;
+	double ElevationBias;
+	double RangeBias;
+	double RangeRateBias;
+	double RightAscensionBias;
+	double DeclinationBias;
+	double[] PositionVelocityBias;
     }
 
     class JSONMeasurement
     {
 	boolean TwoWay;
 	double[] Error;
-	double[] Bias;
 	String ReferenceFrame;
     }
 

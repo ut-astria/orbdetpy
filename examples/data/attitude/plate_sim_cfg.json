@@ -16,9 +16,7 @@
 	"Model" : "MSISE",
 	"Coefficient" :
 	{
-	    "Value" : 2.0,
-	    "Min" : 0.01,
-	    "Max" : 3.00
+	    "Value" : 2.0
 	}
     },
 
@@ -39,9 +37,7 @@
 	"Sun" : true,
 	"Creflection" :
 	{
-            "Value" : 1.5,
-            "Min" : 1.0,
-            "Max" : 2.0
+            "Value" : 1.5
 	},
 	"Cabsorption" : 0.01
     },
