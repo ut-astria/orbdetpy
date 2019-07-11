@@ -27,7 +27,7 @@ def main(args):
           flush=True)
     with open(sys.argv[1], "r") as fp:
         config = fp.read()
-    output = simulate_measurements(config)
+    output = simulateMeasurements(config)
     with open(sys.argv[2], "w") as fp:
         fp.write(output)
     print("Simulation end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))

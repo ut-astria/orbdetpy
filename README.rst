@@ -60,6 +60,8 @@ imported by orbdetpy automatically.
 
 Space weather data in ``data/`` is obtained from
 `CelesTrak <http://www.celestrak.com/SpaceData/>`_.
+The astrodynamics data in data/ must be periodically updated using the
+script examples/update_data.py.
 
 Examples
 --------

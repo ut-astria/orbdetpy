@@ -13,10 +13,7 @@
 
     "Drag" :
     {
-	"Model" : "Exponential",
-	"ExpRho0" : 3.614E-13,
-	"ExpH0": 700000.0,
-	"ExpHScale" : 88667.0,
+	"Model" : "MSISE",
 	"Coefficient" :
 	{
 	    "Value" : 2.0,
@@ -52,8 +49,6 @@
 
     "SpaceObject" :
     {
-	"Name" : "GALAXY 15",
-	"NoradID" : 28884,
 	"Mass" : 2000.0,
 	"Area" : 20.0
     },

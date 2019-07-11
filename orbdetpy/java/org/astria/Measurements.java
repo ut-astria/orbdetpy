@@ -98,6 +98,23 @@ public class Measurements
 	Double RightAscension;
 	Double Declination;
 	Double[] PositionVelocity;
+
+	public JSONMeasurement()
+	{
+	}
+
+	public JSONMeasurement(JSONMeasurement src)
+	{
+	    Time = src.Time;
+	    Station = src.Station;
+	    Azimuth = src.Azimuth;
+	    Elevation = src.Elevation;
+	    Range = src.Range;
+	    RangeRate = src.RangeRate;
+	    RightAscension = src.RightAscension;
+	    Declination = src.Declination;
+	    PositionVelocity = src.PositionVelocity;
+	}
     }
 
     class JSONSimulatedMeasurement extends JSONMeasurement
@@ -111,6 +128,26 @@ public class Measurements
 	double[] AccThirdBodies;
 	double[] AccRadiationPressure;
 	double[] AccThrust;
+	double[] StationState;
+
+	public JSONSimulatedMeasurement()
+	{
+	}
+
+	public JSONSimulatedMeasurement(JSONSimulatedMeasurement src)
+	{
+	    super(src);
+	    TrueState = src.TrueState;
+	    AtmDensity = src.AtmDensity;
+	    AccGravity = src.AccGravity;
+	    AccDrag = src.AccDrag;
+	    AccOceanTides = src.AccOceanTides;
+	    AccSolidTides = src.AccSolidTides;
+	    AccThirdBodies = src.AccThirdBodies;
+	    AccRadiationPressure = src.AccRadiationPressure;
+	    AccThrust = src.AccThrust;
+	    StationState = src.StationState;
+	}
     }
 
     JSONMeasurement[] rawmeas;
