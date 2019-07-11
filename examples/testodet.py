@@ -28,7 +28,7 @@ def main(args):
     with open(args.config, "r") as fp:
         config = fp.read()
     with open(args.input, "r") as fp:
-        output = determine_orbit(config, fp.read())
+        output = determineOrbit(config, fp.read())
     with open(args.output, "w") as fp:
         fp.write(output)
     print("OD end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
