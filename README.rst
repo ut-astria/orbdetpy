@@ -36,8 +36,10 @@ Installation
 ``orbdetpy`` requires ``pyjnius``, which requires the Java Development
 Kit 8+ and ``Cython`` to install.
 
+1. Install the `Microsoft Visual C++ Build Tools
+   <https://visualstudio.microsoft.com/downloads/>`_.
 1. Install the `Java Development Kit 8+ (1.8+)
-   <https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>`_
+   <https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>`_.
 2. Set the ``JAVA_HOME`` environment variable to point to your JDK
    installation.
 3. Add ``$JAVA_HOME\bin`` and ``$JAVA_HOME\jre\bin\server`` to your
