@@ -51,7 +51,7 @@ Kit 8+ and ``Cython`` to install.
 5. Install ``orbdetpy`` with Python 3.6 or later::
 
     git clone https://github.com/ut-astria/orbdetpy
-    pip install orbdetpy
+    pip install ./orbdetpy
 
 The ``lib/`` folder contains JAR files for the following libraries, which are
 imported by orbdetpy automatically.
