@@ -2,4 +2,5 @@
 **/*.class
 **/*_input.json
 **/*_output*.json
+**/*_out*.json
 **/*_data*.json

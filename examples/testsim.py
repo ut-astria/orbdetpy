@@ -18,7 +18,7 @@ import os
 import sys
 import time
 import argparse
-from orbdetpy import simulate_measurements
+from orbdetpy import simulateMeasurements
 
 
 def main(args):
