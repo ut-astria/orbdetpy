@@ -18,7 +18,7 @@ import os
 import sys
 import time
 import argparse
-from orbdetpy import determine_orbit
+from orbdetpy import determineOrbit
 
 
 def main(args):
