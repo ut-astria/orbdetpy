@@ -33,7 +33,36 @@ def format_data(cfg, obs):
             else:
                 o[i] *= 180.0/math.pi
 
-def export_TDM(obj_id, cfg_file, obs_file):
+def export_OEM(cfg_file, obs_file, obj_id, obj_name):
+    with open(cfg_file, "r") as fh:
+        cfg = json.load(fh)
+    with open(obs_file, "r") as fh:
+        obs = json.load(fh)
+
+    utcnow = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    frame = cfg["Propagation"].get("InertialFrame", "EME2000")
+    if (frame == "GCRF"):
+        frame = "ICRF"
+    oem_data = "CCSDS_OEM_VERS = 1.0\nCREATION_DATE = {utc_time}\n" \
+               "ORIGINATOR = UT-ASTRIA\n\nMETA_START\nOBJECT_ID = {obj_id}\n" \
+               "OBJECT_NAME = {obj_name}\nCENTER_NAME = EARTH\n" \
+               "REF_FRAME = {ref_frame}\nTIME_SYSTEM = UTC\nSTART_TIME = {start_time}\n" \
+               "STOP_TIME = {stop_time}\nMETA_STOP\n\n". \
+               format(utc_time=utcnow, obj_id=obj_id, obj_name=obj_name,
+                      ref_frame=frame, start_time=obs[0]["Time"], stop_time=obs[-1]["Time"])
+
+    added = set()
+    for o in obs:
+        if (o["Time"] in added):
+            continue
+        added.add(o["Time"])
+        oem_data += "{epoch} {X[0]} {X[1]} {X[2]} {X[3]} {X[4]} " \
+                    "{X[5]} {X[6]} {X[7]} {X[8]}\n". \
+                    format(epoch=o["Time"], X = [x/1000.0 for x in o["TrueState"]["Cartesian"]])
+
+    return(oem_data)
+
+def export_TDM(cfg_file, obs_file, station_list, obj_id):
     with open(cfg_file, "r") as fh:
         cfg = json.load(fh)
     with open(obs_file, "r") as fh:
@@ -45,7 +74,7 @@ def export_TDM(obj_id, cfg_file, obs_file):
         frame = cfg["Propagation"].get("InertialFrame", "EME2000")
         if (frame == "GCRF"):
             frame = "ICRF"
-        obstype = "ANGLE_TYPE = RADEC\nREFERENCE_FRAME = %s" % frame
+        obstype = "ANGLE_TYPE = RADEC\nREFERENCE_FRAME = {}".format(frame)
         obspath = "1,2"
     if ("Azimuth" in miter and "Elevation" in miter):
         obstype = "ANGLE_TYPE = AZEL"
@@ -59,10 +88,12 @@ def export_TDM(obj_id, cfg_file, obs_file):
 
     utcnow = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     tdm_data = "CCSDS_TDM_VERS = 1.0\nCREATION_DATE = {utc_time}\n" \
-               "ORIGINATOR = UT-ASTRIA\n\n""".format(utc_time = utcnow)
+               "ORIGINATOR = UT-ASTRIA\n\n".format(utc_time=utcnow)
 
     for sname, sinfo in cfg["Stations"].items():
-        sensor = "%s (Lat: %f, Lon: %f, Alt: %f km)" % (
+        if (station_list and sname not in station_list):
+            continue
+        sensor = "{} (Lat: {}, Lon: {}, Alt: {} km)".format(
             sname, sinfo["Latitude"], sinfo["Longitude"], sinfo["Altitude"])
         block_header = "META_START\nTIME_SYSTEM = UTC\n" \
                        "PARTICIPANT_1 = {part1}\nPARTICIPANT_2 = {sensor}\n" \
