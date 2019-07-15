@@ -36,8 +36,10 @@ Installation
 ``orbdetpy`` requires ``pyjnius``, which requires the Java Development
 Kit 8+ and ``Cython`` to install.
 
-1. Install the Java Development Kit 8+ (1.8+) from `here
-   <http://openjdk.java.net>`_
+1. Install the `Microsoft Visual C++ Build Tools
+   <https://visualstudio.microsoft.com/downloads/>`_.
+1. Install the `Java Development Kit 8+ (1.8+)
+   <https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>`_.
 2. Set the ``JAVA_HOME`` environment variable to point to your JDK
    installation.
 3. Add ``$JAVA_HOME\bin`` and ``$JAVA_HOME\jre\bin\server`` to your
@@ -49,7 +51,7 @@ Kit 8+ and ``Cython`` to install.
 5. Install ``orbdetpy`` with Python 3.6 or later::
 
     git clone https://github.com/ut-astria/orbdetpy
-    pip install orbdetpy
+    pip install ./orbdetpy
 
 The ``lib/`` folder contains JAR files for the following libraries, which are
 imported by orbdetpy automatically.
@@ -60,6 +62,8 @@ imported by orbdetpy automatically.
 
 Space weather data in ``data/`` is obtained from
 `CelesTrak <http://www.celestrak.com/SpaceData/>`_.
+The astrodynamics data in data/ must be periodically updated using the
+script examples/update_data.py.
 
 Examples
 --------

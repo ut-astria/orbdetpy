@@ -23,11 +23,6 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.astria.DataManager;
-import org.astria.ManualPropagation;
-import org.astria.Measurements;
-import org.astria.PropagatorBuilder;
-import org.astria.Settings;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
@@ -77,13 +72,10 @@ public class Estimation
     {
 	odcfg = Settings.loadJSON(cfgjson);
 	odobs = Measurements.loadJSON(odcfg, obsjson);
-
 	if (odcfg.Estimation.Filter == null)
 	    odcfg.Estimation.Filter = "UKF";
-
 	if (odcfg.Estimation.Filter.equals("UKF") && odcfg.Gravity.Degree >= 2 && odcfg.Gravity.Order >= 0)
 	    odcfg.forces.add(0, new NewtonianAttraction(Constants.EGM96_EARTH_MU));
-
 	if (odcfg.Estimation.NoiseTimeDelta <= 0.0)
 	    odcfg.Estimation.NoiseTimeDelta = 10.0;
 
@@ -97,7 +89,6 @@ public class Estimation
     {
 	results = new JSONResults();
 	results.Filter = odcfg.Estimation.Filter;
-
 	if (odcfg.Estimation.Filter.equals("UKF"))
 	    new UnscentedKalmanFilter().determineOrbit();
 	else
@@ -209,7 +200,6 @@ public class Estimation
 
 	    double[] pre = est.getPredictedMeasurement().getEstimatedValue();
 	    double[] pos = est.getCorrectedMeasurement().getEstimatedValue();
-
 	    if (combmeas)
 	    {
 		for (i = 0; i < meanames.length; i++)
@@ -251,14 +241,12 @@ public class Estimation
 	    int numsta = odcfg.estparams.size() + 6;
 	    int numsig = 2*numsta;
 	    int veclen = numsta*numsig;
-
 	    RealMatrix P = new DiagonalMatrix(odcfg.Estimation.Covariance);
 	    RealMatrix Q = odcfg.getProcessNoiseMatrix();
 
 	    int Rsize = 0;
 	    for (String s: meanames)
 		Rsize += odcfg.Measurements.get(s).Error.length;
-
 	    Array2DRowRealMatrix R = new Array2DRowRealMatrix(Rsize, Rsize);
 	    for (int i = 0, j = 0; i < meanames.length; i++)
 	    {
@@ -273,7 +261,6 @@ public class Estimation
 	    double[] Xi = odcfg.getInitialState();
 	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
 						  DataManager.utcscale);
-
 	    if (odobs.rawmeas.length > 0)
 	    {
 		AbsoluteDate tmto = new AbsoluteDate(DateTimeComponents.parseDateTime(odobs.rawmeas[0].Time),
@@ -294,52 +281,32 @@ public class Estimation
 	    RealVector xhatpre = new ArrayRealVector(Xi);
 	    double weight = 0.5/numsta;
 	    double[] spvec = new double[veclen];
-
-	    double tofm = 0.0;
 	    AbsoluteDate tm = new AbsoluteDate(epoch, 0.0);
 	    SpacecraftState[] ssta = new SpacecraftState[1];
-
 	    ManualPropagation prop = new ManualPropagation(odcfg, veclen);
 
 	    for (int mix = 0; mix <= odobs.rawmeas.length; mix++)
 	    {
 		JSONResults.JSONEstimation odout = results.new JSONEstimation();
-
-		double tof0 = tofm;
 		AbsoluteDate t0 = new AbsoluteDate(tm, 0.0);
 
 		if (mix < odobs.rawmeas.length)
 		{
 		    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odobs.rawmeas[mix].Time),
 					  DataManager.utcscale);
-		    AbsoluteDate tmlt = new AbsoluteDate(tm, -tofm);
-
 		    double[] pv = xhat.toArray();
-		    TimeStampedPVCoordinates pvs = new TimeStampedPVCoordinates(tmlt,
+		    TimeStampedPVCoordinates pvs = new TimeStampedPVCoordinates(tm,
 										new Vector3D(pv[0], pv[1], pv[2]),
 										new Vector3D(pv[3], pv[4], pv[5]));
-
-		    tofm = 0.0;
-		    if (odcfg.stations != null && odobs.rawmeas[mix].Station != null)
-		    {
-			PVCoordinates pvi = odcfg.stations.get(odobs.rawmeas[mix].Station).getBaseFrame().
-			    getPVCoordinates(tm, odcfg.propframe);
-			tofm = Range.signalTimeOfFlight(pvs, pvi.getPosition(), tm);
-		    }
-
 		    odout.Time = odobs.rawmeas[mix].Time;
 		}
 		else
-		{
-		    tofm = 0.0;
 		    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
 					  DataManager.utcscale);
-		}
 
 		RealMatrix Ptemp = P.scalarMultiply(numsta);
 		RealMatrix sqrP = new CholeskyDecomposition(
 		    Ptemp.add(Ptemp.transpose()).scalarMultiply(0.5), 1E-6, 1E-14).getL();
-
 		for (int i = 0; i < numsta; i++)
 		{
 		    sigma.setColumnVector(i, xhat.add(sqrP.getColumnVector(i)));
@@ -349,19 +316,17 @@ public class Estimation
 		if (odcfg.estparams.size() > 0)
 		{
 		    double[][] sigdata = sigma.getData();
-
 		    for (int j = 6; j < odcfg.estparams.size() + 6; j++)
 		    {
 			Settings.EstimatedParameter tempep = odcfg.estparams.get(j - 6);
 			for (int i = 0; i < numsig; i++)
 			    sigdata[j][i] = Math.min(Math.max(sigdata[j][i], tempep.min), tempep.max);
 		    }
-
 		    sigma.setSubMatrix(sigdata, 0, 0);
 		}
 
-		double propt0 = t0.durationFrom(epoch) - tof0;
-		double propt1 = tm.durationFrom(epoch) - tofm;
+		double propt0 = t0.durationFrom(epoch);
+		double propt1 = tm.durationFrom(epoch);
 		if (propt0 == propt1)
 		    sigpr.setSubMatrix(sigma.getData(), 0, 0);
 		else
@@ -373,18 +338,15 @@ public class Estimation
 
 		RealVector raw = null;
 		RealMatrix Ppre = Q.copy();
-		AbsoluteDate tmlt = new AbsoluteDate(tm, -tofm);
-
 		for (int i = 0; i < numsig; i++)
 		{
 		    RealVector y = sigpr.getColumnVector(i).subtract(xhatpre);
 		    Ppre = Ppre.add(y.outerProduct(y).scalarMultiply(weight));
-
 		    double[] pv = sigpr.getColumn(i);
 		    ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 										       new Vector3D(pv[3], pv[4], pv[5])),
-								     odcfg.propframe, tmlt, Constants.EGM96_EARTH_MU),
-						  prop.getAttitude(tmlt, pv), odcfg.SpaceObject.Mass);
+								     odcfg.propframe, tm, Constants.EGM96_EARTH_MU),
+						  prop.getAttitude(tm, pv), odcfg.SpaceObject.Mass);
 
 		    if (combmeas)
 		    {
@@ -397,7 +359,6 @@ public class Estimation
 		    {
 			double[] fitv = odobs.measobjs.get(mix*2).estimate(1, 1, ssta).getEstimatedValue();
 			spupd.setEntry(0, i, fitv[0]);
-
 			if (Rsize > 1)
 			{
 			    fitv = odobs.measobjs.get(mix*2 + 1).estimate(1, 1, ssta).getEstimatedValue();
@@ -428,15 +389,14 @@ public class Estimation
 		double[] pv = xhat.toArray();
 		ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 										   new Vector3D(pv[3], pv[4], pv[5])),
-								 odcfg.propframe, tmlt, Constants.EGM96_EARTH_MU),
-					      prop.getAttitude(tmlt, pv), odcfg.SpaceObject.Mass);
+								 odcfg.propframe, tm, Constants.EGM96_EARTH_MU),
+					      prop.getAttitude(tm, pv), odcfg.SpaceObject.Mass);
 		if (ssta[0].getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
 		    throw(new RuntimeException(String.format("Invalid semi-major axis %f", ssta[0].getA())));
 
 		odout.EstimatedState = pv;
 		odout.EstimatedCovariance = P.getData();
 		odout.InnovationCovariance = Pyy.getData();
-
 		if (combmeas)
 		{
 		    for (int i = 0; i < meanames.length; i++)
@@ -459,7 +419,6 @@ public class Estimation
 		    double[] fitv = odobs.measobjs.get(mix*2).estimate(1, 1, ssta).getEstimatedValue();
 		    odout.PreFit.put(meanames[0], new double[] {yhatpre.getEntry(0)});
 		    odout.PostFit.put(meanames[0], fitv);
-
 		    if (Rsize > 1)
 		    {
 			fitv = odobs.measobjs.get(mix*2 + 1).estimate(1, 1, ssta).getEstimatedValue();
@@ -467,20 +426,17 @@ public class Estimation
 			odout.PostFit.put(meanames[1], fitv);
 		    }
 		}
-
 		results.Estimation.add(odout);
 	    }
 
 	    double[] pv = xhatpre.toArray();
 	    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
 				  DataManager.utcscale);
-
 	    CartesianOrbit cart  = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 									new Vector3D(pv[3], pv[4], pv[5])),
 						      odcfg.propframe, tm, Constants.EGM96_EARTH_MU);
 	    if (cart.getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
 		throw(new RuntimeException(String.format("Invalid semi-major axis %f", cart.getA())));
-
 	    results.Propagation.Time = odcfg.Propagation.End;
 	    results.Propagation.State = pv;
 	}
@@ -491,7 +447,6 @@ public class Estimation
 	    int m = mat.getRowDimension();
 	    int n = mat.getColumnDimension();
 	    double[][] matdata = mat.getData();
-
 	    for (i = 0; i < n; i++)
 		for (j = 0; j < m; j++)
 		    arr[i*m + j] = matdata[j][i];
@@ -503,7 +458,6 @@ public class Estimation
 	{
 	    int m = mat.getRowDimension();
 	    int n = mat.getColumnDimension();
-
 	    for (int i = 0; i < n; i++)
 		mat.setColumn(i, Arrays.copyOfRange(arr, i*m, (i+1)*m));
 
@@ -518,7 +472,6 @@ public class Estimation
 	    int n = mat.getColumnDimension();
 	    double[][] arr = mat.getData();
 	    ArrayRealVector out = new ArrayRealVector(m);
-
 	    for (j = 0; j < m; j++)
 	    {
 		sum = 0.0;

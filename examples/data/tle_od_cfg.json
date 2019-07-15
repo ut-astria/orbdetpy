@@ -89,16 +89,8 @@
     "Estimation" :
     {
 	"Filter" : "UKF",
-	"Covariance" : [25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 1.00, 0.25, 1E-6, 1E-6, 1E-6],
+	"Covariance" : [25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 1.00, 0.25],
 	"ProcessNoise" : [1E-24, 1E-24, 1E-24, 1E-24, 1E-24, 1E-24],
-	"NoiseTimeDelta" : 10.0,
-	"DMCCorrTime" : 100.0,
-	"DMCSigmaPert" : 0.005,
-	"DMCAcceleration" :
-	{
-	    "Value" : 0.0,
-	    "Min" : -1E-3,
-	    "Max" : 1E-3
-	}
+	"NoiseTimeDelta" : 30.0
     }
 }
