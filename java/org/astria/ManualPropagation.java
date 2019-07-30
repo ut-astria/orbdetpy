@@ -19,8 +19,6 @@
 package org.astria;
 
 import java.util.Arrays;
-import org.astria.DataManager;
-import org.astria.Settings;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEState;
@@ -64,14 +62,11 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 	odcfg = cfg;
 	intvecdim = vecdim;
 	statedim = odcfg.estparams.size() + 6;
-
 	attprov = cfg.getAttitudeProvider();
 	loframe = new LofOffset(odcfg.propframe, LOFType.VVLH);
-
 	Xdot = new double[intvecdim];
 	epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
 				 DataManager.utcscale);
-
 	odeint = new DormandPrince853Integrator(cfg.Integration.MinTimeStep, cfg.Integration.MaxTimeStep,
 						cfg.Integration.AbsTolerance, cfg.Integration.RelTolerance);
     }
@@ -102,15 +97,12 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
     {
 	Arrays.fill(Xdot, 0.0);
 	AbsoluteDate tm = new AbsoluteDate(epoch, t);
-
 	for (int i = 0; i < X.length; i += statedim)
 	{
-	    SpacecraftState ss = new SpacecraftState(
-		new CartesianOrbit(new PVCoordinates(
-				       new Vector3D(X[i],   X[i+1], X[i+2]),
-				       new Vector3D(X[i+3], X[i+4], X[i+5])),
-				   odcfg.propframe, tm, Constants.EGM96_EARTH_MU),
-		getAttitude(tm, Arrays.copyOfRange(X, i, i+6)), odcfg.SpaceObject.Mass);
+	    SpacecraftState ss = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[i],   X[i+1], X[i+2]),
+											  new Vector3D(X[i+3], X[i+4], X[i+5])),
+									odcfg.propframe, tm, Constants.EGM96_EARTH_MU),
+						     getAttitude(tm, Arrays.copyOfRange(X, i, i+6)), odcfg.SpaceObject.Mass);
 
 	    Vector3D acc = Vector3D.ZERO;
 	    for (ForceModel fmod : odcfg.forces)
@@ -125,7 +117,6 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 			    fpar[0] = X[i + j + 6];
 		    }
 		}
-
 		acc = acc.add(fmod.acceleration(ss, fpar));
 	    }
 
@@ -135,9 +126,7 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 	    Xdot[i+3] = acc.getX();
 	    Xdot[i+4] = acc.getY();
 	    Xdot[i+5] = acc.getZ();
-
-	    if (X.length > statedim && odcfg.Estimation.DMCCorrTime > 0.0 &&
-		odcfg.Estimation.DMCSigmaPert > 0.0)
+	    if (X.length > statedim && odcfg.Estimation.DMCCorrTime > 0.0 && odcfg.Estimation.DMCSigmaPert > 0.0)
 	    {
 		Xdot[i+3] += X[i+statedim-3];
 		Xdot[i+4] += X[i+statedim-2];

@@ -22,8 +22,8 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import org.astria.DataManager;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
@@ -32,6 +32,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -157,53 +158,80 @@ public class Measurements
     {
 	Measurements m = new Measurements();
 	m.rawmeas = new Gson().fromJson(json, JSONMeasurement[].class);
-	m.getMeasurementObjects(odcfg.stations, odcfg.Measurements, odcfg.propframe);
+	m.getMeasurementObjects(odcfg);
 	return(m);
     }
 
-    private void getMeasurementObjects(HashMap<String, GroundStation> gsta,
-				       Map<String, Settings.JSONMeasurement> mcfg, Frame propframe)
+    private void getMeasurementObjects(Settings odcfg)
     {
-	measobjs = new ArrayList<ObservedMeasurement<?>>();
+	ArrayList<JSONMeasurement> tempraw = new ArrayList<JSONMeasurement>(rawmeas.length);
+	for (JSONMeasurement m: rawmeas)
+	{
+	    if (m.Station != null || m.PositionVelocity != null)
+		tempraw.add(m);
+	}
+	rawmeas = tempraw.toArray(new JSONMeasurement[0]);
 
+	measobjs = new ArrayList<ObservedMeasurement<?>>();
+	Map<String, Settings.JSONMeasurement> mcfg = odcfg.Measurements;
 	for (JSONMeasurement m: rawmeas)
 	{
 	    GroundStation gs = null;
+	    Settings.JSONStation jsn = null;
 	    if (m.Station != null)
-		gs = gsta.get(m.Station);
+	    {
+		gs = odcfg.stations.get(m.Station);
+		jsn = odcfg.Stations.get(m.Station);
+	    }
 
 	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time),
 						 DataManager.utcscale);
-
 	    if (m.Azimuth != null)
 	    {
-                measobjs.add(new AngularAzEl(gs, time, new double[]{m.Azimuth, m.Elevation},
-					     new double[]{mcfg.get("Azimuth").Error[0],
-							  mcfg.get("Elevation").Error[0]},
-					     new double[]{1.0, 1.0}, new ObservableSatellite(0)));
+		AngularAzEl obs = new AngularAzEl(gs, time, new double[]{m.Azimuth, m.Elevation},
+						  new double[]{mcfg.get("Azimuth").Error[0], mcfg.get("Elevation").Error[0]},
+						  new double[]{1.0, 1.0}, new ObservableSatellite(0));
+		if (jsn.AzimuthBias != 0.0 || jsn.ElevationBias != 0.0)
+		    obs.addModifier(new Bias<AngularAzEl>(
+					new String[] {"Az", "El"}, new double[] {jsn.AzimuthBias, jsn.ElevationBias},
+					new double[] {1.0, 1.0}, new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
+					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
+		measobjs.add(obs);
 	    }
 
 	    if (m.RightAscension != null)
 	    {
-                measobjs.add(new AngularRaDec(gs, DataManager.eme2000, time,
-					      new double[]{m.RightAscension, m.Declination},
-					      new double[]{mcfg.get("RightAscension").Error[0],
-							   mcfg.get("Declination").Error[0]},
-					      new double[]{1.0, 1.0}, new ObservableSatellite(0)));
+		AngularRaDec obs = new AngularRaDec(gs, DataManager.eme2000, time, new double[]{m.RightAscension, m.Declination},
+						    new double[]{mcfg.get("RightAscension").Error[0], mcfg.get("Declination").Error[0]},
+						    new double[]{1.0, 1.0}, new ObservableSatellite(0));
+		if (jsn.RightAscensionBias != 0.0 || jsn.DeclinationBias != 0.0)
+		    obs.addModifier(new Bias<AngularRaDec>(
+					new String[] {"RA", "Dec"}, new double[] {jsn.RightAscensionBias, jsn.DeclinationBias},
+					new double[] {1.0, 1.0}, new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
+					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
+		measobjs.add(obs);
 	    }
 
 	    if (m.Range != null)
 	    {
 		Settings.JSONMeasurement c = mcfg.get("Range");
-		measobjs.add(new Range(gs, c.TwoWay, time, m.Range, c.Error[0], 1.0,
-				       new ObservableSatellite(0)));
+		Range obs = new Range(gs, c.TwoWay, time, m.Range, c.Error[0], 1.0, new ObservableSatellite(0));
+		if (jsn.RangeBias != 0.0)
+		    obs.addModifier(new Bias<Range>(
+					new String[] {"Range"}, new double[] {jsn.RangeBias}, new double[] {1.0},
+					new double[] {Double.NEGATIVE_INFINITY}, new double[] {Double.POSITIVE_INFINITY}));
+		measobjs.add(obs);
 	    }
 
 	    if (m.RangeRate != null)
 	    {
 		Settings.JSONMeasurement c = mcfg.get("RangeRate");
-		measobjs.add(new RangeRate(gs, time, m.RangeRate, c.Error[0], 1.0, c.TwoWay,
-					   new ObservableSatellite(0)));
+		RangeRate obs = new RangeRate(gs, time, m.RangeRate, c.Error[0], 1.0, c.TwoWay, new ObservableSatellite(0));
+		if (jsn.RangeRateBias != 0.0)
+		    obs.addModifier(new Bias<RangeRate>(
+					new String[] {"RangeRate"}, new double[] {jsn.RangeRateBias}, new double[] {1.0},
+					new double[] {Double.NEGATIVE_INFINITY}, new double[] {Double.POSITIVE_INFINITY}));
+		measobjs.add(obs);
 	    }
 
 	    if (m.PositionVelocity != null)
@@ -218,19 +246,26 @@ public class Measurements
 		    else if (c.ReferenceFrame.equals("ITRF"))
 			fromframe = DataManager.itrf;
 
-		    Transform xfm = fromframe.getTransformTo(propframe, time);
+		    Transform xfm = fromframe.getTransformTo(odcfg.propframe, time);
 		    PVCoordinates frompv = new PVCoordinates(new Vector3D(X[0], X[1], X[2]),
 							     new Vector3D(X[3], X[4], X[5]));
 		    PVCoordinates topv = xfm.transformPVCoordinates(frompv);
-
 		    Vector3D p = topv.getPosition();
 		    Vector3D v = topv.getVelocity();
 		    X = new Double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
 		}
 
-		measobjs.add(new PV(time, new Vector3D(X[0], X[1], X[2]),
-				    new Vector3D(X[3], X[4], X[5]),
-				    c.Error, 1.0, new ObservableSatellite(0)));
+		PV obs = new PV(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]),
+				c.Error, 1.0, new ObservableSatellite(0));
+		if (jsn != null && jsn.PositionVelocityBias != null)
+		    obs.addModifier(new Bias<PV>(
+					new String[] {"x", "y", "z", "Vx", "Vy", "Vz"}, jsn.PositionVelocityBias,
+					new double[] {1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+					new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
+						      Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
+					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+						      Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
+		measobjs.add(obs);
 	    }
 	}
     }

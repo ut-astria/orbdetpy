@@ -18,12 +18,12 @@
 
 package org.astria;
 
-import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 import org.astria.Settings;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.Propagator;
@@ -67,7 +67,7 @@ public class ParallelPropagation
 
 	    double dt = prend.durationFrom(tm);
 	    tmprev = tm.shiftedBy(0.0);
-	    tm = new AbsoluteDate(tm, Math.min(dt, propStep));
+	    tm = new AbsoluteDate(tm, FastMath.min(dt, propStep));
 	    if (dt <= 0.0)
 		break;
 	}

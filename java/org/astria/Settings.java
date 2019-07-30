@@ -19,7 +19,6 @@
 package org.astria;
 
 import com.google.gson.Gson;
-import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
@@ -52,6 +52,7 @@ import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
@@ -61,9 +62,12 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
@@ -182,11 +186,13 @@ public class Settings
     
     class JSONManeuver
     {
+	String TriggerEvent;
+	String ManeuverType;
 	String Time;
 	double Duration;
 	double Thrust;
 	double Isp;
-	double[] Direction;
+	double[] Params;
     }
 
     class JSONStation
@@ -215,7 +221,6 @@ public class Settings
 	String Filter;
 	double[] Covariance;
 	double[] ProcessNoise;
-	double NoiseTimeDelta;
 	double DMCCorrTime;
 	double DMCSigmaPert;
 	JSONParameter DMCAcceleration;
@@ -335,13 +340,11 @@ public class Settings
 
 	if (ThirdBodies.Sun)
 	    forces.add(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
-
 	if (ThirdBodies.Moon)
 	    forces.add(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
 	DragSensitive dragsc = null;
 	RadiationSensitive radnsc = null;
-
 	if (SpaceObject.Facets != null && SpaceObject.SolarArray != null)
 	{
 	    BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[
@@ -353,7 +356,6 @@ public class Settings
 	    dragsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), SpaceObject.SolarArray.Area,
 						    new Vector3D(SpaceObject.SolarArray.Axis), Drag.Coefficient.Value,
 						    RadiationPressure.Cabsorption, RadiationPressure.Creflection.Value);
-
 	    radnsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), SpaceObject.SolarArray.Area,
 						    new Vector3D(SpaceObject.SolarArray.Axis), Drag.Coefficient.Value,
 						    RadiationPressure.Cabsorption, RadiationPressure.Creflection.Value);
@@ -361,7 +363,6 @@ public class Settings
 	else
 	{
 	    dragsc = new IsotropicDrag(SpaceObject.Area, Drag.Coefficient.Value);
-
 	    radnsc = new IsotropicRadiationSingleCoefficient(SpaceObject.Area, RadiationPressure.Creflection.Value,
 							     RadiationPressure.Creflection.Min, RadiationPressure.Creflection.Max);
 	}
@@ -386,9 +387,9 @@ public class Settings
 
 	    atmmodel = new NRLMSISE00(new MSISEInputs(DataManager.msisedata.mindate, DataManager.msisedata.maxdate,
 						      DataManager.msisedata.data, apflag),
-		CelestialBodyFactory.getSun(), new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-								    Constants.WGS84_EARTH_FLATTENING, DataManager.itrf));
-
+				      CelestialBodyFactory.getSun(), new OneAxisEllipsoid(
+					  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+					  Constants.WGS84_EARTH_FLATTENING, DataManager.itrf));
 	    if (Drag.MSISEFlags != null)
 	    {
 		for (int i = 0; i < Drag.MSISEFlags.length; i++)
@@ -402,18 +403,23 @@ public class Settings
 	if (RadiationPressure.Sun)
 	    forces.add(new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS, radnsc));
 
-	if (Maneuvers != null)
+	if (Maneuvers == null)
+	    return;
+	for (JSONManeuver m : Maneuvers)
 	{
-	    for (JSONManeuver m : Maneuvers)
+	    if (m.TriggerEvent == null)
+		m.TriggerEvent = "DateTime";
+	    if (m.ManeuverType == null)
+		m.ManeuverType = "ConstantThrust";
+	    if (m.TriggerEvent.equals("DateTime") && m.ManeuverType.equals("ConstantThrust"))
 		forces.add(new ConstantThrustManeuver(new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale),
-						      m.Duration, m.Thrust, m.Isp, new Vector3D(m.Direction)));
+						      m.Duration, m.Thrust, m.Isp, new Vector3D(m.Params)));
 	}
     }
 
     private void loadEstimatedParameters()
     {
 	estparams = new ArrayList<EstimatedParameter>();
-
 	if (Drag.Coefficient.Estimation != null &&
 	    Drag.Coefficient.Estimation.equals("Estimate"))
 	    estparams.add(new EstimatedParameter(DragSensitive.DRAG_COEFFICIENT, Drag.Coefficient.Min,
@@ -441,7 +447,6 @@ public class Settings
 	{
 	    TLE parser = new TLE(Propagation.InitialTLE[0], Propagation.InitialTLE[1]);
 	    TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
-
 	    AbsoluteDate epoch;
 	    if (Propagation.Start != null)
 		epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start), DataManager.utcscale);
@@ -450,7 +455,6 @@ public class Settings
 		epoch = parser.getDate().shiftedBy(0.0);
 		Propagation.Start = new String(epoch.toString()) + "Z";
 	    }
-
 	    topv = prop.getPVCoordinates(epoch, propframe);
 	}
 	else
@@ -466,7 +470,6 @@ public class Settings
 
 	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start), DataManager.utcscale);
 	    Transform xfm = fromframe.getTransformTo(propframe, epoch);
-
 	    PVCoordinates frompv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]),
 						     new Vector3D(state0[3], state0[4], state0[5]));
 	    topv = xfm.transformPVCoordinates(frompv);
@@ -475,7 +478,6 @@ public class Settings
 	Vector3D p = topv.getPosition();
 	Vector3D v = topv.getVelocity();
 	state0 = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
-
 	double[] X0 = new double[estparams.size() + 6];
 	for (int i = 0; i < X0.length; i++)
 	{
@@ -499,23 +501,18 @@ public class Settings
 
 	if (SpaceObject.Attitude.Provider.equals("NadirPointing"))
 	    attpro = new NadirPointing(propframe, shape);
-
 	if (SpaceObject.Attitude.Provider.equals("BodyCenterPointing"))
 	    attpro = new BodyCenterPointing(propframe, shape);
-
 	if (SpaceObject.Attitude.Provider.equals("FixedRate") && SpaceObject.Attitude.SpinVelocity != null &&
 	    SpaceObject.Attitude.SpinAcceleration != null)
 	{
 	    double[] X0 = Propagation.InitialState;
 	    AbsoluteDate t0 = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start),
 					       DataManager.utcscale);
-
 	    KeplerianPropagator prop = new KeplerianPropagator(new CartesianOrbit(new PVCoordinates(new Vector3D(X0[0], X0[1], X0[2]),
 												    new Vector3D(X0[3], X0[4], X0[5])),
 										  propframe, t0, Constants.EGM96_EARTH_MU));
-
 	    LocalOrbitalFrame lof = new LocalOrbitalFrame(propframe, LOFType.VVLH, prop, "");
-
 	    attpro = new FixedRate(new Attitude(t0, lof, Rotation.IDENTITY,
 						new Vector3D(Stream.of(SpaceObject.Attitude.SpinVelocity).
 							     mapToDouble(Double::doubleValue).toArray()),
@@ -526,18 +523,17 @@ public class Settings
 	return(attpro);
     }
     
-    public RealMatrix getProcessNoiseMatrix()
+    public RealMatrix getProcessNoiseMatrix(double t)
     {
 	int i;
-	double t = Estimation.NoiseTimeDelta;
 	double t2 = t*t;
 	double t3 = t2*t;
 	double t4 = t3*t;
-	double[] P = Estimation.ProcessNoise;
 	double[][] Q = new double[estparams.size() + 6][estparams.size() + 6];
 
 	if (Estimation.DMCCorrTime <= 0.0 || Estimation.DMCSigmaPert <= 0.0)
 	{
+	    double[] P = Estimation.ProcessNoise;
 	    for (i = 0; i < 3; i++)
 	    {
 		Q[i][i] = 0.25*t4*P[i];
@@ -558,7 +554,7 @@ public class Settings
 	double b3 = b2*b;
 	double b4 = b3*b;
 	double b5 = b4*b;
-	double et = Math.exp(-1.0*b*t);
+	double et = FastMath.exp(-1.0*b*t);
 	double e2t = et*et;
 	double s2 = Estimation.DMCSigmaPert*Estimation.DMCSigmaPert;
 
@@ -589,5 +585,21 @@ public class Settings
 	}
 
 	return(new Array2DRowRealMatrix(Q));
+    }
+
+    public void addEventHandlers(NumericalPropagator prop, SpacecraftState state)
+    {
+	if (Maneuvers == null)
+	    return;
+	for (JSONManeuver m : Maneuvers)
+	{
+	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale);
+	    if (m.TriggerEvent.equals("DateTime"))
+	    {
+		if (m.ManeuverType.equals("ConstantThrust"))
+		    continue;
+		prop.addEventDetector(new DateDetector(time).withHandler(new EventHandling<DateDetector>(m)));
+	    }
+	}
     }
 }

@@ -32,8 +32,12 @@ with open(sys.argv[2], "r") as f:
     out = json.load(f)
 
 mu = 398600.4418
-tstamp, hvec, hmag, ener, sma, ecc, inc = [], [], [], [], [], [], []
+tstamp, hvec, hmag, ener, sma, ecc, inc, added = [], [], [], [], [], [], [], []
 for o in out:
+    if (o["Time"] in added):
+        continue
+    added.append(o["Time"])
+
     rv = [x/1000.0 for x in o["TrueState"]["Cartesian"][:6]]
     r, v = norm(rv[:3]), norm(rv[3:])
     h = numpy.cross(rv[:3], rv[3:])

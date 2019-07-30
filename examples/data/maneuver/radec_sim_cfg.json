@@ -70,7 +70,7 @@
 	    "Duration" : 10.0,
 	    "Thrust" : 10.0,
 	    "Isp" : 300.0,
-	    "Direction" :
+	    "Params" :
 	    [
 		0.0,
 		0.0,
@@ -82,7 +82,7 @@
 	    "Duration" : 10.0,
 	    "Thrust" : 10.0,
 	    "Isp" : 300.0,
-	    "Direction" :
+	    "Params" :
 	    [
 		0.0,
 		0.0,
@@ -94,7 +94,7 @@
 	    "Duration" : 10.0,
 	    "Thrust" : 10.0,
 	    "Isp" : 300.0,
-	    "Direction" :
+	    "Params" :
 	    [
 		0.0,
 		0.0,
@@ -106,7 +106,7 @@
 	    "Duration" : 10.0,
 	    "Thrust" : 10.0,
 	    "Isp" : 300.0,
-	    "Direction" :
+	    "Params" :
 	    [
 		1.0,
 		0.0,
@@ -118,7 +118,7 @@
 	    "Duration" : 10.0,
 	    "Thrust" : 10.0,
 	    "Isp" : 300.0,
-	    "Direction" :
+	    "Params" :
 	    [
 		0.0,
 		1.0,
@@ -130,7 +130,7 @@
 	    "Duration" : 10.0,
 	    "Thrust" : 10.0,
 	    "Isp" : 300.0,
-	    "Direction" :
+	    "Params" :
 	    [
 		0.0,
 		0.0,

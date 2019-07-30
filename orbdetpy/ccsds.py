@@ -27,6 +27,8 @@ def format_data(cfg, obs):
 
     mit = cfg["Measurements"].keys()
     for o in obs:
+        if ("Station" not in o):
+            continue
         for i in mit:
             if (i in ["Range", "RangeRate"]):
                 o[i] /= 1000.0
@@ -102,7 +104,7 @@ def export_TDM(cfg_file, obs_file, station_list, obj_id):
 
         block_ent = "DATA_START\n"
         for o in obs:
-            if (o["Station"] != sname):
+            if (o.get("Station", None) != sname):
                 continue
             if ("Range" in o):
                 block_ent += "RANGE = {Time} {Range}\n".format(**o)

@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.iod.IodGooding;
@@ -78,7 +79,8 @@ public class Utilities
 
 	for (int i = 0; i < 3; i++)
 	{
-	    los[i] = new Vector3D(Math.sin(azi[i])*Math.cos(ele[i]), Math.cos(azi[i])*Math.cos(ele[i]), Math.sin(ele[i]));
+	    los[i] = new Vector3D(FastMath.sin(azi[i])*FastMath.cos(ele[i]),
+				  FastMath.cos(azi[i])*FastMath.cos(ele[i]), FastMath.sin(ele[i]));
 	    time[i] = new AbsoluteDate(DateTimeComponents.parseDateTime(tmstr[i]), DataManager.utcscale);
 
 	    GroundStation sta = new GroundStation(
@@ -122,16 +124,16 @@ public class Utilities
 		else if (atype.equals("RADEC"))
 		{
 		    if (obs.getKeyword().equals("ANGLE_1"))
-			json.RightAscension = obs.getMeasurement()*Math.PI/180.0;
+			json.RightAscension = obs.getMeasurement()*FastMath.PI/180.0;
 		    else
-			json.Declination = obs.getMeasurement()*Math.PI/180.0;
+			json.Declination = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 		else if (atype.equals("AZEL"))
 		{
 		    if (obs.getKeyword().equals("ANGLE_1"))
-			json.Azimuth = obs.getMeasurement()*Math.PI/180.0;
+			json.Azimuth = obs.getMeasurement()*FastMath.PI/180.0;
 		    else
-			json.Elevation = obs.getMeasurement()*Math.PI/180.0;
+			json.Elevation = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 
 		if (++i == 2)

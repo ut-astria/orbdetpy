@@ -26,7 +26,7 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     with open(cfgfile, "r") as fp:
         cfg = json.load(fp)
     with open(inpfile, "r") as fp:
-        inp = json.load(fp)
+        inp = [x for x in json.load(fp) if ("Station" in x or "PositionVelocity" in x)]
     with open(outfile, "r") as fp:
         out = json.load(fp)["Estimation"]
 

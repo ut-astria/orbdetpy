@@ -165,8 +165,6 @@ Configuration files are needed for both simulation and orbit determination.
 
   "DeclinationBias" : Optional sensor bias [rad].
 
-  "PositionVelocityBias" : Optional sensor bias [m, m, m, m/s, m/s, m/s].
-
   }
   
  }
@@ -182,7 +180,7 @@ Configuration files are needed for both simulation and orbit determination.
 
   "Isp" : Engine specific impulse [s].
 
-  "Direction" : Unit vector in the RSO frame specifying thrust direction.
+  "Params" : Unit vector in the RSO frame specifying thrust direction.
   
  }
  
@@ -257,8 +255,6 @@ Valid combinations of measurements are as follows:
  "Covariance" : Diagonal elements of covariance matrix with dimension 6 plus number of estimated parameters.
 
  "ProcessNoise" : Diagonal elements of process noise matrix with dimension 6. Not used when DMC is in effect.
-
- "NoiseTimeDelta" : Delta-T to use for computing the SNC and DMC process noise matrices.
 
  "DMCCorrTime" : DMC correlation time. Setting this to zero disables DMC.
 

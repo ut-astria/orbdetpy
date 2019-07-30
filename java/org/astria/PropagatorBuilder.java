@@ -19,8 +19,6 @@
 package org.astria;
 
 import java.util.Arrays;
-import org.astria.Estimation;
-import org.astria.Settings;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -49,12 +47,12 @@ public class PropagatorBuilder extends NumericalPropagatorBuilder
 	{
 	    prop.addAdditionalEquations(new DMCEquations());
 	    ParameterDriversList plst = getPropagationParametersDrivers();
-	    prop.setInitialState(
-		prop.getInitialState().addAdditionalState(Estimation.DMC_ACC_PROP,
-							  plst.findByName(Estimation.DMC_ACC_ESTM+0).getValue(),
-							  plst.findByName(Estimation.DMC_ACC_ESTM+1).getValue(),
-							  plst.findByName(Estimation.DMC_ACC_ESTM+2).getValue()));
+	    prop.setInitialState(prop.getInitialState().addAdditionalState(Estimation.DMC_ACC_PROP,
+									   plst.findByName(Estimation.DMC_ACC_ESTM+0).getValue(),
+									   plst.findByName(Estimation.DMC_ACC_ESTM+1).getValue(),
+									   plst.findByName(Estimation.DMC_ACC_ESTM+2).getValue()));
 	}
+	odcfg.addEventHandlers(prop, prop.getInitialState());
 
 	return(prop);
     }

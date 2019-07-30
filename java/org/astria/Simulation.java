@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Random;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.ForceModel;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -51,8 +52,6 @@ public class Simulation
     public Simulation(String cfgjson)
     {
 	simcfg = Settings.loadJSON(cfgjson);
-	if (simcfg.Propagation.Step <= 0.0)
-	    simcfg.Propagation.Step = 60.0;
     }
 
     public String simulateMeasurements()
@@ -87,10 +86,12 @@ public class Simulation
 	if (attpro != null)
 	    prop.setAttitudeProvider(attpro);
 
-	prop.setInitialState(new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
-										      new Vector3D(Xi[3], Xi[4], Xi[5])),
-								    simcfg.propframe, tm, Constants.EGM96_EARTH_MU),
-						 simcfg.SpaceObject.Mass));
+	SpacecraftState sstate0 = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
+											   new Vector3D(Xi[3], Xi[4], Xi[5])),
+									 simcfg.propframe, tm, Constants.EGM96_EARTH_MU),
+						      simcfg.SpaceObject.Mass);
+	prop.setInitialState(sstate0);
+	simcfg.addEventHandlers(prop, sstate0);
 
 	Measurements meas = new Measurements();
 	ArrayList<Measurements.JSONSimulatedMeasurement> mall = new ArrayList<Measurements.JSONSimulatedMeasurement>();
@@ -153,6 +154,7 @@ public class Simulation
 
 	    if (simulmeas)
 	    {
+		boolean added = false;
 		for (Map.Entry<String, GroundStation> kv : simcfg.stations.entrySet())
 		{
 		    GroundStation gst = kv.getValue();
@@ -213,21 +215,29 @@ public class Simulation
 			{
 			    clone.PositionVelocity = new Double[6];
 			    for (int i = 0; i < 6; i++)
-			    {
 				clone.PositionVelocity[i] = clone.TrueState.Cartesian[i] +
 				    rand.nextGaussian()*val.Error[i] + jsn.PositionVelocityBias[i];
-			    }
 			}
 		    }
 
+		    added = true;
 		    mall.add(clone);
 		}
+
+		if (!added)
+		    mall.add(json);
 	    }
 	    else
 		mall.add(json);
 
 	    double dt = prend.durationFrom(tm);
-	    tm = new AbsoluteDate(tm, Math.min(dt, simcfg.Propagation.Step));
+	    if (simcfg.Propagation.Step >= 0.0)
+		tm = new AbsoluteDate(tm, FastMath.min(dt, simcfg.Propagation.Step));
+	    else
+	    {
+		tm = new AbsoluteDate(tm, FastMath.max(dt, simcfg.Propagation.Step));
+		dt = -dt;
+	    }
 	    if (dt <= 0.0)
 		break;
 	}
