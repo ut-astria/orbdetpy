@@ -1,3 +1,4 @@
-**/__pycache__
-**/*.class
+__pycache__/
+output/
+*.class
 
