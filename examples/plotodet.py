@@ -34,7 +34,7 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     dmcrun = (cfg["Estimation"].get("DMCCorrTime", 0.0) > 0.0 and
               cfg["Estimation"].get("DMCSigmaPert", 0.0) > 0.0)
 
-    tstamp, prefit, posfit, inocov, params, estmacc, estmcov = [], [], [], [], [], [], []
+    tstamp,prefit,posfit,inocov,params,estmacc,stares,estcov = [],[],[],[],[],[],[],[]
     for i, o in zip(inp, out):
         tstamp.append(dateutil.parser.isoparse(i["Time"]))
 
@@ -49,11 +49,14 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
             posfit.append([i[key[0]] - o["PostFit"][key[0]][-1],
                            i[key[1]] - o["PostFit"][key[1]][-1]])
 
-        p = []
-        for m in range(len(o["InnovationCovariance"])):
-            p.append(3.0*numpy.sqrt(o["InnovationCovariance"][m][m]))
-        inocov.append(p)
+        if ("TrueState" in i):
+            stares.append([i["TrueState"]["Cartesian"][m] - o["EstimatedState"][m]
+                           for m in range(6)])
+            estcov.append([3.0*numpy.sqrt(o["EstimatedCovariance"][m][m])
+                           for m in range(6)])
 
+        inocov.append([3.0*numpy.sqrt(o["InnovationCovariance"][m][m])
+                       for m in range(len(o["InnovationCovariance"]))])
         if (len(o["EstimatedState"]) > 6):
             if (dmcrun):
                 params.append(o["EstimatedState"][6:-3])
@@ -74,8 +77,14 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     cov = numpy.array(inocov)
     par = numpy.array(params)
     estmacc = numpy.array(estmacc)
+    stares = numpy.array(stares)
+    estcov = numpy.array(estcov)
     tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
 
+    order = (1, 3, 5, 2, 4, 6)
+    pvunits = ("m", "m", "m", "m/s", "m/s", "m/s")
+    pvlabs = (r"$\Delta x$", r"$\Delta y$", r"$\Delta z$",
+              r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$")
     angles = ("Azimuth", "Elevation", "RightAscension", "Declination")
     if (key[0] in angles and key[1] in angles):
         pre *= 648000.0/math.pi
@@ -84,19 +93,16 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         units = ("arcsec", "arcsec")
     else:
         if ("PositionVelocity" in key):
-            units = ("m", "m", "m", "m/s", "m/s", "m/s")
+            units = pvunits
         else:
             units = ("m", "m/s")
 
     if ("PositionVelocity" in key):
-        ylabs = (r"$\Delta x$", r"$\Delta y$", r"$\Delta z$",
-                 r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$")
-        order = (1, 3, 5, 2, 4, 6)
+        ylabs = pvlabs
     else:
         ylabs = key
 
     outfiles = []
-
     plt.figure(0)
     plt.suptitle("Pre-fit residuals")
     for i in range(pre.shape[-1]):
@@ -125,8 +131,6 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         plt.semilogx(tim,  cov[:,i], "-r", label = r"Innov. 3$\sigma$")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
-        if ("PositionVelocity" not in key):
-            plt.ylim(-cov[i,0], cov[i,0])
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (filepath is not None):
@@ -136,7 +140,6 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     parnames, parmvals = [], []
     if (cfg["Drag"]["Coefficient"]["Estimation"] == "Estimate"):
         parnames.append(r"$C_D$")
-
     if (cfg["RadiationPressure"]["Creflection"]["Estimation"] == "Estimate"):
         parnames.append(r"$C_R$")
 
@@ -144,7 +147,6 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         if (i == 0):
             plt.figure(2)
             plt.suptitle("Estimated parameters")
-
         plt.subplot(par.shape[1], 1, i + 1)
         plt.semilogx(tim, par[:,i], "ob")
         plt.xlabel("Time [hr]")
@@ -156,11 +158,10 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         plt.savefig(outfiles[-1], format = "png")
 
     if (dmcrun):
-        plt.figure(3)
-        plt.suptitle("DMC estimated accelerations")
-
         lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]",
                r"Cross track [$\frac{m}{s^2}$]"]
+        plt.figure(3)
+        plt.suptitle("DMC estimated accelerations")
         for i in range(3):
             plt.subplot(3, 1, i+1)
             plt.semilogx(tim, estmacc[:,i], "-b")
@@ -170,6 +171,22 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         plt.tight_layout(rect = [0, 0.03, 1, 0.95])
         if (filepath is not None):
             outfiles.append(filepath + "_estacc.png")
+            plt.savefig(outfiles[-1], format = "png")
+
+    if (len(stares) > 0):
+        plt.figure(4 if dmcrun else 3)
+        plt.suptitle("State vector residuals")
+        for i in range(stares.shape[-1]):
+            plt.subplot(3, 2, order[i])
+            plt.semilogx(tim, stares[:,i], "ob")
+            plt.semilogx(tim, -estcov[:,i], "-r")
+            plt.semilogx(tim,  estcov[:,i], "-r", label = r"Cov. 3$\sigma$")
+            plt.xlabel("Time [hr]")
+            plt.ylabel("%s [%s]" % (pvlabs[i], pvunits[i]))
+
+        plt.tight_layout(rect = [0, 0.03, 1, 0.95])
+        if (filepath is not None):
+            outfiles.append(filepath + "_state_res.png")
             plt.savefig(outfiles[-1], format = "png")
 
     if (interactive):

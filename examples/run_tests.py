@@ -79,7 +79,7 @@ for root, dirs, files in os.walk(datdir):
                 sigm = [3.0*math.sqrt(est["EstimatedCovariance"][i][i]) for i in range(6)]
                 output.append({"Time" : exa["Time"], "Station" : exa.get("Station"),
                                "StateResidual" : diff, "Covariance3Sigma" : sigm,
-                               "OutsideBounds" : [diff[i] <= -sigm[i] or diff[i] >= sigm[i] for i in range(6)]})
+                               "WithinBounds" : [diff[i] > -sigm[i] and diff[i] < sigm[i] for i in range(6)]})
 
             with open(os.path.join(outdir, fname[:idx] + algo + "_diff.json"), "w") as fp:
                 json.dump(output, fp, indent = 1)
