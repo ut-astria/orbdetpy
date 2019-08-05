@@ -1,7 +1,3 @@
-============================
-orbdetpy - JSON file formats
-============================
-
 orbdetpy uses JSON files to store settings and measurements for both
 data simulation and orbit determination. The following sections describe
 the formatting requirements for these files.
@@ -34,7 +30,7 @@ Configuration files are needed for both simulation and orbit determination.
 
  "Model" : "MSISE" for NRL MSISE-00 or "Exponential" for exponential drag.
 
- "MSISEFlags" : nx2 array of integers where n is in [1,23]. The first column is the flag number and the second column is the value of the corresponding MSISE flag. See `here <https://www.orekit.org/site-orekit-development/apidocs/org/orekit/forces/drag/atmosphere/NRLMSISE00.html>`_ for details. All flags default to 1.
+ "MSISEFlags" : nx2 array of integers where n is in [1,23]. The first column is the flag number and the second column is the value of the corresponding MSISE flag. See <https://www.orekit.org/site-orekit-development/apidocs/org/orekit/forces/drag/atmosphere/NRLMSISE00.html> for details. All flags default to 1.
 
  "ExpRho0" : Density constant [kg/m^3] for exponential drag.
  
@@ -169,19 +165,33 @@ Configuration files are needed for both simulation and orbit determination.
   
  }
 
-"Maneuvers" : One or more constant thrust maneuvers to include during simulation or less commonly with orbit determination [
+"Maneuvers" : One or more maneuvers to include during simulation or less commonly during orbit determination [
 
  {
-  "Time" : Time of maneuver.
+ 
+  "TriggerEvent" : "DateTime" to trigger at the specified time instant.
+                   "LongitudeCrossing" to detect when the given geodetic longitude is crossed.
 
-  "Duration" : Maneuver duration [s].
+  "TriggerParams" : Not required for "DateTime".
+  		    [geodetic_longitude_radians] for "LongitudeCrossing" detection.
 
-  "Thrust" : Thrust force [N].
+  "Time" : Time string for maneuver; required only when TriggerEvent is "DateTime".
 
-  "Isp" : Engine specific impulse [s].
+  "ManeuverType" : One of ["ConstantThrust", "NorthSouthStationing", "EastWestStationing", "SemiMajorAxisChange",
+                   "PerigeeChange", "EccentricityChange", "InclinationChange", "RAANChange", "ArgPerigeeChange",
+		   "StopPropagation"].
 
-  "Params" : Unit vector in the RSO frame specifying thrust direction.
-  
+  "ManeuverParams" : [dir_x, dir_y, dir_z, duration_seconds, thrust_Newtons, Isp_seconds] for "ConstantThrust".
+    		     [geodetic_latitude_radians] for "NorthSouthStationing".
+                     [geodetic_longitude_radians] for "EastWestStationing".
+		     [SMA_meters] for "SemiMajorAxisChange".
+                     [perigee_radius_meters] for "PerigeeChange".
+		     [eccentricity] for "EccentricityChange".
+		     [inclination_radians] for "InclinationChange".
+		     [RAAN_radians] for "RAANChange".
+		     [perigee_argument_radians] for "ArgPerigeeChange".
+		     Not required for "StopPropagation".
+
  }
  
  ]
@@ -241,12 +251,12 @@ Configuration files are needed for both simulation and orbit determination.
 
 Valid combinations of measurements are as follows:
 
-1) Range
-2) RangeRate
-3) Range + RangeRate
-4) Azimuth + Elevation
-5) RightAscension + Declination
-6) PositionVelocity
+1. Range
+2. RangeRate
+3. Range + RangeRate
+4. Azimuth + Elevation
+5. RightAscension + Declination
+6. PositionVelocity
  
 "Estimation" : Configure parameters for estimation filters {
 

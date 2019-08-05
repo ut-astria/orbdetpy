@@ -46,11 +46,11 @@ def export_OEM(cfg_file, obs_file, obj_id, obj_name):
     if (frame == "GCRF"):
         frame = "ICRF"
     oem_data = "CCSDS_OEM_VERS = 1.0\nCREATION_DATE = {utc_time}\n" \
-               "ORIGINATOR = UT-ASTRIA\n\nMETA_START\nOBJECT_ID = {obj_id}\n" \
-               "OBJECT_NAME = {obj_name}\nCENTER_NAME = EARTH\n" \
+               "ORIGINATOR = UT-ASTRIA\n\nMETA_START\nOBJECT_NAME = {obj_name}\n" \
+               "OBJECT_ID = {obj_id}\nCENTER_NAME = EARTH\n" \
                "REF_FRAME = {ref_frame}\nTIME_SYSTEM = UTC\nSTART_TIME = {start_time}\n" \
                "STOP_TIME = {stop_time}\nMETA_STOP\n\n". \
-               format(utc_time=utcnow, obj_id=obj_id, obj_name=obj_name,
+               format(utc_time=utcnow, obj_name=obj_name, obj_id=obj_id, 
                       ref_frame=frame, start_time=obs[0]["Time"], stop_time=obs[-1]["Time"])
 
     added = set()

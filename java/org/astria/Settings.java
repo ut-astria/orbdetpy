@@ -67,6 +67,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.LongitudeCrossingDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -186,13 +187,11 @@ public class Settings
     
     class JSONManeuver
     {
-	String TriggerEvent;
-	String ManeuverType;
 	String Time;
-	double Duration;
-	double Thrust;
-	double Isp;
-	double[] Params;
+	String TriggerEvent;
+	double[] TriggerParams;
+	String ManeuverType;
+	double[] ManeuverParams;
     }
 
     class JSONStation
@@ -407,13 +406,10 @@ public class Settings
 	    return;
 	for (JSONManeuver m : Maneuvers)
 	{
-	    if (m.TriggerEvent == null)
-		m.TriggerEvent = "DateTime";
-	    if (m.ManeuverType == null)
-		m.ManeuverType = "ConstantThrust";
 	    if (m.TriggerEvent.equals("DateTime") && m.ManeuverType.equals("ConstantThrust"))
 		forces.add(new ConstantThrustManeuver(new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale),
-						      m.Duration, m.Thrust, m.Isp, new Vector3D(m.Params)));
+						      m.ManeuverParams[3], m.ManeuverParams[4], m.ManeuverParams[5],
+						      new Vector3D(m.ManeuverParams[0], m.ManeuverParams[1], m.ManeuverParams[2])));
 	}
     }
 
@@ -593,12 +589,20 @@ public class Settings
 	    return;
 	for (JSONManeuver m : Maneuvers)
 	{
-	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale);
 	    if (m.TriggerEvent.equals("DateTime"))
 	    {
 		if (m.ManeuverType.equals("ConstantThrust"))
 		    continue;
+		AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale);
 		prop.addEventDetector(new DateDetector(time).withHandler(new EventHandling<DateDetector>(m)));
+	    }
+
+	    if (m.TriggerEvent.equals("LongitudeCrossing"))
+	    {
+		OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+							     Constants.WGS84_EARTH_FLATTENING, DataManager.itrf);
+		prop.addEventDetector(new LongitudeCrossingDetector(body, m.TriggerParams[0]).
+				      withHandler(new EventHandling<LongitudeCrossingDetector>(m)));
 	    }
 	}
     }

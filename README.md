@@ -69,7 +69,7 @@ underlying Java implementation directly is straightforward.
 orbdetpy uses JSON files to store settings, measurements and estimation
 results. The files in examples/data show how to configure measurement
 simulation and orbit determination using radar or telescope data. The
-file docs/filefmt.rst documents the structure of the JSON files.
+file docs/file_formats.md documents the structure of the JSON files.
 
 The following are some typical use cases. It is assumed that the current
 working directory is examples/data.

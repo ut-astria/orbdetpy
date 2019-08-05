@@ -45,6 +45,8 @@ public class EventHandling<T extends EventDetector> implements EventHandler<T>
 
     @Override public EventHandler.Action eventOccurred(SpacecraftState state, T det, boolean incr)
     {
+	if (maneuver.TriggerEvent.equals("LongitudeCrossing") && maneuver.ManeuverType.equals("StopPropagation"))
+	    return(EventHandler.Action.STOP);
 	return(EventHandler.Action.RESET_STATE);
     }
 
@@ -89,13 +91,13 @@ public class EventHandling<T extends EventDetector> implements EventHandler<T>
 		GeodeticPoint geo2 = earth.transform(kep2.getPVCoordinates().getPosition(), old.getFrame(), old.getDate());
 		if (maneuver.ManeuverType.equals("NorthSouthStationing"))
 		{
-		    val1 = MathUtils.normalizeAngle(geo1.getLatitude(), 0.0) - MathUtils.normalizeAngle(maneuver.Params[0], 0.0);
-		    val2 = MathUtils.normalizeAngle(geo2.getLatitude(), 0.0) - MathUtils.normalizeAngle(maneuver.Params[0], 0.0);
+		    val1 = MathUtils.normalizeAngle(geo1.getLatitude(),0.0)-MathUtils.normalizeAngle(maneuver.ManeuverParams[0],0.0);
+		    val2 = MathUtils.normalizeAngle(geo2.getLatitude(),0.0)-MathUtils.normalizeAngle(maneuver.ManeuverParams[0],0.0);
 		}
 		else
 		{
-		    val1 = MathUtils.normalizeAngle(geo1.getLongitude(), 0.0) - MathUtils.normalizeAngle(maneuver.Params[0], 0.0);
-		    val2 = MathUtils.normalizeAngle(geo2.getLongitude(), 0.0) - MathUtils.normalizeAngle(maneuver.Params[0], 0.0);
+		    val1 = MathUtils.normalizeAngle(geo1.getLongitude(),0.0)-MathUtils.normalizeAngle(maneuver.ManeuverParams[0],0.0);
+		    val2 = MathUtils.normalizeAngle(geo2.getLongitude(),0.0)-MathUtils.normalizeAngle(maneuver.ManeuverParams[0],0.0);
 		}
 
 		if (FastMath.abs(oldmp - mp) < 1.0E-6)
@@ -112,17 +114,17 @@ public class EventHandling<T extends EventDetector> implements EventHandler<T>
 	else
 	{
 	    if (maneuver.ManeuverType.equals("SemiMajorAxisChange"))
-		a = maneuver.Params[0];
+		a = maneuver.ManeuverParams[0];
 	    if (maneuver.ManeuverType.equals("PerigeeChange"))
-		a = maneuver.Params[0]/(1 - e);
+		a = maneuver.ManeuverParams[0]/(1 - e);
 	    if (maneuver.ManeuverType.equals("EccentricityChange"))
-		e = maneuver.Params[0];
+		e = maneuver.ManeuverParams[0];
 	    if (maneuver.ManeuverType.equals("InclinationChange"))
-		i = maneuver.Params[0];
+		i = maneuver.ManeuverParams[0];
 	    if (maneuver.ManeuverType.equals("RAANChange"))
-		O = maneuver.Params[0];
+		O = maneuver.ManeuverParams[0];
 	    if (maneuver.ManeuverType.equals("ArgPerigeeChange"))
-		w = maneuver.Params[0];
+		w = maneuver.ManeuverParams[0];
 	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
 	}
 

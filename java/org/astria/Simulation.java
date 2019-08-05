@@ -92,19 +92,21 @@ public class Simulation
 						      simcfg.SpaceObject.Mass);
 	prop.setInitialState(sstate0);
 	simcfg.addEventHandlers(prop, sstate0);
+	boolean evthandlers = prop.getEventsDetectors().size() > 0;
 
 	Measurements meas = new Measurements();
 	ArrayList<Measurements.JSONSimulatedMeasurement> mall = new ArrayList<Measurements.JSONSimulatedMeasurement>();
 	while (true)
 	{
 	    SpacecraftState[] sta = new SpacecraftState[]{prop.propagate(tm)};
+	    AbsoluteDate proptm = sta[0].getDate();
 	    TimeStampedPVCoordinates pvc = sta[0].getPVCoordinates();
 	    Vector3D pos = pvc.getPosition();
 	    Vector3D vel = pvc.getVelocity();
 	    Vector3D acc = pvc.getAcceleration();
 
 	    Measurements.JSONSimulatedMeasurement json = meas.new JSONSimulatedMeasurement();
-	    json.Time = tm.toString() + "Z";
+	    json.Time = proptm.toString() + "Z";
 	    json.TrueState = meas.new JSONState();
 	    json.TrueState.Cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
 						    acc.getX(), acc.getY(), acc.getZ()};
@@ -121,8 +123,7 @@ public class Simulation
 								      orb.getHy(), orb.getLM());
 
 		if (simcfg.atmmodel != null)
-		    json.AtmDensity = simcfg.atmmodel.getDensity(tm, pos, simcfg.propframe);
-
+		    json.AtmDensity = simcfg.atmmodel.getDensity(proptm, pos, simcfg.propframe);
 		for (ForceModel fmod : simcfg.forces)
 		{
 		    double[] facc = fmod.acceleration(sta[0], fmod.getParameters()).toArray();
@@ -159,7 +160,7 @@ public class Simulation
 		{
 		    GroundStation gst = kv.getValue();
 		    Settings.JSONStation jsn = simcfg.Stations.get(kv.getKey());
-		    double[] obs = new AngularAzEl(gst, tm, new double[]{0.0, 0.0}, new double[]{0.0, 0.0},
+		    double[] obs = new AngularAzEl(gst, proptm, new double[]{0.0, 0.0}, new double[]{0.0, 0.0},
 						   new double[]{1.0, 1.0}, new ObservableSatellite(0)).
 			estimate(1, 1, sta).getEstimatedValue();
 		    if (skipunobs && obs[1] <= 5E-6)
@@ -169,7 +170,7 @@ public class Simulation
 		    clone.Station = kv.getKey();
 		    if (inclstapos)
 		    {
-			pvc = gst.getBaseFrame().getPVCoordinates(tm, simcfg.propframe);
+			pvc = gst.getBaseFrame().getPVCoordinates(proptm, simcfg.propframe);
 			pos = pvc.getPosition();
 			vel = pvc.getVelocity();
 			acc = pvc.getAcceleration();
@@ -184,20 +185,20 @@ public class Simulation
 
 			if (name.equals("Range"))
 			{
-			    obs = new Range(gst, val.TwoWay, tm, 0.0, 0.0, 1.0, new ObservableSatellite(0)).
+			    obs = new Range(gst, val.TwoWay, proptm, 0.0, 0.0, 1.0, new ObservableSatellite(0)).
 				estimate(1, 1, sta).getEstimatedValue();
 			    clone.Range = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeBias;
 			}
 			else if (name.equals("RangeRate"))
 			{
-			    obs = new RangeRate(gst, tm, 0.0, 0.0, 1.0, val.TwoWay, new ObservableSatellite(0)).
+			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.TwoWay, new ObservableSatellite(0)).
 				estimate(1, 1, sta).getEstimatedValue();
 			    clone.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeRateBias;
 			}
 			else if (name.equals("RightAscension") || name.equals("Declination") &&
 				 clone.RightAscension == null)
 			{
-			    obs = new AngularRaDec(gst, simcfg.propframe, tm, new double[]{0.0, 0.0},
+			    obs = new AngularRaDec(gst, simcfg.propframe, proptm, new double[]{0.0, 0.0},
 						   new double[]{0.0, 0.0}, new double[]{1.0, 1.0},
 						   new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
 			    clone.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RightAscensionBias;
@@ -205,7 +206,7 @@ public class Simulation
 			}
 			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.Azimuth == null)
 			{
-			    obs = new AngularAzEl(gst, tm, new double[]{0.0, 0.0}, new double[]{0.0, 0.0},
+			    obs = new AngularAzEl(gst, proptm, new double[]{0.0, 0.0}, new double[]{0.0, 0.0},
 						  new double[]{1.0, 1.0}, new ObservableSatellite(0)).
 				estimate(1, 1, sta).getEstimatedValue();
 			    clone.Azimuth = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.AzimuthBias;
@@ -230,7 +231,9 @@ public class Simulation
 	    else
 		mall.add(json);
 
-	    double dt = prend.durationFrom(tm);
+	    double dt = prend.durationFrom(proptm);
+	    if (evthandlers && !proptm.equals(tm))
+		break;
 	    if (simcfg.Propagation.Step >= 0.0)
 		tm = new AbsoluteDate(tm, FastMath.min(dt, simcfg.Propagation.Step));
 	    else

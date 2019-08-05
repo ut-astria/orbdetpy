@@ -47,9 +47,13 @@ updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980
 
 for u in updates:
     print("Updating %s" % u[1])
-    resp = requests.get(u[0], timeout = 180.0)
-    if (resp.status_code != 200):
-        print("Error %s in %s", (resp.status_code, u[0]))
+    try:
+        resp = requests.get(u[0], timeout = 180.0)
+        if (resp.status_code != 200):
+            print("Error %s in %s", (resp.status_code, u[0]))
+            continue
+    except Exception as exc:
+        print(repr(exc))
         continue
 
     if (u[2] is not None):
