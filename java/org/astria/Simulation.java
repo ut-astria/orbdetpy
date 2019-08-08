@@ -94,8 +94,13 @@ public class Simulation
 	simcfg.addEventHandlers(prop, sstate0);
 	boolean evthandlers = prop.getEventsDetectors().size() > 0;
 
+	double[] obs, azel;
+	double[] zeros = new double[]{0.0, 0.0};
+	double[] ones = new double[]{1.0, 1.0};
+	ObservableSatellite obssat = new ObservableSatellite(0);
 	Measurements meas = new Measurements();
 	ArrayList<Measurements.JSONSimulatedMeasurement> mall = new ArrayList<Measurements.JSONSimulatedMeasurement>();
+
 	while (true)
 	{
 	    SpacecraftState[] sta = new SpacecraftState[]{prop.propagate(tm)};
@@ -160,10 +165,8 @@ public class Simulation
 		{
 		    GroundStation gst = kv.getValue();
 		    Settings.JSONStation jsn = simcfg.Stations.get(kv.getKey());
-		    double[] obs = new AngularAzEl(gst, proptm, new double[]{0.0, 0.0}, new double[]{0.0, 0.0},
-						   new double[]{1.0, 1.0}, new ObservableSatellite(0)).
-			estimate(1, 1, sta).getEstimatedValue();
-		    if (skipunobs && obs[1] <= 5E-6)
+		    azel = new AngularAzEl(gst, proptm, zeros, zeros, ones, obssat).estimate(1, 1, sta).getEstimatedValue();
+		    if (skipunobs && azel[1] <= 5E-6)
 			continue;
 
 		    Measurements.JSONSimulatedMeasurement clone = meas.new JSONSimulatedMeasurement(json);
@@ -185,32 +188,25 @@ public class Simulation
 
 			if (name.equals("Range"))
 			{
-			    obs = new Range(gst, val.TwoWay, proptm, 0.0, 0.0, 1.0, new ObservableSatellite(0)).
-				estimate(1, 1, sta).getEstimatedValue();
+			    obs = new Range(gst, val.TwoWay, proptm, 0.0, 0.0, 1.0, obssat).estimate(1, 1, sta).getEstimatedValue();
 			    clone.Range = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeBias;
 			}
 			else if (name.equals("RangeRate"))
 			{
-			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.TwoWay, new ObservableSatellite(0)).
-				estimate(1, 1, sta).getEstimatedValue();
+			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.TwoWay, obssat).estimate(1,1,sta).getEstimatedValue();
 			    clone.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeRateBias;
 			}
-			else if (name.equals("RightAscension") || name.equals("Declination") &&
-				 clone.RightAscension == null)
+			else if (name.equals("RightAscension") || name.equals("Declination") && clone.RightAscension == null)
 			{
-			    obs = new AngularRaDec(gst, simcfg.propframe, proptm, new double[]{0.0, 0.0},
-						   new double[]{0.0, 0.0}, new double[]{1.0, 1.0},
-						   new ObservableSatellite(0)).estimate(1, 1, sta).getEstimatedValue();
+			    obs = new AngularRaDec(gst, simcfg.propframe, proptm, zeros, zeros, ones,
+						   obssat).estimate(1, 1, sta).getEstimatedValue();
 			    clone.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RightAscensionBias;
 			    clone.Declination = obs[1] + rand.nextGaussian()*val.Error[0] + jsn.DeclinationBias;
 			}
 			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.Azimuth == null)
 			{
-			    obs = new AngularAzEl(gst, proptm, new double[]{0.0, 0.0}, new double[]{0.0, 0.0},
-						  new double[]{1.0, 1.0}, new ObservableSatellite(0)).
-				estimate(1, 1, sta).getEstimatedValue();
-			    clone.Azimuth = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.AzimuthBias;
-			    clone.Elevation = obs[1] + rand.nextGaussian()*val.Error[0] + jsn.ElevationBias;
+			    clone.Azimuth = azel[0] + rand.nextGaussian()*val.Error[0] + jsn.AzimuthBias;
+			    clone.Elevation = azel[1] + rand.nextGaussian()*val.Error[0] + jsn.ElevationBias;
 			}
 			else if (name.equals("PositionVelocity"))
 			{

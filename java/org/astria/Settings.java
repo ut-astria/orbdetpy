@@ -192,6 +192,15 @@ public class Settings
 	double[] TriggerParams;
 	String ManeuverType;
 	double[] ManeuverParams;
+
+	public JSONManeuver(String tm, String trig, double[] trigpar, String man, double[] manpar)
+	{
+	    this.Time = tm;
+	    this.TriggerEvent = trig;
+	    this.TriggerParams = trigpar;
+	    this.ManeuverType = man;
+	    this.ManeuverParams = manpar;
+	}
     }
 
     class JSONStation
@@ -449,7 +458,7 @@ public class Settings
 	    else
 	    {
 		epoch = parser.getDate().shiftedBy(0.0);
-		Propagation.Start = new String(epoch.toString()) + "Z";
+		Propagation.Start = epoch.toString() + "Z";
 	    }
 	    topv = prop.getPVCoordinates(epoch, propframe);
 	}
@@ -593,8 +602,21 @@ public class Settings
 	    {
 		if (m.ManeuverType.equals("ConstantThrust"))
 		    continue;
+
 		AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale);
-		prop.addEventDetector(new DateDetector(time).withHandler(new EventHandling<DateDetector>(m)));
+		if (m.ManeuverParams.length == 1)
+		{
+		    prop.addEventDetector(new DateDetector(time).withHandler(new EventHandling<DateDetector>(m)));
+		    continue;
+		}
+
+		for (int i = 0; i < m.ManeuverParams[2]; i++)
+		{
+		    JSONManeuver sub = new JSONManeuver(time.toString() + "Z", m.TriggerEvent, m.TriggerParams,
+							m.ManeuverType, m.ManeuverParams);
+		    prop.addEventDetector(new DateDetector(time).withHandler(new EventHandling<DateDetector>(sub)));
+		    time = new AbsoluteDate(time, m.ManeuverParams[1]);
+		}
 	    }
 
 	    if (m.TriggerEvent.equals("LongitudeCrossing"))
