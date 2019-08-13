@@ -101,16 +101,19 @@ working directory is examples/data.
 
    This will plot the OD results from (3).
 
-Future Work
------------
+Known Issues
+------------
 
-The following tasks are under consideration. Community contributions are
-always welcome.
+1. Java "Out of heap space" errors:
 
-1. A batch least squares implementation.
-2. Rauch-Tung-Striebel smoother.
-3. Parametric analysis i.e. the ability to pass-through certain
-   measurement types.
+   The Java Virtual Machine with default settings may run out of heap
+   space during long term simulations or orbit fits. The workaround
+   is to add the following to the top of your Python code, before
+   orbdetpy is imported. The value following "-Xmx" is the maximum
+   heap size you wish to assign to Java; "G" stands for gigabytes.
+
+   import jnius_config
+   jnius_config.add_options("-Xmx2G")
 
 Bug Reports
 -----------

@@ -29,6 +29,7 @@ import org.orekit.estimation.iod.IodGooding;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.files.ccsds.TDMFile;
 import org.orekit.files.ccsds.TDMParser;
+import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
@@ -95,14 +96,14 @@ public class Utilities
 		   gspos[0], gspos[1], gspos[2], los[0], time[0], los[1], time[1], los[2], time[2], rho1init, rho3init));
     }
 
-    public static String[] importTDM(String file_name)
+    public static String[] importTDM(String file_name, String file_format)
     {
 	Measurements meas = new Measurements();
 	Measurements.JSONMeasurement json = null;
 	ArrayList<String> output = new ArrayList<String>();
 	Gson gsonobj = new GsonBuilder().setPrettyPrinting().create();
 
-	TDMFile tdm = new TDMParser().parse(file_name);
+	TDMFile tdm = new TDMParser().withFileFormat(TDMFileFormat.valueOf(file_format)).parse(file_name);
 	for (TDMFile.ObservationsBlock blk : tdm.getObservationsBlocks())
 	{
 	    int i = 0;
@@ -111,28 +112,32 @@ public class Utilities
 
 	    for (TDMFile.Observation obs : blk.getObservations())
 	    {
+		String keyw = obs.getKeyword();
+		if (!(keyw.equals("RANGE") || keyw.equals("DOPPLER_INSTANTANEOUS") ||
+		      keyw.equals("ANGLE_1") || keyw.equals("ANGLE_2")))
+		    continue;
 		if (i == 0)
 		    json = meas.new JSONMeasurement();
 
 		if (atype == null)
 		{
-		    if (obs.getKeyword().equals("RANGE"))
+		    if (keyw.equals("RANGE"))
 			json.Range = obs.getMeasurement()*1000.0;
-		    else
+		    else if (keyw.equals("DOPPLER_INSTANTANEOUS"))
 			json.RangeRate = obs.getMeasurement()*1000.0;
 		}
 		else if (atype.equals("RADEC"))
 		{
-		    if (obs.getKeyword().equals("ANGLE_1"))
+		    if (keyw.equals("ANGLE_1"))
 			json.RightAscension = obs.getMeasurement()*FastMath.PI/180.0;
-		    else
+		    else if (keyw.equals("ANGLE_2"))
 			json.Declination = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 		else if (atype.equals("AZEL"))
 		{
-		    if (obs.getKeyword().equals("ANGLE_1"))
+		    if (keyw.equals("ANGLE_1"))
 			json.Azimuth = obs.getMeasurement()*FastMath.PI/180.0;
-		    else
+		    else if (keyw.equals("ANGLE_2"))
 			json.Elevation = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 

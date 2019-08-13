@@ -121,5 +121,5 @@ def export_TDM(cfg_file, obs_file, station_list, obj_id):
 
     return(tdm_data)
 
-def import_TDM(file_name):
-    return(autoclass("org.astria.Utilities").importTDM(file_name))
+def import_TDM(file_name, file_format):
+    return(autoclass("org.astria.Utilities").importTDM(file_name, file_format))
