@@ -29,21 +29,22 @@ the simulateMeasurements() function.
 Installation
 ------------
 
-1. Python 3.6+ must be installed with the packages numpy, scipy, pyjnius,
-   matplotlib, requests.
-2. Install the Java Development Kit 8+ (1.8+) from <http://openjdk.java.net>.
+1. Install the Java Development Kit 8+ (1.8+) from <http://openjdk.java.net/install/index.html>.
    Set the JAVA_HOME environment variable to point to your JDK installation.
+2. Install Python 3.6+ and run "pip install orbdetpy" to install orbdetpy 
+   and other package dependencies.
+3. Source code, example programs and data files can be downloaded from 
+   <https://github.com/ut-astria/orbdetpy>.
 
-The lib/ folder contains JAR files for the following libraries, which are
-imported by orbdetpy automatically.
+The orbdetpy/lib folder contains JAR files for the following libraries,
+which are imported by orbdetpy automatically.
 
 1. <https://github.com/google/gson>
 2. <https://hipparchus.org> 
 3. <https://www.orekit.org>
 
-Space weather data in data/ is obtained from <http://www.celestrak.com/SpaceData/>.
-The astrodynamics data in data/ must be periodically updated using the
-script examples/update_data.py.
+The astrodynamics data in orbdetpy/data must be updated periodically
+using examples/update_data.py.
 
 Examples
 --------

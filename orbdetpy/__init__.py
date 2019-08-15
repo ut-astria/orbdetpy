@@ -17,7 +17,7 @@
 from glob import iglob
 from os import environ, path, sep
 
-_rootdir = path.dirname(path.dirname(path.abspath(__file__)))
+_rootdir = path.dirname(path.abspath(__file__))
 _libsdir = path.join(_rootdir, "lib")
 _datadir = path.join(_rootdir, "data")
 
@@ -38,14 +38,46 @@ _Utilities = autoclass("org.astria.Utilities")
 _DataManager.initialize(_datadir)
 
 def determineOrbit(config, meas):
+    """ Performs orbit determination given config and measurements.
+
+    Args:
+        config: OD configuration as JSON encoded string.
+        meas: List of measurements as JSON encoded string.
+
+    Returns:
+        Orbit determination results as JSON encoded string.
+
+    """
     return(_Estimation(config, meas).determineOrbit())
 
 def simulateMeasurements(config):
+    """ Simulates measurement data given a configuration.
+
+    Args:
+        config: Simulation configuration as JSON encoded string.
+
+    Returns:
+        Simulated measurements as JSON encoded string.
+
+    """
     return(_Simulation(config).simulateMeasurements())
 
 def transformFrame(srcframe, time, pv, destframe):
+    """ Transforms a state vector from one frame to another.
+
+    Args:
+        srcframe: Source reference frame.
+        time: Epoch for the state vector.
+        pv: State vector to transform.
+        destframe: Destination reference frame.
+
+    Returns:
+        State vector transformed to the destination frame.
+
+    """
     return(_Utilities.transformFrame(srcframe, time, pv, destframe))
 
 def iodGooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
+    """ Performs Gooding initial orbit determination. """
     return(_Utilities.iodGooding(gslat, gslon, gsalt, tmstr, azi, ele,
                                  rho1init, rho3init))

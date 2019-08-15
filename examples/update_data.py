@@ -35,7 +35,7 @@ def format_weather(lines):
 
     return(fmtdata)
 
-datadir = path.join(path.dirname(path.dirname(path.abspath(__file__))), "data")
+datadir = path.join(path.dirname(path.dirname(path.abspath(__file__))), "orbdetpy", "data")
 updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
             path.join(datadir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
            ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",

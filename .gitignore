@@ -1,4 +1,8 @@
 __pycache__/
 output/
+build/
+dist/
+orbdetpy.egg-info/
+**/*.pyc
 *.class
 
