@@ -114,6 +114,7 @@ Known Issues
    heap size you wish to assign to Java; "G" stands for gigabytes.
 
    import jnius_config
+
    jnius_config.add_options("-Xmx2G")
 
 Bug Reports
