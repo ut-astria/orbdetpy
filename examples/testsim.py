@@ -1,4 +1,4 @@
-# simtest.py - Test spacecraft measurement simulator.
+# testsim.py - Test spacecraft measurement simulator.
 # Copyright (C) 2018-2019 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,11 +18,11 @@ import os
 import sys
 import time
 import argparse
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from orbdetpy import simulateMeasurements
 
-
 def main(args):
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     print("Simulation start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"),
           flush=True)
     with open(sys.argv[1], "r") as fp:
@@ -31,7 +31,6 @@ def main(args):
     with open(sys.argv[2], "w") as fp:
         fp.write(output)
     print("Simulation end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

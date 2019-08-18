@@ -1,4 +1,4 @@
-# testodet.py - Example program for orbit determination.
+# run_tests.py - Program to run simulation and OD tests.
 # Copyright (C) 2019 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
