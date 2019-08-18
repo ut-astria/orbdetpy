@@ -25,12 +25,7 @@ from orbdetpy import determineOrbit
 def main(args):
     print("OD start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"),
           flush=True)
-    with open(args.config, "r") as fp:
-        config = fp.read()
-    with open(args.input, "r") as fp:
-        output = determineOrbit(config, fp.read())
-    with open(args.output, "w") as fp:
-        fp.write(output)
+    determineOrbit(args.config, args.input, output_file = args.output)
     print("OD end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
 
 if __name__ == '__main__':

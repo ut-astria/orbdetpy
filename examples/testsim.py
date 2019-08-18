@@ -25,11 +25,7 @@ from orbdetpy import simulateMeasurements
 def main(args):
     print("Simulation start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"),
           flush=True)
-    with open(sys.argv[1], "r") as fp:
-        config = fp.read()
-    output = simulateMeasurements(config)
-    with open(sys.argv[2], "w") as fp:
-        fp.write(output)
+    simulateMeasurements(args.config, output_file = args.output)
     print("Simulation end   : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
 
 if __name__ == '__main__':

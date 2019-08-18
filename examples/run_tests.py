@@ -39,11 +39,8 @@ for root, dirs, files in os.walk(datdir):
             continue
 
         print("Simulating {}".format(fname))
-        with open(os.path.join(root, fname), "r") as fp:
-            config = fp.read()
-        obs = simulateMeasurements(config)
-        with open(os.path.join(outdir, fname[:idx] + "obs.json"), "w") as fp:
-            fp.write(obs)
+        simulateMeasurements(os.path.join(root, fname),
+                             output_file=os.path.join(outdir,fname[:idx]+"obs.json"))
 
 for root, dirs, files in os.walk(datdir):
     outdir = os.path.join(root, "output")
@@ -63,9 +60,8 @@ for root, dirs, files in os.walk(datdir):
             with open(os.path.join(root, fname), "r") as fp:
                 config = json.load(fp)
                 config["Estimation"]["Filter"] = algo
-            fit = determineOrbit(json.dumps(config), obs)
-            with open(os.path.join(outdir, fname[:idx] + algo + "_fit.json"), "w") as fp:
-                fp.write(fit)
+            fit = determineOrbit(json.dumps(config), obs,
+                                 output_file=os.path.join(outdir,fname[:idx]+algo+"_fit.json"))
 
             output = []
             exact = [x for x in json.loads(obs) if ("Station" in x or "PositionVelocity" in x)]
