@@ -18,8 +18,6 @@ import os
 import sys
 import time
 import argparse
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from orbdetpy import determineOrbit
 
 def main(args):

@@ -28,7 +28,7 @@ def main(args):
         cfg = json.load(f)
     with open(args.data, "r") as f:
         out = json.load(f)
-    
+
     mu = 398600.4418
     tstamp, hvec, hmag, ener, sma, ecc, inc = [], [], [], [], [], [], []
     for o in out:
@@ -39,7 +39,7 @@ def main(args):
         a = 1.0/(2.0/r-v*v/mu)
         e = math.sqrt(1 - hn*hn/(mu*a))
         i = math.acos(h[2]/hn)*180.0/math.pi
-    
+
         tstamp.append(dateutil.parser.isoparse(o["Time"]))
         hvec.append(h)
         hmag.append(hn)
@@ -47,10 +47,10 @@ def main(args):
         sma.append(a)
         ecc.append(e)
         inc.append(i)
-    
+
     hvec = numpy.array(hvec)
     tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
-    
+
     fig = plt.figure(0)
     plt.subplot(311)
     plt.plot(tim, hvec[:,0], "-b")
@@ -65,7 +65,7 @@ def main(args):
     plt.xlabel("Time [hr]")
     plt.ylabel("h(z)")
     plt.suptitle("Components of angular momentum")
-    
+
     fig = plt.figure(1)
     plt.subplot(211)
     plt.plot(tim, hmag, "-b")
@@ -75,7 +75,7 @@ def main(args):
     plt.plot(tim, ener, "-b")
     plt.xlabel("Time [hr]")
     plt.ylabel("Specific energy")
-    
+
     fig = plt.figure(2)
     plt.subplot(311)
     plt.plot(tim, sma, "-b")
