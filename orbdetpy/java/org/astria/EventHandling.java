@@ -65,7 +65,7 @@ public class EventHandling<T extends EventDetector> implements EventHandler<T>
 	{
 	    double lb, ub, target = MathUtils.normalizeAngle(maneuver.ManeuverParams[0], 0.0);
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-							  Constants.WGS84_EARTH_FLATTENING, DataManager.itrf);
+							  Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 	    GeodeticPoint geo = earth.transform(kep.getPVCoordinates().getPosition(), old.getFrame(), old.getDate());
 
 	    if (maneuver.ManeuverType.equals("NorthSouthStationing"))

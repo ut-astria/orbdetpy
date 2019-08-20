@@ -284,12 +284,9 @@ public class Settings
     public static Settings loadJSON(String json)
     {
 	Settings set = new Gson().fromJson(json, Settings.class);
+	set.propframe = DataManager.getFrame(set.Propagation.InertialFrame);
 	if (set.Integration == null)
 	    set.Integration = set.new JSONIntegration();
-	if (set.Propagation.InertialFrame != null && set.Propagation.InertialFrame.equals("GCRF"))
-	    set.propframe = DataManager.gcrf;
-	else
-	    set.propframe = DataManager.eme2000;
 
 	set.loadGroundStations();
 	set.loadForces();
@@ -313,7 +310,7 @@ public class Settings
 	    JSONStation v = kv.getValue();
 	    GroundStation sta = new GroundStation(new TopocentricFrame(new OneAxisEllipsoid(
 									   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-									   Constants.WGS84_EARTH_FLATTENING, DataManager.itrf),
+									   Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
 								       new GeodeticPoint(v.Latitude, v.Longitude, v.Altitude), k));
 	    sta.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
@@ -330,18 +327,18 @@ public class Settings
 	if (Gravity.Degree >= 2 && Gravity.Order >= 0)
 	{
 	    grav = GravityFieldFactory.getNormalizedProvider(Gravity.Degree, Gravity.Order);
-	    forces.add(new HolmesFeatherstoneAttractionModel(DataManager.itrf, grav));
+	    forces.add(new HolmesFeatherstoneAttractionModel(DataManager.getFrame("ITRF"), grav));
 	}
 	else
 	    forces.add(new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
 	if (OceanTides.Degree >= 0 && OceanTides.Order >= 0)
-	    forces.add(new OceanTides(DataManager.itrf, Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+	    forces.add(new OceanTides(DataManager.getFrame("ITRF"), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 				      Constants.EGM96_EARTH_MU, OceanTides.Degree,
 				      OceanTides.Order, IERSConventions.IERS_2010, DataManager.ut1scale));
 
 	if ((SolidTides.Sun || SolidTides.Moon) && grav != null)
-	    forces.add(new org.orekit.forces.gravity.SolidTides(DataManager.itrf, Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+	    forces.add(new org.orekit.forces.gravity.SolidTides(DataManager.getFrame("ITRF"), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 								Constants.EGM96_EARTH_MU, grav.getTideSystem(),
 								IERSConventions.IERS_2010, DataManager.ut1scale,
 								CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon()));
@@ -378,7 +375,7 @@ public class Settings
 	if (Drag.Model.equals("Exponential"))
 	{
 	    atmmodel = new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-									    Constants.WGS84_EARTH_FLATTENING, DataManager.itrf),
+									    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
 						       Drag.ExpRho0, Drag.ExpH0, Drag.ExpHScale);
 	}
 	else if (Drag.Model.equals("MSISE"))
@@ -397,7 +394,7 @@ public class Settings
 						      DataManager.msisedata.data, apflag),
 				      CelestialBodyFactory.getSun(), new OneAxisEllipsoid(
 					  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-					  Constants.WGS84_EARTH_FLATTENING, DataManager.itrf));
+					  Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")));
 	    if (Drag.MSISEFlags != null)
 	    {
 		for (int i = 0; i < Drag.MSISEFlags.length; i++)
@@ -464,15 +461,7 @@ public class Settings
 	}
 	else
 	{
-	    Frame fromframe = DataManager.eme2000;
-	    if (Propagation.InitialStateFrame != null)
-	    {
-		if (Propagation.InitialStateFrame.equals("GCRF"))
-		    fromframe = DataManager.gcrf;
-		else if (Propagation.InitialStateFrame.equals("ITRF"))
-		    fromframe = DataManager.itrf;
-	    }
-
+	    Frame fromframe = DataManager.getFrame(Propagation.InitialStateFrame);
 	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(Propagation.Start), DataManager.utcscale);
 	    Transform xfm = fromframe.getTransformTo(propframe, epoch);
 	    PVCoordinates frompv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]),
@@ -502,7 +491,7 @@ public class Settings
 	    return(attpro);
 
 	OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-						      Constants.WGS84_EARTH_FLATTENING, DataManager.itrf);
+						      Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 
 	if (SpaceObject.Attitude.Provider.equals("NadirPointing"))
 	    attpro = new NadirPointing(propframe, shape);
@@ -622,7 +611,7 @@ public class Settings
 	    if (m.TriggerEvent.equals("LongitudeCrossing"))
 	    {
 		OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-							     Constants.WGS84_EARTH_FLATTENING, DataManager.itrf);
+							     Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 		prop.addEventDetector(new LongitudeCrossingDetector(body, m.TriggerParams[0]).
 				      withHandler(new EventHandling<LongitudeCrossingDetector>(m)));
 	    }

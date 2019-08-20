@@ -106,20 +106,23 @@ def determineOrbit(config, meas, output_file = None):
         fit = json.loads(fit)
     return(fit)
 
-def transformFrame(srcframe, time, pv, destframe):
+def transformFrame(srcframe, time, pva, destframe):
     """ Transforms a state vector from one frame to another.
 
     Args:
-        srcframe: Source reference frame.
-        time: Epoch for the state vector.
-        pv: State vector to transform.
-        destframe: Destination reference frame.
+        srcframe: Source reference frame ("EME2000", "GCRF",
+                  "ITRF", "MOD", "TOD", or "TEME").
+        time: State vector epoch (ISO-8601 formatted UTC string).
+        pva: State vector to transform [m, m, m, m/s, m/s, m/s] or 
+             [m, m, m, m/s, m/s, m/s, m/s^2, m/s^2, m/s^2].
+        destframe: Destination reference frame ("EME2000", "GCRF",
+                   "ITRF", "MOD", "TOD", or "TEME")..
 
     Returns:
         State vector transformed to the destination frame.
 
     """
-    return(_Utilities.transformFrame(srcframe, time, pv, destframe))
+    return(_Utilities.transformFrame(srcframe, time, pva, destframe))
 
 def iodGooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
     """ Performs Gooding initial orbit determination. """
