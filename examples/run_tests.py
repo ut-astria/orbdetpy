@@ -19,11 +19,10 @@ import sys
 import json
 import math
 import time
+from orbdetpy import determineOrbit, simulateMeasurements
 
 odpdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 datdir = os.path.join(odpdir, "examples", "data")
-sys.path.append(odpdir)
-from orbdetpy import determineOrbit, simulateMeasurements
 
 print("run_tests start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
 for root, dirs, files in os.walk(datdir):
