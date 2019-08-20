@@ -43,28 +43,25 @@ public class Utilities
 {
     public static double[] transformFrame(String srcframe, String time, double[] pv, String destframe)
     {
-	Frame fromframe, toframe;
-	if (srcframe.equals("GCRF"))
-	    fromframe = DataManager.gcrf;
-	else if (srcframe.equals("ITRF"))
-	    fromframe = DataManager.itrf;
-	else
-	    fromframe = DataManager.eme2000;
-
-	if (destframe.equals("GCRF"))
-	    toframe = DataManager.gcrf;
-	else if (destframe.equals("ITRF"))
-	    toframe = DataManager.itrf;
-	else
-	    toframe = DataManager.eme2000;
-
+	Frame fromframe = DataManager.getFrame(srcframe);
+	Frame toframe = DataManager.getFrame(destframe);
 	Transform xfm = fromframe.getTransformTo(toframe, new AbsoluteDate(DateTimeComponents.parseDateTime(time),
 									   DataManager.utcscale));
 
-	PVCoordinates topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
-									  new Vector3D(pv[3], pv[4], pv[5])));
+	PVCoordinates topv = null;
+	if (pv.length == 9)
+	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5]),
+								new Vector3D(pv[6], pv[7], pv[8])));
+	else
+	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])));
+	    
 	Vector3D p = topv.getPosition();
 	Vector3D v = topv.getVelocity();
+	if (pv.length == 9)
+	{
+	    Vector3D a = topv.getAcceleration();
+	    return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ(), a.getX(), a.getY(), a.getZ()});
+	}
 
 	return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()});
     }
@@ -76,7 +73,7 @@ public class Utilities
 	Vector3D[] gspos = new Vector3D[3];
 	AbsoluteDate[] time = new AbsoluteDate[3];
 	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-						    Constants.WGS84_EARTH_FLATTENING, DataManager.itrf);
+						    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -89,10 +86,10 @@ public class Utilities
 	    sta.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
-	    gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], DataManager.eme2000).getPosition();
+	    gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], DataManager.getFrame("EME2000")).getPosition();
 	}
 
-	return(new IodGooding(DataManager.eme2000, Constants.EGM96_EARTH_MU).estimate(
+	return(new IodGooding(DataManager.getFrame("EME2000"), Constants.EGM96_EARTH_MU).estimate(
 		   gspos[0], gspos[1], gspos[2], los[0], time[0], los[1], time[1], los[2], time[2], rho1init, rho3init));
     }
 

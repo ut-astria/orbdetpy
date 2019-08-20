@@ -207,7 +207,8 @@ public class Measurements
 
 	    if (m.RightAscension != null && crigh != null && cdecl != null)
 	    {
-		AngularRaDec obs = new AngularRaDec(gs, DataManager.eme2000, time, new double[]{m.RightAscension, m.Declination},
+		AngularRaDec obs = new AngularRaDec(gs, DataManager.getFrame("EME2000"), time,
+						    new double[]{m.RightAscension, m.Declination},
 						    new double[]{crigh.Error[0], cdecl.Error[0]},
 						    new double[]{1.0, 1.0}, new ObservableSatellite(0));
 		if (jsn.RightAscensionBias != 0.0 || jsn.DeclinationBias != 0.0)
@@ -243,12 +244,7 @@ public class Measurements
 		Double[] X = m.PositionVelocity;
 		if (cposi.ReferenceFrame != null)
 		{
-		    Frame fromframe = DataManager.eme2000;
-		    if (cposi.ReferenceFrame.equals("GCRF"))
-			fromframe = DataManager.gcrf;
-		    else if (cposi.ReferenceFrame.equals("ITRF"))
-			fromframe = DataManager.itrf;
-
+		    Frame fromframe = DataManager.getFrame(cposi.ReferenceFrame);
 		    Transform xfm = fromframe.getTransformTo(odcfg.propframe, time);
 		    PVCoordinates frompv = new PVCoordinates(new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]));
 		    PVCoordinates topv = xfm.transformPVCoordinates(frompv);
