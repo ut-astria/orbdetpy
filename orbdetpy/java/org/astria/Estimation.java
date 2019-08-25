@@ -98,6 +98,8 @@ public class Estimation
 
     protected class ExtendedKalmanFilter implements CovarianceMatrixProvider, KalmanObserver
     {
+	protected double measdeltat;
+
 	protected void determineOrbit()
 	{
 	    double[] Xi = odcfg.getInitialState();
@@ -155,7 +157,12 @@ public class Estimation
 
 	public RealMatrix getProcessNoiseMatrix(SpacecraftState prev, SpacecraftState curr)
 	{
-	    return(odcfg.getProcessNoiseMatrix(curr.getDate().durationFrom(prev.getDate())));
+	    double tmeas = FastMath.abs(curr.getDate().durationFrom(prev.getDate()));
+	    if (tmeas > 0.0)
+		measdeltat = tmeas;
+	    else
+		tmeas = measdeltat;
+	    return(odcfg.getProcessNoiseMatrix(tmeas));
 	}
 
 	public void evaluationPerformed(KalmanEstimation est)
@@ -338,7 +345,7 @@ public class Estimation
 		    break;
 
 		RealVector raw = null;
-		RealMatrix Ppre = odcfg.getProcessNoiseMatrix(propt1 - propt0);
+		RealMatrix Ppre = odcfg.getProcessNoiseMatrix(FastMath.abs(propt1 - propt0));
 		for (int i = 0; i < numsig; i++)
 		{
 		    RealVector y = sigpr.getColumnVector(i).subtract(xhatpre);

@@ -3,6 +3,6 @@ output/
 build/
 dist/
 orbdetpy.egg-info/
-**/*.pyc
+*.pyc
 *.class
 
