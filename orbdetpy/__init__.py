@@ -122,7 +122,7 @@ def transformFrame(srcframe, time, pva, destframe):
         State vector transformed to the destination frame.
 
     """
-    return(_Utilities.transformFrame(srcframe, time, pv, destframe))
+    return(_Utilities.transformFrame(srcframe, time, pva, destframe))
 
 def iodGooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
     """ Performs Gooding initial orbit determination. """
