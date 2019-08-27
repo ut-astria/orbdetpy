@@ -32,6 +32,7 @@ for jar in glob.iglob(os.path.join(_libsdir, "**"), recursive = True):
 os.environ["CLASSPATH"] = cpath
 import jnius
 
+_Conversion = jnius.autoclass("org.astria.Conversion")
 _DataManager = jnius.autoclass("org.astria.DataManager")
 _Estimation = jnius.autoclass("org.astria.Estimation")
 _Simulation = jnius.autoclass("org.astria.Simulation")
@@ -122,7 +123,7 @@ def transformFrame(srcframe, time, pva, destframe):
         State vector transformed to the destination frame.
 
     """
-    return(_Utilities.transformFrame(srcframe, time, pva, destframe))
+    return(_Conversion.transformFrame(srcframe, time, pva, destframe))
 
 def iodGooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
     """ Performs Gooding initial orbit determination. """

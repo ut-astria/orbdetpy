@@ -309,12 +309,22 @@ public class Estimation
 		    odout.Station = odobs.rawmeas[mix].Station;
 		}
 		else
+		{
 		    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
 					  DataManager.utcscale);
+		    if (tm.durationFrom(t0) != 0.0)
+		    {
+			ManualPropagation prop1 = new ManualPropagation(odcfg, 6);
+			double[] Xout = prop1.propagate(t0.durationFrom(epoch), Arrays.copyOfRange(xhat.toArray(), 0, 6),
+							tm.durationFrom(epoch));
+			xhat.setSubVector(0, Xout);
+		    }
+		    break;
+		}
 
 		RealMatrix Ptemp = P.scalarMultiply(numsta);
 		RealMatrix sqrP = new CholeskyDecomposition(
-		    Ptemp.add(Ptemp.transpose()).scalarMultiply(0.5), 1E-6, 1E-14).getL();
+		    Ptemp.add(Ptemp.transpose()).scalarMultiply(0.5), 1E-6, 1E-16).getL();
 		for (int i = 0; i < numsta; i++)
 		{
 		    sigma.setColumnVector(i, xhat.add(sqrP.getColumnVector(i)));
@@ -339,10 +349,7 @@ public class Estimation
 		    sigpr.setSubMatrix(sigma.getData(), 0, 0);
 		else
 		    unstack(sigpr, prop.propagate(propt0, stack(sigma, spvec), propt1));
-
 		xhatpre = addColumns(sigpr).mapMultiplyToSelf(weight);
-		if (mix == odobs.rawmeas.length)
-		    break;
 
 		RealVector raw = null;
 		RealMatrix Ppre = odcfg.getProcessNoiseMatrix(FastMath.abs(propt1 - propt0));
@@ -437,7 +444,7 @@ public class Estimation
 		results.Estimation.add(odout);
 	    }
 
-	    double[] pv = xhatpre.toArray();
+	    double[] pv = xhat.toArray();
 	    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
 				  DataManager.utcscale);
 	    CartesianOrbit cart  = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),

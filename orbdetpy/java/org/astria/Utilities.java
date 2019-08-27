@@ -30,42 +30,14 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.files.ccsds.TDMFile;
 import org.orekit.files.ccsds.TDMParser;
 import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
-import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
-import org.orekit.utils.PVCoordinates;
 
 public class Utilities
 {
-    public static double[] transformFrame(String srcframe, String time, double[] pv, String destframe)
-    {
-	Frame fromframe = DataManager.getFrame(srcframe);
-	Frame toframe = DataManager.getFrame(destframe);
-	Transform xfm = fromframe.getTransformTo(toframe, new AbsoluteDate(DateTimeComponents.parseDateTime(time),
-									   DataManager.utcscale));
-
-	PVCoordinates topv = null;
-	if (pv.length == 9)
-	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5]),
-								new Vector3D(pv[6], pv[7], pv[8])));
-	else
-	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])));
-	    
-	Vector3D p = topv.getPosition();
-	Vector3D v = topv.getVelocity();
-	if (pv.length == 9)
-	{
-	    Vector3D a = topv.getAcceleration();
-	    return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ(), a.getX(), a.getY(), a.getZ()});
-	}
-
-	return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()});
-    }
-
     public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, String[] tmstr,
 					    double[] azi, double[] ele, double rho1init, double rho3init)
     {
