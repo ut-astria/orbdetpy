@@ -19,6 +19,7 @@
 package org.astria;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
@@ -43,11 +44,11 @@ public class EventHandling<T extends EventDetector> implements EventHandler<T>
 	maneuver = man;
     }
 
-    @Override public EventHandler.Action eventOccurred(SpacecraftState state, T det, boolean incr)
+    @Override public Action eventOccurred(SpacecraftState state, T det, boolean incr)
     {
 	if (maneuver.TriggerEvent.equals("LongitudeCrossing") && maneuver.ManeuverType.equals("StopPropagation"))
-	    return(EventHandler.Action.STOP);
-	return(EventHandler.Action.RESET_STATE);
+	    return(Action.STOP);
+	return(Action.RESET_STATE);
     }
 
     @Override public SpacecraftState resetState(T det, SpacecraftState old)

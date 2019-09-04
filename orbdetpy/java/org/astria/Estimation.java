@@ -47,6 +47,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
+import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -133,7 +134,7 @@ public class Estimation
 	    builder.addPropagationConfiguration(prop, this);
 	    KalmanEstimator filt = builder.build();
 	    filt.setObserver(this);
-	    NumericalPropagator est = filt.processMeasurements(odobs.measobjs)[0];
+	    AbstractIntegratedPropagator est = filt.processMeasurements(odobs.measobjs)[0];
 
 	    SpacecraftState ssta = est.propagate(new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
 								  DataManager.utcscale));

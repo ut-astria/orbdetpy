@@ -37,7 +37,7 @@ for src in iglob("**", recursive = True):
 
     print("Compiling " + src)
     res = run(["javac", "-Xlint:deprecation", "-Xlint:unchecked", src],
-              stdout = PIPE, stderr = STDOUT, text = True)
+              stdout = PIPE, stderr = STDOUT, universal_newlines = True)
     if (res.returncode != 0):
         print(res.stdout)
         chdir(pushd)
@@ -46,7 +46,8 @@ for src in iglob("**", recursive = True):
 cls = [f for f in iglob("**", recursive=True) if f.endswith(".class")]
 jar = path.join(libsdir, "astria.jar")
 print("Creating " + jar)
-res = run(["jar","cf",jar,*cls], stdout=PIPE, stderr=STDOUT, text=True)
+res = run(["jar","cf",jar,*cls], stdout=PIPE, stderr=STDOUT,
+          universal_newlines = True)
 if (res.returncode != 0):
     print(res.stdout)
     chdir(pushd)

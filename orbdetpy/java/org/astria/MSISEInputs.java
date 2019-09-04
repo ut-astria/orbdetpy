@@ -19,7 +19,7 @@
 package org.astria;
 
 import java.util.HashMap;
-import org.orekit.forces.drag.atmosphere.NRLMSISE00InputParameters;
+import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
 import org.orekit.time.AbsoluteDate;
 
 public class MSISEInputs implements NRLMSISE00InputParameters
