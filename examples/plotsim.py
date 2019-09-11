@@ -15,13 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
-import math
 import json
-import numpy
 import argparse
-from numpy.linalg import norm
 import dateutil.parser
 import matplotlib.pyplot as plt
+from math import acos, pi
+from numpy import array, cross, dot
+from numpy.linalg import norm
 
 def main(args):
     with open(args.config, "r") as f:
@@ -30,60 +30,68 @@ def main(args):
         out = json.load(f)
 
     mu = 398600.4418
-    tstamp, hvec, hmag, ener, sma, ecc, inc, raan, argp = [], [], [], [], [], [], [], [], []
+    tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
     for o in out:
         rv = [x/1000.0 for x in o["TrueState"]["Cartesian"][:6]]
-        r = norm(rv[:3])
-        v = norm(rv[3:])
-        h = numpy.cross(rv[:3], rv[3:])
+        rn = norm(rv[:3])
+        vn = norm(rv[3:])
+        h = cross(rv[:3], rv[3:])
         hn = norm(h)
-        a = 1.0/(2.0/r-v*v/mu)
-        e = numpy.cross(rv[3:], h)/mu - rv[:3]/r
+        a = 1.0/(2.0/rn-vn**2/mu)
+        e = cross(rv[3:], h)/mu - rv[:3]/rn
         en = norm(e)
-        i = math.acos(h[2]/hn)*180.0/math.pi
-        n = numpy.cross([0, 0, 1], h)
+        i = acos(h[2]/hn)*180.0/pi
+        n = cross([0, 0, 1], h)
         nn = norm(n)
-        O = math.acos(numpy.dot(n, [1, 0, 0])/nn)*180.0/math.pi
-        if (numpy.dot([0, 1, 0], n) < 0.0):
+        O = acos(dot(n, [1, 0, 0])/nn)*180.0/pi
+        if (n[1] < 0.0):
             O = 360.0 - O
-        w = math.acos(numpy.dot(n, e)/(nn*en))*180.0/math.pi
-        if (numpy.dot([0, 0, 1], e) < 0.0):
+        w = acos(dot(n, e)/(nn*en))*180.0/pi
+        if (e[2] < 0.0):
             w = 360.0 - w
+        theta = acos(dot(rv[:3], e)/(rn*en))*180.0/pi
+        if (dot(rv[:3], rv[3:]) < 0):
+            theta = 360.0 - theta
 
         tstamp.append(dateutil.parser.isoparse(o["Time"]))
         hvec.append(h)
         hmag.append(hn)
-        ener.append(v**2/2.0 - mu/r)
+        ener.append(0.5*vn**2 - mu/rn)
         sma.append(a)
         ecc.append(en)
         inc.append(i)
         raan.append(O)
         argp.append(w)
+        tran.append(theta)
 
-    hvec = numpy.array(hvec)
+    hvec = array(hvec)
     tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
 
     plt.figure(0)
-    plt.subplot(511)
+    plt.subplot(611)
     plt.plot(tim, sma, "-b")
     plt.xlabel("Time [hr]")
     plt.ylabel("SMA [km]")
-    plt.subplot(512)
+    plt.subplot(612)
     plt.plot(tim, ecc, "-b")
     plt.xlabel("Time [hr]")
     plt.ylabel("Eccentricity")
-    plt.subplot(513)
+    plt.subplot(613)
     plt.plot(tim, inc, "-b")
     plt.xlabel("Time [hr]")
     plt.ylabel("Inclination [deg]")
-    plt.subplot(514)
+    plt.subplot(614)
     plt.plot(tim, raan, "-b")
     plt.xlabel("Time [hr]")
     plt.ylabel("RAAN [deg]")
-    plt.subplot(515)
+    plt.subplot(615)
     plt.plot(tim, argp, "-b")
     plt.xlabel("Time [hr]")
     plt.ylabel("Perigee arg. [deg]")
+    plt.subplot(616)
+    plt.plot(tim, tran, "-b")
+    plt.xlabel("Time [hr]")
+    plt.ylabel("True anom. [deg]")
 
     plt.figure(1)
     plt.subplot(211)

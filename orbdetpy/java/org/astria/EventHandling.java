@@ -18,9 +18,9 @@
 
 package org.astria;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -37,16 +37,22 @@ import org.orekit.utils.PVCoordinates;
 
 public class EventHandling<T extends EventDetector> implements EventHandler<T>
 {
-    protected Settings.JSONManeuver maneuver;
+    protected String trigevt;
+    protected String mantype;
+    protected double target;
+    protected int steps;
 
-    public EventHandling(Settings.JSONManeuver man)
+    public EventHandling(String trigevt, String mantype, double target, int steps)
     {
-	maneuver = man;
+	this.trigevt = trigevt;
+	this.mantype = mantype;
+	this.target = target;
+	this.steps = steps;
     }
 
     @Override public Action eventOccurred(SpacecraftState state, T det, boolean incr)
     {
-	if (maneuver.TriggerEvent.equals("LongitudeCrossing") && maneuver.ManeuverType.equals("StopPropagation"))
+	if (trigevt.equals("LongitudeCrossing") && mantype.equals("StopPropagation"))
 	    return(Action.STOP);
 	return(Action.RESET_STATE);
     }
@@ -62,92 +68,44 @@ public class EventHandling<T extends EventDetector> implements EventHandler<T>
 	double theta = kep.getTrueAnomaly();
 
 	Orbit neworb = null;
-	if (maneuver.ManeuverType.equals("NorthSouthStationing") || maneuver.ManeuverType.equals("EastWestStationing"))
+	if (mantype.equals("NorthSouthStationing") || mantype.equals("EastWestStationing"))
 	{
-	    double lb, ub, target = MathUtils.normalizeAngle(maneuver.ManeuverParams[0], 0.0);
+	    PVCoordinates pvc = old.getOrbit().getPVCoordinates();
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 							  Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
-	    GeodeticPoint geo = earth.transform(kep.getPVCoordinates().getPosition(), old.getFrame(), old.getDate());
+	    GeodeticPoint geo = earth.transform(pvc.getPosition(), old.getFrame(), old.getDate());
 
-	    if (maneuver.ManeuverType.equals("NorthSouthStationing"))
-	    {
-		lb = 0.0;
-		ub = FastMath.PI;
-		if (maneuver.ManeuverParams.length > 1)
-		    target = MathUtils.normalizeAngle(geo.getLatitude() + maneuver.ManeuverParams[0], 0.0);
-	    }
+	    if (mantype.equals("NorthSouthStationing"))
+		geo = new GeodeticPoint(geo.getLatitude() + (target - geo.getLatitude())/steps,
+					geo.getLongitude(), geo.getAltitude());
 	    else
-	    {
-		lb = theta;
-		ub = lb + 2.0*FastMath.PI;
-		if (maneuver.ManeuverParams.length > 1)
-		    target = MathUtils.normalizeAngle(geo.getLongitude() + maneuver.ManeuverParams[0], 0.0);
-	    }
+		geo = new GeodeticPoint(geo.getLatitude(), geo.getLongitude() +
+					(target - geo.getLongitude())/steps, geo.getAltitude());
 
-	    double del, mindel = 1.0E9, minval = lb;
-	    for (double val = lb; val <= ub; val += (ub - lb)/3600.0)
-	    {
-		if (maneuver.ManeuverType.equals("NorthSouthStationing"))
-		{
-		    kep = new KeplerianOrbit(a, e, val, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
-		    geo = earth.transform(kep.getPVCoordinates().getPosition(), old.getFrame(), old.getDate());
-		    del = MathUtils.normalizeAngle(geo.getLatitude(), 0.0) - target;
-		}
-		else
-		{
-		    kep = new KeplerianOrbit(a, e, i, w, O, val, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
-		    geo = earth.transform(kep.getPVCoordinates().getPosition(), old.getFrame(), old.getDate());
-		    del = MathUtils.normalizeAngle(geo.getLongitude(), 0.0) - target;
-		}
-
-		if (FastMath.abs(del) < FastMath.abs(mindel))
-		{
-		    mindel = del;
-		    minval = val;
-		}
-	    }
-
-	    if (maneuver.ManeuverType.equals("NorthSouthStationing"))
-		neworb = new KeplerianOrbit(a, e, minval, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
-	    else
-		neworb = new KeplerianOrbit(a, e, i, w, O, minval, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
+	    Transform xfm = earth.getFrame().getTransformTo(old.getFrame(), old.getDate());
+	    Vector3D newpos = xfm.transformPosition(earth.transform(geo));
+	    Rotation rot = new Rotation(pvc.getPosition(), newpos);
+	    neworb = new CartesianOrbit(new PVCoordinates(newpos, rot.applyTo(pvc.getVelocity())), old.getFrame(),
+					old.getDate(), old.getMu());
 	}
 	else
 	{
-	    if (maneuver.ManeuverParams.length == 1)
-	    {
-		if (maneuver.ManeuverType.equals("SemiMajorAxisChange"))
-		    a = maneuver.ManeuverParams[0];
-		if (maneuver.ManeuverType.equals("PerigeeChange"))
-		    a = maneuver.ManeuverParams[0]/(1 - e);
-		if (maneuver.ManeuverType.equals("EccentricityChange"))
-		    e = maneuver.ManeuverParams[0];
-		if (maneuver.ManeuverType.equals("InclinationChange"))
-		    i = maneuver.ManeuverParams[0];
-		if (maneuver.ManeuverType.equals("RAANChange"))
-		    O = maneuver.ManeuverParams[0];
-		if (maneuver.ManeuverType.equals("ArgPerigeeChange"))
-		    w = maneuver.ManeuverParams[0];
-	    }
-	    else
-	    {
-		if (maneuver.ManeuverType.equals("SemiMajorAxisChange"))
-		    a += maneuver.ManeuverParams[0];
-		if (maneuver.ManeuverType.equals("PerigeeChange"))
-		    a += maneuver.ManeuverParams[0]/(1 - e);
-		if (maneuver.ManeuverType.equals("EccentricityChange"))
-		    e += maneuver.ManeuverParams[0];
-		if (maneuver.ManeuverType.equals("InclinationChange"))
-		    i += maneuver.ManeuverParams[0];
-		if (maneuver.ManeuverType.equals("RAANChange"))
-		    O += maneuver.ManeuverParams[0];
-		if (maneuver.ManeuverType.equals("ArgPerigeeChange"))
-		    w += maneuver.ManeuverParams[0];
-	    }
-
+	    if (mantype.equals("SemiMajorAxisChange"))
+		a += (target - a)/steps;
+	    if (mantype.equals("PerigeeChange"))
+		a += (target - a/(1 - e))/steps;
+	    if (mantype.equals("EccentricityChange"))
+		e += (target - e)/steps;
+	    if (mantype.equals("InclinationChange"))
+		i += (target - i)/steps;
+	    if (mantype.equals("RAANChange"))
+		O += (target - O)/steps;
+	    if (mantype.equals("ArgPerigeeChange"))
+		w += (target - w)/steps;
 	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
 	}
 
+	steps--;
 	if (neworb == null)
 	    return(old);
 	return(new SpacecraftState(neworb, old.getAttitude(), old.getMass(), old.getAdditionalStates()));
