@@ -18,19 +18,18 @@ from setuptools import setup
 from distutils.util import convert_path
 from os import path, environ
 
-here = path.abspath(path.dirname(__file__))
+# Get the version number from the version path.
 version_dict = {}
 version_path = convert_path("orbdetpy/_version.py")
-
-# Get the version number from the version path.
 with open(version_path, "r") as ver_file:
     exec(ver_file.read(), version_dict)
 
 # Get the long description from the README file.
-with open(path.join(here, "README.md")) as a_file:
+here = path.dirname(path.abspath(__file__))
+with open(path.join(here, "README.md"), "r") as a_file:
     long_description = a_file.read()
 
-with open("requirements.txt", "r") as a_file:
+with open(path.join(here, "requirements.txt"), "r") as a_file:
     requirements = a_file.read()
 
 CLASSIFIERS = ["Development Status :: 5 - Production/Stable",

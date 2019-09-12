@@ -24,15 +24,19 @@ Filter or our custom Unscented Kalman Filter. Dynamic Model Compensation
 acclerations that result from unmodeled dynamics, maneuvers etc.
 
 You can either use your own measurements or simulate observations using
-the simulateMeasurements() function.
+the `simulateMeasurements()` function.
 
 Installation
 ------------
 
-1. Install the Java Development Kit 8+ (1.8+) from <http://openjdk.java.net/install/index.html>.
-   Set the JAVA_HOME environment variable to point to your JDK installation.
-2. Install Python 3.6+ and run "pip install orbdetpy" to install orbdetpy 
-   and other package dependencies.
+1. Install the Java Development Kit 8 (1.8) from
+   <http://openjdk.java.net/install/index.html>. Set the JAVA_HOME
+   environment variable to point to your JDK installation.
+2. Install Python 3.6+ and run `pip install orbdetpy` to install orbdetpy 
+   and other package dependencies from the Python Package Index (PyPI).
+   If you wish to use the `develop` or other experimental branches from
+   GitHub, `git clone` them and run `pip install -e .` from the top level
+   `orbdetpy` folder.
 3. Source code, example programs and data files can be downloaded from 
    <https://github.com/ut-astria/orbdetpy>.
 
@@ -43,8 +47,8 @@ which are imported by orbdetpy automatically.
 2. <https://hipparchus.org> 
 3. <https://www.orekit.org>
 
-The astrodynamics data in orbdetpy/data must be updated periodically
-using examples/update_data.py.
+Update the astrodynamics data in orbdetpy/data periodically by calling
+the `update_data()` function in the `astrodata` module.
 
 Examples
 --------
@@ -53,16 +57,16 @@ The following example programs can be found in the 'examples' folder.
 These examples use the Python wrapper interface but calling the
 underlying Java implementation directly is straightforward.
 
-1. testsim.py : Demonstrates the measurement simulator. Note that
+1. `testsim.py` : Demonstrates the measurement simulator. Note that
    maneuvers can be incorporated into the force model during simulation.
 
-2. plotsim.py : Plots the results of simulations created using testsim.py.
+2. `plotsim.py` : Plots the results of simulations created using testsim.py.
 
-3. testodet.py : Demonstrates orbit determination in orbdetpy.
+3. `testodet.py` : Demonstrates orbit determination in orbdetpy.
 
-4. plotodet.py : Plots the results of fitting orbits using testodet.py.
+4. `plotodet.py` : Plots the results of fitting orbits using testodet.py.
 
-5. run_tests.py : Run all the use cases under examples/data. Simulated
+5. `run_tests.py` : Run all the use cases under examples/data. Simulated
    measurements, orbit fits, differences between simulated truth versus
    estimates, and 3-sigma of estimated covariances will be written to
    output/ sub-folders.
@@ -77,20 +81,20 @@ working directory is examples/data.
 
 1. Simulate state vectors and radar measurements:
 
-   python ../testsim.py radar_sim_cfg.json sim_data.json
+   `python ../testsim.py radar_sim_cfg.json sim_data.json`
 
    This will run the simulation configured in radar_sim_cfg.json and
    write simulated output to sim_data.json.
 
 2. Plot simulation results:
 
-   python ../plotsim.py radar_sim_cfg.json sim_data.json
+   `python ../plotsim.py radar_sim_cfg.json sim_data.json`
 
    This will plot the simulated data generated in (1).
 
 3. Run OD on simulated radar data:
 
-   python ../testodet.py radar_od_cfg.json sim_data.json od_output.json
+   `python ../testodet.py radar_od_cfg.json sim_data.json od_output.json`
 
    This will run OD on the simulated radar data generated in (1)
    using the OD configuration in radar_od_cfg.json and write OD
@@ -98,7 +102,7 @@ working directory is examples/data.
 
 4. Plot OD results:
 
-   python ../plotodet.py radar_od_cfg.json sim_data.json od_output.json
+   `python ../plotodet.py radar_od_cfg.json sim_data.json od_output.json`
 
    This will plot the OD results from (3).
 
@@ -113,14 +117,6 @@ Known Issues
    orbdetpy is imported. The value following "-Xmx" is the maximum
    heap size you wish to assign to Java; "G" stands for gigabytes.
 
-   import jnius_config
+   `import jnius_config`
 
-   jnius_config.add_options("-Xmx2G")
-
-Bug Reports
------------
-
-Comments, criticisms and bug reports are very welcome and may be sent to
-the package maintainer by email or the project's website.
-
-Shiva Iyer <shiva.iyer AT utexas DOT edu>
+   `jnius_config.add_options("-Xmx2G")`

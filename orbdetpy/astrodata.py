@@ -1,4 +1,4 @@
-# update_data.py - Update Orekit astrodynamics data files.
+# astrodata.py - Update Orekit astrodynamics data files.
 # Copyright (C) 2019 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from os import path
+import os
 import requests
 
 def format_weather(lines):
@@ -35,31 +35,32 @@ def format_weather(lines):
 
     return(fmtdata)
 
-datadir = path.join(path.dirname(path.dirname(path.abspath(__file__))), "orbdetpy", "data")
-updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
-            path.join(datadir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
-           ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
-            path.join(datadir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
-           ["http://maia.usno.navy.mil/ser7/tai-utc.dat",
-            path.join(datadir, "tai-utc.dat"), None],
-           ["http://www.celestrak.com/SpaceData/SW-All.txt",
-            path.join(datadir, "SpaceWeather.dat"), format_weather]]
+def update_data():
+    datadir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
+                os.path.join(datadir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
+               ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
+                os.path.join(datadir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
+               ["http://maia.usno.navy.mil/ser7/tai-utc.dat",
+                os.path.join(datadir, "tai-utc.dat"), None],
+               ["http://www.celestrak.com/SpaceData/SW-All.txt",
+                os.path.join(datadir, "SpaceWeather.dat"), format_weather]]
 
-for u in updates:
-    print("Updating %s" % u[1])
-    try:
-        resp = requests.get(u[0], timeout = 180.0)
-        if (resp.status_code != 200):
-            print("Error %s in %s", (resp.status_code, u[0]))
+    for u in updates:
+        print("Updating %s" % u[1])
+        try:
+            resp = requests.get(u[0], timeout = 180.0)
+            if (resp.status_code != 200):
+                print("Error %s in %s", (resp.status_code, u[0]))
+                continue
+        except Exception as exc:
+            print(repr(exc))
             continue
-    except Exception as exc:
-        print(repr(exc))
-        continue
 
-    if (u[2] is not None):
-        data = u[2](resp.text)
-    else:
-        data = resp.text
+        if (u[2]):
+            data = u[2](resp.text)
+        else:
+            data = resp.text
 
-    with open(u[1], "w") as f:
-        f.write(data)
+        with open(u[1], "w") as f:
+            f.write(data)

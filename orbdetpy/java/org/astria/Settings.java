@@ -42,9 +42,6 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.drag.atmosphere.Atmosphere;
-import org.orekit.forces.drag.atmosphere.NRLMSISE00;
-import org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.OceanTides;
@@ -61,6 +58,9 @@ import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
+import org.orekit.models.earth.atmosphere.Atmosphere;
+import org.orekit.models.earth.atmosphere.NRLMSISE00;
+import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -592,18 +592,12 @@ public class Settings
 		if (m.ManeuverType.equals("ConstantThrust"))
 		    continue;
 
+		EventHandling<DateDetector> handler = new EventHandling<DateDetector>(m.TriggerEvent, m.ManeuverType,
+										      m.ManeuverParams[0], (int)m.ManeuverParams[2]);
 		AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale);
-		if (m.ManeuverParams.length == 1)
-		{
-		    prop.addEventDetector(new DateDetector(time).withHandler(new EventHandling<DateDetector>(m)));
-		    continue;
-		}
-
 		for (int i = 0; i < m.ManeuverParams[2]; i++)
 		{
-		    JSONManeuver sub = new JSONManeuver(time.toString() + "Z", m.TriggerEvent, m.TriggerParams,
-							m.ManeuverType, m.ManeuverParams);
-		    prop.addEventDetector(new DateDetector(time).withHandler(new EventHandling<DateDetector>(sub)));
+		    prop.addEventDetector(new DateDetector(time).withHandler(handler));
 		    time = new AbsoluteDate(time, m.ManeuverParams[1]);
 		}
 	    }
@@ -612,8 +606,9 @@ public class Settings
 	    {
 		OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 							     Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
-		prop.addEventDetector(new LongitudeCrossingDetector(body, m.TriggerParams[0]).
-				      withHandler(new EventHandling<LongitudeCrossingDetector>(m)));
+		EventHandling<LongitudeCrossingDetector> handler = new EventHandling<LongitudeCrossingDetector>(
+		    m.TriggerEvent, m.ManeuverType, 0.0, 1);
+		prop.addEventDetector(new LongitudeCrossingDetector(body, m.TriggerParams[0]).withHandler(handler));
 	    }
 	}
     }

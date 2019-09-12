@@ -38,7 +38,7 @@ import org.orekit.utils.Constants;
 
 public class Utilities
 {
-    public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, String[] tmstr,
+    public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, String frame, String[] tmstr,
 					    double[] azi, double[] ele, double rho1init, double rho3init)
     {
 	Vector3D[] los = new Vector3D[3];
@@ -49,20 +49,19 @@ public class Utilities
 
 	for (int i = 0; i < 3; i++)
 	{
-	    los[i] = new Vector3D(FastMath.sin(azi[i])*FastMath.cos(ele[i]),
-				  FastMath.cos(azi[i])*FastMath.cos(ele[i]), FastMath.sin(ele[i]));
+	    los[i] = new Vector3D(FastMath.cos(ele[i])*FastMath.sin(azi[i]),
+				  FastMath.cos(ele[i])*FastMath.cos(azi[i]), FastMath.sin(ele[i]));
 	    time[i] = new AbsoluteDate(DateTimeComponents.parseDateTime(tmstr[i]), DataManager.utcscale);
 
 	    GroundStation sta = new GroundStation(
 		new TopocentricFrame(oae, new GeodeticPoint(gslat[i], gslon[i], gsalt[i]), Integer.toString(i)));
-	    sta.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
-	    sta.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
-	    sta.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
-	    gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], DataManager.getFrame("EME2000")).getPosition();
+	    gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], DataManager.getFrame(frame)).getPosition();
 	}
 
-	return(new IodGooding(DataManager.getFrame("EME2000"), Constants.EGM96_EARTH_MU).estimate(
-		   gspos[0], gspos[1], gspos[2], los[0], time[0], los[1], time[1], los[2], time[2], rho1init, rho3init));
+	IodGooding good = new IodGooding(DataManager.getFrame(frame), Constants.EGM96_EARTH_MU);
+	KeplerianOrbit orb = good.estimate(gspos[0], gspos[1], gspos[2], los[0], time[0], los[1],
+					   time[1], los[2], time[2], rho1init, rho3init);
+	return(orb);
     }
 
     public static String[] importTDM(String file_name, String file_format)

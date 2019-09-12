@@ -182,14 +182,14 @@ Configuration files are needed for both simulation and orbit determination.
 		   "StopPropagation"].
 
   "ManeuverParams" : [dir_x, dir_y, dir_z, duration_seconds, thrust_Newtons, Isp_seconds] for "ConstantThrust".
-    		     [geodetic_latitude_radians] for "NorthSouthStationing".
-                     [geodetic_longitude_radians] for "EastWestStationing".
-		     [SMA_meters] for "SemiMajorAxisChange".
-                     [perigee_radius_meters] for "PerigeeChange".
-		     [eccentricity] for "EccentricityChange".
-		     [inclination_radians] for "InclinationChange".
-		     [RAAN_radians] for "RAANChange".
-		     [perigee_argument_radians] for "ArgPerigeeChange".
+    		     [target_geodetic_latitude, deltav_interval, deltav_count] for "NorthSouthStationing".
+                     [target_geodetic_longitude, deltav_interval, deltav_count] for "EastWestStationing".
+		     [target_SMA, deltav_interval, deltav_count] for "SemiMajorAxisChange".
+                     [target_perigee_radius, deltav_interval, deltav_count] for "PerigeeChange".
+		     [target_eccentricity, deltav_interval, deltav_count] for "EccentricityChange".
+		     [target_inclination, deltav_interval, deltav_count] for "InclinationChange".
+		     [target_RAAN, deltav_interval, deltav_count] for "RAANChange".
+		     [target_perigee_argument, deltav_interval, deltav_count] for "ArgPerigeeChange".
 		     Not required for "StopPropagation".
 
  }

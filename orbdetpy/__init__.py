@@ -125,7 +125,8 @@ def transformFrame(srcframe, time, pva, destframe):
     """
     return(_Conversion.transformFrame(srcframe, time, pva, destframe))
 
-def iodGooding(gslat, gslon, gsalt, tmstr, azi, ele, rho1init, rho3init):
+def iodGooding(gslat, gslon, gsalt, frame, tmstr, azi, ele,
+               rho1init, rho3init):
     """ Performs Gooding initial orbit determination. """
-    return(_Utilities.iodGooding(gslat, gslon, gsalt, tmstr, azi, ele,
-                                 rho1init, rho3init))
+    return(_Utilities.iodGooding(gslat, gslon, gsalt, frame, tmstr,
+                                 azi, ele, rho1init, rho3init))
