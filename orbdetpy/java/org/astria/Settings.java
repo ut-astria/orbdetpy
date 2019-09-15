@@ -435,7 +435,7 @@ public class Settings
 	if (Estimation != null && Estimation.DMCCorrTime > 0.0 && Estimation.DMCSigmaPert > 0.0)
 	{
 	    for (int i = 0; i < 3; i++)
-		estparams.add(new EstimatedParameter(org.astria.Estimation.DMC_ACC_ESTM+i, Estimation.DMCAcceleration.Min,
+		estparams.add(new EstimatedParameter(org.astria.Estimation.DMC_ACC_ESTM[i], Estimation.DMCAcceleration.Min,
 						     Estimation.DMCAcceleration.Max, Estimation.DMCAcceleration.Value));
 	}
     }

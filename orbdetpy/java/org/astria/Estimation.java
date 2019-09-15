@@ -67,8 +67,8 @@ public class Estimation
 
     protected JSONResults results;
 
-    public final static String DMC_ACC_ESTM = "DMCaccest";
-    public final static String DMC_ACC_PROP = "DMCaccprop";
+    public final static String DMC_ACC_ESTM[] = {"zDMCx", "zDMCy", "zDMCz"};
+    public final static String DMC_ACC_PROP = "DMCEstProp";
 
     public Estimation(String cfgjson, String obsjson)
     {
@@ -104,16 +104,14 @@ public class Estimation
 	protected void determineOrbit()
 	{
 	    double[] Xi = odcfg.getInitialState();
-	    CartesianOrbit X0 = new CartesianOrbit(new PVCoordinates(
-						       new Vector3D(Xi[0], Xi[1], Xi[2]),
-						       new Vector3D(Xi[3], Xi[4], Xi[5])),
-						   odcfg.propframe, new AbsoluteDate(
-						       DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
-						       DataManager.utcscale), Constants.EGM96_EARTH_MU);
+	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.Start),
+						  DataManager.utcscale);
+	    CartesianOrbit X0 = new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0],Xi[1],Xi[2]), new Vector3D(Xi[3],Xi[4],Xi[5])),
+						   odcfg.propframe, epoch, Constants.EGM96_EARTH_MU);
 
 	    PropagatorBuilder prop = new PropagatorBuilder(odcfg, X0, new DormandPrince853IntegratorBuilder(
 							       odcfg.Integration.MinTimeStep, odcfg.Integration.MaxTimeStep, 1.0),
-							   PositionAngle.MEAN, 10.0);
+							   PositionAngle.TRUE, 10.0);
 	    prop.setMass(odcfg.SpaceObject.Mass);
 	    for (ForceModel fm : odcfg.forces)
 		prop.addForceModel(fm);
@@ -204,12 +202,6 @@ public class Estimation
 		    if (dd.getName().equals(ep.name))
 			res.EstimatedState[i++] = dd.getValue();
 
-	    if (ssta.hasAdditionalState(Estimation.DMC_ACC_PROP))
-	    {
-		double[] accric = ssta.getAdditionalState(Estimation.DMC_ACC_PROP);
-		System.arraycopy(accric, 0, res.EstimatedState, odcfg.estparams.size() + 3, 3);
-	    }
-
 	    double[] pre = est.getPredictedMeasurement().getEstimatedValue();
 	    double[] pos = est.getCorrectedMeasurement().getEstimatedValue();
 	    if (combmeas)
@@ -227,7 +219,6 @@ public class Estimation
 			res.PostFit.put(meanames[i], new double[] {pos[i]});
 		    }
 		}
-
 		res.InnovationCovariance = est.getPhysicalInnovationCovarianceMatrix().getData();
 	    }
 	    else
@@ -446,10 +437,8 @@ public class Estimation
 	    }
 
 	    double[] pv = xhat.toArray();
-	    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End),
-				  DataManager.utcscale);
-	    CartesianOrbit cart  = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
-									new Vector3D(pv[3], pv[4], pv[5])),
+	    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.Propagation.End), DataManager.utcscale);
+	    CartesianOrbit cart  = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
 						      odcfg.propframe, tm, Constants.EGM96_EARTH_MU);
 	    if (cart.getA() <= Constants.WGS84_EARTH_EQUATORIAL_RADIUS)
 		throw(new RuntimeException(String.format("Invalid semi-major axis %f", cart.getA())));

@@ -32,12 +32,13 @@ import org.orekit.utils.ParameterDriversList;
 public class PropagatorBuilder extends NumericalPropagatorBuilder
 {
     protected Settings odcfg;
+    protected DMCEquations dmceqs;
 
-    public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode,
-			     PositionAngle ang, double pos)
+    public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode, PositionAngle ang, double pos)
     {
 	super(orb, ode, ang, pos);
 	odcfg = cfg;
+	dmceqs = new DMCEquations();
     }
 
     @Override public NumericalPropagator buildPropagator(double[] par)
@@ -45,15 +46,15 @@ public class PropagatorBuilder extends NumericalPropagatorBuilder
 	NumericalPropagator prop = super.buildPropagator(par);
 	if (odcfg.Estimation.DMCCorrTime > 0.0 && odcfg.Estimation.DMCSigmaPert > 0.0)
 	{
-	    prop.addAdditionalEquations(new DMCEquations());
+	    prop.addAdditionalEquations(dmceqs);
 	    ParameterDriversList plst = getPropagationParametersDrivers();
 	    prop.setInitialState(prop.getInitialState().addAdditionalState(Estimation.DMC_ACC_PROP,
-									   plst.findByName(Estimation.DMC_ACC_ESTM+0).getValue(),
-									   plst.findByName(Estimation.DMC_ACC_ESTM+1).getValue(),
-									   plst.findByName(Estimation.DMC_ACC_ESTM+2).getValue()));
+									   plst.findByName(Estimation.DMC_ACC_ESTM[0]).getValue(),
+									   plst.findByName(Estimation.DMC_ACC_ESTM[1]).getValue(),
+									   plst.findByName(Estimation.DMC_ACC_ESTM[2]).getValue()));
 	}
-	odcfg.addEventHandlers(prop, prop.getInitialState());
 
+	odcfg.addEventHandlers(prop, prop.getInitialState());
 	return(prop);
     }
 

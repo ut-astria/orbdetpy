@@ -20,7 +20,6 @@ package org.astria;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.astria.Settings;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -45,8 +44,7 @@ public class ParallelPropagation
 	stepHandler = hnd;
     }
 
-    public List<SpacecraftState> propagate(String[] cfgjson, String propStart,
-					   String propEnd, double propStep)
+    public List<SpacecraftState> propagate(String[] cfgjson, String propStart, String propEnd, double propStep)
     {
 	List<Propagator> props = new ArrayList<Propagator>(cfgjson.length);
 	for (int i = 0; i < cfgjson.length; i++)
@@ -55,16 +53,13 @@ public class ParallelPropagation
 	List<SpacecraftState> ssta = null;
 	PropagatorsParallelizer plel = new PropagatorsParallelizer(props, stepHandler);
 
-	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart),
-					   DataManager.utcscale);
+	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.utcscale);
 	AbsoluteDate tmprev = tm.shiftedBy(-0.1);
-	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(propEnd),
-					      DataManager.utcscale);
+	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(propEnd), DataManager.utcscale);
 
 	while (true)
 	{
 	    ssta = plel.propagate(tmprev, tm);
-
 	    double dt = prend.durationFrom(tm);
 	    tmprev = tm.shiftedBy(0.0);
 	    tm = new AbsoluteDate(tm, FastMath.min(dt, propStep));
@@ -78,23 +73,15 @@ public class ParallelPropagation
     protected NumericalPropagator buildPropagator(Settings obj)
     {
 	double[] Xi = obj.getInitialState();
-	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(obj.Propagation.Start),
-					   DataManager.utcscale);
-
+	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(obj.Propagation.Start), DataManager.utcscale);
 	NumericalPropagator prop = new NumericalPropagator(new DormandPrince853Integrator(
-		obj.Integration.MinTimeStep, obj.Integration.MaxTimeStep,
-		obj.Integration.AbsTolerance, obj.Integration.RelTolerance));
+							       obj.Integration.MinTimeStep, obj.Integration.MaxTimeStep,
+							       obj.Integration.AbsTolerance, obj.Integration.RelTolerance));
 	for (ForceModel fm : obj.forces)
 	    prop.addForceModel(fm);
-
-	prop.setInitialState(
-	    new SpacecraftState(new CartesianOrbit(
-				    new PVCoordinates(
-					new Vector3D(Xi[0], Xi[1], Xi[2]),
-					new Vector3D(Xi[3], Xi[4], Xi[5])),
-				    obj.propframe, tm, Constants.EGM96_EARTH_MU),
-				obj.SpaceObject.Mass));
-
+	prop.setInitialState(new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
+										      new Vector3D(Xi[3], Xi[4], Xi[5])),
+								    obj.propframe, tm, Constants.EGM96_EARTH_MU), obj.SpaceObject.Mass));
 	return(prop);
     }
 }
