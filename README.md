@@ -37,18 +37,12 @@ Installation
    If you wish to use the `develop` or other experimental branches from
    GitHub, `git clone` them and run `pip install -e .` from the top level
    `orbdetpy` folder.
-3. Source code, example programs and data files can be downloaded from 
+3. Update the astrodynamics data in orbdetpy/data periodically by calling
+   the `update_data()` function in the `astrodata` module. You might need
+   to run this as the root user on Unix-like systems.
+4. Source code, example programs and data files can be downloaded from 
    <https://github.com/ut-astria/orbdetpy>.
-
-The orbdetpy/lib folder contains JAR files for the following libraries,
-which are imported by orbdetpy automatically.
-
-1. <https://github.com/google/gson>
-2. <https://hipparchus.org> 
-3. <https://www.orekit.org>
-
-Update the astrodynamics data in orbdetpy/data periodically by calling
-the `update_data()` function in the `astrodata` module.
+5. You will need Apache Maven 3+ if you wish to hack the Java sources.
 
 Examples
 --------

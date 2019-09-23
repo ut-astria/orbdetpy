@@ -20,16 +20,10 @@ import glob
 import json
 
 _rootdir = os.path.dirname(os.path.abspath(__file__))
-_libsdir = os.path.join(_rootdir, "lib")
+_libsdir = os.path.join(_rootdir, "target")
 _datadir = os.path.join(_rootdir, "data")
+os.environ["CLASSPATH"] = glob.glob(os.path.join(_libsdir, "astria*.jar"))[0]
 
-cpath = ""
-csc = ":" if os.sep == "/" else ";"
-for jar in glob.iglob(os.path.join(_libsdir, "**"), recursive = True):
-    if (jar.endswith(".jar")):
-        cpath += jar + csc
-
-os.environ["CLASSPATH"] = cpath
 import jnius
 
 _Conversion = jnius.autoclass("org.astria.Conversion")
