@@ -31,24 +31,34 @@ Installation
 
 1. Install the Java Development Kit 8 (1.8) from
    <http://openjdk.java.net/install/index.html>. Set the JAVA_HOME
-   environment variable to point to your JDK installation.
+   environment variable to point to your JDK installation. The `java`
+   executable must also be in your system path.
 2. Install Python 3.6+ and run `pip install orbdetpy` to install orbdetpy 
    and other package dependencies from the Python Package Index (PyPI).
    If you wish to use the `develop` or other experimental branches from
    GitHub, `git clone` them and run `pip install -e .` from the top level
    `orbdetpy` folder.
-3. Source code, example programs and data files can be downloaded from 
+3. Update the astrodynamics data in orbdetpy/data periodically by calling
+   the `update_data()` function in the `astrodata` module. You might need
+   to run this as the root user on Unix-like systems.
+4. Source code, example programs and data files can be downloaded from 
    <https://github.com/ut-astria/orbdetpy>.
+5. Apache Maven 3+ is needed if you hack the Java code and need to
+   rebuild the JAR files. Switch to the `orbdetpy/` folder and run the
+   following depending on your CPU architecture and OS. Other
+   combinations are possible; look them up online.
 
-The orbdetpy/lib folder contains JAR files for the following libraries,
-which are imported by orbdetpy automatically.
+   Linux 64-bit: `mvn -Dos.detected.classifier=linux-x86_64 package`
 
-1. <https://github.com/google/gson>
-2. <https://hipparchus.org> 
-3. <https://www.orekit.org>
+   Linux 32-bit: `mvn -Dos.detected.classifier=linux-x86_32 package`
 
-Update the astrodynamics data in orbdetpy/data periodically by calling
-the `update_data()` function in the `astrodata` module.
+   Windows 64-bit: `mvn -Dos.detected.classifier=windows-x86_64 package`
+
+   Windows 32-bit: `mvn -Dos.detected.classifier=windows-x86_32 package`
+
+   MacOS 64-bit: `mvn -Dos.detected.classifier=osx-x86_64 package`
+
+   MacOS 32-bit: `mvn -Dos.detected.classifier=osx-x86_32 package`
 
 Examples
 --------
@@ -105,18 +115,3 @@ working directory is examples/data.
    `python ../plotodet.py radar_od_cfg.json sim_data.json od_output.json`
 
    This will plot the OD results from (3).
-
-Known Issues
-------------
-
-1. Java "Out of heap space" errors:
-
-   The Java Virtual Machine with default settings may run out of heap
-   space during long term simulations or orbit fits. The workaround
-   is to add the following to the top of your Python code, before
-   orbdetpy is imported. The value following "-Xmx" is the maximum
-   heap size you wish to assign to Java; "G" stands for gigabytes.
-
-   `import jnius_config`
-
-   `jnius_config.add_options("-Xmx2G")`

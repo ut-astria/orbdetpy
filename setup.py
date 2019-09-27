@@ -53,8 +53,8 @@ CLASSIFIERS = ["Development Status :: 5 - Production/Stable",
 PROJECT_URLS = {"Documentation": "https://github.com/ut-astria/orbdetpy",
                 "Source": "https://github.com/ut-astria/orbdetpy",
                 "Tracker": "https://github.com/ut-astria/orbdetpy/issues"}
-PACKAGE_DATA = {"orbdetpy": ["data/*", "data/**/*", "data/**/**/*",
-                             "lib/*", "lib/**/*"]}
+PACKAGE_DATA = {"orbdetpy": ["*.py", "data/*", "data/**/*", "data/**/**/*",
+                             "protobuf/*.py", "target/astria*.jar"]}
 
 setup(name="orbdetpy",
       packages=["orbdetpy"],
