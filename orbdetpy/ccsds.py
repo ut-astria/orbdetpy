@@ -16,8 +16,10 @@
 
 import json
 import math
+import grpc
 from datetime import datetime
-from jnius import autoclass
+from orbdetpy import ServerProcess
+from orbdetpy.protobuf import utilities_pb2, utilities_pb2_grpc
 
 def format_data(cfg, obs):
     for s in cfg["Stations"].values():
@@ -122,4 +124,8 @@ def export_TDM(cfg_file, obs_file, station_list, obj_id):
     return(tdm_data)
 
 def import_TDM(file_name, file_format):
-    return(autoclass("org.astria.Utilities").importTDM(file_name, file_format))
+    with grpc.insecure_channel(ServerProcess.rpc_uri) as chan:
+        stub = utilities_pb2_grpc.UtilitiesStub(chan)
+        resp = stub.importTDM(utilities_pb2.ImportTDMInput(
+            file_name = file_name, file_format = file_format))
+    return(resp.measurements_json)

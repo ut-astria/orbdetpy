@@ -1,4 +1,4 @@
-# __init__.py - Package initialization routines.
+# __init__.py - orbdetpy package initialization.
 # Copyright (C) 2018-2019 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,20 +18,42 @@ import io
 import os
 import glob
 import json
+import grpc
+import atexit
+import psutil
+from subprocess import DEVNULL
+from orbdetpy.protobuf import (conversion_pb2, conversion_pb2_grpc,
+                               measurements_pb2, measurements_pb2_grpc,
+                               estimation_pb2, estimation_pb2_grpc)
 
-_rootdir = os.path.dirname(os.path.abspath(__file__))
-_libsdir = os.path.join(_rootdir, "target")
-_datadir = os.path.join(_rootdir, "data")
-os.environ["CLASSPATH"] = glob.glob(os.path.join(_libsdir, "astria*.jar"))[0]
+class ServerProcess:
+    rpc_host = "localhost"
+    rpc_port = 50051
+    rpc_uri = "{}:{}".format(rpc_host, rpc_port)
 
-import jnius
+    @classmethod
+    def start(cls, datadir, jarfile):
+        # Check for running server instances
+        jar = os.path.split(jarfile)[-1]
+        for p in psutil.process_iter(attrs = ["name", "cmdline"]):
+            if (p.info["name"] == "java" and
+                any(x.endswith(jar) for x in p.info["cmdline"])):
+                return
 
-_Conversion = jnius.autoclass("org.astria.Conversion")
-_DataManager = jnius.autoclass("org.astria.DataManager")
-_Estimation = jnius.autoclass("org.astria.Estimation")
-_Simulation = jnius.autoclass("org.astria.Simulation")
-_Utilities = jnius.autoclass("org.astria.Utilities")
-_DataManager.initialize(_datadir)
+        # Start server
+        cmdline = ["java", "-Xmx2G", "-jar", jarfile,
+                   str(cls.rpc_port), datadir]
+        cls.rpc_server_proc = psutil.Popen(cmdline, stdout = DEVNULL,
+                                           stderr = DEVNULL)
+
+        atexit.register(ServerProcess.stop)
+        with grpc.insecure_channel(cls.rpc_uri) as chan:
+            grpc.channel_ready_future(chan).result(timeout = 10.0)
+
+    @classmethod
+    def stop(cls):
+        if (cls.rpc_server_proc):
+            cls.rpc_server_proc.terminate()
 
 def read_param(p):
     if (isinstance(p, str)):
@@ -69,12 +91,17 @@ def simulateMeasurements(config, output_file = None):
 
     """
 
-    obs = _Simulation(read_param(config)).simulateMeasurements()
+    with grpc.insecure_channel(ServerProcess.rpc_uri) as chan:
+        stub = measurements_pb2_grpc.MeasurementsStub(chan)
+        resp = stub.generateMeasurements(
+            measurements_pb2.GenerateMeasurementsInput(
+                config_json = read_param(config)))
+
     if (output_file):
-        write_output_file(output_file, obs)
+        write_output_file(output_file, resp.measurements_json)
     if (isinstance(config, dict)):
-        obs = json.loads(obs)
-    return(obs)
+        return(json.loads(resp.measurements_json))
+    return(resp.measurements_json)
 
 def determineOrbit(config, meas, output_file = None):
     """ Performs orbit determination given config and measurements.
@@ -93,13 +120,17 @@ def determineOrbit(config, meas, output_file = None):
 
     """
 
-    fit = _Estimation(read_param(config),
-                      read_param(meas)).determineOrbit()
+    with grpc.insecure_channel(ServerProcess.rpc_uri) as chan:
+        stub = estimation_pb2_grpc.EstimationStub(chan)
+        resp = stub.determineOrbit(estimation_pb2.DetermineOrbitInput(
+            config_json = read_param(config),
+            measurements_json = read_param(meas)))
+
     if (output_file):
-        write_output_file(output_file, fit)
+        write_output_file(output_file, resp.estimation_json)
     if (isinstance(config, dict)):
-        fit = json.loads(fit)
-    return(fit)
+        return(json.loads(resp.estimation_json))
+    return(resp.estimation_json)
 
 def transformFrame(srcframe, time, pva, destframe):
     """ Transforms a state vector from one frame to another.
@@ -117,10 +148,16 @@ def transformFrame(srcframe, time, pva, destframe):
         State vector transformed to the destination frame.
 
     """
-    return(_Conversion.transformFrame(srcframe, time, pva, destframe))
 
-def iodGooding(gslat, gslon, gsalt, frame, tmstr, azi, ele,
-               rho1init, rho3init):
-    """ Performs Gooding initial orbit determination. """
-    return(_Utilities.iodGooding(gslat, gslon, gsalt, frame, tmstr,
-                                 azi, ele, rho1init, rho3init))
+    with grpc.insecure_channel(ServerProcess.rpc_uri) as chan:
+        stub = conversion_pb2_grpc.ConversionStub(chan)
+        resp = stub.transformFrame(conversion_pb2.TransformFrameInput(
+            src_frame=srcframe, time=time, pva=pva, dest_frame=destframe))
+    return(list(resp.pva))
+
+if (__name__ != '__main__'):
+    _rootdir = os.path.dirname(os.path.abspath(__file__))
+    _datadir = os.path.join(_rootdir, "data")
+    _libsdir = os.path.join(_rootdir, "target")
+    _jarfile = glob.glob(os.path.join(_libsdir, "astria*.jar"))[0]
+    ServerProcess.start(_datadir, _jarfile)
