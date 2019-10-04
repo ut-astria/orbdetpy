@@ -215,6 +215,7 @@ public class Settings
 	double RangeRateBias;
 	double RightAscensionBias;
 	double DeclinationBias;
+	double[] PositionBias;
 	double[] PositionVelocityBias;
     }
 
@@ -222,7 +223,6 @@ public class Settings
     {
 	boolean TwoWay;
 	double[] Error;
-	String ReferenceFrame;
     }
 
     class Estimation

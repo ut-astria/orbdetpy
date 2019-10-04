@@ -29,6 +29,7 @@ import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
@@ -98,6 +99,7 @@ public class Measurements
 	Double RangeRate;
 	Double RightAscension;
 	Double Declination;
+	Double[] Position;
 	Double[] PositionVelocity;
 
 	public Measurement()
@@ -114,6 +116,7 @@ public class Measurements
 	    RangeRate = src.RangeRate;
 	    RightAscension = src.RightAscension;
 	    Declination = src.Declination;
+	    Position = src.Position;
 	    PositionVelocity = src.PositionVelocity;
 	}
     }
@@ -170,12 +173,13 @@ public class Measurements
 	Settings.Measurement cdecl = odcfg.cfgMeasurements.get("Declination");
 	Settings.Measurement crang = odcfg.cfgMeasurements.get("Range");
 	Settings.Measurement crrat = odcfg.cfgMeasurements.get("RangeRate");
-	Settings.Measurement cposi = odcfg.cfgMeasurements.get("PositionVelocity");
+	Settings.Measurement cpos = odcfg.cfgMeasurements.get("Position");
+	Settings.Measurement cposvel = odcfg.cfgMeasurements.get("PositionVelocity");
 
 	ArrayList<Measurement> tempraw = new ArrayList<Measurement>(rawmeas.length);
 	for (Measurement m: rawmeas)
 	{
-	    if (m.Station != null || m.PositionVelocity != null)
+	    if (m.Station != null || m.Position != null || m.PositionVelocity != null)
 		tempraw.add(m);
 	}
 	rawmeas = tempraw.toArray(new Measurement[0]);
@@ -239,22 +243,23 @@ public class Measurements
 		measobjs.add(obs);
 	    }
 
-	    if (m.PositionVelocity != null && cposi != null)
+	    if (m.Position != null && cpos != null)
+	    {
+		Double[] X = m.Position;
+		Position obs = new Position(time, new Vector3D(X[0], X[1], X[2]), cpos.Error, 1.0, new ObservableSatellite(0));
+		if (jsn != null && jsn.PositionBias != null)
+		    obs.addModifier(new Bias<Position>(
+					new String[] {"x", "y", "z"}, jsn.PositionBias,	new double[] {1.0, 1.0, 1.0},
+					new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
+					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
+		measobjs.add(obs);
+	    }
+
+	    if (m.PositionVelocity != null && cposvel != null)
 	    {
 		Double[] X = m.PositionVelocity;
-		if (cposi.ReferenceFrame != null)
-		{
-		    Frame fromframe = DataManager.getFrame(cposi.ReferenceFrame);
-		    Transform xfm = fromframe.getTransformTo(odcfg.propframe, time);
-		    PVCoordinates frompv = new PVCoordinates(new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]));
-		    PVCoordinates topv = xfm.transformPVCoordinates(frompv);
-		    Vector3D p = topv.getPosition();
-		    Vector3D v = topv.getVelocity();
-		    X = new Double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
-		}
-
 		PV obs = new PV(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]),
-				cposi.Error, 1.0, new ObservableSatellite(0));
+				cposvel.Error, 1.0, new ObservableSatellite(0));
 		if (jsn != null && jsn.PositionVelocityBias != null)
 		    obs.addModifier(new Bias<PV>(
 					new String[] {"x", "y", "z", "Vx", "Vy", "Vz"}, jsn.PositionVelocityBias,
