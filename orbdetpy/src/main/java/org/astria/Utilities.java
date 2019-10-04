@@ -39,7 +39,7 @@ import org.orekit.utils.Constants;
 public class Utilities
 {
     public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, String frame, String[] tmstr,
-					    double[] azi, double[] ele, double rho1init, double rho3init)
+					    double[] ra, double[] dec, double rho1init, double rho3init)
     {
 	Vector3D[] los = new Vector3D[3];
 	Vector3D[] gspos = new Vector3D[3];
@@ -49,8 +49,8 @@ public class Utilities
 
 	for (int i = 0; i < 3; i++)
 	{
-	    los[i] = new Vector3D(FastMath.cos(ele[i])*FastMath.sin(azi[i]),
-				  FastMath.cos(ele[i])*FastMath.cos(azi[i]), FastMath.sin(ele[i]));
+	    los[i] = new Vector3D(FastMath.cos(dec[i])*FastMath.cos(ra[i]),
+				  FastMath.cos(dec[i])*FastMath.sin(ra[i]), FastMath.sin(dec[i]));
 	    time[i] = new AbsoluteDate(DateTimeComponents.parseDateTime(tmstr[i]), DataManager.utcscale);
 
 	    GroundStation sta = new GroundStation(

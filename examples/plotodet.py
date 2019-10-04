@@ -27,11 +27,12 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     with open(cfgfile, "r") as fp:
         cfg = json.load(fp)
     with open(inpfile, "r") as fp:
-        inp = [x for x in json.load(fp) if ("Station" in x or "PositionVelocity" in x)]
+        inp = [x for x in json.load(fp) if (
+            "Station" in x or "Position" in x or "PositionVelocity" in x)]
     with open(outfile, "r") as fp:
         out = json.load(fp)["Estimation"]
 
-    key = tuple(cfg["Measurements"].keys())
+    key = list(cfg["Measurements"].keys())
     dmcrun = (cfg["Estimation"].get("DMCCorrTime", 0.0) > 0.0 and
               cfg["Estimation"].get("DMCSigmaPert", 0.0) > 0.0)
 
@@ -39,11 +40,9 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     for i, o in zip(inp, out):
         tstamp.append(dateutil.parser.isoparse(i["Time"]))
 
-        if ("PositionVelocity" in key):
-            prefit.append([ix - ox for ix, ox in zip(i["PositionVelocity"],
-                                                     o["PreFit"]["PositionVelocity"])])
-            posfit.append([ix - ox for ix, ox in zip(i["PositionVelocity"],
-                                                     o["PostFit"]["PositionVelocity"])])
+        if (key[0] == "Position" or key[0] == "PositionVelocity"):
+            prefit.append([ix - ox for ix, ox in zip(i[key[0]], o["PreFit"][key[0]])])
+            posfit.append([ix - ox for ix, ox in zip(i[key[0]], o["PostFit"][key[0]])])
         else:
             prefit.append([i[key[0]] - o["PreFit"][key[0]][-1],
                            i[key[1]] - o["PreFit"][key[1]][-1]])
@@ -84,12 +83,17 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         cov *= 648000.0/math.pi
         units = ("arcsec", "arcsec")
     else:
-        if ("PositionVelocity" in key):
+        if ("Position" in key):
+            units = ("m", "m", "m")
+        elif ("PositionVelocity" in key):
             units = ("m", "m", "m", "m/s", "m/s", "m/s")
         else:
             units = ("m", "m/s")
 
-    if ("PositionVelocity" in key):
+    if ("Position" in key):
+        ylabs = (r"$\Delta x$", r"$\Delta y$", r"$\Delta z$")
+        order = (1, 2, 3)
+    elif ("PositionVelocity" in key):
         ylabs = (r"$\Delta x$", r"$\Delta y$", r"$\Delta z$",
                  r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$")
         order = (1, 3, 5, 2, 4, 6)
@@ -97,11 +101,12 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         ylabs = key
 
     outfiles = []
-
     plt.figure(0)
     plt.suptitle("Pre-fit residuals")
     for i in range(pre.shape[-1]):
-        if ("PositionVelocity" in key):
+        if ("Position" in key):
+            plt.subplot(3, 1, order[i])
+        elif ("PositionVelocity" in key):
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(2, 1, i + 1)
@@ -117,7 +122,9 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
     plt.figure(1) 
     plt.suptitle("Post-fit residuals")
     for i in range(pre.shape[-1]):
-        if ("PositionVelocity" in key):
+        if ("Position" in key):
+            plt.subplot(3, 1, order[i])
+        elif ("PositionVelocity" in key):
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(2, 1, i + 1)
@@ -126,7 +133,7 @@ def plot(cfgfile, inpfile, outfile, interactive = False, filepath = None):
         plt.semilogx(tim,  cov[:,i], "-r", label = r"Innov. 3$\sigma$")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
-        if ("PositionVelocity" not in key):
+        if ("Position" not in key and "PositionVelocity" not in key):
             plt.ylim(-cov[i,0], cov[i,0])
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])

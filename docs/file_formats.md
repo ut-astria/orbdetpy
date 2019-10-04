@@ -238,12 +238,15 @@ Configuration files are needed for both simulation and orbit determination.
 
  }
 
+ "Position" : {
+
+  "Error" : Theoretical measurement error [m, m, m].
+
+ }
+
  "PositionVelocity" : {
 
   "Error" : Theoretical measurement error [m, m, m, m/s, m/s, m/s].
-
-  "ReferenceFrame" : Reference frame in which position/velocity vectors are expressed.
-                     Valid values are ["GCRF", "EME2000", "ITRF"]; defaults to "EME2000".  
 
  }
  
@@ -256,7 +259,8 @@ Valid combinations of measurements are as follows:
 3. Range + RangeRate
 4. Azimuth + Elevation
 5. RightAscension + Declination
-6. PositionVelocity
+6. Position
+7. PositionVelocity
  
 "Estimation" : Configure parameters for estimation filters {
 
@@ -309,6 +313,8 @@ valid combinations listed  above.
   "RightAscension" : Optional based on measurements configured in "Measurements" [rad].
 
   "Declination" : Optional based on measurements configured in "Measurements" [rad].
+
+  "Position" : Optional based on measurements configured in "Measurements" [m, m, m].
 
   "PositionVelocity" : Optional based on measurements configured in "Measurements" [m, m, m, m/s, m/s, m/s].
 

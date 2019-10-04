@@ -83,7 +83,7 @@ public class Estimation
 	meanames = odcfg.cfgMeasurements.keySet().toArray(new String[0]);
 	combmeas = meanames[0].equals("Azimuth") || meanames[0].equals("Elevation") ||
 	    meanames[0].equals("RightAscension") || meanames[0].equals("Declination") ||
-	    meanames[0].equals("PositionVelocity");
+	    meanames[0].equals("Position") || meanames[0].equals("PositionVelocity");
     }
 
     public String determineOrbit()
@@ -357,18 +357,18 @@ public class Estimation
 
 		    if (combmeas)
 		    {
-			double[] fitv = odobs.measobjs.get(mix).estimate(1, 1, ssta).getEstimatedValue();
+			double[] fitv = odobs.measobjs.get(mix).estimate(0, 0, ssta).getEstimatedValue();
 			spupd.setColumn(i, fitv);
 			if (raw == null)
 			    raw = new ArrayRealVector(odobs.measobjs.get(mix).getObservedValue());
 		    }
 		    else
 		    {
-			double[] fitv = odobs.measobjs.get(mix*2).estimate(1, 1, ssta).getEstimatedValue();
+			double[] fitv = odobs.measobjs.get(mix*2).estimate(0, 0, ssta).getEstimatedValue();
 			spupd.setEntry(0, i, fitv[0]);
 			if (Rsize > 1)
 			{
-			    fitv = odobs.measobjs.get(mix*2 + 1).estimate(1, 1, ssta).getEstimatedValue();
+			    fitv = odobs.measobjs.get(mix*2 + 1).estimate(0, 0, ssta).getEstimatedValue();
 			    spupd.setEntry(1, i, fitv[0]);
 			    if (raw == null)
 				raw = new ArrayRealVector(new double[]{odobs.measobjs.get(mix*2).getObservedValue()[0],
@@ -408,7 +408,7 @@ public class Estimation
 		{
 		    for (int i = 0; i < meanames.length; i++)
 		    {
-			double[] fitv = odobs.measobjs.get(mix).estimate(1, 1, ssta).getEstimatedValue();
+			double[] fitv = odobs.measobjs.get(mix).estimate(0, 0, ssta).getEstimatedValue();
 			if (meanames.length == 1)
 			{
 			    odout.PreFit.put(meanames[i], yhatpre.toArray());
@@ -423,12 +423,12 @@ public class Estimation
 		}
 		else
 		{
-		    double[] fitv = odobs.measobjs.get(mix*2).estimate(1, 1, ssta).getEstimatedValue();
+		    double[] fitv = odobs.measobjs.get(mix*2).estimate(0, 0, ssta).getEstimatedValue();
 		    odout.PreFit.put(meanames[0], new double[] {yhatpre.getEntry(0)});
 		    odout.PostFit.put(meanames[0], fitv);
 		    if (Rsize > 1)
 		    {
-			fitv = odobs.measobjs.get(mix*2 + 1).estimate(1, 1, ssta).getEstimatedValue();
+			fitv = odobs.measobjs.get(mix*2 + 1).estimate(0, 0, ssta).getEstimatedValue();
 			odout.PreFit.put(meanames[1], new double[] {yhatpre.getEntry(1)});
 			odout.PostFit.put(meanames[1], fitv);
 		    }

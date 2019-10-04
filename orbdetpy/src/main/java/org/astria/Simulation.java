@@ -165,7 +165,7 @@ public class Simulation
 		{
 		    GroundStation gst = kv.getValue();
 		    Settings.Station jsn = simcfg.cfgStations.get(kv.getKey());
-		    azel = new AngularAzEl(gst, proptm, zeros, zeros, ones, obssat).estimate(1, 1, sta).getEstimatedValue();
+		    azel = new AngularAzEl(gst, proptm, zeros, zeros, ones, obssat).estimate(0, 0, sta).getEstimatedValue();
 		    if (skipunobs && azel[1] <= 5E-6)
 			continue;
 
@@ -188,18 +188,18 @@ public class Simulation
 
 			if (name.equals("Range"))
 			{
-			    obs = new Range(gst, val.TwoWay, proptm, 0.0, 0.0, 1.0, obssat).estimate(1, 1, sta).getEstimatedValue();
+			    obs = new Range(gst, val.TwoWay, proptm, 0.0, 0.0, 1.0, obssat).estimate(0, 0, sta).getEstimatedValue();
 			    clone.Range = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeBias;
 			}
 			else if (name.equals("RangeRate"))
 			{
-			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.TwoWay, obssat).estimate(1,1,sta).getEstimatedValue();
+			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.TwoWay, obssat).estimate(0, 0, sta).getEstimatedValue();
 			    clone.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeRateBias;
 			}
 			else if (name.equals("RightAscension") || name.equals("Declination") && clone.RightAscension == null)
 			{
 			    obs = new AngularRaDec(gst, simcfg.propframe, proptm, zeros, zeros, ones,
-						   obssat).estimate(1, 1, sta).getEstimatedValue();
+						   obssat).estimate(0, 0, sta).getEstimatedValue();
 			    clone.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RightAscensionBias;
 			    clone.Declination = obs[1] + rand.nextGaussian()*val.Error[0] + jsn.DeclinationBias;
 			}
@@ -207,6 +207,13 @@ public class Simulation
 			{
 			    clone.Azimuth = azel[0] + rand.nextGaussian()*val.Error[0] + jsn.AzimuthBias;
 			    clone.Elevation = azel[1] + rand.nextGaussian()*val.Error[0] + jsn.ElevationBias;
+			}
+			else if (name.equals("Position"))
+			{
+			    clone.Position = new Double[3];
+			    for (int i = 0; i < 3; i++)
+				clone.Position[i] = clone.TrueState.Cartesian[i] +
+				    rand.nextGaussian()*val.Error[i] + jsn.PositionBias[i];
 			}
 			else if (name.equals("PositionVelocity"))
 			{
