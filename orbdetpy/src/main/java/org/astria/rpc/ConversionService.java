@@ -18,23 +18,27 @@
 
 package org.astria.rpc;
 
+import java.util.List;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Conversion;
 
-public class ConversionService extends ConversionGrpc.ConversionImplBase
+public final class ConversionService extends ConversionGrpc.ConversionImplBase
 {
-    @Override public void transformFrame(ConversionRequest.TransformFrameInput inp,
-					 StreamObserver<ConversionRequest.TransformFrameOutput> out)
+    @Override public void transformFrame(Messages.TransformFrameInput req, StreamObserver<Messages.DoubleArray> resp)
     {
-	double[] pva = new double[inp.getPvaCount()];
-	for (int i = 0; i < pva.length; i++)
-	    pva[i] = inp.getPva(i);
-	pva = Conversion.transformFrame(inp.getSrcFrame(), inp.getTime(), pva, inp.getDestFrame());
-
-	ConversionRequest.TransformFrameOutput.Builder builder = ConversionRequest.TransformFrameOutput.newBuilder();
-	for (int i = 0; i < pva.length; i++)
-	    builder = builder.addPva(pva[i]);
-	out.onNext(builder.build());
-	out.onCompleted();
+	try
+	{
+	    List<Double> pva = Conversion.transformFrame(req.getSrcFrame(), req.getTime(),
+							 req.getPvaList(), req.getDestFrame());
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder().addAllArray(pva);
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
     }
 }

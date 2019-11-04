@@ -18,8 +18,6 @@
 
 package org.astria;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -36,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 
-public class Utilities
+public final class Utilities
 {
     public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, String frame, String[] tmstr,
 					    double[] ra, double[] dec, double rho1init, double rho3init)
@@ -51,7 +49,7 @@ public class Utilities
 	{
 	    los[i] = new Vector3D(FastMath.cos(dec[i])*FastMath.cos(ra[i]),
 				  FastMath.cos(dec[i])*FastMath.sin(ra[i]), FastMath.sin(dec[i]));
-	    time[i] = new AbsoluteDate(DateTimeComponents.parseDateTime(tmstr[i]), DataManager.utcscale);
+	    time[i] = new AbsoluteDate(DateTimeComponents.parseDateTime(tmstr[i]), DataManager.getTimeScale("UTC"));
 
 	    GroundStation sta = new GroundStation(
 		new TopocentricFrame(oae, new GeodeticPoint(gslat[i], gslon[i], gsalt[i]), Integer.toString(i)));
@@ -64,20 +62,18 @@ public class Utilities
 	return(orb);
     }
 
-    public static String[] importTDM(String file_name, String file_format)
+    public static ArrayList<ArrayList<Measurements.SimulatedMeasurement>> importTDM(String file_name, String file_format)
     {
-	Measurements meas = new Measurements();
-	Measurements.Measurement json = null;
-	ArrayList<String> output = new ArrayList<String>();
-	Gson gsonobj = new GsonBuilder().setPrettyPrinting().create();
+	Measurements.SimulatedMeasurement obj = null;
+	ArrayList<ArrayList<Measurements.SimulatedMeasurement>> output =
+	    new ArrayList<ArrayList<Measurements.SimulatedMeasurement>>();
 
 	TDMFile tdm = new TDMParser().withFileFormat(TDMFileFormat.valueOf(file_format)).parse(file_name);
 	for (TDMFile.ObservationsBlock blk : tdm.getObservationsBlocks())
 	{
 	    int i = 0;
 	    String atype = blk.getMetaData().getAngleType();
-	    ArrayList<Measurements.Measurement> mall = new ArrayList<Measurements.Measurement>();
-
+	    ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>();
 	    for (TDMFile.Observation obs : blk.getObservations())
 	    {
 		String keyw = obs.getKeyword();
@@ -85,42 +81,40 @@ public class Utilities
 		      keyw.equals("ANGLE_1") || keyw.equals("ANGLE_2")))
 		    continue;
 		if (i == 0)
-		    json = meas.new Measurement();
+		    obj = new Measurements.SimulatedMeasurement();
 
 		if (atype == null)
 		{
 		    if (keyw.equals("RANGE"))
-			json.Range = obs.getMeasurement()*1000.0;
+			obj.Range = obs.getMeasurement()*1000.0;
 		    else if (keyw.equals("DOPPLER_INSTANTANEOUS"))
-			json.RangeRate = obs.getMeasurement()*1000.0;
+			obj.RangeRate = obs.getMeasurement()*1000.0;
 		}
 		else if (atype.equals("RADEC"))
 		{
 		    if (keyw.equals("ANGLE_1"))
-			json.RightAscension = obs.getMeasurement()*FastMath.PI/180.0;
+			obj.RightAscension = obs.getMeasurement()*FastMath.PI/180.0;
 		    else if (keyw.equals("ANGLE_2"))
-			json.Declination = obs.getMeasurement()*FastMath.PI/180.0;
+			obj.Declination = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 		else if (atype.equals("AZEL"))
 		{
 		    if (keyw.equals("ANGLE_1"))
-			json.Azimuth = obs.getMeasurement()*FastMath.PI/180.0;
+			obj.Azimuth = obs.getMeasurement()*FastMath.PI/180.0;
 		    else if (keyw.equals("ANGLE_2"))
-			json.Elevation = obs.getMeasurement()*FastMath.PI/180.0;
+			obj.Elevation = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 
 		if (++i == 2)
 		{
 		    i = 0;
-		    json.Time = obs.getEpoch().toString() + "Z";
-		    mall.add(json);
+		    obj.Time = obs.getEpoch().toString() + "Z";
+		    mall.add(obj);
 		}
 	    }
-
-	    Measurements.Measurement[] rawmeas = mall.toArray(new Measurements.Measurement[0]);
-	    output.add(gsonobj.toJson(rawmeas));
+	    output.add(mall);
 	}
 
-	return(output.toArray(new String[0]));
+	return(output);
     }
 }

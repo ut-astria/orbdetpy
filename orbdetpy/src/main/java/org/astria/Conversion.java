@@ -18,6 +18,8 @@
 
 package org.astria;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
@@ -30,31 +32,42 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class Conversion
+public final class Conversion
 {
-    public static double[] transformFrame(String srcframe, String time, double[] pv, String destframe)
+    public static List<Double> transformFrame(String srcframe, String time, List<Double> pva, String destframe)
     {
 	Frame fromframe = DataManager.getFrame(srcframe);
 	Frame toframe = DataManager.getFrame(destframe);
 	Transform xfm = fromframe.getTransformTo(toframe, new AbsoluteDate(DateTimeComponents.parseDateTime(time),
-									   DataManager.utcscale));
+									   DataManager.getTimeScale("UTC")));
 
 	PVCoordinates topv = null;
-	if (pv.length == 9)
-	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5]),
-								new Vector3D(pv[6], pv[7], pv[8])));
+	if (pva.size() == 9)
+	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
+								new Vector3D(pva.get(3), pva.get(4), pva.get(5)),
+								new Vector3D(pva.get(6), pva.get(7), pva.get(8))));
 	else
-	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])));
+	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
+								new Vector3D(pva.get(3), pva.get(4), pva.get(5))));
 
+	ArrayList<Double> output = new ArrayList<Double>(pva.size());
 	Vector3D p = topv.getPosition();
 	Vector3D v = topv.getVelocity();
-	if (pv.length == 9)
+	output.add(p.getX());
+	output.add(p.getY());
+	output.add(p.getZ());
+	output.add(v.getX());
+	output.add(v.getY());
+	output.add(v.getZ());
+	if (output.size() == 9)
 	{
 	    Vector3D a = topv.getAcceleration();
-	    return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ(), a.getX(), a.getY(), a.getZ()});
+	    output.add(a.getX());
+	    output.add(a.getY());
+	    output.add(a.getZ());
 	}
 
-	return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()});
+	return(output);
     }
 
     public static double[] convertAzElToRaDec(String time, double az, double el, double lat, double lon, double alt, String frame)
@@ -63,7 +76,7 @@ public class Conversion
 						    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 	TopocentricFrame fromframe = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
 	Transform xfm = fromframe.getTransformTo(DataManager.getFrame(frame),
-						 new AbsoluteDate(DateTimeComponents.parseDateTime(time), DataManager.utcscale));
+						 new AbsoluteDate(DateTimeComponents.parseDateTime(time), DataManager.getTimeScale("UTC")));
 
 	Vector3D tovec = xfm.transformVector(new Vector3D(FastMath.cos(el)*FastMath.sin(az),
 							  FastMath.cos(el)*FastMath.cos(az), FastMath.sin(el)));
@@ -79,7 +92,7 @@ public class Conversion
 						    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 	TopocentricFrame toframe = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
 	Transform xfm = DataManager.getFrame(frame).getTransformTo(toframe, new AbsoluteDate(DateTimeComponents.parseDateTime(time),
-											     DataManager.utcscale));
+											     DataManager.getTimeScale("UTC")));
 
 	Vector3D tovec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra),
 							  FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));

@@ -106,9 +106,6 @@ Configuration files are needed for both simulation and orbit determination.
 
  "InitialTLE" : Array of 2 TLE strings which may me provided instead of InitialState.
 
- "InitialStateFrame" : Reference frame for InitialState. Valid values are ["GCRF", "EME2000", "ITRF"];
-                       defaults to "EME2000".
- 
  "InertialFrame" : Inertial reference frame to use for propagation and all state vector outputs. Valid
                    values are ["GCRF", "EME2000"]; defaults to "EME2000".
 

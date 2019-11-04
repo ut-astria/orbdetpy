@@ -23,7 +23,7 @@ import io.grpc.ServerBuilder;
 import org.astria.DataManager;
 import java.nio.file.Paths;
 
-public class RPCServer
+public final class RPCServer
 {
     private int port;
     private String dataPath;
@@ -42,7 +42,8 @@ public class RPCServer
 	server = ServerBuilder.forPort(port)
 	    .addService(new ConversionService())
 	    .addService(new EstimationService())
-	    .addService(new MeasurementsService())
+	    .addService(new PropagationService())
+	    .addService(new SimulationService())
 	    .addService(new UtilitiesService())
 	    .build().start();
 

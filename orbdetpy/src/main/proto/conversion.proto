@@ -21,20 +21,10 @@ option java_multiple_files = false;
 option java_package = "org.astria.rpc";
 option java_outer_classname = "ConversionRequest";
 
+import "messages.proto";
+
 service Conversion
 {
-    rpc transformFrame(TransformFrameInput) returns (TransformFrameOutput) {}
+    rpc transformFrame(TransformFrameInput) returns (DoubleArray) {}
 }
 
-message TransformFrameInput
-{
-    string src_frame = 1;
-    string time = 2;
-    repeated double pva = 3;
-    string dest_frame = 4;
-}
-
-message TransformFrameOutput
-{
-    repeated double pva = 1;
-}

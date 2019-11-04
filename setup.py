@@ -20,7 +20,7 @@ from os import path, environ
 
 # Get the version number from the version path.
 version_dict = {}
-version_path = convert_path("orbdetpy/_version.py")
+version_path = convert_path("orbdetpy/version.py")
 with open(version_path, "r") as ver_file:
     exec(ver_file.read(), version_dict)
 
@@ -54,7 +54,8 @@ PROJECT_URLS = {"Documentation": "https://github.com/ut-astria/orbdetpy",
                 "Source": "https://github.com/ut-astria/orbdetpy",
                 "Tracker": "https://github.com/ut-astria/orbdetpy/issues"}
 PACKAGE_DATA = {"orbdetpy": ["*.py", "data/*", "data/**/*", "data/**/**/*",
-                             "protobuf/*.py", "target/astria*.jar"]}
+                             "plotting/*.py", "rpc/*.py",
+                             "target/astria*.jar"]}
 
 setup(name="orbdetpy",
       packages=["orbdetpy"],

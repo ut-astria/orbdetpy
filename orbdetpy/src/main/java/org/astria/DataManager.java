@@ -32,59 +32,63 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 
-public class DataManager
+public final class DataManager
 {
     public static class MSISEData
     {
-	public AbsoluteDate mindate;
-	public AbsoluteDate maxdate;
+	public AbsoluteDate minDate;
+	public AbsoluteDate maxDate;
 	public HashMap<String, double[]> data;
     }
 
-    public static String datapath;
+    private static String dataPath;
 
-    public static TimeScale utcscale;
-    public static UT1Scale ut1scale;
+    private static HashMap<String, TimeScale> timeScales;
+    private static HashMap<String, Frame> refFrames;
 
-    protected static HashMap<String, Frame> refFrames;
+    protected static MSISEData msiseData;
 
-    public static MSISEData msisedata;
+    private DataManager()
+    {
+    }
 
     public static void initialize(String path) throws Exception
     {
-	DataManager.datapath = path;
+	DataManager.dataPath = path;
 	DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File(path)));
 
-	utcscale = TimeScalesFactory.getUTC();
-	ut1scale = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
+	timeScales = new HashMap<String, TimeScale>();
+	timeScales.put("TT", TimeScalesFactory.getTT());
+	timeScales.put("UTC", TimeScalesFactory.getUTC());
+	timeScales.put("UT1", TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false));
 
 	refFrames = new HashMap<String, Frame>();
+	refFrames.put("EME2000", FramesFactory.getEME2000());
 	refFrames.put("GCRF", FramesFactory.getGCRF());
 	refFrames.put("ITRF", FramesFactory.getITRF(ITRFVersion.ITRF_2014, IERSConventions.IERS_2010, false));
-	refFrames.put("EME2000", FramesFactory.getEME2000());
 	refFrames.put("MOD", FramesFactory.getMOD(IERSConventions.IERS_2010));
-	refFrames.put("TOD", FramesFactory.getTOD(IERSConventions.IERS_2010, false));
 	refFrames.put("TEME", FramesFactory.getTEME());
+	refFrames.put("TOD", FramesFactory.getTOD(IERSConventions.IERS_2010, false));
 
 	loadMSISEData();
     }
 
     private static void loadMSISEData() throws Exception
     {
-	msisedata = new MSISEData();
-	msisedata.data = new HashMap<String, double[]>();
+	msiseData = new MSISEData();
+	msiseData.data = new HashMap<String, double[]>();
 
 	String[] toks = null;
-	Scanner scan = new Scanner(new File(datapath, "SpaceWeather.dat"));
+	Scanner scan = new Scanner(new File(dataPath, "SpaceWeather.dat"));
 	while (scan.hasNextLine())
 	{
 	    toks = scan.nextLine().split(",");
 	    for (int i = 0; i < toks.length; i++)
 		toks[i] = toks[i].trim();
 
-	    if (msisedata.mindate == null)
-		msisedata.mindate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-						     Integer.parseInt(toks[2]), utcscale);
+	    if (msiseData.minDate == null)
+		msiseData.minDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
+						     Integer.parseInt(toks[2]), getTimeScale("UTC"));
 
 	    double[] vals = new double[toks.length];
 	    for (int i = 0; i < toks.length; i++)
@@ -95,19 +99,26 @@ public class DataManager
 		    vals[i] = 0.0;
 	    }
 
-	    msisedata.data.put(String.format("%s%s%s", toks[0], toks[1], toks[2]), vals);
+	    msiseData.data.put(String.format("%s%s%s", toks[0], toks[1], toks[2]), vals);
 	}
 
 	scan.close();
 	if (toks != null)
-	    msisedata.maxdate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-						 Integer.parseInt(toks[2]), utcscale);
+	    msiseData.maxDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
+						 Integer.parseInt(toks[2]), getTimeScale("UTC"));
+    }
+
+    public static TimeScale getTimeScale(String name)
+    {
+	if (name == null || !timeScales.containsKey(name))
+	    return(timeScales.get("UTC"));
+	return(timeScales.get(name));
     }
 
     public static Frame getFrame(String name)
     {
-	if (name != null && refFrames.containsKey(name))
-	    return(refFrames.get(name));
-	return(refFrames.get("EME2000"));
+	if (name == null || !refFrames.containsKey(name))
+	    return(refFrames.get("EME2000"));
+	return(refFrames.get(name));
     }
 }

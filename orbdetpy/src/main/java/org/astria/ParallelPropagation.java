@@ -23,65 +23,115 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class ParallelPropagation
+public final class ParallelPropagation implements MultiSatStepHandler
 {
-    protected MultiSatStepHandler stepHandler;
-
-    public ParallelPropagation(MultiSatStepHandler hnd)
+    public static class PropagationOutput
     {
-	stepHandler = hnd;
+	public String time;
+	public ArrayList<double[]> states;
+
+	public PropagationOutput(AbsoluteDate time)
+	{
+	    this.time = time.toString() + "Z";
+	    this.states = new ArrayList<double[]>();
+	}
+
+	public void addState(TimeStampedPVCoordinates pva)
+	{
+	    Vector3D p = pva.getPosition();
+	    Vector3D v = pva.getVelocity();
+	    Vector3D a = pva.getAcceleration();
+	    this.states.add(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ(),
+					 a.getX(), a.getY(), a.getZ()});
+	}
     }
 
-    public List<SpacecraftState> propagate(String[] cfgjson, String propStart, String propEnd, double propStep)
+    private ArrayList<PropagationOutput> propOutput;
+
+    public ArrayList<PropagationOutput> propagate(List<Settings> configObjs)
     {
-	List<Propagator> props = new ArrayList<Propagator>(cfgjson.length);
-	for (int i = 0; i < cfgjson.length; i++)
-	    props.add(buildPropagator(Settings.loadJSON(cfgjson[i])));
+	List<Propagator> props = new ArrayList<Propagator>(configObjs.size());
+	for (int i = 0; i < configObjs.size(); i++)
+	    props.add(buildPropagator(configObjs.get(i)));
 
-	List<SpacecraftState> ssta = null;
-	PropagatorsParallelizer plel = new PropagatorsParallelizer(props, stepHandler);
+	Settings obj0 = configObjs.get(0);
+	PropagatorsParallelizer plel = new PropagatorsParallelizer(props, this);
+	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(obj0.propStart), DataManager.getTimeScale("UTC"));
+	AbsoluteDate proptm = new AbsoluteDate(tm, -0.1);
+	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(obj0.propEnd), DataManager.getTimeScale("UTC"));
 
-	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.utcscale);
-	AbsoluteDate tmprev = tm.shiftedBy(-0.1);
-	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(propEnd), DataManager.utcscale);
-
+	List<SpacecraftState> staList = null;
+	propOutput = new ArrayList<PropagationOutput>();
 	while (true)
 	{
-	    ssta = plel.propagate(tmprev, tm);
-	    double dt = prend.durationFrom(tm);
-	    tmprev = tm.shiftedBy(0.0);
-	    tm = new AbsoluteDate(tm, FastMath.min(dt, propStep));
+	    staList = plel.propagate(proptm, tm);
+	    proptm = staList.get(0).getDate();
+
+	    PropagationOutput pout = new PropagationOutput(proptm);
+	    propOutput.add(pout);
+	    for (SpacecraftState sta : staList)
+		pout.addState(sta.getPVCoordinates(DataManager.getFrame(obj0.propInertialFrame)));
+
+	    double dt = prend.durationFrom(proptm);
+	    if (obj0.propStep >= 0.0)
+		tm = new AbsoluteDate(tm, FastMath.min(dt, obj0.propStep));
+	    else
+	    {
+		tm = new AbsoluteDate(tm, FastMath.max(dt, obj0.propStep));
+		dt = -dt;
+	    }
 	    if (dt <= 0.0)
 		break;
 	}
 
-	return(ssta);
+	return(propOutput);
     }
 
-    protected NumericalPropagator buildPropagator(Settings cfg)
+    protected Propagator buildPropagator(Settings cfg)
     {
-	double[] Xi = cfg.getInitialState();
-	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(cfg.cfgPropagation.Start), DataManager.utcscale);
-	NumericalPropagator prop = new NumericalPropagator(new DormandPrince853Integrator(
-							       cfg.cfgIntegration.MinTimeStep, cfg.cfgIntegration.MaxTimeStep,
-							       cfg.cfgIntegration.AbsTolerance, cfg.cfgIntegration.RelTolerance));
+	if (cfg.propInitialTLE != null && cfg.propInitialTLE[0].length() > 0 && cfg.propInitialTLE[1].length() > 0)
+	{
+	    TLE parser = new TLE(cfg.propInitialTLE[0], cfg.propInitialTLE[1]);
+	    return(TLEPropagator.selectExtrapolator(parser));
+	}
+
+	NumericalPropagator prop = new NumericalPropagator(
+	    new DormandPrince853Integrator(cfg.integMinTimeStep, cfg.integMaxTimeStep, cfg.integAbsTolerance, cfg.integRelTolerance));
 	for (ForceModel fm : cfg.forces)
 	    prop.addForceModel(fm);
-	prop.setInitialState(new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
-										      new Vector3D(Xi[3], Xi[4], Xi[5])),
-								    cfg.propframe, tm, Constants.EGM96_EARTH_MU), cfg.cfgSpaceObject.Mass));
+
+	AttitudeProvider attpro = cfg.getAttitudeProvider();
+	if (attpro != null)
+	    prop.setAttitudeProvider(attpro);
+
+	double[] Xi = cfg.getInitialState();
+	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(cfg.propStart), DataManager.getTimeScale("UTC"));
+	prop.setInitialState(new SpacecraftState(
+				 new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
+								      new Vector3D(Xi[3], Xi[4], Xi[5])),
+						    cfg.propFrame, tm, Constants.EGM96_EARTH_MU), cfg.rsoMass));
 	return(prop);
+    }
+
+    public void handleStep(List<OrekitStepInterpolator> interpolators, boolean isLast)
+    {
     }
 }

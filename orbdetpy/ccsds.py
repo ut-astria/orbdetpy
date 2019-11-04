@@ -18,8 +18,9 @@ import json
 import math
 import grpc
 from datetime import datetime
-from orbdetpy import ServerProcess
-from orbdetpy.protobuf import utilities_pb2, utilities_pb2_grpc
+from orbdetpy.rpc import messages_pb2, utilities_pb2_grpc
+from orbdetpy.rpc.server import RemoteServer
+from orbdetpy.rpc.tools import convert_measurements
 
 def format_data(cfg, obs):
     for s in cfg["Stations"].values():
@@ -62,7 +63,7 @@ def export_OEM(cfg_file, obs_file, obj_id, obj_name):
         added.add(o["Time"])
         oem_data += "{epoch} {X[0]} {X[1]} {X[2]} {X[3]} {X[4]} " \
                     "{X[5]} {X[6]} {X[7]} {X[8]}\n". \
-                    format(epoch=o["Time"], X = [x/1000.0 for x in o["TrueState"]["Cartesian"]])
+                    format(epoch=o["Time"], X = [x/1000.0 for x in o["TrueStateCartesian"]])
 
     return(oem_data)
 
@@ -124,8 +125,10 @@ def export_TDM(cfg_file, obs_file, station_list, obj_id):
     return(tdm_data)
 
 def import_TDM(file_name, file_format):
-    with grpc.insecure_channel(ServerProcess.rpc_uri) as chan:
+    with RemoteServer.channel() as chan:
         stub = utilities_pb2_grpc.UtilitiesStub(chan)
-        resp = stub.importTDM(utilities_pb2.ImportTDMInput(
+        resp = stub.importTDM(messages_pb2.ImportTDMInput(
             file_name = file_name, file_format = file_format))
-    return(resp.measurements_json)
+
+    marr = list(resp.array)
+    return([convert_measurements(list(marr[idx].array)) for idx in range(len(marr))])
