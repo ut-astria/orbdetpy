@@ -71,6 +71,7 @@ working directory is `examples/data`.
 1. Simulate state vectors and radar measurements:
 
    `from orbdetpy.simulation import simulate_measurements`
+
    `simulate_measurements("radar_sim_cfg.json", output_file = "sim_data.json")`
 
    This will run the simulation configured in `radar_sim_cfg.json` and
@@ -79,6 +80,7 @@ working directory is `examples/data`.
 2. Plot simulation results:
 
    `from orbdetpy.plotting.simulation import plot as sim_plot`
+
    `sim_plot("radar_sim_cfg.json", "sim_data.json", interactive = True)`
 
    This will plot the simulated data generated in (1).
@@ -86,6 +88,7 @@ working directory is `examples/data`.
 3. Run OD on simulated radar data:
 
    `from orbdetpy.estimation import determine_orbit`
+
    `determine_orbit("radar_od_cfg.json", "sim_data.json", output_file = "od_output.json")`
 
    This will run OD on the simulated radar data generated in (1)
@@ -95,6 +98,7 @@ working directory is `examples/data`.
 4. Plot OD results:
 
    `from orbdetpy.plotting.estimation import plot as od_plot`
+
    `od_plot("radar_od_cfg.json", "sim_data.json", "od_output.json", interactive = True)`
 
    This will plot the OD results from (3).
