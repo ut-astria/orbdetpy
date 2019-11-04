@@ -22,40 +22,40 @@ import java.util.HashMap;
 import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
 import org.orekit.time.AbsoluteDate;
 
-public class MSISEInputs implements NRLMSISE00InputParameters
+public final class MSISEInputs implements NRLMSISE00InputParameters
 {
-    protected AbsoluteDate mindate;
-    protected AbsoluteDate maxdate;
-    protected HashMap<String, double[]> swdata;
-    protected double[] apvals;
+    private final AbsoluteDate minDate;
+    private final AbsoluteDate maxDate;
+    private final HashMap<String, double[]> swData;
+    private final double[] apVals;
     
     public MSISEInputs(AbsoluteDate min, AbsoluteDate max,
 		       HashMap<String, double[]> sw, int apflag)
     {
-	mindate = min;
-	maxdate = max;
-	swdata = sw;
+	minDate = min;
+	maxDate = max;
+	swData = sw;
 	if (apflag == 1)
-	    apvals = new double[1];
+	    apVals = new double[1];
 	else
-	    apvals = new double[7];
+	    apVals = new double[7];
     }
 
     public AbsoluteDate getMinDate()
     {
-	return(mindate);
+	return(minDate);
     }
 
     public AbsoluteDate getMaxDate()
     {
-	return(maxdate);
+	return(maxDate);
     }
 
     public double getDailyFlux(AbsoluteDate date)
     {
 	String p = new AbsoluteDate(date, -86400.0).toString();
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-	double[] v = swdata.get(k);
+	double[] v = swData.get(k);
 	return(v[26]);
     }
 
@@ -63,42 +63,42 @@ public class MSISEInputs implements NRLMSISE00InputParameters
     {
 	String p = date.toString();
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-	double[] v = swdata.get(k);
+	double[] v = swData.get(k);
 	return(v[28]);
     }
 
     public double[] getAp(AbsoluteDate date)
     {
-	for (int i = 0; i < apvals.length; i++)
+	for (int i = 0; i < apVals.length; i++)
 	{
 	    if (i == 0)
 	    {
 		String p = date.toString();
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		double[] v = swdata.get(k);
-		apvals[0] = v[22];
+		double[] v = swData.get(k);
+		apVals[0] = v[22];
 	    }
 	    else if (i <= 4)
 	    {
 		String p = (new AbsoluteDate(date, -10800.0*(i - 1))).toString();
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		double[] v = swdata.get(k);
-		apvals[i] = v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];
+		double[] v = swData.get(k);
+		apVals[i] = v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];
 	    }
 	    else
 	    {
-		apvals[i] = 0.0;
+		apVals[i] = 0.0;
 		for (int j = 8*i - 36; j <= 8*i - 29; j++)
 		{
 		    String p = (new AbsoluteDate(date, -10800.0*(j - 1))).toString();
 		    String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		    double[] v = swdata.get(k);
-		    apvals[i] += v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];
+		    double[] v = swData.get(k);
+		    apVals[i] += v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];
 		}
-		apvals[i] = apvals[i]/8;
+		apVals[i] = apVals[i]/8;
 	    }
 	}
 
-	return(apvals);
+	return(apVals);
     }
 }

@@ -21,18 +21,9 @@ option java_multiple_files = false;
 option java_package = "org.astria.rpc";
 option java_outer_classname = "EstimationRequest";
 
+import "messages.proto";
+
 service Estimation
 {
-    rpc determineOrbit(DetermineOrbitInput) returns (DetermineOrbitOutput) {}
-}
-
-message DetermineOrbitInput
-{
-    string config_json = 1;
-    string measurements_json = 2;
-}
-
-message DetermineOrbitOutput
-{
-    string estimation_json = 1;
+    rpc determineOrbit(DetermineOrbitInput) returns (EstimationOutputArray) {}
 }

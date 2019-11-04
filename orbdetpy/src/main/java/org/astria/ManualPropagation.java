@@ -25,6 +25,7 @@ import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.sampling.StepNormalizer;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
@@ -41,78 +42,87 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordinatesProvider
+public final class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordinatesProvider
 {
-    protected Settings odcfg;
-    protected AttitudeProvider attprov;
-    protected int intvecdim;
-    protected int statedim;
+    private final Settings odCfg;
+    private final int vectorDim;
+    private final int stateDim;
 
-    protected double[] Xdot;
-    protected AbsoluteDate epoch;
+    private final double[] xDot;
+    private final AbsoluteDate epoch;
+    private final ODEIntegrator odeInt;
+    private boolean enableDMC;
 
-    protected ODEIntegrator odeint;
+    private final AttitudeProvider attProvider;
+    private final LofOffset lofFrame;
+    private AbsoluteDate savedTime;
+    private TimeStampedPVCoordinates savedPos;
 
-    protected LofOffset loframe;
-    protected AbsoluteDate savedtime;
-    protected TimeStampedPVCoordinates savedposv;
-
-    public ManualPropagation(Settings cfg, int vecdim)
+    public ManualPropagation(Settings cfg, int vecdim, StepNormalizer handler)
     {
-	odcfg = cfg;
-	intvecdim = vecdim;
-	statedim = odcfg.estparams.size() + 6;
-	attprov = cfg.getAttitudeProvider();
-	loframe = new LofOffset(odcfg.propframe, LOFType.VVLH);
-	Xdot = new double[intvecdim];
-	epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odcfg.cfgPropagation.Start),
-				 DataManager.utcscale);
-	odeint = new DormandPrince853Integrator(cfg.cfgIntegration.MinTimeStep, cfg.cfgIntegration.MaxTimeStep,
-						cfg.cfgIntegration.AbsTolerance, cfg.cfgIntegration.RelTolerance);
+	odCfg = cfg;
+	vectorDim = vecdim;
+	stateDim = odCfg.estParams.size() + 6;
+	attProvider = cfg.getAttitudeProvider();
+
+	enableDMC = true;
+	xDot = new double[vectorDim];
+	epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(cfg.propStart), DataManager.getTimeScale("UTC"));
+
+	odeInt = new DormandPrince853Integrator(cfg.integMinTimeStep, cfg.integMaxTimeStep,
+						cfg.integAbsTolerance, cfg.integRelTolerance);
+	if (handler != null)
+	    odeInt.addStepHandler(handler);
+
+	lofFrame = new LofOffset(odCfg.propFrame, LOFType.VVLH);
     }
 
-    public double[] propagate(double t0, double[] X0, double t1)
+    public ODEStateAndDerivative propagate(double t0, double[] X0, double t1)
     {
-	return(odeint.integrate(this, new ODEState(t0, X0), t1).getPrimaryState());
+	return(odeInt.integrate(this, new ODEState(t0, X0), t1));
     }
 
     public Attitude getAttitude(AbsoluteDate time, double[] X)
     {
-	savedtime = new AbsoluteDate(time, 0.0);
-	savedposv = new TimeStampedPVCoordinates(time, new Vector3D(X[0], X[1], X[2]),
-						 new Vector3D(X[3], X[4], X[5]));
-
-	if (attprov != null)
-	    return(attprov.getAttitude(this, time, odcfg.propframe));
+	savedTime = new AbsoluteDate(time, 0.0);
+	savedPos = new TimeStampedPVCoordinates(time, new Vector3D(X[0], X[1], X[2]),
+						new Vector3D(X[3], X[4], X[5]));
+	if (attProvider != null)
+	    return(attProvider.getAttitude(this, time, odCfg.propFrame));
 	else
-	    return(loframe.getAttitude(this, time, odcfg.propframe));
+	    return(lofFrame.getAttitude(this, time, odCfg.propFrame));
     }
 
-    public int getDimension()
+    public void setDMCState(boolean enabled)
     {
-	return(intvecdim);
+	enableDMC = enabled;
     }
 
-    public double[] computeDerivatives(double t, double[] X)
+    @Override public int getDimension()
     {
-	Arrays.fill(Xdot, 0.0);
+	return(vectorDim);
+    }
+
+    @Override public double[] computeDerivatives(double t, double[] X)
+    {
+	Arrays.fill(xDot, 0.0);
 	AbsoluteDate tm = new AbsoluteDate(epoch, t);
-	for (int i = 0; i < X.length; i += statedim)
+	for (int i = 0; i < X.length; i += stateDim)
 	{
 	    SpacecraftState ss = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[i],   X[i+1], X[i+2]),
 											  new Vector3D(X[i+3], X[i+4], X[i+5])),
-									odcfg.propframe, tm, Constants.EGM96_EARTH_MU),
-						     getAttitude(tm, Arrays.copyOfRange(X, i, i+6)), odcfg.cfgSpaceObject.Mass);
+									odCfg.propFrame, tm, Constants.EGM96_EARTH_MU),
+						     getAttitude(tm, Arrays.copyOfRange(X, i, i+6)), odCfg.rsoMass);
 
 	    Vector3D acc = Vector3D.ZERO;
-	    for (ForceModel fmod : odcfg.forces)
+	    for (ForceModel fmod : odCfg.forces)
 	    {
 		double[] fpar = fmod.getParameters();
-		if (X.length > statedim)
+		if (X.length > stateDim)
 		{
-		    for (int j = 0; j < odcfg.estparams.size(); j++)
+		    for (int j = 0; j < odCfg.estParams.size(); j++)
 		    {
-			Settings.EstimatedParameter emp = odcfg.estparams.get(j);
+			Settings.Parameter emp = odCfg.estParams.get(j);
 			if (fmod.isSupported(emp.name))
 			    fpar[0] = X[i + j + 6];
 		    }
@@ -120,29 +130,29 @@ public class ManualPropagation implements OrdinaryDifferentialEquation, PVCoordi
 		acc = acc.add(fmod.acceleration(ss, fpar));
 	    }
 
-	    Xdot[i]   = X[i+3];
-	    Xdot[i+1] = X[i+4];
-	    Xdot[i+2] = X[i+5];
-	    Xdot[i+3] = acc.getX();
-	    Xdot[i+4] = acc.getY();
-	    Xdot[i+5] = acc.getZ();
-	    if (X.length > statedim && odcfg.cfgEstimation.DMCCorrTime > 0.0 && odcfg.cfgEstimation.DMCSigmaPert > 0.0)
+	    xDot[i]   = X[i+3];
+	    xDot[i+1] = X[i+4];
+	    xDot[i+2] = X[i+5];
+	    xDot[i+3] = acc.getX();
+	    xDot[i+4] = acc.getY();
+	    xDot[i+5] = acc.getZ();
+	    if (enableDMC && X.length > stateDim && odCfg.estmDMCCorrTime > 0.0 && odCfg.estmDMCSigmaPert > 0.0)
 	    {
-		Xdot[i+3] += X[i+statedim-3];
-		Xdot[i+4] += X[i+statedim-2];
-		Xdot[i+5] += X[i+statedim-1];
-		Xdot[i+statedim-3] = -X[i+statedim-3]/odcfg.cfgEstimation.DMCCorrTime;
-		Xdot[i+statedim-2] = -X[i+statedim-2]/odcfg.cfgEstimation.DMCCorrTime;
-		Xdot[i+statedim-1] = -X[i+statedim-1]/odcfg.cfgEstimation.DMCCorrTime;
+		xDot[i+3] += X[i+stateDim-3];
+		xDot[i+4] += X[i+stateDim-2];
+		xDot[i+5] += X[i+stateDim-1];
+		xDot[i+stateDim-3] = -X[i+stateDim-3]/odCfg.estmDMCCorrTime;
+		xDot[i+stateDim-2] = -X[i+stateDim-2]/odCfg.estmDMCCorrTime;
+		xDot[i+stateDim-1] = -X[i+stateDim-1]/odCfg.estmDMCCorrTime;
 	    }
 	}
 
-	return(Xdot);
+	return(xDot);
     }
 
-    public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+    @Override public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
     {
-	return(odcfg.propframe.getTransformTo(frame, date).
-	       transformPVCoordinates(savedposv.shiftedBy(date.durationFrom(savedtime))));
+	return(odCfg.propFrame.getTransformTo(frame, date).
+	       transformPVCoordinates(savedPos.shiftedBy(date.durationFrom(savedTime))));
     }
 }

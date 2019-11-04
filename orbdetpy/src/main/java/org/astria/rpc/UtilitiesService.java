@@ -18,19 +18,35 @@
 
 package org.astria.rpc;
 
+import java.util.ArrayList;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import org.astria.Measurements;
 import org.astria.Utilities;
 
-public class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
+public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 {
-    @Override public void importTDM(UtilitiesRequest.ImportTDMInput inp,
-				    StreamObserver<UtilitiesRequest.ImportTDMOutput> out)
+    @Override public void importTDM(Messages.ImportTDMInput req, StreamObserver<Messages.Measurement2DArray> resp)
     {
-	String[] meas = Utilities.importTDM(inp.getFileName(), inp.getFileFormat());
-	UtilitiesRequest.ImportTDMOutput.Builder builder = UtilitiesRequest.ImportTDMOutput.newBuilder();
-	for (int i = 0; i < meas.length; i++)
-	    builder = builder.addMeasurementsJson(meas[i]);
-	out.onNext(builder.build());
-	out.onCompleted();
+	try
+	{
+	    ArrayList<ArrayList<Measurements.SimulatedMeasurement>> mlist =
+		Utilities.importTDM(req.getFileName(), req.getFileFormat());
+
+	    Messages.Measurement2DArray.Builder builder = Messages.Measurement2DArray.newBuilder();
+	    for (ArrayList<Measurements.SimulatedMeasurement> m : mlist)
+	    {
+		Messages.MeasurementArray.Builder nested = Messages.MeasurementArray.newBuilder();
+		nested.addAllArray(Tools.buildResponseFromMeasurements(m));
+		builder = builder.addArray(nested);
+	    }
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
     }
 }

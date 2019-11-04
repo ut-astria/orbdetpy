@@ -26,27 +26,36 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
 
-public class PropagatorBuilder extends NumericalPropagatorBuilder
+public final class PropagatorBuilder extends NumericalPropagatorBuilder
 {
-    protected Settings odcfg;
-    protected DMCEquations dmceqs;
+    private final Settings odCfg;
 
-    public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode, PositionAngle ang, double pos)
+    private final DMCEquations dmcEqns;
+
+    private final OrekitFixedStepHandler stepHandler;
+
+    public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode,
+			     PositionAngle ang, double pos, OrekitFixedStepHandler handler)
     {
 	super(orb, ode, ang, pos);
-	odcfg = cfg;
-	dmceqs = new DMCEquations();
+	odCfg = cfg;
+	dmcEqns = new DMCEquations();
+	stepHandler = handler;
     }
 
     @Override public NumericalPropagator buildPropagator(double[] par)
     {
 	NumericalPropagator prop = super.buildPropagator(par);
-	if (odcfg.cfgEstimation.DMCCorrTime > 0.0 && odcfg.cfgEstimation.DMCSigmaPert > 0.0)
+	if (stepHandler != null)
+	    prop.setMasterMode(odCfg.propStep, stepHandler);
+
+	if (odCfg.estmDMCCorrTime > 0.0 && odCfg.estmDMCSigmaPert > 0.0)
 	{
-	    prop.addAdditionalEquations(dmceqs);
+	    prop.addAdditionalEquations(dmcEqns);
 	    ParameterDriversList plst = getPropagationParametersDrivers();
 	    prop.setInitialState(prop.getInitialState().addAdditionalState(Estimation.DMC_ACC_PROP,
 									   plst.findByName(Estimation.DMC_ACC_ESTM[0]).getValue(),
@@ -54,7 +63,7 @@ public class PropagatorBuilder extends NumericalPropagatorBuilder
 									   plst.findByName(Estimation.DMC_ACC_ESTM[2]).getValue()));
 	}
 
-	odcfg.addEventHandlers(prop, prop.getInitialState());
+	odCfg.addEventHandlers(prop, prop.getInitialState());
 	return(prop);
     }
 
@@ -82,7 +91,7 @@ public class PropagatorBuilder extends NumericalPropagatorBuilder
 	    for (int i = 0; i < 3; i++)
 	    {
 		acceci[i+3] = acc[i];
-		pdot[i] = -acc[i]/odcfg.cfgEstimation.DMCCorrTime;
+		pdot[i] = -acc[i]/odCfg.estmDMCCorrTime;
 	    }
 
 	    return(acceci);

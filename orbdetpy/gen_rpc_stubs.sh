@@ -18,10 +18,11 @@
 BASEDIR=$(dirname "$0")
 pushd $BASEDIR > /dev/null
 
-python -m grpc_tools.protoc -I src/main/proto/ --python_out=./protobuf --grpc_python_out=./protobuf src/main/proto/*.proto
+python -m grpc_tools.protoc -I src/main/proto/ --python_out=./rpc --grpc_python_out=./rpc src/main/proto/*.proto
 
 # Ugly fix for module import path issue in gRPC generated Python stub
-sed -i "s/import /import orbdetpy.protobuf./g" ./protobuf/*_grpc.py
-sed -i "s/import orbdetpy.protobuf.grpc/import grpc/g" ./protobuf/*_grpc.py
+sed -i "s/^import /import orbdetpy.rpc./g" ./rpc/*_grpc.py
+sed -i "s/^import orbdetpy.rpc.grpc/import grpc/g" ./rpc/*_grpc.py
+sed -i "s/^import messages_pb2/import orbdetpy.rpc.messages_pb2/g" ./rpc/*_pb2.py
 
 popd > /dev/null

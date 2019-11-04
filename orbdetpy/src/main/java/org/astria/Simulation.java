@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
@@ -45,91 +44,72 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class Simulation
+public final class Simulation
 {
-    private Settings simcfg;
+    private final Settings simCfg;
 
-    public Simulation(String cfgjson)
+    public Simulation(Settings simCfg)
     {
-	simcfg = Settings.loadJSON(cfgjson);
+	this.simCfg = simCfg;
     }
 
-    public String simulateMeasurements()
+    public ArrayList<Measurements.SimulatedMeasurement> simulateMeasurements()
     {
 	Random rand = new Random();
-	boolean simulmeas = true, skipunobs = true, inclextra = false, inclstapos = false;
-	if (simcfg.cfgSimulation != null)
-	{
-	    if (simcfg.cfgSimulation.SimulateMeasurements != null && !simcfg.cfgSimulation.SimulateMeasurements)
-		simulmeas = false;
-	    if (simcfg.cfgSimulation.SkipUnobservable != null && !simcfg.cfgSimulation.SkipUnobservable)
-		skipunobs = false;
-	    if (simcfg.cfgSimulation.IncludeExtras != null && simcfg.cfgSimulation.IncludeExtras)
-		inclextra = true;
-	    if (simcfg.cfgSimulation.IncludeStationState != null && simcfg.cfgSimulation.IncludeStationState)
-		inclstapos = true;
-	}
-
-	double[] Xi = simcfg.getInitialState();
-	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(simcfg.cfgPropagation.Start),
-					   DataManager.utcscale);
-	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(simcfg.cfgPropagation.End),
-					      DataManager.utcscale);
+	double[] Xi = simCfg.getInitialState();
+	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(simCfg.propStart), DataManager.getTimeScale("UTC"));
+	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(simCfg.propEnd), DataManager.getTimeScale("UTC"));
 
 	NumericalPropagator prop = new NumericalPropagator(
-	    new DormandPrince853Integrator(simcfg.cfgIntegration.MinTimeStep, simcfg.cfgIntegration.MaxTimeStep,
-					   simcfg.cfgIntegration.AbsTolerance, simcfg.cfgIntegration.RelTolerance));
-	for (ForceModel fm : simcfg.forces)
+	    new DormandPrince853Integrator(simCfg.integMinTimeStep, simCfg.integMaxTimeStep, simCfg.integAbsTolerance, simCfg.integRelTolerance));
+	for (ForceModel fm : simCfg.forces)
 	    prop.addForceModel(fm);
 
-	AttitudeProvider attpro = simcfg.getAttitudeProvider();
+	AttitudeProvider attpro = simCfg.getAttitudeProvider();
 	if (attpro != null)
 	    prop.setAttitudeProvider(attpro);
 
-	SpacecraftState sstate0 = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
-											   new Vector3D(Xi[3], Xi[4], Xi[5])),
-									 simcfg.propframe, tm, Constants.EGM96_EARTH_MU),
-						      simcfg.cfgSpaceObject.Mass);
+	SpacecraftState sstate0 = new SpacecraftState(
+	    new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]), new Vector3D(Xi[3], Xi[4], Xi[5])),
+			       simCfg.propFrame, tm, Constants.EGM96_EARTH_MU), simCfg.rsoMass);
 	prop.setInitialState(sstate0);
-	simcfg.addEventHandlers(prop, sstate0);
+	simCfg.addEventHandlers(prop, sstate0);
 	boolean evthandlers = prop.getEventsDetectors().size() > 0;
 
 	double[] obs, azel;
 	double[] zeros = new double[]{0.0, 0.0};
 	double[] ones = new double[]{1.0, 1.0};
 	ObservableSatellite obssat = new ObservableSatellite(0);
-	Measurements meas = new Measurements();
 	ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>();
 
 	while (true)
 	{
 	    SpacecraftState[] sta = new SpacecraftState[]{prop.propagate(tm)};
+	    Orbit orb = sta[0].getOrbit();
+	    KeplerianOrbit keporb = new KeplerianOrbit(orb);
 	    AbsoluteDate proptm = sta[0].getDate();
 	    TimeStampedPVCoordinates pvc = sta[0].getPVCoordinates();
 	    Vector3D pos = pvc.getPosition();
 	    Vector3D vel = pvc.getVelocity();
 	    Vector3D acc = pvc.getAcceleration();
 
-	    Measurements.SimulatedMeasurement json = meas.new SimulatedMeasurement();
+	    Measurements.SimulatedMeasurement json = new Measurements.SimulatedMeasurement();
 	    json.Time = proptm.toString() + "Z";
-	    json.TrueState = meas.new State();
+	    json.TrueState = new Measurements.State();
 	    json.TrueState.Cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
 						    acc.getX(), acc.getY(), acc.getZ()};
+	    json.TrueState.Kepler = new Measurements.KeplerianElements(keporb.getA(), keporb.getE(), keporb.getI(),
+								       keporb.getRightAscensionOfAscendingNode(),
+								       keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
+	    json.TrueState.Equinoctial = new Measurements.EquinoctialElements(orb.getA(), orb.getEquinoctialEx(),
+									      orb.getEquinoctialEy(), orb.getHx(),
+									      orb.getHy(), orb.getLM());
 
-	    if (inclextra)
+	    if (simCfg.simIncludeExtras)
 	    {
-		Orbit orb = sta[0].getOrbit();
-		KeplerianOrbit keporb = new KeplerianOrbit(orb);
-		json.TrueState.Kepler = meas.new Kepler(keporb.getA(), keporb.getE(), keporb.getI(),
-							    keporb.getRightAscensionOfAscendingNode(),
-							    keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
-		json.TrueState.Equinoctial = meas.new Equinoctial(orb.getA(), orb.getEquinoctialEx(),
-								      orb.getEquinoctialEy(), orb.getHx(),
-								      orb.getHy(), orb.getLM());
-
-		if (simcfg.atmmodel != null)
-		    json.AtmDensity = simcfg.atmmodel.getDensity(proptm, pos, simcfg.propframe);
-		for (ForceModel fmod : simcfg.forces)
+		if (simCfg.atmModel != null)
+		    json.AtmDensity = simCfg.atmModel.getDensity(proptm, pos, simCfg.propFrame);
+		for (ForceModel fmod : simCfg.forces)
 		{
 		    double[] facc = fmod.acceleration(sta[0], fmod.getParameters()).toArray();
 		    String ftype = fmod.getClass().getSimpleName();
@@ -158,22 +138,22 @@ public class Simulation
 		}
 	    }
 
-	    if (simulmeas)
+	    if (simCfg.simMeasurements)
 	    {
 		boolean added = false;
-		for (Map.Entry<String, GroundStation> kv : simcfg.stations.entrySet())
+		for (Map.Entry<String, GroundStation> kv : simCfg.stations.entrySet())
 		{
 		    GroundStation gst = kv.getValue();
-		    Settings.Station jsn = simcfg.cfgStations.get(kv.getKey());
+		    Settings.Station jsn = simCfg.cfgStations.get(kv.getKey());
 		    azel = new AngularAzEl(gst, proptm, zeros, zeros, ones, obssat).estimate(0, 0, sta).getEstimatedValue();
-		    if (skipunobs && azel[1] <= 5E-6)
+		    if (simCfg.simSkipUnobservable && azel[1] <= 5E-6)
 			continue;
 
-		    Measurements.SimulatedMeasurement clone = meas.new SimulatedMeasurement(json);
+		    Measurements.SimulatedMeasurement clone = new Measurements.SimulatedMeasurement(json);
 		    clone.Station = kv.getKey();
-		    if (inclstapos)
+		    if (simCfg.simIncludeStationState)
 		    {
-			pvc = gst.getBaseFrame().getPVCoordinates(proptm, simcfg.propframe);
+			pvc = gst.getBaseFrame().getPVCoordinates(proptm, simCfg.propFrame);
 			pos = pvc.getPosition();
 			vel = pvc.getVelocity();
 			acc = pvc.getAcceleration();
@@ -181,46 +161,43 @@ public class Simulation
 							  vel.getZ(), acc.getX(), acc.getY(), acc.getZ()};
 		    }
 
-		    for (Map.Entry<String, Settings.Measurement> nvp : simcfg.cfgMeasurements.entrySet())
+		    for (Map.Entry<String, Settings.Measurement> nvp : simCfg.cfgMeasurements.entrySet())
 		    {
 			String name = nvp.getKey();
 			Settings.Measurement val = nvp.getValue();
-
 			if (name.equals("Range"))
 			{
-			    obs = new Range(gst, val.TwoWay, proptm, 0.0, 0.0, 1.0, obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.Range = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeBias;
+			    obs = new Range(gst, val.twoWay, proptm, 0.0, 0.0, 1.0, obssat).estimate(0, 0, sta).getEstimatedValue();
+			    clone.Range = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeBias;
 			}
 			else if (name.equals("RangeRate"))
 			{
-			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.TwoWay, obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.RangeRate = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RangeRateBias;
+			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.twoWay, obssat).estimate(0, 0, sta).getEstimatedValue();
+			    clone.RangeRate = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeRateBias;
 			}
 			else if (name.equals("RightAscension") || name.equals("Declination") && clone.RightAscension == null)
 			{
-			    obs = new AngularRaDec(gst, simcfg.propframe, proptm, zeros, zeros, ones,
+			    obs = new AngularRaDec(gst, simCfg.propFrame, proptm, zeros, zeros, ones,
 						   obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.RightAscension = obs[0] + rand.nextGaussian()*val.Error[0] + jsn.RightAscensionBias;
-			    clone.Declination = obs[1] + rand.nextGaussian()*val.Error[0] + jsn.DeclinationBias;
+			    clone.RightAscension = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias;
+			    clone.Declination = obs[1] + rand.nextGaussian()*val.error[0] + jsn.declinationBias;
 			}
 			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.Azimuth == null)
 			{
-			    clone.Azimuth = azel[0] + rand.nextGaussian()*val.Error[0] + jsn.AzimuthBias;
-			    clone.Elevation = azel[1] + rand.nextGaussian()*val.Error[0] + jsn.ElevationBias;
+			    clone.Azimuth = azel[0] + rand.nextGaussian()*val.error[0] + jsn.azimuthBias;
+			    clone.Elevation = azel[1] + rand.nextGaussian()*val.error[0] + jsn.elevationBias;
 			}
 			else if (name.equals("Position"))
 			{
 			    clone.Position = new Double[3];
 			    for (int i = 0; i < 3; i++)
-				clone.Position[i] = clone.TrueState.Cartesian[i] +
-				    rand.nextGaussian()*val.Error[i] + jsn.PositionBias[i];
+				clone.Position[i] = clone.TrueState.Cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionBias[i];
 			}
 			else if (name.equals("PositionVelocity"))
 			{
 			    clone.PositionVelocity = new Double[6];
 			    for (int i = 0; i < 6; i++)
-				clone.PositionVelocity[i] = clone.TrueState.Cartesian[i] +
-				    rand.nextGaussian()*val.Error[i] + jsn.PositionVelocityBias[i];
+				clone.PositionVelocity[i] = clone.TrueState.Cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionVelocityBias[i];
 			}
 		    }
 
@@ -237,18 +214,17 @@ public class Simulation
 	    double dt = prend.durationFrom(proptm);
 	    if (evthandlers && !proptm.equals(tm))
 		break;
-	    if (simcfg.cfgPropagation.Step >= 0.0)
-		tm = new AbsoluteDate(tm, FastMath.min(dt, simcfg.cfgPropagation.Step));
+	    if (simCfg.propStep >= 0.0)
+		tm = new AbsoluteDate(tm, FastMath.min(dt, simCfg.propStep));
 	    else
 	    {
-		tm = new AbsoluteDate(tm, FastMath.max(dt, simcfg.cfgPropagation.Step));
+		tm = new AbsoluteDate(tm, FastMath.max(dt, simCfg.propStep));
 		dt = -dt;
 	    }
 	    if (dt <= 0.0)
 		break;
 	}
 
-	Measurements.Measurement[] rawmeas = mall.toArray(new Measurements.SimulatedMeasurement[0]);
-	return(new GsonBuilder().setPrettyPrinting().create().toJson(rawmeas));
+	return(mall);
     }
 }

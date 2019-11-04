@@ -23,9 +23,6 @@ Filter or our custom Unscented Kalman Filter. Dynamic Model Compensation
 (DMC) can be used with either filter to estimate additional perturbing
 acclerations that result from unmodeled dynamics, maneuvers etc.
 
-You can either use your own measurements or simulate observations using
-the `simulateMeasurements()` function.
-
 Installation
 ------------
 
@@ -39,79 +36,65 @@ Installation
    GitHub, `git clone` them and run `pip install -e .` from the top level
    `orbdetpy` folder.
 3. Update the astrodynamics data in orbdetpy/data periodically by calling
-   the `update_data()` function in the `astrodata` module. You might need
+   the `update_data()` function in the `astrodata` module. You may need
    to run this as the root user on Unix-like systems.
 4. Source code, example programs and data files can be downloaded from 
    <https://github.com/ut-astria/orbdetpy>.
 5. Apache Maven 3+ is needed if you hack the Java code and need to
    rebuild the JAR files. Switch to the `orbdetpy/` folder and run the
-   following depending on your CPU architecture and OS. Other
-   combinations are possible; look them up online.
+   following, where `os_cpu_type` is `linux-x86_64`, `linux-x86_32`,
+   `windows-x86_64`, `windows-x86_32`, `osx-x86_64`, or `osx-x86_32`,
+   depending on your CPU architecture and OS.
 
-   Linux 64-bit: `mvn -Dos.detected.classifier=linux-x86_64 package`
-
-   Linux 32-bit: `mvn -Dos.detected.classifier=linux-x86_32 package`
-
-   Windows 64-bit: `mvn -Dos.detected.classifier=windows-x86_64 package`
-
-   Windows 32-bit: `mvn -Dos.detected.classifier=windows-x86_32 package`
-
-   MacOS 64-bit: `mvn -Dos.detected.classifier=osx-x86_64 package`
-
-   MacOS 32-bit: `mvn -Dos.detected.classifier=osx-x86_32 package`
+   `mvn -e -DskipTests -Dos.detected.classifier=os_cpu_type package`
 
 Examples
 --------
 
-The following example programs can be found in the 'examples' folder.
+The following example programs can be found in the `examples` folder.
 These examples use the Python wrapper interface but calling the
 underlying Java implementation directly is straightforward.
 
-1. `testsim.py` : Demonstrates the measurement simulator. Note that
-   maneuvers can be incorporated into the force model during simulation.
-
-2. `plotsim.py` : Plots the results of simulations created using testsim.py.
-
-3. `testodet.py` : Demonstrates orbit determination in orbdetpy.
-
-4. `plotodet.py` : Plots the results of fitting orbits using testodet.py.
-
-5. `run_tests.py` : Run all the use cases under examples/data. Simulated
+1. `run_tests.py` : Run all the use cases under `examples/data`. Simulated
    measurements, orbit fits, differences between simulated truth versus
    estimates, and 3-sigma of estimated covariances will be written to
-   output/ sub-folders.
+   `output/` sub-folders.
 
 orbdetpy uses JSON files to store settings, measurements and estimation
-results. The files in examples/data show how to configure measurement
+results. The files in `examples/data` show how to configure measurement
 simulation and orbit determination using radar or telescope data. The
-file docs/file_formats.md documents the structure of the JSON files.
+file `docs/file_formats.md` documents the structure of the JSON files.
 
 The following are some typical use cases. It is assumed that the current
-working directory is examples/data.
+working directory is `examples/data`.
 
 1. Simulate state vectors and radar measurements:
 
-   `python ../testsim.py radar_sim_cfg.json sim_data.json`
+   `from orbdetpy.simulation import simulate_measurements`
+   `simulate_measurements("radar_sim_cfg.json", output_file = "sim_data.json")`
 
-   This will run the simulation configured in radar_sim_cfg.json and
-   write simulated output to sim_data.json.
+   This will run the simulation configured in `radar_sim_cfg.json` and
+   write simulated output to `sim_data.json`.
 
 2. Plot simulation results:
 
-   `python ../plotsim.py radar_sim_cfg.json sim_data.json`
+   `from orbdetpy.plotting.simulation import plot as sim_plot`
+   `sim_plot("radar_sim_cfg.json", "sim_data.json", interactive = True)`
 
    This will plot the simulated data generated in (1).
 
 3. Run OD on simulated radar data:
 
-   `python ../testodet.py radar_od_cfg.json sim_data.json od_output.json`
+   `from orbdetpy.estimation import determine_orbit`
+   `determine_orbit("radar_od_cfg.json", "sim_data.json", output_file = "od_output.json")`
 
    This will run OD on the simulated radar data generated in (1)
-   using the OD configuration in radar_od_cfg.json and write OD
-   output to od_output.json.
+   using the OD configuration in `radar_od_cfg.json` and write OD
+   output to `od_output.json`.
 
 4. Plot OD results:
 
-   `python ../plotodet.py radar_od_cfg.json sim_data.json od_output.json`
+   `from orbdetpy.plotting.estimation import plot as od_plot`
+   `od_plot("radar_od_cfg.json", "sim_data.json", "od_output.json", interactive = True)`
 
    This will plot the OD results from (3).

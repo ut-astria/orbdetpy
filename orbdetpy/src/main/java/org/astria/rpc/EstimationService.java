@@ -18,18 +18,32 @@
 
 package org.astria.rpc;
 
+import java.util.ArrayList;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Estimation;
+import org.astria.Measurements;
 import org.astria.Settings;
 
-public class EstimationService extends EstimationGrpc.EstimationImplBase
+public final class EstimationService extends EstimationGrpc.EstimationImplBase
 {
-    @Override public void determineOrbit(EstimationRequest.DetermineOrbitInput inp,
-					 StreamObserver<EstimationRequest.DetermineOrbitOutput> out)
+    @Override public void determineOrbit(Messages.DetermineOrbitInput req, StreamObserver<Messages.EstimationOutputArray> resp)
     {
-	EstimationRequest.DetermineOrbitOutput.Builder builder = EstimationRequest.DetermineOrbitOutput.newBuilder();
-	builder = builder.setEstimationJson(new Estimation(inp.getConfigJson(), inp.getMeasurementsJson()).determineOrbit());
-	out.onNext(builder.build());
-	out.onCompleted();
+	try
+	{
+	    Settings odCfg = Tools.buildSettingsFromRequest(req.getConfig());
+	    Measurements odObs = Tools.buildMeasurementsFromRequest(req.getMeasurementsList(), odCfg);
+	    ArrayList<Estimation.EstimationOutput> estOut = new Estimation(odCfg, odObs).determineOrbit();
+
+	    Messages.EstimationOutputArray.Builder builder = Messages.EstimationOutputArray
+		.newBuilder().addAllArray(Tools.buildResponseFromOrbitDetermination(estOut));
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
     }
 }

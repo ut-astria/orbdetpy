@@ -19,7 +19,8 @@ import sys
 import json
 import math
 import time
-from orbdetpy import determineOrbit, simulateMeasurements
+from orbdetpy.estimation import determine_orbit
+from orbdetpy.simulation import simulate_measurements
 
 odpdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 datdir = os.path.join(odpdir, "examples", "data")
@@ -38,8 +39,8 @@ for root, dirs, files in os.walk(datdir):
             continue
 
         print("Simulating {}".format(fname))
-        simulateMeasurements(os.path.join(root, fname),
-                             output_file=os.path.join(outdir,fname[:idx]+"obs.json"))
+        simulate_measurements(os.path.join(root, fname),
+                              output_file=os.path.join(outdir,fname[:idx]+"obs.json"))
 
 for root, dirs, files in os.walk(datdir):
     outdir = os.path.join(root, "output")
@@ -59,15 +60,15 @@ for root, dirs, files in os.walk(datdir):
             with open(os.path.join(root, fname), "r") as fp:
                 config = json.load(fp)
                 config["Estimation"]["Filter"] = algo
-            fit = determineOrbit(json.dumps(config), obs,
-                                 output_file=os.path.join(outdir,fname[:idx]+algo+"_fit.json"))
+            fit = determine_orbit(json.dumps(config), obs,
+                                  output_file=os.path.join(outdir,fname[:idx]+algo+"_fit.json"))
 
             output = []
             exact = [x for x in json.loads(obs) if ("Station" in x or "PositionVelocity" in x)]
-            estim = json.loads(fit)["Estimation"]
+            estim = [x for x in fit if ("PreFit" in x and "PostFit" in x)]
             for exa, est in zip(exact, estim):
-                if ("TrueState" in exa):
-                    X = exa["TrueState"]["Cartesian"][:6]
+                if ("TrueStateCartesian" in exa):
+                    X = exa["TrueStateCartesian"][:6]
                 else:
                     X = exa["PositionVelocity"][:6]
                 diff = [X[i] - est["EstimatedState"][i] for i in range(6)]

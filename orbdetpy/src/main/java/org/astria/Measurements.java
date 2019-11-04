@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -40,18 +39,18 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.PVCoordinates;
 
-public class Measurements
+public final class Measurements
 {
-    class Kepler
+    public static class KeplerianElements
     {
-	double SMA;
-	double Ecc;
-	double Inc;
-	double RAAN;
-	double ArgP;
-	double MeanAnom;
+	public double SMA;
+	public double Ecc;
+	public double Inc;
+	public double RAAN;
+	public double ArgP;
+	public double MeanAnom;
 
-	public Kepler(double a, double e, double i, double W, double o, double M)
+	public KeplerianElements(double a, double e, double i, double W, double o, double M)
 	{
 	    this.SMA = a;
 	    this.Ecc = e;
@@ -62,16 +61,16 @@ public class Measurements
 	}
     }
 
-    class Equinoctial
+    public static class EquinoctialElements
     {
-	double SMA;
-	double Ex;
-	double Ey;
-	double Hx;
-	double Hy;
-	double Lm;
+	public double SMA;
+	public double Ex;
+	public double Ey;
+	public double Hx;
+	public double Hy;
+	public double Lm;
 
-	public Equinoctial(double a, double ex, double ey, double hx, double hy, double lm)
+	public EquinoctialElements(double a, double ex, double ey, double hx, double hy, double lm)
 	{
 	    this.SMA = a;
 	    this.Ex = ex;
@@ -82,25 +81,25 @@ public class Measurements
 	}
     }
 
-    class State
+    public static class State
     {
-	double[] Cartesian;
-	Kepler Kepler;
-	Equinoctial Equinoctial;
+	public double[] Cartesian;
+	public KeplerianElements Kepler;
+	public EquinoctialElements Equinoctial;
     }
 
-    class Measurement
+    public static class Measurement
     {
-	String Time;
-	String Station;
-	Double Azimuth;
-	Double Elevation;
-	Double Range;
-	Double RangeRate;
-	Double RightAscension;
-	Double Declination;
-	Double[] Position;
-	Double[] PositionVelocity;
+	public String Time = null;
+	public String Station = null;
+	public Double Azimuth = null;
+	public Double Elevation = null;
+	public Double Range = null;
+	public Double RangeRate = null;
+	public Double RightAscension = null;
+	public Double Declination = null;
+	public Double[] Position = null;
+	public Double[] PositionVelocity = null;
 
 	public Measurement()
 	{
@@ -108,31 +107,31 @@ public class Measurements
 
 	public Measurement(Measurement src)
 	{
-	    Time = src.Time;
-	    Station = src.Station;
-	    Azimuth = src.Azimuth;
-	    Elevation = src.Elevation;
-	    Range = src.Range;
-	    RangeRate = src.RangeRate;
-	    RightAscension = src.RightAscension;
-	    Declination = src.Declination;
-	    Position = src.Position;
-	    PositionVelocity = src.PositionVelocity;
+	    this.Time = src.Time;
+	    this.Station = src.Station;
+	    this.Azimuth = src.Azimuth;
+	    this.Elevation = src.Elevation;
+	    this.Range = src.Range;
+	    this.RangeRate = src.RangeRate;
+	    this.RightAscension = src.RightAscension;
+	    this.Declination = src.Declination;
+	    this.Position = src.Position;
+	    this.PositionVelocity = src.PositionVelocity;
 	}
     }
 
-    class SimulatedMeasurement extends Measurement
+    public static class SimulatedMeasurement extends Measurement
     {
-	State TrueState;
-	Double AtmDensity;
-	double[] AccGravity;
-	double[] AccDrag;
-	double[] AccOceanTides;
-	double[] AccSolidTides;
-	double[] AccThirdBodies;
-	double[] AccRadiationPressure;
-	double[] AccThrust;
-	double[] StationState;
+	public State TrueState;
+	public Double AtmDensity;
+	public double[] AccGravity;
+	public double[] AccDrag;
+	public double[] AccOceanTides;
+	public double[] AccSolidTides;
+	public double[] AccThirdBodies;
+	public double[] AccRadiationPressure;
+	public double[] AccThrust;
+	public double[] StationState;
 
 	public SimulatedMeasurement()
 	{
@@ -141,134 +140,132 @@ public class Measurements
 	public SimulatedMeasurement(SimulatedMeasurement src)
 	{
 	    super(src);
-	    TrueState = src.TrueState;
-	    AtmDensity = src.AtmDensity;
-	    AccGravity = src.AccGravity;
-	    AccDrag = src.AccDrag;
-	    AccOceanTides = src.AccOceanTides;
-	    AccSolidTides = src.AccSolidTides;
-	    AccThirdBodies = src.AccThirdBodies;
-	    AccRadiationPressure = src.AccRadiationPressure;
-	    AccThrust = src.AccThrust;
-	    StationState = src.StationState;
+	    this.TrueState = src.TrueState;
+	    this.AtmDensity = src.AtmDensity;
+	    this.AccGravity = src.AccGravity;
+	    this.AccDrag = src.AccDrag;
+	    this.AccOceanTides = src.AccOceanTides;
+	    this.AccSolidTides = src.AccSolidTides;
+	    this.AccThirdBodies = src.AccThirdBodies;
+	    this.AccRadiationPressure = src.AccRadiationPressure;
+	    this.AccThrust = src.AccThrust;
+	    this.StationState = src.StationState;
 	}
     }
 
-    Measurement[] rawmeas;
-    ArrayList<ObservedMeasurement<?>> measobjs;
+    public Measurement[] rawMeas = null;
+    public ArrayList<ObservedMeasurement<?>> measObjs = null;
 
-    public static Measurements loadJSON(Settings odcfg, String json)
+    public Measurements build(Settings odCfg)
     {
-	Measurements m = new Measurements();
-	m.rawmeas = new Gson().fromJson(json, Measurement[].class);
-	m.getMeasurementObjects(odcfg);
-	return(m);
+	buildMeasurementObjects(odCfg);
+	return(this);
     }
 
-    private void getMeasurementObjects(Settings odcfg)
+    private void buildMeasurementObjects(Settings odCfg)
     {
-	Settings.Measurement cazim = odcfg.cfgMeasurements.get("Azimuth");
-	Settings.Measurement celev = odcfg.cfgMeasurements.get("Elevation");
-	Settings.Measurement crigh = odcfg.cfgMeasurements.get("RightAscension");
-	Settings.Measurement cdecl = odcfg.cfgMeasurements.get("Declination");
-	Settings.Measurement crang = odcfg.cfgMeasurements.get("Range");
-	Settings.Measurement crrat = odcfg.cfgMeasurements.get("RangeRate");
-	Settings.Measurement cpos = odcfg.cfgMeasurements.get("Position");
-	Settings.Measurement cposvel = odcfg.cfgMeasurements.get("PositionVelocity");
+	Settings.Measurement cazim = odCfg.cfgMeasurements.get("Azimuth");
+	Settings.Measurement celev = odCfg.cfgMeasurements.get("Elevation");
+	Settings.Measurement crigh = odCfg.cfgMeasurements.get("RightAscension");
+	Settings.Measurement cdecl = odCfg.cfgMeasurements.get("Declination");
+	Settings.Measurement crang = odCfg.cfgMeasurements.get("Range");
+	Settings.Measurement crrat = odCfg.cfgMeasurements.get("RangeRate");
+	Settings.Measurement cpos = odCfg.cfgMeasurements.get("Position");
+	Settings.Measurement cposvel = odCfg.cfgMeasurements.get("PositionVelocity");
 
-	ArrayList<Measurement> tempraw = new ArrayList<Measurement>(rawmeas.length);
-	for (Measurement m: rawmeas)
+	ArrayList<Measurement> tempraw = new ArrayList<Measurement>(rawMeas.length);
+	for (Measurement m: rawMeas)
 	{
 	    if (m.Station != null || m.Position != null || m.PositionVelocity != null)
 		tempraw.add(m);
 	}
-	rawmeas = tempraw.toArray(new Measurement[0]);
+	rawMeas = tempraw.toArray(new Measurement[0]);
 
-	measobjs = new ArrayList<ObservedMeasurement<?>>();
-	for (Measurement m: rawmeas)
+	measObjs = new ArrayList<ObservedMeasurement<?>>();
+	for (Measurement m: rawMeas)
 	{
 	    GroundStation gs = null;
 	    Settings.Station jsn = null;
 	    if (m.Station != null)
 	    {
-		gs = odcfg.stations.get(m.Station);
-		jsn = odcfg.cfgStations.get(m.Station);
+		gs = odCfg.stations.get(m.Station);
+		jsn = odCfg.cfgStations.get(m.Station);
 	    }
 
-	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale);
+	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.getTimeScale("UTC"));
 	    if (m.Azimuth != null && cazim != null && celev != null)
 	    {
 		AngularAzEl obs = new AngularAzEl(gs, time, new double[]{m.Azimuth, m.Elevation},
-						  new double[]{cazim.Error[0], celev.Error[0]},
+						  new double[]{cazim.error[0], celev.error[0]},
 						  new double[]{1.0, 1.0}, new ObservableSatellite(0));
-		if (jsn.AzimuthBias != 0.0 || jsn.ElevationBias != 0.0)
+		if (jsn.azimuthBias != 0.0 || jsn.elevationBias != 0.0)
 		    obs.addModifier(new Bias<AngularAzEl>(
-					new String[] {"Az", "El"}, new double[] {jsn.AzimuthBias, jsn.ElevationBias},
+					new String[] {"Az", "El"}, new double[] {jsn.azimuthBias, jsn.elevationBias},
 					new double[] {1.0, 1.0}, new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
 					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
-		measobjs.add(obs);
+		measObjs.add(obs);
 	    }
 
 	    if (m.RightAscension != null && crigh != null && cdecl != null)
 	    {
 		AngularRaDec obs = new AngularRaDec(gs, DataManager.getFrame("EME2000"), time,
 						    new double[]{m.RightAscension, m.Declination},
-						    new double[]{crigh.Error[0], cdecl.Error[0]},
+						    new double[]{crigh.error[0], cdecl.error[0]},
 						    new double[]{1.0, 1.0}, new ObservableSatellite(0));
-		if (jsn.RightAscensionBias != 0.0 || jsn.DeclinationBias != 0.0)
+		if (jsn.rightAscensionBias != 0.0 || jsn.declinationBias != 0.0)
 		    obs.addModifier(new Bias<AngularRaDec>(
-					new String[] {"RA", "Dec"}, new double[] {jsn.RightAscensionBias, jsn.DeclinationBias},
+					new String[] {"RA", "Dec"}, new double[] {jsn.rightAscensionBias, jsn.declinationBias},
 					new double[] {1.0, 1.0}, new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
 					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
-		measobjs.add(obs);
+		measObjs.add(obs);
 	    }
 
 	    if (m.Range != null && crang != null)
 	    {
-		Range obs = new Range(gs, crang.TwoWay, time, m.Range, crang.Error[0], 1.0, new ObservableSatellite(0));
-		if (jsn.RangeBias != 0.0)
+		Range obs = new Range(gs, crang.twoWay, time, m.Range, crang.error[0], 1.0, new ObservableSatellite(0));
+		if (jsn.rangeBias != 0.0)
 		    obs.addModifier(new Bias<Range>(
-					new String[] {"Range"}, new double[] {jsn.RangeBias}, new double[] {1.0},
+					new String[] {"Range"}, new double[] {jsn.rangeBias}, new double[] {1.0},
 					new double[] {Double.NEGATIVE_INFINITY}, new double[] {Double.POSITIVE_INFINITY}));
-		measobjs.add(obs);
+		measObjs.add(obs);
 	    }
 
 	    if (m.RangeRate != null && crrat != null)
 	    {
-		RangeRate obs = new RangeRate(gs, time, m.RangeRate, crrat.Error[0], 1.0, crrat.TwoWay, new ObservableSatellite(0));
-		if (jsn.RangeRateBias != 0.0)
+		RangeRate obs = new RangeRate(gs, time, m.RangeRate, crrat.error[0], 1.0, crrat.twoWay, new ObservableSatellite(0));
+		if (jsn.rangeRateBias != 0.0)
 		    obs.addModifier(new Bias<RangeRate>(
-					new String[] {"RangeRate"}, new double[] {jsn.RangeRateBias}, new double[] {1.0},
+					new String[] {"RangeRate"}, new double[] {jsn.rangeRateBias}, new double[] {1.0},
 					new double[] {Double.NEGATIVE_INFINITY}, new double[] {Double.POSITIVE_INFINITY}));
-		measobjs.add(obs);
+		measObjs.add(obs);
 	    }
 
 	    if (m.Position != null && cpos != null)
 	    {
 		Double[] X = m.Position;
-		Position obs = new Position(time, new Vector3D(X[0], X[1], X[2]), cpos.Error, 1.0, new ObservableSatellite(0));
-		if (jsn != null && jsn.PositionBias != null)
+		Position obs = new Position(time, new Vector3D(X[0], X[1], X[2]), cpos.error, 1.0, new ObservableSatellite(0));
+		if (jsn != null && jsn.positionBias != null)
 		    obs.addModifier(new Bias<Position>(
-					new String[] {"x", "y", "z"}, jsn.PositionBias,	new double[] {1.0, 1.0, 1.0},
+					new String[] {"x", "y", "z"}, jsn.positionBias,	new double[] {1.0, 1.0, 1.0},
 					new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
 					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
-		measobjs.add(obs);
+		measObjs.add(obs);
 	    }
 
 	    if (m.PositionVelocity != null && cposvel != null)
 	    {
 		Double[] X = m.PositionVelocity;
 		PV obs = new PV(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]),
-				cposvel.Error, 1.0, new ObservableSatellite(0));
-		if (jsn != null && jsn.PositionVelocityBias != null)
+				cposvel.error, 1.0, new ObservableSatellite(0));
+		if (jsn != null && jsn.positionVelocityBias != null)
 		    obs.addModifier(new Bias<PV>(
-					new String[] {"x", "y", "z", "Vx", "Vy", "Vz"}, jsn.PositionVelocityBias,
+					new String[] {"x", "y", "z", "Vx", "Vy", "Vz"}, jsn.positionVelocityBias,
 					new double[] {1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
 					new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
 						      Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
 					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
 						      Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
-		measobjs.add(obs);
+		measObjs.add(obs);
 	    }
 	}
     }

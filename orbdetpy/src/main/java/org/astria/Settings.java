@@ -18,12 +18,9 @@
 
 package org.astria;
 
-import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.stream.Stream;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -46,6 +43,7 @@ import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.OceanTides;
+import org.orekit.forces.gravity.SolidTides;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -72,227 +70,178 @@ import org.orekit.propagation.events.LongitudeCrossingDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class Settings
+public final class Settings
 {
-    class Parameter
+    public static class Parameter
     {
-	double Value;
-	double Min;
-	double Max;
-	String Estimation;
-    }
+	public String name;
+	public double value;
+	public double min;
+	public double max;
+	public String estimation;
 
-    class Gravity
-    {
-	int Degree;
-	int Order;
-    }
-
-    class OceanTides
-    {
-	int Degree;
-	int Order;
-    }
-
-    class Drag
-    {
-	String Model;
-	int[][] MSISEFlags;
-	double ExpRho0;
-	double ExpH0;
-	double ExpHScale;
-	Parameter Coefficient;
-    }
-
-    class SolidTides
-    {
-	boolean Sun;
-	boolean Moon;
-    }
-
-    class ThirdBodies
-    {
-	boolean Sun;
-	boolean Moon;
-    }
-
-    class RadiationPressure
-    {
-	boolean Sun;
-	Parameter Creflection;
-	Double Cabsorption;
-    }
-
-    class Facet
-    {
-	double[] Normal;
-	double Area;
-    }
-
-    class SolarArray
-    {
-	double[] Axis;
-	double Area;
-    }
-
-    class Attitude
-    {
-	String Provider;
-	Double[] SpinVelocity;
-	Double[] SpinAcceleration;
-    }
-
-    class SpaceObject
-    {
-	double Mass;
-	double Area;
-	Facet[] Facets;
-	SolarArray SolarArray;
-	Attitude Attitude;
-    }
-
-    class Propagation
-    {
-	String Start;
-	String End;
-	double Step;
-	double[] InitialState;
-	String[] InitialTLE;
-	String InitialStateFrame;
-	String InertialFrame;
-    }
-
-    class Integration
-    {
-	Double MinTimeStep;
-	Double MaxTimeStep;
-	Double AbsTolerance;
-	Double RelTolerance;
-
-	public Integration()
+	public Parameter(String name, double min, double max, double value, String estimation)
 	{
-	    if (MinTimeStep == null)
-		MinTimeStep = 1E-3;
-	    if (MaxTimeStep == null)
-		MaxTimeStep = 300.0;
-	    if (AbsTolerance == null)
-		AbsTolerance = 1E-14;
-	    if (RelTolerance == null)
-		RelTolerance = 1E-12;
-	}
-    }
-    
-    class Maneuver
-    {
-	String Time;
-	String TriggerEvent;
-	double[] TriggerParams;
-	String ManeuverType;
-	double[] ManeuverParams;
-
-	public Maneuver(String tm, String trig, double[] trigpar, String man, double[] manpar)
-	{
-	    this.Time = tm;
-	    this.TriggerEvent = trig;
-	    this.TriggerParams = trigpar;
-	    this.ManeuverType = man;
-	    this.ManeuverParams = manpar;
+	    this.name = name;
+	    this.min = min;
+	    this.max = max;
+	    this.value = value;
+	    this.estimation = estimation;
 	}
     }
 
-    class Station
+    public static class Facet
     {
-	double Latitude;
-	double Longitude;
-	double Altitude;
-	double AzimuthBias;
-	double ElevationBias;
-	double RangeBias;
-	double RangeRateBias;
-	double RightAscensionBias;
-	double DeclinationBias;
-	double[] PositionBias;
-	double[] PositionVelocityBias;
-    }
+	public double[] normal;
+	public double area;
 
-    class Measurement
-    {
-	boolean TwoWay;
-	double[] Error;
-    }
-
-    class Estimation
-    {
-	String Filter;
-	double[] Covariance;
-	double[] ProcessNoise;
-	double DMCCorrTime;
-	double DMCSigmaPert;
-	Parameter DMCAcceleration;
-    }
-
-    class Simulation
-    {
-	Boolean SimulateMeasurements;
-	Boolean SkipUnobservable;
-	Boolean IncludeExtras;
-	Boolean IncludeStationState;
-    }
-
-    class EstimatedParameter
-    {
-	String name;
-	double min;
-	double max;
-	double value;
-
-	public EstimatedParameter(String n, double mi, double ma, double v)
-	{
-	    name = n;
-	    min = mi;
-	    max = ma;
-	    value = v;
+	public Facet(double[] normal, double area)
+        {
+	    this.normal = normal;
+	    this.area = area;
 	}
     }
 
-    @SerializedName("Gravity") Gravity cfgGravity;
-    @SerializedName("OceanTides") OceanTides cfgOceanTides;
-    @SerializedName("Drag") Drag cfgDrag;
-    @SerializedName("SolidTides") SolidTides cfgSolidTides;
-    @SerializedName("ThirdBodies") ThirdBodies cfgThirdBodies;
-    @SerializedName("RadiationPressure") RadiationPressure cfgRadiationPressure;
-    @SerializedName("SpaceObject") SpaceObject cfgSpaceObject;
-    @SerializedName("Propagation") Propagation cfgPropagation;
-    @SerializedName("Integration") Integration cfgIntegration;
-    @SerializedName("Maneuvers") Maneuver[] cfgManeuvers;
-    @SerializedName("Stations") Map<String, Station> cfgStations;
-    @SerializedName("Measurements") Map<String, Measurement> cfgMeasurements;
-    @SerializedName("Estimation") Estimation cfgEstimation;
-    @SerializedName("Simulation") Simulation cfgSimulation;
-
-    Atmosphere atmmodel = null;
-
-    HashMap<String, GroundStation> stations;
-    ArrayList<ForceModel> forces;
-    ArrayList<EstimatedParameter> estparams;
-
-    Frame propframe;
-
-    public static Settings loadJSON(String json)
+    public static class Maneuver
     {
-	Settings set = new Gson().fromJson(json, Settings.class);
-	set.propframe = DataManager.getFrame(set.cfgPropagation.InertialFrame);
-	if (set.cfgIntegration == null)
-	    set.cfgIntegration = set.new Integration();
+	public String time;
+	public String triggerEvent;
+	public double[] triggerParams;
+	public String maneuverType;
+	public double[] maneuverParams;
 
-	set.loadGroundStations();
-	set.loadForces();
-	set.loadEstimatedParameters();
-	return(set);
+	public Maneuver(String time, String triggerEvent, double[] triggerParams, String maneuverType, double[] maneuverParams)
+        {
+	    this.time = time;
+	    this.triggerEvent = triggerEvent;
+	    this.triggerParams = triggerParams;
+	    this.maneuverType = maneuverType;
+	    this.maneuverParams = maneuverParams;
+	}
+    }
+
+    public static class Station
+    {
+	public double latitude;
+	public double longitude;
+	public double altitude;
+	public double azimuthBias;
+	public double elevationBias;
+	public double rangeBias;
+	public double rangeRateBias;
+	public double rightAscensionBias;
+	public double declinationBias;
+	public double[] positionBias;
+	public double[] positionVelocityBias;
+
+	public Station(double latitude, double longitude, double altitude, double azimuthBias, double elevationBias,
+		       double rangeBias, double rangeRateBias, double rightAscensionBias, double declinationBias,
+		       double[] positionBias, double[] positionVelocityBias)
+        {
+	    this.latitude = latitude;
+	    this.longitude = longitude;
+	    this.altitude = altitude;
+	    this.azimuthBias = azimuthBias;
+	    this.elevationBias = elevationBias;
+	    this.rangeBias = rangeBias;
+	    this.rangeRateBias = rangeRateBias;
+	    this.rightAscensionBias = rightAscensionBias;
+	    this.declinationBias = declinationBias;
+	    this.positionBias = positionBias;
+	    this.positionVelocityBias = positionVelocityBias;
+	}
+    }
+
+    public static class Measurement
+    {
+	public boolean twoWay;
+	public double[] error;
+
+	public Measurement(boolean twoWay, double[] error)
+        {
+	    this.twoWay = twoWay;
+	    this.error = error;
+	}
+    }
+
+    public double rsoMass = 1.0;
+    public double rsoArea = 1.0;
+    public Facet[] rsoFacets = null;
+    public double[] rsoSolarArrayAxis = null;
+    public double rsoSolarArrayArea = 0.0;
+    public String rsoAttitudeProvider = null;
+    public double[] rsoSpinVelocity = null;
+    public double[] rsoSpinAcceleration = null;
+
+    public int gravityDegree = 20;
+    public int gravityOrder = 20;
+    public int oceanTidesDegree = 20;
+    public int oceanTidesOrder = 20;
+    public boolean thirdBodySun = true;
+    public boolean thirdBodyMoon = true;
+    public boolean solidTidesSun = true;
+    public boolean solidTidesMoon = true;
+
+    public String dragModel = "MSISE";
+    public Parameter dragCoefficient = new Parameter("Cd", 1.0, 3.0, 2.0, "Estimate");
+    public int[][] dragMSISEFlags = null;
+    public double dragExpRho0 = 0.0;
+    public double dragExpH0 = 0.0;
+    public double dragExpHscale = 0.0;
+
+    public boolean rpSun = true;
+    public Parameter rpCoeffReflection = new Parameter("Cr", 1.0, 2.0, 1.5, "Estimate");
+    public double rpCoeffAbsorption = 0.0;
+
+    public Maneuver[] cfgManeuvers = null;
+
+    public String propStart = null;
+    public String propEnd = null;
+    public double propStep = 0.0;
+    public double[] propInitialState = null;
+    public String[] propInitialTLE = null;
+    public String propInertialFrame = "EME2000";
+    public String propStepHandlerStartTime = null;
+    public String propStepHandlerEndTime = null;
+
+    public double integMinTimeStep = 1.0E-3;
+    public double integMaxTimeStep = 300.0;
+    public double integAbsTolerance = 1.0E-14;
+    public double integRelTolerance = 1.0E-12;
+
+    public boolean simMeasurements = true;
+    public boolean simSkipUnobservable = true;
+    public boolean simIncludeExtras = false;
+    public boolean simIncludeStationState = false;
+
+    public Map<String, Station> cfgStations = null;
+    public Map<String, Measurement> cfgMeasurements = null;
+
+    public String estmFilter = null;
+    public double[] estmCovariance = null;
+    public double[] estmProcessNoise = null;
+    public double estmDMCCorrTime = 0.0;
+    public double estmDMCSigmaPert = 0.0;
+    public Parameter estmDMCAcceleration = null;
+
+    protected Atmosphere atmModel = null;
+    protected HashMap<String, GroundStation> stations = null;
+    protected ArrayList<ForceModel> forces = null;
+    protected ArrayList<Parameter> estParams = null;
+    protected Frame propFrame = null;
+
+    public Settings build()
+    {
+	propFrame = DataManager.getFrame(propInertialFrame);
+	loadGroundStations();
+	loadForces();
+	loadEstimatedParameters();
+	return(this);
     }
 
     private void loadGroundStations()
@@ -312,7 +261,7 @@ public class Settings
 	    GroundStation sta = new GroundStation(new TopocentricFrame(new OneAxisEllipsoid(
 									   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 									   Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
-								       new GeodeticPoint(v.Latitude, v.Longitude, v.Altitude), k));
+								       new GeodeticPoint(v.latitude, v.longitude, v.altitude), k));
 	    sta.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
@@ -323,160 +272,147 @@ public class Settings
     private void loadForces()
     {
 	forces = new ArrayList<ForceModel>();
-
 	NormalizedSphericalHarmonicsProvider grav = null;
-	if (cfgGravity.Degree >= 2 && cfgGravity.Order >= 0)
+	if (gravityDegree >= 2 && gravityOrder >= 0)
 	{
-	    grav = GravityFieldFactory.getNormalizedProvider(cfgGravity.Degree, cfgGravity.Order);
+	    grav = GravityFieldFactory.getNormalizedProvider(gravityDegree, gravityOrder);
 	    forces.add(new HolmesFeatherstoneAttractionModel(DataManager.getFrame("ITRF"), grav));
 	}
 	else
 	    forces.add(new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
-	if (cfgOceanTides.Degree >= 0 && cfgOceanTides.Order >= 0)
-	    forces.add(new org.orekit.forces.gravity.OceanTides(DataManager.getFrame("ITRF"), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-								Constants.EGM96_EARTH_MU, cfgOceanTides.Degree,
-								cfgOceanTides.Order, IERSConventions.IERS_2010, DataManager.ut1scale));
+	if (oceanTidesDegree >= 0 && oceanTidesOrder >= 0)
+	    forces.add(new OceanTides(DataManager.getFrame("ITRF"), Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
+				      oceanTidesDegree,	oceanTidesOrder, IERSConventions.IERS_2010,
+				      (UT1Scale) DataManager.getTimeScale("UT1")));
 
-	if ((cfgSolidTides.Sun || cfgSolidTides.Moon) && grav != null)
-	    forces.add(new org.orekit.forces.gravity.SolidTides(DataManager.getFrame("ITRF"), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-								Constants.EGM96_EARTH_MU, grav.getTideSystem(),
-								IERSConventions.IERS_2010, DataManager.ut1scale,
-								CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon()));
+	if ((solidTidesSun || solidTidesMoon) && grav != null)
+	    forces.add(new SolidTides(DataManager.getFrame("ITRF"), Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
+				      grav.getTideSystem(), IERSConventions.IERS_2010, (UT1Scale) DataManager.getTimeScale("UT1"),
+				      CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon()));
 
-	if (cfgThirdBodies.Sun)
+	if (thirdBodySun)
 	    forces.add(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
-	if (cfgThirdBodies.Moon)
+	if (thirdBodyMoon)
 	    forces.add(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
 	DragSensitive dragsc = null;
 	RadiationSensitive radnsc = null;
-	if (cfgSpaceObject.Facets != null && cfgSpaceObject.SolarArray != null)
+	if (rsoFacets != null && rsoSolarArrayAxis != null && rsoSolarArrayArea > 0.0)
 	{
-	    BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[cfgSpaceObject.Facets.length];
-	    for (int i = 0; i < cfgSpaceObject.Facets.length; i++)
-		facets[i] = new BoxAndSolarArraySpacecraft.Facet(new Vector3D(cfgSpaceObject.Facets[i].Normal),
-								 cfgSpaceObject.Facets[i].Area);
+	    BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[rsoFacets.length];
+	    for (int i = 0; i < rsoFacets.length; i++)
+		facets[i] = new BoxAndSolarArraySpacecraft.Facet(new Vector3D(rsoFacets[i].normal), rsoFacets[i].area);
 
-	    dragsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), cfgSpaceObject.SolarArray.Area,
-						    new Vector3D(cfgSpaceObject.SolarArray.Axis), cfgDrag.Coefficient.Value,
-						    cfgRadiationPressure.Cabsorption, cfgRadiationPressure.Creflection.Value);
-	    radnsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), cfgSpaceObject.SolarArray.Area,
-						    new Vector3D(cfgSpaceObject.SolarArray.Axis), cfgDrag.Coefficient.Value,
-						    cfgRadiationPressure.Cabsorption, cfgRadiationPressure.Creflection.Value);
+	    dragsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), rsoSolarArrayArea, new Vector3D(rsoSolarArrayAxis),
+						    dragCoefficient.value, rpCoeffAbsorption, rpCoeffReflection.value);
+	    radnsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), rsoSolarArrayArea, new Vector3D(rsoSolarArrayAxis),
+						    dragCoefficient.value, rpCoeffAbsorption, rpCoeffReflection.value);
 	}
 	else
 	{
-	    dragsc = new IsotropicDrag(cfgSpaceObject.Area, cfgDrag.Coefficient.Value);
-	    radnsc = new IsotropicRadiationSingleCoefficient(cfgSpaceObject.Area, cfgRadiationPressure.Creflection.Value,
-							     cfgRadiationPressure.Creflection.Min, cfgRadiationPressure.Creflection.Max);
+	    dragsc = new IsotropicDrag(rsoArea, dragCoefficient.value);
+	    radnsc = new IsotropicRadiationSingleCoefficient(rsoArea, rpCoeffReflection.value, rpCoeffReflection.min, rpCoeffReflection.max);
 	}
 
-	if (cfgDrag.Model.equals("Exponential"))
+	if (dragModel.equals("Exponential"))
 	{
-	    atmmodel = new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+	    atmModel = new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 									    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
-						       cfgDrag.ExpRho0, cfgDrag.ExpH0, cfgDrag.ExpHScale);
+						       dragExpRho0, dragExpH0, dragExpHscale);
 	}
-	else if (cfgDrag.Model.equals("MSISE"))
+	else if (dragModel.equals("MSISE"))
 	{
 	    int apflag = 1;
-	    if (cfgDrag.MSISEFlags != null)
+	    if (dragMSISEFlags != null)
 	    {
-		for (int i = 0; i < cfgDrag.MSISEFlags.length; i++)
+		for (int i = 0; i < dragMSISEFlags.length; i++)
 		{
-		    if (cfgDrag.MSISEFlags[i][0] == 9)
-			apflag = cfgDrag.MSISEFlags[i][1];
+		    if (dragMSISEFlags[i][0] == 9)
+			apflag = dragMSISEFlags[i][1];
 		}
 	    }
 
-	    atmmodel = new NRLMSISE00(new MSISEInputs(DataManager.msisedata.mindate, DataManager.msisedata.maxdate,
-						      DataManager.msisedata.data, apflag),
+	    atmModel = new NRLMSISE00(new MSISEInputs(DataManager.msiseData.minDate, DataManager.msiseData.maxDate,
+						      DataManager.msiseData.data, apflag),
 				      CelestialBodyFactory.getSun(), new OneAxisEllipsoid(
 					  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 					  Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")));
-	    if (cfgDrag.MSISEFlags != null)
+	    if (dragMSISEFlags != null)
 	    {
-		for (int i = 0; i < cfgDrag.MSISEFlags.length; i++)
-		    atmmodel = ((NRLMSISE00) atmmodel).withSwitch(cfgDrag.MSISEFlags[i][0], cfgDrag.MSISEFlags[i][1]);
+		for (int i = 0; i < dragMSISEFlags.length; i++)
+		    atmModel = ((NRLMSISE00) atmModel).withSwitch(dragMSISEFlags[i][0], dragMSISEFlags[i][1]);
 	    }
 	}
 
-	if (atmmodel != null)
-	    forces.add(new DragForce(atmmodel, dragsc));
+	if (atmModel != null)
+	    forces.add(new DragForce(atmModel, dragsc));
 
-	if (cfgRadiationPressure.Sun)
+	if (rpSun)
 	    forces.add(new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS, radnsc));
 
 	if (cfgManeuvers == null)
 	    return;
 	for (Maneuver m : cfgManeuvers)
 	{
-	    if (m.TriggerEvent.equals("DateTime") && m.ManeuverType.equals("ConstantThrust"))
-		forces.add(new ConstantThrustManeuver(new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale),
-						      m.ManeuverParams[3], m.ManeuverParams[4], m.ManeuverParams[5],
-						      new Vector3D(m.ManeuverParams[0], m.ManeuverParams[1], m.ManeuverParams[2])));
+	    if (m.triggerEvent.equals("DateTime") && m.maneuverType.equals("ConstantThrust"))
+		forces.add(new ConstantThrustManeuver(new AbsoluteDate(DateTimeComponents.parseDateTime(m.time), DataManager.getTimeScale("UTC")),
+						      m.maneuverParams[3], m.maneuverParams[4], m.maneuverParams[5],
+						      new Vector3D(m.maneuverParams[0], m.maneuverParams[1], m.maneuverParams[2])));
 	}
     }
 
     private void loadEstimatedParameters()
     {
-	estparams = new ArrayList<EstimatedParameter>();
-	if (cfgDrag.Coefficient.Estimation != null && cfgDrag.Coefficient.Estimation.equals("Estimate"))
-	    estparams.add(new EstimatedParameter(DragSensitive.DRAG_COEFFICIENT, cfgDrag.Coefficient.Min,
-						 cfgDrag.Coefficient.Max, cfgDrag.Coefficient.Value));
+	estParams = new ArrayList<Parameter>();
+	if (dragCoefficient.estimation != null && dragCoefficient.estimation.equals("Estimate"))
+	    estParams.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min, dragCoefficient.max,
+					dragCoefficient.value, "Estimate"));
 
-	if (cfgRadiationPressure.Creflection.Estimation != null && cfgRadiationPressure.Creflection.Estimation.equals("Estimate"))
-	    estparams.add(new EstimatedParameter(RadiationSensitive.REFLECTION_COEFFICIENT, cfgRadiationPressure.Creflection.Min,
-						 cfgRadiationPressure.Creflection.Max, cfgRadiationPressure.Creflection.Value));
+	if (rpCoeffReflection.estimation != null && rpCoeffReflection.estimation.equals("Estimate"))
+	    estParams.add(new Parameter(RadiationSensitive.REFLECTION_COEFFICIENT, rpCoeffReflection.min, rpCoeffReflection.max,
+					rpCoeffReflection.value, "Estimate"));
 
-	if (cfgEstimation != null && cfgEstimation.DMCCorrTime > 0.0 && cfgEstimation.DMCSigmaPert > 0.0)
+	if (estmDMCCorrTime > 0.0 && estmDMCSigmaPert > 0.0)
 	{
 	    for (int i = 0; i < 3; i++)
-		estparams.add(new EstimatedParameter(org.astria.Estimation.DMC_ACC_ESTM[i], cfgEstimation.DMCAcceleration.Min,
-						     cfgEstimation.DMCAcceleration.Max, cfgEstimation.DMCAcceleration.Value));
+		estParams.add(new Parameter(Estimation.DMC_ACC_ESTM[i], estmDMCAcceleration.min, estmDMCAcceleration.max,
+					    estmDMCAcceleration.value, "Estimate"));
 	}
     }
 
     public double[] getInitialState()
     {
 	PVCoordinates topv;
-	double[] state0 = cfgPropagation.InitialState;
+	double[] state0 = propInitialState;
 
 	if (state0 == null)
 	{
-	    TLE parser = new TLE(cfgPropagation.InitialTLE[0], cfgPropagation.InitialTLE[1]);
+	    TLE parser = new TLE(propInitialTLE[0], propInitialTLE[1]);
 	    TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
 	    AbsoluteDate epoch;
-	    if (cfgPropagation.Start != null)
-		epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(cfgPropagation.Start), DataManager.utcscale);
+	    if (propStart != null)
+		epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.getTimeScale("UTC"));
 	    else
 	    {
 		epoch = parser.getDate().shiftedBy(0.0);
-		cfgPropagation.Start = epoch.toString() + "Z";
+		propStart = epoch.toString() + "Z";
 	    }
-	    topv = prop.getPVCoordinates(epoch, propframe);
+	    topv = prop.getPVCoordinates(epoch, propFrame);
 	}
 	else
-	{
-	    Frame fromframe = DataManager.getFrame(cfgPropagation.InitialStateFrame);
-	    AbsoluteDate epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(cfgPropagation.Start), DataManager.utcscale);
-	    Transform xfm = fromframe.getTransformTo(propframe, epoch);
-	    PVCoordinates frompv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]),
-						     new Vector3D(state0[3], state0[4], state0[5]));
-	    topv = xfm.transformPVCoordinates(frompv);
-	}
+	    topv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]), new Vector3D(state0[3], state0[4], state0[5]));
 
 	Vector3D p = topv.getPosition();
 	Vector3D v = topv.getVelocity();
 	state0 = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
-	double[] X0 = new double[estparams.size() + 6];
+	double[] X0 = new double[estParams.size() + 6];
 	for (int i = 0; i < X0.length; i++)
 	{
 	    if (i < 6)
 		X0[i] = state0[i];
 	    else
-		X0[i] = estparams.get(i - 6).value;
+		X0[i] = estParams.get(i - 6).value;
 	}
 
 	return(X0);
@@ -484,48 +420,44 @@ public class Settings
 
     public AttitudeProvider getAttitudeProvider()
     {
-	AttitudeProvider attpro = null;
-	if (cfgSpaceObject.Attitude == null)
-	    return(attpro);
+	if (rsoAttitudeProvider == null)
+	    return(null);
 
+	AttitudeProvider attpro = null;
 	OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 						      Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 
-	if (cfgSpaceObject.Attitude.Provider.equals("NadirPointing"))
-	    attpro = new NadirPointing(propframe, shape);
-	if (cfgSpaceObject.Attitude.Provider.equals("BodyCenterPointing"))
-	    attpro = new BodyCenterPointing(propframe, shape);
-	if (cfgSpaceObject.Attitude.Provider.equals("FixedRate") && cfgSpaceObject.Attitude.SpinVelocity != null &&
-	    cfgSpaceObject.Attitude.SpinAcceleration != null)
+	if (rsoAttitudeProvider.equals("NadirPointing"))
+	    attpro = new NadirPointing(propFrame, shape);
+	if (rsoAttitudeProvider.equals("BodyCenterPointing"))
+	    attpro = new BodyCenterPointing(propFrame, shape);
+	if (rsoAttitudeProvider.equals("FixedRate") && rsoSpinVelocity != null && rsoSpinAcceleration != null)
 	{
-	    double[] X0 = cfgPropagation.InitialState;
-	    AbsoluteDate t0 = new AbsoluteDate(DateTimeComponents.parseDateTime(cfgPropagation.Start),
-					       DataManager.utcscale);
+	    double[] X0 = propInitialState;
+	    AbsoluteDate t0 = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.getTimeScale("UTC"));
 	    KeplerianPropagator prop = new KeplerianPropagator(new CartesianOrbit(new PVCoordinates(new Vector3D(X0[0], X0[1], X0[2]),
 												    new Vector3D(X0[3], X0[4], X0[5])),
-										  propframe, t0, Constants.EGM96_EARTH_MU));
-	    LocalOrbitalFrame lof = new LocalOrbitalFrame(propframe, LOFType.VVLH, prop, "");
+										  propFrame, t0, Constants.EGM96_EARTH_MU));
+	    LocalOrbitalFrame lof = new LocalOrbitalFrame(propFrame, LOFType.VVLH, prop, "");
 	    attpro = new FixedRate(new org.orekit.attitudes.Attitude(t0, lof, Rotation.IDENTITY,
-								     new Vector3D(Stream.of(cfgSpaceObject.Attitude.SpinVelocity).
-										  mapToDouble(Double::doubleValue).toArray()),
-								     new Vector3D(Stream.of(cfgSpaceObject.Attitude.SpinAcceleration).
-										  mapToDouble(Double::doubleValue).toArray())));
+								     new Vector3D(rsoSpinVelocity[0], rsoSpinVelocity[1], rsoSpinVelocity[2]),
+								     new Vector3D(rsoSpinAcceleration[0], rsoSpinAcceleration[1], rsoSpinAcceleration[2])));
 	}
 
 	return(attpro);
     }
-    
+
     public RealMatrix getProcessNoiseMatrix(double t)
     {
 	int i;
 	double t2 = t*t;
 	double t3 = t2*t;
 	double t4 = t3*t;
-	double[][] Q = new double[estparams.size() + 6][estparams.size() + 6];
+	double[][] Q = new double[estParams.size() + 6][estParams.size() + 6];
 
-	if (cfgEstimation.DMCCorrTime <= 0.0 || cfgEstimation.DMCSigmaPert <= 0.0)
+	if (estmDMCCorrTime <= 0.0 || estmDMCSigmaPert <= 0.0)
 	{
-	    double[] P = cfgEstimation.ProcessNoise;
+	    double[] P = estmProcessNoise;
 	    for (i = 0; i < 3; i++)
 	    {
 		Q[i][i] = 0.25*t4*P[i];
@@ -540,15 +472,15 @@ public class Settings
 	    return(new Array2DRowRealMatrix(Q));
 	}
 
-	int N = estparams.size() - 3;
-	double b = 1.0/cfgEstimation.DMCCorrTime;
+	int N = estParams.size() - 3;
+	double b = 1.0/estmDMCCorrTime;
 	double b2 = b*b;
 	double b3 = b2*b;
 	double b4 = b3*b;
 	double b5 = b4*b;
 	double et = FastMath.exp(-1.0*b*t);
 	double e2t = et*et;
-	double s2 = cfgEstimation.DMCSigmaPert*cfgEstimation.DMCSigmaPert;
+	double s2 = estmDMCSigmaPert*estmDMCSigmaPert;
 
 	double Q00 = s2*(t3/(3*b2)-t2/b3+t*(1-2*et)/b4+0.5*(1-e2t)/b5); // pos-pos
 	double Q01 = s2*(0.5*t2/b2-t*(1-et)/b3+(1-et)/b4-0.5*(1-e2t)/b4); // pos-vel
@@ -585,28 +517,28 @@ public class Settings
 	    return;
 	for (Maneuver m : cfgManeuvers)
 	{
-	    if (m.TriggerEvent.equals("DateTime"))
+	    if (m.triggerEvent.equals("DateTime"))
 	    {
-		if (m.ManeuverType.equals("ConstantThrust"))
+		if (m.maneuverType.equals("ConstantThrust"))
 		    continue;
 
-		EventHandling<DateDetector> handler = new EventHandling<DateDetector>(m.TriggerEvent, m.ManeuverType,
-										      m.ManeuverParams[0], (int)m.ManeuverParams[2]);
-		AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.Time), DataManager.utcscale);
-		for (int i = 0; i < m.ManeuverParams[2]; i++)
+		EventHandling<DateDetector> handler = new EventHandling<DateDetector>(m.triggerEvent, m.maneuverType,
+										      m.maneuverParams[0], (int) m.maneuverParams[2]);
+		AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.time), DataManager.getTimeScale("UTC"));
+		for (int i = 0; i < m.maneuverParams[2]; i++)
 		{
 		    prop.addEventDetector(new DateDetector(time).withHandler(handler));
-		    time = new AbsoluteDate(time, m.ManeuverParams[1]);
+		    time = new AbsoluteDate(time, m.maneuverParams[1]);
 		}
 	    }
 
-	    if (m.TriggerEvent.equals("LongitudeCrossing"))
+	    if (m.triggerEvent.equals("LongitudeCrossing"))
 	    {
 		OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 							     Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 		EventHandling<LongitudeCrossingDetector> handler = new EventHandling<LongitudeCrossingDetector>(
-		    m.TriggerEvent, m.ManeuverType, 0.0, 1);
-		prop.addEventDetector(new LongitudeCrossingDetector(body, m.TriggerParams[0]).withHandler(handler));
+		    m.triggerEvent, m.maneuverType, 0.0, 1);
+		prop.addEventDetector(new LongitudeCrossingDetector(body, m.triggerParams[0]).withHandler(handler));
 	    }
 	}
     }

@@ -35,24 +35,24 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class EventHandling<T extends EventDetector> implements EventHandler<T>
+public final class EventHandling<T extends EventDetector> implements EventHandler<T>
 {
-    protected String trigevt;
-    protected String mantype;
-    protected double target;
-    protected int steps;
+    private final String trigEvent;
+    private final String mnvrType;
+    private final double target;
+    private int steps;
 
-    public EventHandling(String trigevt, String mantype, double target, int steps)
+    public EventHandling(String trigEvent, String mnvrType, double target, int steps)
     {
-	this.trigevt = trigevt;
-	this.mantype = mantype;
+	this.trigEvent = trigEvent;
+	this.mnvrType = mnvrType;
 	this.target = target;
 	this.steps = steps;
     }
 
     @Override public Action eventOccurred(SpacecraftState state, T det, boolean incr)
     {
-	if (trigevt.equals("LongitudeCrossing") && mantype.equals("StopPropagation"))
+	if (trigEvent.equals("LongitudeCrossing") && mnvrType.equals("StopPropagation"))
 	    return(Action.STOP);
 	return(Action.RESET_STATE);
     }
@@ -68,14 +68,14 @@ public class EventHandling<T extends EventDetector> implements EventHandler<T>
 	double theta = kep.getTrueAnomaly();
 
 	Orbit neworb = null;
-	if (mantype.equals("NorthSouthStationing") || mantype.equals("EastWestStationing"))
+	if (mnvrType.equals("NorthSouthStationing") || mnvrType.equals("EastWestStationing"))
 	{
 	    PVCoordinates pvc = old.getOrbit().getPVCoordinates();
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 							  Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 	    GeodeticPoint geo = earth.transform(pvc.getPosition(), old.getFrame(), old.getDate());
 
-	    if (mantype.equals("NorthSouthStationing"))
+	    if (mnvrType.equals("NorthSouthStationing"))
 		geo = new GeodeticPoint(geo.getLatitude() + (target - geo.getLatitude())/steps,
 					geo.getLongitude(), geo.getAltitude());
 	    else
@@ -90,17 +90,17 @@ public class EventHandling<T extends EventDetector> implements EventHandler<T>
 	}
 	else
 	{
-	    if (mantype.equals("SemiMajorAxisChange"))
+	    if (mnvrType.equals("SemiMajorAxisChange"))
 		a += (target - a)/steps;
-	    if (mantype.equals("PerigeeChange"))
+	    if (mnvrType.equals("PerigeeChange"))
 		a += (target - a/(1 - e))/steps;
-	    if (mantype.equals("EccentricityChange"))
+	    if (mnvrType.equals("EccentricityChange"))
 		e += (target - e)/steps;
-	    if (mantype.equals("InclinationChange"))
+	    if (mnvrType.equals("InclinationChange"))
 		i += (target - i)/steps;
-	    if (mantype.equals("RAANChange"))
+	    if (mnvrType.equals("RAANChange"))
 		O += (target - O)/steps;
-	    if (mantype.equals("ArgPerigeeChange"))
+	    if (mnvrType.equals("ArgPerigeeChange"))
 		w += (target - w)/steps;
 	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
 	}
