@@ -18,6 +18,7 @@
 
 package org.astria;
 
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -48,30 +49,34 @@ public final class ParallelPropagation implements MultiSatStepHandler
 	public String time;
 	public ArrayList<double[]> states;
 
-	public PropagationOutput(AbsoluteDate time)
+	public PropagationOutput(AbsoluteDate time, int objCount)
 	{
-	    this.time = time.toString() + "Z";
-	    this.states = new ArrayList<double[]>();
+	    this.time = new StringBuilder(time.toString()).append("Z").toString();
+	    this.states = new ArrayList<double[]>(objCount);
 	}
 
 	public void addState(TimeStampedPVCoordinates pva)
 	{
 	    Vector3D p = pva.getPosition();
 	    Vector3D v = pva.getVelocity();
-	    Vector3D a = pva.getAcceleration();
-	    this.states.add(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ(),
-					 a.getX(), a.getY(), a.getZ()});
+	    this.states.add(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()});
 	}
     }
 
+    private final List<Settings> configObjs;
+    private final List<Propagator> props;
     private ArrayList<PropagationOutput> propOutput;
 
-    public ArrayList<PropagationOutput> propagate(List<Settings> configObjs)
+    public ParallelPropagation(List<Settings> configObjs)
     {
-	List<Propagator> props = new ArrayList<Propagator>(configObjs.size());
+	this.configObjs = configObjs;
+	this.props = new ArrayList<Propagator>(configObjs.size());
 	for (int i = 0; i < configObjs.size(); i++)
 	    props.add(buildPropagator(configObjs.get(i)));
+    }
 
+    public ArrayList<PropagationOutput> propagate()
+    {
 	Settings obj0 = configObjs.get(0);
 	PropagatorsParallelizer plel = new PropagatorsParallelizer(props, this);
 	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(obj0.propStart), DataManager.getTimeScale("UTC"));
@@ -79,13 +84,13 @@ public final class ParallelPropagation implements MultiSatStepHandler
 	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(obj0.propEnd), DataManager.getTimeScale("UTC"));
 
 	List<SpacecraftState> staList = null;
-	propOutput = new ArrayList<PropagationOutput>();
+	propOutput = new ArrayList<PropagationOutput>((int) FastMath.abs(prend.durationFrom(tm)/obj0.propStep) + 2);
 	while (true)
 	{
 	    staList = plel.propagate(proptm, tm);
 	    proptm = staList.get(0).getDate();
 
-	    PropagationOutput pout = new PropagationOutput(proptm);
+	    PropagationOutput pout = new PropagationOutput(proptm, configObjs.size());
 	    propOutput.add(pout);
 	    for (SpacecraftState sta : staList)
 		pout.addState(sta.getPVCoordinates(DataManager.getFrame(obj0.propInertialFrame)));
@@ -105,9 +110,9 @@ public final class ParallelPropagation implements MultiSatStepHandler
 	return(propOutput);
     }
 
-    protected Propagator buildPropagator(Settings cfg)
+    private Propagator buildPropagator(Settings cfg)
     {
-	if (cfg.propInitialTLE != null && cfg.propInitialTLE[0].length() > 0 && cfg.propInitialTLE[1].length() > 0)
+	if (cfg.propInitialTLE != null && cfg.propInitialTLE[0] != null && cfg.propInitialTLE[1] != null)
 	{
 	    TLE parser = new TLE(cfg.propInitialTLE[0], cfg.propInitialTLE[1]);
 	    return(TLEPropagator.selectExtrapolator(parser));

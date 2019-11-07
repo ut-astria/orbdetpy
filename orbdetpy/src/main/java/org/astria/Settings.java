@@ -18,6 +18,7 @@
 
 package org.astria;
 
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -85,6 +86,10 @@ public final class Settings
 	public double max;
 	public String estimation;
 
+	public Parameter()
+	{
+	}
+
 	public Parameter(String name, double min, double max, double value, String estimation)
 	{
 	    this.name = name;
@@ -100,6 +105,10 @@ public final class Settings
 	public double[] normal;
 	public double area;
 
+	public Facet()
+        {
+	}
+
 	public Facet(double[] normal, double area)
         {
 	    this.normal = normal;
@@ -114,6 +123,10 @@ public final class Settings
 	public double[] triggerParams;
 	public String maneuverType;
 	public double[] maneuverParams;
+
+	public Maneuver()
+        {
+	}
 
 	public Maneuver(String time, String triggerEvent, double[] triggerParams, String maneuverType, double[] maneuverParams)
         {
@@ -139,6 +152,10 @@ public final class Settings
 	public double[] positionBias;
 	public double[] positionVelocityBias;
 
+	public Station()
+        {
+	}
+
 	public Station(double latitude, double longitude, double altitude, double azimuthBias, double elevationBias,
 		       double rangeBias, double rangeRateBias, double rightAscensionBias, double declinationBias,
 		       double[] positionBias, double[] positionVelocityBias)
@@ -161,6 +178,10 @@ public final class Settings
     {
 	public boolean twoWay;
 	public double[] error;
+
+	public Measurement()
+        {
+	}
 
 	public Measurement(boolean twoWay, double[] error)
         {
@@ -396,7 +417,7 @@ public final class Settings
 	    else
 	    {
 		epoch = parser.getDate().shiftedBy(0.0);
-		propStart = epoch.toString() + "Z";
+		propStart = new StringBuilder(epoch.toString()).append("Z").toString();
 	    }
 	    topv = prop.getPVCoordinates(epoch, propFrame);
 	}

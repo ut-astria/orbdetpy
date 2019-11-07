@@ -1,0 +1,20 @@
+{
+  "resources":[
+    {"pattern":"META-INF/services/io.grpc.ServerProvider"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/1996/nutation-arguments.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/1996/tab5.1.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/nutation-arguments.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab5.2a.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab5.2b.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab5.2d.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab5.2e.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab5.3a.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab5.3b.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab6.3.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab6.5a.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab6.5b.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab6.5c.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab8.2ab.txt"}, 
+    {"pattern":"assets/org/orekit/IERS-conventions/2010/tab8.3ab.txt"}
+  ]
+}

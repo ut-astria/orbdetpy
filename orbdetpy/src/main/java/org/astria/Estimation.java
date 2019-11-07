@@ -18,6 +18,7 @@
 
 package org.astria;
 
+import java.lang.StringBuilder;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,14 +67,14 @@ public final class Estimation
 {
     public static class EstimationOutput
     {
-	public String Time;
-	public String Station;
-	public double[] EstimatedState;
-	public double[][] PropagatedCovariance;
-	public double[][] InnovationCovariance;
-	public double[][] EstimatedCovariance;
-	public HashMap<String, double[]> PreFit;
-	public HashMap<String, double[]> PostFit;
+	public String time;
+	public String station;
+	public double[] estimatedState;
+	public double[][] propagatedCovariance;
+	public double[][] innovationCovariance;
+	public double[][] estimatedCovariance;
+	public HashMap<String, double[]> preFit;
+	public HashMap<String, double[]> postFit;
     }
 
     private final Settings odCfg;
@@ -120,7 +121,11 @@ public final class Estimation
 
     public ArrayList<EstimationOutput> determineOrbit()
     {
-	estOutput = new ArrayList<EstimationOutput>();
+	int size = FastMath.max(odObs.rawMeas.length, 10);
+	if (odCfg.propStep != 0.0)
+	    size += (int) FastMath.abs(propEnd.durationFrom(epoch)/odCfg.propStep) + 2;
+	estOutput = new ArrayList<EstimationOutput>(size);
+
 	if (odCfg.estmFilter.equals("UKF"))
 	    new UnscentedKalmanFilter().determineOrbit();
 	else
@@ -182,7 +187,7 @@ public final class Estimation
 	    else
 		estimator = propBuilder.buildPropagator(propBuilder.getSelectedNormalizedParameters());
 
-	    if (odObs.rawMeas.length == 0 || !odCfg.propEnd.equals(odObs.rawMeas[odObs.rawMeas.length-1].Time))
+	    if (odObs.rawMeas.length == 0 || !odCfg.propEnd.equals(odObs.rawMeas[odObs.rawMeas.length-1].time))
 	    {
 		SpacecraftState state = estimator.propagate(propEnd);
 		if (handler == null)
@@ -215,8 +220,8 @@ public final class Estimation
 	    EstimationOutput res = null;
 	    for (EstimationOutput loop: estOutput)
 	    {
-		if (loop.PreFit != null && loop.PostFit != null && loop.Time.equals(raw.Time) &&
-		    (loop.Station == null || loop.Station.equals(raw.Station)))
+		if (loop.preFit != null && loop.postFit != null && loop.time.equals(raw.time) &&
+		    (loop.station == null || loop.station.equals(raw.station)))
 		{
 		    res = loop;
 		    break;
@@ -228,10 +233,10 @@ public final class Estimation
 	    {
 		key = measNames[0];
 		res = new EstimationOutput();
-		res.PreFit = new HashMap<String, double[]>();
-		res.PostFit = new HashMap<String, double[]>();
-		res.Time = odObs.rawMeas[n].Time;
-		res.Station = odObs.rawMeas[n].Station;
+		res.preFit = new HashMap<String, double[]>();
+		res.postFit = new HashMap<String, double[]>();
+		res.time = odObs.rawMeas[n].time;
+		res.station = odObs.rawMeas[n].station;
 		estOutput.add(res);
 	    }
 	    else
@@ -239,16 +244,16 @@ public final class Estimation
 
 	    SpacecraftState ssta = est.getPredictedSpacecraftStates()[0];
 	    PVCoordinates pvc = ssta.getPVCoordinates();
-	    res.EstimatedState = new double[odCfg.estParams.size() + 6];
-	    System.arraycopy(pvc.getPosition().toArray(), 0, res.EstimatedState, 0, 3);
-	    System.arraycopy(pvc.getVelocity().toArray(), 0, res.EstimatedState, 3, 3);
+	    res.estimatedState = new double[odCfg.estParams.size() + 6];
+	    System.arraycopy(pvc.getPosition().toArray(), 0, res.estimatedState, 0, 3);
+	    System.arraycopy(pvc.getVelocity().toArray(), 0, res.estimatedState, 3, 3);
 
 	    int i = 6;
 	    List<ParameterDriversList.DelegatingDriver> plst = est.getEstimatedPropagationParameters().getDrivers();
 	    for (Settings.Parameter ep : odCfg.estParams)
 		for (ParameterDriversList.DelegatingDriver dd : plst)
 		    if (dd.getName().equals(ep.name))
-			res.EstimatedState[i++] = dd.getValue();
+			res.estimatedState[i++] = dd.getValue();
 
 	    double[] pre = est.getPredictedMeasurement().getEstimatedValue();
 	    double[] pos = est.getCorrectedMeasurement().getEstimatedValue();
@@ -258,33 +263,33 @@ public final class Estimation
 		{
 		    if (measNames.length == 1)
 		    {
-			res.PreFit.put(measNames[i], pre);
-			res.PostFit.put(measNames[i], pos);
+			res.preFit.put(measNames[i], pre);
+			res.postFit.put(measNames[i], pos);
 		    }
 		    else
 		    {
-			res.PreFit.put(measNames[i], new double[] {pre[i]});
-			res.PostFit.put(measNames[i], new double[] {pos[i]});
+			res.preFit.put(measNames[i], new double[] {pre[i]});
+			res.postFit.put(measNames[i], new double[] {pos[i]});
 		    }
 		}
-		res.InnovationCovariance = est.getPhysicalInnovationCovarianceMatrix().getData();
+		res.innovationCovariance = est.getPhysicalInnovationCovarianceMatrix().getData();
 	    }
 	    else
 	    {
-		res.PreFit.put(key, pre);
-		res.PostFit.put(key, pos);
-		if (res.InnovationCovariance == null)
-		    res.InnovationCovariance = new double[][]{{
+		res.preFit.put(key, pre);
+		res.postFit.put(key, pos);
+		if (res.innovationCovariance == null)
+		    res.innovationCovariance = new double[][]{{
 			    est.getPhysicalInnovationCovarianceMatrix().getData()[0][0], 0.0}, {0.0, 0.0}};
 		else
-		    res.InnovationCovariance[1][1] = est.getPhysicalInnovationCovarianceMatrix().getData()[0][0];
+		    res.innovationCovariance[1][1] = est.getPhysicalInnovationCovarianceMatrix().getData()[0][0];
 	    }
 
 	    RealMatrix phi = est.getPhysicalStateTransitionMatrix();
-	    res.PropagatedCovariance = phi.multiply(prevCovariance).multiply(phi.transpose()).add(
+	    res.propagatedCovariance = phi.multiply(prevCovariance).multiply(phi.transpose()).add(
 		odCfg.getProcessNoiseMatrix(measDeltaT)).getData();
 
-	    res.EstimatedCovariance = est.getPhysicalEstimatedCovarianceMatrix().getData();
+	    res.estimatedCovariance = est.getPhysicalEstimatedCovarianceMatrix().getData();
 	    prevCovariance = est.getPhysicalEstimatedCovarianceMatrix();
 	}
 
@@ -301,13 +306,13 @@ public final class Estimation
 	    }
 
 	    EstimationOutput odout = new EstimationOutput();
-	    odout.Time = state.getDate().toString() + "Z";
-	    odout.EstimatedState = new double[odCfg.estParams.size() + 6];
-	    System.arraycopy(pvc.getPosition().toArray(), 0, odout.EstimatedState, 0, 3);
-	    System.arraycopy(pvc.getVelocity().toArray(), 0, odout.EstimatedState, 3, 3);
+	    odout.time = new StringBuilder(state.getDate().toString()).append("Z").toString();
+	    odout.estimatedState = new double[odCfg.estParams.size() + 6];
+	    System.arraycopy(pvc.getPosition().toArray(), 0, odout.estimatedState, 0, 3);
+	    System.arraycopy(pvc.getVelocity().toArray(), 0, odout.estimatedState, 3, 3);
 	    if (odCfg.estParams.size() > 0 && estOutput.size() > 0)
-		System.arraycopy(estOutput.get(estOutput.size() - 1).EstimatedState, 6,
-				 odout.EstimatedState, 6, odCfg.estParams.size());
+		System.arraycopy(estOutput.get(estOutput.size() - 1).estimatedState, 6,
+				 odout.estimatedState, 6, odCfg.estParams.size());
 
 	    Rotation phi1 = new Rotation(prevPosition, pvc.getPosition());
 	    Rotation phi2 = new Rotation(prevVelocity, pvc.getVelocity());
@@ -317,7 +322,7 @@ public final class Estimation
 	    prevPosition = pvc.getPosition();
 	    prevVelocity = pvc.getVelocity();
 
-	    odout.PropagatedCovariance = phi.multiply(prevCovariance).multiply(phi.transpose()).add(
+	    odout.propagatedCovariance = phi.multiply(prevCovariance).multiply(phi.transpose()).add(
 		odCfg.getProcessNoiseMatrix(FastMath.abs(state.getDate().durationFrom(prevDate)))).getData();
 	    estOutput.add(odout);
 	    prevDate = state.getDate();
@@ -371,7 +376,7 @@ public final class Estimation
 	    {
 		AbsoluteDate t0 = new AbsoluteDate(tm, 0.0);
 		if (mix < odObs.rawMeas.length)
-		    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odObs.rawMeas[mix].Time), DataManager.getTimeScale("UTC"));
+		    tm = new AbsoluteDate(DateTimeComponents.parseDateTime(odObs.rawMeas[mix].time), DataManager.getTimeScale("UTC"));
 		else
 		    tm = propEnd;
 
@@ -470,14 +475,14 @@ public final class Estimation
 					      prop.getAttitude(tm, pv), odCfg.rsoMass);
 
 		EstimationOutput odout = new EstimationOutput();
-		odout.Time = odObs.rawMeas[mix].Time;
-		odout.Station = odObs.rawMeas[mix].Station;
-		odout.EstimatedState = pv;
-		odout.PropagatedCovariance = Ppre.getData();
-		odout.InnovationCovariance = Pyy.getData();
-		odout.EstimatedCovariance = P.getData();
-		odout.PreFit = new HashMap<String, double[]>();
-		odout.PostFit = new HashMap<String, double[]>();
+		odout.time = odObs.rawMeas[mix].time;
+		odout.station = odObs.rawMeas[mix].station;
+		odout.estimatedState = pv;
+		odout.propagatedCovariance = Ppre.getData();
+		odout.innovationCovariance = Pyy.getData();
+		odout.estimatedCovariance = P.getData();
+		odout.preFit = new HashMap<String, double[]>();
+		odout.postFit = new HashMap<String, double[]>();
 
 		if (pairedMeas)
 		{
@@ -486,26 +491,26 @@ public final class Estimation
 			double[] fitv = odObs.measObjs.get(mix).estimate(0, 0, ssta).getEstimatedValue();
 			if (measNames.length == 1)
 			{
-			    odout.PreFit.put(measNames[i], yhatpre.toArray());
-			    odout.PostFit.put(measNames[i], fitv);
+			    odout.preFit.put(measNames[i], yhatpre.toArray());
+			    odout.postFit.put(measNames[i], fitv);
 			}
 			else
 			{
-			    odout.PreFit.put(measNames[i], new double[] {yhatpre.getEntry(i)});
-			    odout.PostFit.put(measNames[i], new double[] {fitv[i]});
+			    odout.preFit.put(measNames[i], new double[] {yhatpre.getEntry(i)});
+			    odout.postFit.put(measNames[i], new double[] {fitv[i]});
 			}
 		    }
 		}
 		else
 		{
 		    double[] fitv = odObs.measObjs.get(mix*2).estimate(0, 0, ssta).getEstimatedValue();
-		    odout.PreFit.put(measNames[0], new double[] {yhatpre.getEntry(0)});
-		    odout.PostFit.put(measNames[0], fitv);
+		    odout.preFit.put(measNames[0], new double[] {yhatpre.getEntry(0)});
+		    odout.postFit.put(measNames[0], fitv);
 		    if (Rsize > 1)
 		    {
 			fitv = odObs.measObjs.get(mix*2 + 1).estimate(0, 0, ssta).getEstimatedValue();
-			odout.PreFit.put(measNames[1], new double[] {yhatpre.getEntry(1)});
-			odout.PostFit.put(measNames[1], fitv);
+			odout.preFit.put(measNames[1], new double[] {yhatpre.getEntry(1)});
+			odout.postFit.put(measNames[1], fitv);
 		    }
 		}
 
@@ -582,13 +587,13 @@ public final class Estimation
 		}
 
 		EstimationOutput odout = new EstimationOutput();
-		odout.Time = time.toString() + "Z";
-		odout.EstimatedState = new double[numStates];
+		odout.time = new StringBuilder(time.toString()).append("Z").toString();
+		odout.estimatedState = new double[numStates];
 
 		double[] X = state.getPrimaryState();
 		unstackColumn(propSigma, X);
 		RealVector xhatpre = addColumns(propSigma).mapMultiplyToSelf(weight);
-		System.arraycopy(xhatpre.toArray(), 0, odout.EstimatedState, 0, odout.EstimatedState.length);
+		System.arraycopy(xhatpre.toArray(), 0, odout.estimatedState, 0, odout.estimatedState.length);
 
 		RealMatrix Ppre = odCfg.getProcessNoiseMatrix(FastMath.abs(state.getTime() - prevTime));
 		for (int i = 0; i < 2*numStates; i++)
@@ -597,7 +602,7 @@ public final class Estimation
 		    Ppre = Ppre.add(y.outerProduct(y).scalarMultiply(weight));
 		}
 
-		odout.PropagatedCovariance = Ppre.getData();
+		odout.propagatedCovariance = Ppre.getData();
 		estOutput.add(odout);
 		prevTime = state.getTime();
 	    }

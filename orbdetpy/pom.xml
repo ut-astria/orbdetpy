@@ -1,27 +1,28 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.astria</groupId>
-  <artifactId>astria</artifactId>
-  <version>1.0.0</version>
+  <artifactId>orbdetpy-server</artifactId>
+  <version>1.1.0</version>
   <packaging>jar</packaging>
 
   <properties>
-    <os.detected.classifier>linux-x86_64</os.detected.classifier>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <grpc.version>1.23.0</grpc.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.clean.version>3.1.0</maven.clean.version>
-    <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
     <maven.shade.version>3.2.1</maven.shade.version>
-    <grpc.version>1.23.0</grpc.version>
+    <native.image.maven.plugin.version>19.2.1</native.image.maven.plugin.version>
     <orekit.version>10.0</orekit.version>
+    <os.detected.classifier>linux-x86_64</os.detected.classifier>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <protobuf.maven.plugin.version>0.6.1</protobuf.maven.plugin.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>io.grpc</groupId>
-      <artifactId>grpc-netty-shaded</artifactId>
+      <artifactId>grpc-netty</artifactId>
       <version>${grpc.version}</version>
     </dependency>
     <dependency>
@@ -52,7 +53,7 @@
       <plugin>
 	<groupId>org.xolstice.maven.plugins</groupId>
 	<artifactId>protobuf-maven-plugin</artifactId>
-	<version>0.6.1</version>
+	<version>${protobuf.maven.plugin.version}</version>
 	<configuration>
           <protocArtifact>com.google.protobuf:protoc:3.10.0:exe:${os.detected.classifier}</protocArtifact>
           <pluginId>grpc-java</pluginId>
@@ -104,7 +105,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <transformers>
+	      <transformers>
                 <transformer
                     implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                 <transformer
@@ -117,16 +118,26 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>${maven.jar.plugin.version}</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-            </manifest>
-          </archive>
-        </configuration>
+	<groupId>com.oracle.substratevm</groupId>
+	<artifactId>native-image-maven-plugin</artifactId>
+	<version>19.2.1</version>
+	<configuration>
+	  <imageName>${project.artifactId}-${project.version}</imageName>
+	  <buildArgs>
+	    --no-fallback
+	    --allow-incomplete-classpath
+	    -H:ConfigurationFileDirectories=${project.basedir}/graal
+	    --initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger 
+	  </buildArgs>
+	</configuration>
+	<executions>
+          <execution>
+            <goals>
+              <goal>native-image</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+	</executions>
       </plugin>
     </plugins>
   </build>

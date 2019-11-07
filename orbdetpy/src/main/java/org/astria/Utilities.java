@@ -18,6 +18,7 @@
 
 package org.astria;
 
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -86,29 +87,29 @@ public final class Utilities
 		if (atype == null)
 		{
 		    if (keyw.equals("RANGE"))
-			obj.Range = obs.getMeasurement()*1000.0;
+			obj.range = obs.getMeasurement()*1000.0;
 		    else if (keyw.equals("DOPPLER_INSTANTANEOUS"))
-			obj.RangeRate = obs.getMeasurement()*1000.0;
+			obj.rangeRate = obs.getMeasurement()*1000.0;
 		}
 		else if (atype.equals("RADEC"))
 		{
 		    if (keyw.equals("ANGLE_1"))
-			obj.RightAscension = obs.getMeasurement()*FastMath.PI/180.0;
+			obj.rightAscension = obs.getMeasurement()*FastMath.PI/180.0;
 		    else if (keyw.equals("ANGLE_2"))
-			obj.Declination = obs.getMeasurement()*FastMath.PI/180.0;
+			obj.declination = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 		else if (atype.equals("AZEL"))
 		{
 		    if (keyw.equals("ANGLE_1"))
-			obj.Azimuth = obs.getMeasurement()*FastMath.PI/180.0;
+			obj.azimuth = obs.getMeasurement()*FastMath.PI/180.0;
 		    else if (keyw.equals("ANGLE_2"))
-			obj.Elevation = obs.getMeasurement()*FastMath.PI/180.0;
+			obj.elevation = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 
 		if (++i == 2)
 		{
 		    i = 0;
-		    obj.Time = obs.getEpoch().toString() + "Z";
+		    obj.time = new StringBuilder(obs.getEpoch().toString()).append("Z").toString();
 		    mall.add(obj);
 		}
 	    }

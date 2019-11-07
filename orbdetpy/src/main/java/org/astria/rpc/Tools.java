@@ -167,25 +167,25 @@ public final class Tools
 	    Messages.Measurement min = req.get(i);
 	    output.rawMeas[i] = new Measurements.Measurement();
 	    if (min.getTime().length() > 0)
-		output.rawMeas[i].Time = min.getTime();
+		output.rawMeas[i].time = min.getTime();
 	    if (min.getStation().length() > 0)
-		output.rawMeas[i].Station = min.getStation();
+		output.rawMeas[i].station = min.getStation();
 	    if (min.getAzimuth() != 0.0)
-		output.rawMeas[i].Azimuth = min.getAzimuth();
+		output.rawMeas[i].azimuth = min.getAzimuth();
 	    if (min.getElevation() != 0.0)
-		output.rawMeas[i].Elevation = min.getElevation();
+		output.rawMeas[i].elevation = min.getElevation();
 	    if (min.getRange() != 0.0)
-		output.rawMeas[i].Range = min.getRange();
+		output.rawMeas[i].range = min.getRange();
 	    if (min.getRangeRate() != 0.0)
-		output.rawMeas[i].RangeRate = min.getRangeRate();
+		output.rawMeas[i].rangeRate = min.getRangeRate();
 	    if (min.getRightAscension() != 0.0)
-		output.rawMeas[i].RightAscension = min.getRightAscension();
+		output.rawMeas[i].rightAscension = min.getRightAscension();
 	    if (min.getDeclination() != 0.0)
-		output.rawMeas[i].Declination = min.getDeclination();
+		output.rawMeas[i].declination = min.getDeclination();
 	    if (min.getPositionCount() > 0)
-		output.rawMeas[i].Position = min.getPositionList().toArray(new Double[0]);
+		output.rawMeas[i].position = min.getPositionList().toArray(new Double[0]);
 	    if (min.getPositionVelocityCount() > 0)
-		output.rawMeas[i].PositionVelocity = min.getPositionVelocityList().toArray(new Double[0]);
+		output.rawMeas[i].positionVelocity = min.getPositionVelocityList().toArray(new Double[0]);
 	}
 
 	return(output.build(config));
@@ -211,66 +211,66 @@ public final class Tools
 	ArrayList<Messages.Measurement> output = new ArrayList<Messages.Measurement>(mlist.size());
 	for (Measurements.SimulatedMeasurement min: mlist)
 	{
-	    Messages.Measurement.Builder builder = Messages.Measurement.newBuilder().setTime(min.Time);
-	    if (min.Station != null && min.Station.length() > 0)
-		builder = builder.setStation(min.Station);
-	    if (min.Azimuth != null)
-		builder = builder.setAzimuth(min.Azimuth);
-	    if (min.Elevation != null)
-		builder = builder.setElevation(min.Elevation);
-	    if (min.Range != null)
-		builder = builder.setRange(min.Range);
-	    if (min.RangeRate != null)
-		builder = builder.setRangeRate(min.RangeRate);
-	    if (min.RightAscension != null)
-		builder = builder.setRightAscension(min.RightAscension);
-	    if (min.Declination != null)
-		builder = builder.setDeclination(min.Declination);
-	    if (min.Position != null)
-		builder = builder.addAllPosition(Arrays.asList(min.Position));
-	    if (min.PositionVelocity != null)
-		builder = builder.addAllPositionVelocity(Arrays.asList(min.PositionVelocity));
-	    if (min.TrueState != null)
+	    Messages.Measurement.Builder builder = Messages.Measurement.newBuilder().setTime(min.time);
+	    if (min.station != null && min.station.length() > 0)
+		builder = builder.setStation(min.station);
+	    if (min.azimuth != null)
+		builder = builder.setAzimuth(min.azimuth);
+	    if (min.elevation != null)
+		builder = builder.setElevation(min.elevation);
+	    if (min.range != null)
+		builder = builder.setRange(min.range);
+	    if (min.rangeRate != null)
+		builder = builder.setRangeRate(min.rangeRate);
+	    if (min.rightAscension != null)
+		builder = builder.setRightAscension(min.rightAscension);
+	    if (min.declination != null)
+		builder = builder.setDeclination(min.declination);
+	    if (min.position != null)
+		builder = builder.addAllPosition(Arrays.asList(min.position));
+	    if (min.positionVelocity != null)
+		builder = builder.addAllPositionVelocity(Arrays.asList(min.positionVelocity));
+	    if (min.trueState != null)
 	    {
-		builder = builder.addAllTrueStateCartesian(DoubleStream.of(min.TrueState.Cartesian).boxed().collect(Collectors.toList()));
-		builder = builder.setTrueStateSma(min.TrueState.Kepler.SMA);
-		builder = builder.setTrueStateEcc(min.TrueState.Kepler.Ecc);
-		builder = builder.setTrueStateInc(min.TrueState.Kepler.Inc);
-		builder = builder.setTrueStateRaan(min.TrueState.Kepler.RAAN);
-		builder = builder.setTrueStateArgp(min.TrueState.Kepler.ArgP);
-		builder = builder.setTrueStateMeanAnom(min.TrueState.Kepler.MeanAnom);
-		builder = builder.setTrueStateEx(min.TrueState.Equinoctial.Ex);
-		builder = builder.setTrueStateEy(min.TrueState.Equinoctial.Ey);
-		builder = builder.setTrueStateHx(min.TrueState.Equinoctial.Hx);
-		builder = builder.setTrueStateHy(min.TrueState.Equinoctial.Hy);
-		builder = builder.setTrueStateLm(min.TrueState.Equinoctial.Lm);
+		builder = builder.addAllTrueStateCartesian(DoubleStream.of(min.trueState.cartesian).boxed().collect(Collectors.toList()));
+		builder = builder.setTrueStateSma(min.trueState.keplerian.sma);
+		builder = builder.setTrueStateEcc(min.trueState.keplerian.ecc);
+		builder = builder.setTrueStateInc(min.trueState.keplerian.inc);
+		builder = builder.setTrueStateRaan(min.trueState.keplerian.raan);
+		builder = builder.setTrueStateArgp(min.trueState.keplerian.argP);
+		builder = builder.setTrueStateMeanAnom(min.trueState.keplerian.meanAnom);
+		builder = builder.setTrueStateEx(min.trueState.equinoctial.ex);
+		builder = builder.setTrueStateEy(min.trueState.equinoctial.ey);
+		builder = builder.setTrueStateHx(min.trueState.equinoctial.hx);
+		builder = builder.setTrueStateHy(min.trueState.equinoctial.hy);
+		builder = builder.setTrueStateLm(min.trueState.equinoctial.lm);
 	    }
-	    if (min.AtmDensity != null)
-		builder = builder.setAtmosphericDensity(min.AtmDensity);
-	    if (min.AccGravity != null)
+	    if (min.atmDensity != null)
+		builder = builder.setAtmosphericDensity(min.atmDensity);
+	    if (min.accGravity != null)
 		builder = builder.addAllAccelerationGravity(
-		    DoubleStream.of(min.AccGravity).boxed().collect(Collectors.toList()));
-	    if (min.AccDrag != null)
+		    DoubleStream.of(min.accGravity).boxed().collect(Collectors.toList()));
+	    if (min.accDrag != null)
 		builder = builder.addAllAccelerationDrag(
-		    DoubleStream.of(min.AccDrag).boxed().collect(Collectors.toList()));
-	    if (min.AccOceanTides != null)
+		    DoubleStream.of(min.accDrag).boxed().collect(Collectors.toList()));
+	    if (min.accOceanTides != null)
 		builder = builder.addAllAccelerationOceanTides(
-		    DoubleStream.of(min.AccOceanTides).boxed().collect(Collectors.toList()));
-	    if (min.AccSolidTides != null)
+		    DoubleStream.of(min.accOceanTides).boxed().collect(Collectors.toList()));
+	    if (min.accSolidTides != null)
 		builder = builder.addAllAccelerationSolidTides(
-		    DoubleStream.of(min.AccSolidTides).boxed().collect(Collectors.toList()));
-	    if (min.AccThirdBodies != null)
+		    DoubleStream.of(min.accSolidTides).boxed().collect(Collectors.toList()));
+	    if (min.accThirdBodies != null)
 		builder = builder.addAllAccelerationThirdBodies(
-		    DoubleStream.of(min.AccThirdBodies).boxed().collect(Collectors.toList()));
-	    if (min.AccRadiationPressure != null)
+		    DoubleStream.of(min.accThirdBodies).boxed().collect(Collectors.toList()));
+	    if (min.accRadiationPressure != null)
 		builder = builder.addAllAccelerationRadiationPressure(
-		    DoubleStream.of(min.AccRadiationPressure).boxed().collect(Collectors.toList()));
-	    if (min.AccThrust != null)
+		    DoubleStream.of(min.accRadiationPressure).boxed().collect(Collectors.toList()));
+	    if (min.accThrust != null)
 		builder = builder.addAllAccelerationThrust(
-		    DoubleStream.of(min.AccThrust).boxed().collect(Collectors.toList()));
-	    if (min.StationState != null)
+		    DoubleStream.of(min.accThrust).boxed().collect(Collectors.toList()));
+	    if (min.stationState != null)
 		builder = builder.addAllStationState(
-		    DoubleStream.of(min.StationState).boxed().collect(Collectors.toList()));
+		    DoubleStream.of(min.stationState).boxed().collect(Collectors.toList()));
 	    output.add(builder.build());
 	}
 
@@ -284,30 +284,30 @@ public final class Tools
 	for (Estimation.EstimationOutput ein: elist)
 	{
 	    Messages.EstimationOutput.Builder builder = Messages.EstimationOutput.newBuilder()
-		.setTime(ein.Time)
-		.addAllEstimatedState(DoubleStream.of(ein.EstimatedState).boxed().collect(Collectors.toList()));
-	    if (ein.Station != null && ein.Station.length() > 0)
-		builder = builder.setStation(ein.Station);
-	    dub = packDouble2DArray(ein.PropagatedCovariance);
+		.setTime(ein.time)
+		.addAllEstimatedState(DoubleStream.of(ein.estimatedState).boxed().collect(Collectors.toList()));
+	    if (ein.station != null && ein.station.length() > 0)
+		builder = builder.setStation(ein.station);
+	    dub = packDouble2DArray(ein.propagatedCovariance);
 	    if (dub != null)
 		builder = builder.addAllPropagatedCovariance(dub);
-	    dub = packDouble2DArray(ein.InnovationCovariance);
+	    dub = packDouble2DArray(ein.innovationCovariance);
 	    if (dub != null)
 		builder = builder.addAllInnovationCovariance(dub);
-	    dub = packDouble2DArray(ein.EstimatedCovariance);
+	    dub = packDouble2DArray(ein.estimatedCovariance);
 	    if (dub != null)
 		builder = builder.addAllEstimatedCovariance(dub);
-	    if (ein.PreFit != null)
+	    if (ein.preFit != null)
 	    {
-		for (Map.Entry<String, double[]> kv : ein.PreFit.entrySet())
+		for (Map.Entry<String, double[]> kv : ein.preFit.entrySet())
 		{
 		    builder = builder.putPreFit(kv.getKey(), Messages.DoubleArray.newBuilder().addAllArray(
 						    DoubleStream.of(kv.getValue()).boxed().collect(Collectors.toList())).build());
 		}
 	    }
-	    if (ein.PostFit != null)
+	    if (ein.postFit != null)
 	    {
-		for (Map.Entry<String, double[]> kv : ein.PostFit.entrySet())
+		for (Map.Entry<String, double[]> kv : ein.postFit.entrySet())
 		{
 		    builder = builder.putPostFit(kv.getKey(), Messages.DoubleArray.newBuilder().addAllArray(
 						     DoubleStream.of(kv.getValue()).boxed().collect(Collectors.toList())).build());

@@ -37,7 +37,8 @@ class RemoteServer:
                 return
 
         # Start server
-        cmdline = ["java", "-Xmx2G", "-jar", jarfile, str(cls.rpc_port), datadir]
+        cmdline = ["java", "-Xmx2G", "-XX:+UseG1GC", "-jar",
+                   jarfile, str(cls.rpc_port), datadir]
         cls.rpc_server_proc = psutil.Popen(cmdline, stdout = DEVNULL,
                                            stderr = DEVNULL)
 
@@ -47,8 +48,9 @@ class RemoteServer:
 
     @classmethod
     def channel(cls):
-        return(grpc.insecure_channel(cls.rpc_uri, options = cls.rpc_options))
-            
+        return(grpc.insecure_channel(cls.rpc_uri,
+                                     options = cls.rpc_options))
+
     @classmethod
     def disconnect(cls):
         if (cls.rpc_server_proc):

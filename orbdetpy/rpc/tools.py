@@ -164,16 +164,6 @@ def build_settings(param):
                                                               estimation=coef.get("Estimation", "Estimate")))
     return(cfg)
 
-def convert_propagation(inputs):
-    output = []
-    for inp in inputs:
-        out = {}
-        output.append(out)
-        out["Time"] = inp.time
-        out["States"] = [list(i.array) for i in inp.states]
-
-    return(output)
-
 def build_measurements(param):
     output = []
     inputs = read_param(param)
@@ -188,6 +178,11 @@ def build_measurements(param):
                 else:
                     setattr(obj, dest, fld)
 
+    return(output)
+
+def convert_propagation(inputs):
+    output = [[inp.time, [list(i.array) for i in inp.states]]
+              for inp in inputs]
     return(output)
 
 def convert_measurements(inputs):

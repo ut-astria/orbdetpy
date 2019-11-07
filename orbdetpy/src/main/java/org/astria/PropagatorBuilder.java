@@ -33,9 +33,7 @@ import org.orekit.utils.ParameterDriversList;
 public final class PropagatorBuilder extends NumericalPropagatorBuilder
 {
     private final Settings odCfg;
-
     private final DMCEquations dmcEqns;
-
     private final OrekitFixedStepHandler stepHandler;
 
     public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode,

@@ -18,6 +18,7 @@
 
 package org.astria;
 
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
@@ -80,7 +81,8 @@ public final class Simulation
 	double[] zeros = new double[]{0.0, 0.0};
 	double[] ones = new double[]{1.0, 1.0};
 	ObservableSatellite obssat = new ObservableSatellite(0);
-	ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>();
+	ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>(
+	    (int) FastMath.abs(prend.durationFrom(tm)/simCfg.propStep) + 2);
 
 	while (true)
 	{
@@ -94,45 +96,45 @@ public final class Simulation
 	    Vector3D acc = pvc.getAcceleration();
 
 	    Measurements.SimulatedMeasurement json = new Measurements.SimulatedMeasurement();
-	    json.Time = proptm.toString() + "Z";
-	    json.TrueState = new Measurements.State();
-	    json.TrueState.Cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
+	    json.time = new StringBuilder(proptm.toString()).append("Z").toString();
+	    json.trueState = new Measurements.State();
+	    json.trueState.cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
 						    acc.getX(), acc.getY(), acc.getZ()};
-	    json.TrueState.Kepler = new Measurements.KeplerianElements(keporb.getA(), keporb.getE(), keporb.getI(),
-								       keporb.getRightAscensionOfAscendingNode(),
-								       keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
-	    json.TrueState.Equinoctial = new Measurements.EquinoctialElements(orb.getA(), orb.getEquinoctialEx(),
+	    json.trueState.keplerian = new Measurements.KeplerianElements(keporb.getA(), keporb.getE(), keporb.getI(),
+									  keporb.getRightAscensionOfAscendingNode(),
+									  keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
+	    json.trueState.equinoctial = new Measurements.EquinoctialElements(orb.getA(), orb.getEquinoctialEx(),
 									      orb.getEquinoctialEy(), orb.getHx(),
 									      orb.getHy(), orb.getLM());
 
 	    if (simCfg.simIncludeExtras)
 	    {
 		if (simCfg.atmModel != null)
-		    json.AtmDensity = simCfg.atmModel.getDensity(proptm, pos, simCfg.propFrame);
+		    json.atmDensity = simCfg.atmModel.getDensity(proptm, pos, simCfg.propFrame);
 		for (ForceModel fmod : simCfg.forces)
 		{
 		    double[] facc = fmod.acceleration(sta[0], fmod.getParameters()).toArray();
 		    String ftype = fmod.getClass().getSimpleName();
 		    if (ftype.equals("HolmesFeatherstoneAttractionModel") || ftype.equals("NewtonianAttraction"))
-			json.AccGravity = facc;
+			json.accGravity = facc;
 		    if (ftype.equals("DragForce"))
-			json.AccDrag = facc;
+			json.accDrag = facc;
 		    if (ftype.equals("SolidTides"))
-			json.AccSolidTides = facc;
+			json.accSolidTides = facc;
 		    if (ftype.equals("OceanTides"))
-			json.AccOceanTides = facc;
+			json.accOceanTides = facc;
 		    if (ftype.equals("SolarRadiationPressure"))
-			json.AccRadiationPressure = facc;
+			json.accRadiationPressure = facc;
 		    if (ftype.equals("ConstantThrustManeuver"))
-			json.AccThrust = facc;
+			json.accThrust = facc;
 		    if (ftype.equals("ThirdBodyAttraction"))
 		    {
-			if (json.AccThirdBodies == null)
-			    json.AccThirdBodies = facc;
+			if (json.accThirdBodies == null)
+			    json.accThirdBodies = facc;
 			else
 			{
 			    for (int ii = 0; ii < 3; ii++)
-				json.AccThirdBodies[ii] += facc[ii];
+				json.accThirdBodies[ii] += facc[ii];
 			}
 		    }
 		}
@@ -150,14 +152,14 @@ public final class Simulation
 			continue;
 
 		    Measurements.SimulatedMeasurement clone = new Measurements.SimulatedMeasurement(json);
-		    clone.Station = kv.getKey();
+		    clone.station = kv.getKey();
 		    if (simCfg.simIncludeStationState)
 		    {
 			pvc = gst.getBaseFrame().getPVCoordinates(proptm, simCfg.propFrame);
 			pos = pvc.getPosition();
 			vel = pvc.getVelocity();
 			acc = pvc.getAcceleration();
-			clone.StationState = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(),
+			clone.stationState = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(),
 							  vel.getZ(), acc.getX(), acc.getY(), acc.getZ()};
 		    }
 
@@ -168,36 +170,36 @@ public final class Simulation
 			if (name.equals("Range"))
 			{
 			    obs = new Range(gst, val.twoWay, proptm, 0.0, 0.0, 1.0, obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.Range = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeBias;
+			    clone.range = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeBias;
 			}
 			else if (name.equals("RangeRate"))
 			{
 			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.twoWay, obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.RangeRate = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeRateBias;
+			    clone.rangeRate = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeRateBias;
 			}
-			else if (name.equals("RightAscension") || name.equals("Declination") && clone.RightAscension == null)
+			else if (name.equals("RightAscension") || name.equals("Declination") && clone.rightAscension == null)
 			{
 			    obs = new AngularRaDec(gst, simCfg.propFrame, proptm, zeros, zeros, ones,
 						   obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.RightAscension = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias;
-			    clone.Declination = obs[1] + rand.nextGaussian()*val.error[0] + jsn.declinationBias;
+			    clone.rightAscension = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias;
+			    clone.declination = obs[1] + rand.nextGaussian()*val.error[0] + jsn.declinationBias;
 			}
-			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.Azimuth == null)
+			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.azimuth == null)
 			{
-			    clone.Azimuth = azel[0] + rand.nextGaussian()*val.error[0] + jsn.azimuthBias;
-			    clone.Elevation = azel[1] + rand.nextGaussian()*val.error[0] + jsn.elevationBias;
+			    clone.azimuth = azel[0] + rand.nextGaussian()*val.error[0] + jsn.azimuthBias;
+			    clone.elevation = azel[1] + rand.nextGaussian()*val.error[0] + jsn.elevationBias;
 			}
 			else if (name.equals("Position"))
 			{
-			    clone.Position = new Double[3];
+			    clone.position = new Double[3];
 			    for (int i = 0; i < 3; i++)
-				clone.Position[i] = clone.TrueState.Cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionBias[i];
+				clone.position[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionBias[i];
 			}
 			else if (name.equals("PositionVelocity"))
 			{
-			    clone.PositionVelocity = new Double[6];
+			    clone.positionVelocity = new Double[6];
 			    for (int i = 0; i < 6; i++)
-				clone.PositionVelocity[i] = clone.TrueState.Cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionVelocityBias[i];
+				clone.positionVelocity[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionVelocityBias[i];
 			}
 		    }
 
