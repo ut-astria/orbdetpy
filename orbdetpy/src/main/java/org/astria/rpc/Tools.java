@@ -183,9 +183,9 @@ public final class Tools
 	    if (min.getDeclination() != 0.0)
 		output.rawMeas[i].declination = min.getDeclination();
 	    if (min.getPositionCount() > 0)
-		output.rawMeas[i].position = min.getPositionList().toArray(new Double[0]);
+		output.rawMeas[i].position = min.getPositionList().stream().mapToDouble(Double::doubleValue).toArray();
 	    if (min.getPositionVelocityCount() > 0)
-		output.rawMeas[i].positionVelocity = min.getPositionVelocityList().toArray(new Double[0]);
+		output.rawMeas[i].positionVelocity = min.getPositionVelocityList().stream().mapToDouble(Double::doubleValue).toArray();
 	}
 
 	return(output.build(config));
@@ -214,22 +214,22 @@ public final class Tools
 	    Messages.Measurement.Builder builder = Messages.Measurement.newBuilder().setTime(min.time);
 	    if (min.station != null && min.station.length() > 0)
 		builder = builder.setStation(min.station);
-	    if (min.azimuth != null)
+	    if (min.azimuth != 0.0)
 		builder = builder.setAzimuth(min.azimuth);
-	    if (min.elevation != null)
+	    if (min.elevation != 0.0)
 		builder = builder.setElevation(min.elevation);
-	    if (min.range != null)
+	    if (min.range != 0.0)
 		builder = builder.setRange(min.range);
-	    if (min.rangeRate != null)
+	    if (min.rangeRate != 0.0)
 		builder = builder.setRangeRate(min.rangeRate);
-	    if (min.rightAscension != null)
+	    if (min.rightAscension != 0.0)
 		builder = builder.setRightAscension(min.rightAscension);
-	    if (min.declination != null)
+	    if (min.declination != 0.0)
 		builder = builder.setDeclination(min.declination);
 	    if (min.position != null)
-		builder = builder.addAllPosition(Arrays.asList(min.position));
+		builder = builder.addAllPosition(DoubleStream.of(min.position).boxed().collect(Collectors.toList()));
 	    if (min.positionVelocity != null)
-		builder = builder.addAllPositionVelocity(Arrays.asList(min.positionVelocity));
+		builder = builder.addAllPositionVelocity(DoubleStream.of(min.positionVelocity).boxed().collect(Collectors.toList()));
 	    if (min.trueState != null)
 	    {
 		builder = builder.addAllTrueStateCartesian(DoubleStream.of(min.trueState.cartesian).boxed().collect(Collectors.toList()));
@@ -245,7 +245,7 @@ public final class Tools
 		builder = builder.setTrueStateHy(min.trueState.equinoctial.hy);
 		builder = builder.setTrueStateLm(min.trueState.equinoctial.lm);
 	    }
-	    if (min.atmDensity != null)
+	    if (min.atmDensity != 0.0)
 		builder = builder.setAtmosphericDensity(min.atmDensity);
 	    if (min.accGravity != null)
 		builder = builder.addAllAccelerationGravity(

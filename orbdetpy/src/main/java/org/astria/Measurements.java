@@ -102,16 +102,16 @@ public final class Measurements
 
     public static class Measurement
     {
-	public String time = null;
-	public String station = null;
-	public Double azimuth = null;
-	public Double elevation = null;
-	public Double range = null;
-	public Double rangeRate = null;
-	public Double rightAscension = null;
-	public Double declination = null;
-	public Double[] position = null;
-	public Double[] positionVelocity = null;
+	public String time;
+	public String station;
+	public double azimuth;
+	public double elevation;
+	public double range;
+	public double rangeRate;
+	public double rightAscension;
+	public double declination;
+	public double[] position;
+	public double[] positionVelocity;
 
 	public Measurement()
 	{
@@ -135,7 +135,7 @@ public final class Measurements
     public static class SimulatedMeasurement extends Measurement
     {
 	public State trueState;
-	public Double atmDensity;
+	public double atmDensity;
 	public double[] accGravity;
 	public double[] accDrag;
 	public double[] accOceanTides;
@@ -165,8 +165,8 @@ public final class Measurements
 	}
     }
 
-    public Measurement[] rawMeas = null;
-    public ArrayList<ObservedMeasurement<?>> measObjs = null;
+    public Measurement[] rawMeas;
+    public ArrayList<ObservedMeasurement<?>> measObjs;
 
     public Measurements build(Settings odCfg)
     {
@@ -205,7 +205,7 @@ public final class Measurements
 	    }
 
 	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.time), DataManager.getTimeScale("UTC"));
-	    if (m.azimuth != null && cazim != null && celev != null)
+	    if (m.azimuth != 0.0 && cazim != null && celev != null)
 	    {
 		AngularAzEl obs = new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation},
 						  new double[]{cazim.error[0], celev.error[0]},
@@ -218,7 +218,7 @@ public final class Measurements
 		measObjs.add(obs);
 	    }
 
-	    if (m.rightAscension != null && crigh != null && cdecl != null)
+	    if (m.rightAscension != 0.0 && crigh != null && cdecl != null)
 	    {
 		AngularRaDec obs = new AngularRaDec(gs, DataManager.getFrame("EME2000"), time,
 						    new double[]{m.rightAscension, m.declination},
@@ -232,7 +232,7 @@ public final class Measurements
 		measObjs.add(obs);
 	    }
 
-	    if (m.range != null && crang != null)
+	    if (m.range != 0.0 && crang != null)
 	    {
 		Range obs = new Range(gs, crang.twoWay, time, m.range, crang.error[0], 1.0, new ObservableSatellite(0));
 		if (jsn.rangeBias != 0.0)
@@ -242,7 +242,7 @@ public final class Measurements
 		measObjs.add(obs);
 	    }
 
-	    if (m.rangeRate != null && crrat != null)
+	    if (m.rangeRate != 0.0 && crrat != null)
 	    {
 		RangeRate obs = new RangeRate(gs, time, m.rangeRate, crrat.error[0], 1.0, crrat.twoWay, new ObservableSatellite(0));
 		if (jsn.rangeRateBias != 0.0)
@@ -254,7 +254,7 @@ public final class Measurements
 
 	    if (m.position != null && cpos != null)
 	    {
-		Double[] X = m.position;
+		double[] X = m.position;
 		Position obs = new Position(time, new Vector3D(X[0], X[1], X[2]), cpos.error, 1.0, new ObservableSatellite(0));
 		if (jsn != null && jsn.positionBias != null)
 		    obs.addModifier(new Bias<Position>(
@@ -266,7 +266,7 @@ public final class Measurements
 
 	    if (m.positionVelocity != null && cposvel != null)
 	    {
-		Double[] X = m.positionVelocity;
+		double[] X = m.positionVelocity;
 		PV obs = new PV(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]),
 				cposvel.error, 1.0, new ObservableSatellite(0));
 		if (jsn != null && jsn.positionVelocityBias != null)

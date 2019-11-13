@@ -192,12 +192,12 @@ public final class Settings
 
     public double rsoMass = 1.0;
     public double rsoArea = 1.0;
-    public Facet[] rsoFacets = null;
-    public double[] rsoSolarArrayAxis = null;
-    public double rsoSolarArrayArea = 0.0;
-    public String rsoAttitudeProvider = null;
-    public double[] rsoSpinVelocity = null;
-    public double[] rsoSpinAcceleration = null;
+    public Facet[] rsoFacets;
+    public double[] rsoSolarArrayAxis;
+    public double rsoSolarArrayArea;
+    public String rsoAttitudeProvider;
+    public double[] rsoSpinVelocity;
+    public double[] rsoSpinAcceleration;
 
     public int gravityDegree = 20;
     public int gravityOrder = 20;
@@ -210,25 +210,25 @@ public final class Settings
 
     public String dragModel = "MSISE";
     public Parameter dragCoefficient = new Parameter("Cd", 1.0, 3.0, 2.0, "Estimate");
-    public int[][] dragMSISEFlags = null;
-    public double dragExpRho0 = 0.0;
-    public double dragExpH0 = 0.0;
-    public double dragExpHscale = 0.0;
+    public int[][] dragMSISEFlags;
+    public double dragExpRho0;
+    public double dragExpH0;
+    public double dragExpHscale;
 
     public boolean rpSun = true;
     public Parameter rpCoeffReflection = new Parameter("Cr", 1.0, 2.0, 1.5, "Estimate");
-    public double rpCoeffAbsorption = 0.0;
+    public double rpCoeffAbsorption;
 
-    public Maneuver[] cfgManeuvers = null;
+    public Maneuver[] cfgManeuvers;
 
-    public String propStart = null;
-    public String propEnd = null;
-    public double propStep = 0.0;
-    public double[] propInitialState = null;
-    public String[] propInitialTLE = null;
+    public String propStart;
+    public String propEnd;
+    public double propStep;
+    public double[] propInitialState;
+    public String[] propInitialTLE;
     public String propInertialFrame = "EME2000";
-    public String propStepHandlerStartTime = null;
-    public String propStepHandlerEndTime = null;
+    public String propStepHandlerStartTime;
+    public String propStepHandlerEndTime;
 
     public double integMinTimeStep = 1.0E-3;
     public double integMaxTimeStep = 300.0;
@@ -240,21 +240,21 @@ public final class Settings
     public boolean simIncludeExtras = false;
     public boolean simIncludeStationState = false;
 
-    public Map<String, Station> cfgStations = null;
-    public Map<String, Measurement> cfgMeasurements = null;
+    public Map<String, Station> cfgStations;
+    public Map<String, Measurement> cfgMeasurements;
 
-    public String estmFilter = null;
-    public double[] estmCovariance = null;
-    public double[] estmProcessNoise = null;
-    public double estmDMCCorrTime = 0.0;
-    public double estmDMCSigmaPert = 0.0;
-    public Parameter estmDMCAcceleration = null;
+    public String estmFilter = "UKF";
+    public double[] estmCovariance = new double[]{25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 1.00, 0.25, 1E-6, 1E-6, 1E-6};
+    public double[] estmProcessNoise;
+    public double estmDMCCorrTime = 40.0;
+    public double estmDMCSigmaPert = 5.0E-9;
+    public Parameter estmDMCAcceleration = new Parameter("DMC", -1E-3, 1E-3, 0.0, "Estimate");
 
-    protected Atmosphere atmModel = null;
-    protected HashMap<String, GroundStation> stations = null;
-    protected ArrayList<ForceModel> forces = null;
-    protected ArrayList<Parameter> estParams = null;
-    protected Frame propFrame = null;
+    protected Atmosphere atmModel;
+    protected HashMap<String, GroundStation> stations;
+    protected ArrayList<ForceModel> forces;
+    protected ArrayList<Parameter> estParams;
+    protected Frame propFrame;
 
     public Settings build()
     {
@@ -267,13 +267,9 @@ public final class Settings
 
     private void loadGroundStations()
     {
-	if (cfgStations != null)
-	    stations = new HashMap<String, GroundStation>(cfgStations.size());
-	else
-	{
-	    stations = new HashMap<String, GroundStation>();
+	stations = new HashMap<String, GroundStation>();
+	if (cfgStations == null)
 	    return;
-	}
 
 	for (Map.Entry<String, Station> kv : cfgStations.entrySet())
 	{

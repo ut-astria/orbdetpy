@@ -107,11 +107,13 @@ public final class Estimation
 
 	epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odCfg.propStart), DataManager.getTimeScale("UTC"));
 	propEnd = new AbsoluteDate(DateTimeComponents.parseDateTime(odCfg.propEnd), DataManager.getTimeScale("UTC"));
+
 	if (odCfg.propStepHandlerStartTime != null)
 	    stepHandlerStart = new AbsoluteDate(DateTimeComponents.parseDateTime(odCfg.propStepHandlerStartTime),
 						DataManager.getTimeScale("UTC"));
 	else
 	    stepHandlerStart = epoch;
+
 	if (odCfg.propStepHandlerEndTime != null)
 	    stepHandlerEnd = new AbsoluteDate(DateTimeComponents.parseDateTime(odCfg.propStepHandlerEndTime),
 					      DataManager.getTimeScale("UTC"));

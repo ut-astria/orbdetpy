@@ -177,27 +177,27 @@ public final class Simulation
 			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.twoWay, obssat).estimate(0, 0, sta).getEstimatedValue();
 			    clone.rangeRate = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeRateBias;
 			}
-			else if (name.equals("RightAscension") || name.equals("Declination") && clone.rightAscension == null)
+			else if (name.equals("RightAscension") || name.equals("Declination") && clone.rightAscension == 0.0)
 			{
 			    obs = new AngularRaDec(gst, simCfg.propFrame, proptm, zeros, zeros, ones,
 						   obssat).estimate(0, 0, sta).getEstimatedValue();
 			    clone.rightAscension = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias;
 			    clone.declination = obs[1] + rand.nextGaussian()*val.error[0] + jsn.declinationBias;
 			}
-			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.azimuth == null)
+			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.azimuth == 0.0)
 			{
 			    clone.azimuth = azel[0] + rand.nextGaussian()*val.error[0] + jsn.azimuthBias;
 			    clone.elevation = azel[1] + rand.nextGaussian()*val.error[0] + jsn.elevationBias;
 			}
 			else if (name.equals("Position"))
 			{
-			    clone.position = new Double[3];
+			    clone.position = new double[3];
 			    for (int i = 0; i < 3; i++)
 				clone.position[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionBias[i];
 			}
 			else if (name.equals("PositionVelocity"))
 			{
-			    clone.positionVelocity = new Double[6];
+			    clone.positionVelocity = new double[6];
 			    for (int i = 0; i < 6; i++)
 				clone.positionVelocity[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionVelocityBias[i];
 			}
