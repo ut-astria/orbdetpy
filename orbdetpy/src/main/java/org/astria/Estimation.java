@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import java.lang.StringBuilder;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -308,7 +307,7 @@ public final class Estimation
 	    }
 
 	    EstimationOutput odout = new EstimationOutput();
-	    odout.time = new StringBuilder(state.getDate().toString()).append("Z").toString();
+	    odout.time = DataManager.getUTCString(state.getDate());
 	    odout.estimatedState = new double[odCfg.estParams.size() + 6];
 	    System.arraycopy(pvc.getPosition().toArray(), 0, odout.estimatedState, 0, 3);
 	    System.arraycopy(pvc.getVelocity().toArray(), 0, odout.estimatedState, 3, 3);
@@ -589,7 +588,7 @@ public final class Estimation
 		}
 
 		EstimationOutput odout = new EstimationOutput();
-		odout.time = new StringBuilder(time.toString()).append("Z").toString();
+		odout.time = DataManager.getUTCString(time);
 		odout.estimatedState = new double[numStates];
 
 		double[] X = state.getPrimaryState();

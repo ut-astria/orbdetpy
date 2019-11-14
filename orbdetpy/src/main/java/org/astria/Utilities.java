@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import java.lang.StringBuilder;
 import java.util.ArrayList;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -109,7 +108,7 @@ public final class Utilities
 		if (++i == 2)
 		{
 		    i = 0;
-		    obj.time = new StringBuilder(obs.getEpoch().toString()).append("Z").toString();
+		    obj.time = DataManager.getUTCString(obs.getEpoch());
 		    mall.add(obj);
 		}
 	    }

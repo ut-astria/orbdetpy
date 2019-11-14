@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -51,7 +50,7 @@ public final class ParallelPropagation implements MultiSatStepHandler
 
 	public PropagationOutput(AbsoluteDate time, int objCount)
 	{
-	    this.time = new StringBuilder(time.toString()).append("Z").toString();
+	    this.time = DataManager.getUTCString(time);
 	    this.states = new ArrayList<double[]>(objCount);
 	}
 

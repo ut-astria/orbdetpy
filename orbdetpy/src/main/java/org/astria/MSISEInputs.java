@@ -53,7 +53,7 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 
     public double getDailyFlux(AbsoluteDate date)
     {
-	String p = new AbsoluteDate(date, -86400.0).toString();
+	String p = DataManager.getUTCString(new AbsoluteDate(date, -86400.0));
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 	double[] v = swData.get(k);
 	return(v[26]);
@@ -61,7 +61,7 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 
     public double getAverageFlux(AbsoluteDate date)
     {
-	String p = date.toString();
+	String p = DataManager.getUTCString(date);
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 	double[] v = swData.get(k);
 	return(v[28]);
@@ -73,14 +73,14 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 	{
 	    if (i == 0)
 	    {
-		String p = date.toString();
+		String p = DataManager.getUTCString(date);
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 		double[] v = swData.get(k);
 		apVals[0] = v[22];
 	    }
 	    else if (i <= 4)
 	    {
-		String p = (new AbsoluteDate(date, -10800.0*(i - 1))).toString();
+		String p = DataManager.getUTCString(new AbsoluteDate(date, -10800.0*(i - 1)));
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 		double[] v = swData.get(k);
 		apVals[i] = v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];
@@ -90,7 +90,7 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 		apVals[i] = 0.0;
 		for (int j = 8*i - 36; j <= 8*i - 29; j++)
 		{
-		    String p = (new AbsoluteDate(date, -10800.0*(j - 1))).toString();
+		    String p = DataManager.getUTCString(new AbsoluteDate(date, -10800.0*(j - 1)));
 		    String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 		    double[] v = swData.get(k);
 		    apVals[i] += v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];

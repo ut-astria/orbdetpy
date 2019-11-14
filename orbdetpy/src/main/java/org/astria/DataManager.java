@@ -27,6 +27,9 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
@@ -120,5 +123,14 @@ public final class DataManager
 	if (name == null || !refFrames.containsKey(name))
 	    return(refFrames.get("EME2000"));
 	return(refFrames.get(name));
+    }
+
+    public static String getUTCString(AbsoluteDate time)
+    {
+	DateTimeComponents dtc = time.getComponents(getTimeScale("UTC"));
+	DateComponents dc = dtc.getDate();
+	TimeComponents tc = dtc.getTime();
+	return(String.format("%04d-%02d-%02dT%02d:%02d:%09.6fZ", dc.getYear(), dc.getMonth(), dc.getDay(),
+			     tc.getHour(), tc.getMinute(), tc.getSecond()));
     }
 }

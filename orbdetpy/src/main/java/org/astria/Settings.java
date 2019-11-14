@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -413,7 +412,7 @@ public final class Settings
 	    else
 	    {
 		epoch = parser.getDate().shiftedBy(0.0);
-		propStart = new StringBuilder(epoch.toString()).append("Z").toString();
+		propStart = DataManager.getUTCString(epoch);
 	    }
 	    topv = prop.getPVCoordinates(epoch, propFrame);
 	}

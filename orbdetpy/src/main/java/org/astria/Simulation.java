@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
@@ -96,7 +95,7 @@ public final class Simulation
 	    Vector3D acc = pvc.getAcceleration();
 
 	    Measurements.SimulatedMeasurement json = new Measurements.SimulatedMeasurement();
-	    json.time = new StringBuilder(proptm.toString()).append("Z").toString();
+	    json.time = DataManager.getUTCString(proptm);
 	    json.trueState = new Measurements.State();
 	    json.trueState.cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
 						    acc.getX(), acc.getY(), acc.getZ()};
