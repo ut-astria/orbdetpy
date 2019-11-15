@@ -60,6 +60,10 @@ underlying Java implementation directly is straightforward.
    estimates, and 3-sigma of estimated covariances will be written to
    `output/` sub-folders.
 
+   orbdetpy supports asynchronous calls to CPU intensive functions
+   enabling parallelization in multi-processor environments. This
+   program demonstrates asynchronous operations.
+
 orbdetpy uses JSON files to store settings, measurements and estimation
 results. The files in `examples/data` show how to configure measurement
 simulation and orbit determination using radar or telescope data. The

@@ -130,7 +130,32 @@ public final class DataManager
 	DateTimeComponents dtc = time.getComponents(getTimeScale("UTC"));
 	DateComponents dc = dtc.getDate();
 	TimeComponents tc = dtc.getTime();
-	return(String.format("%04d-%02d-%02dT%02d:%02d:%09.6fZ", dc.getYear(), dc.getMonth(), dc.getDay(),
-			     tc.getHour(), tc.getMinute(), tc.getSecond()));
+
+	StringBuilder sbsec = new StringBuilder(9);
+	if (tc.getSecond() < 10.0)
+	    sbsec.append("0");
+	sbsec.append(tc.getSecond());
+	if (sbsec.length() > 9)
+	    sbsec.setLength(9);
+	else
+	{
+	    while (sbsec.length() < 9)
+		sbsec.append("0");
+	}
+
+	StringBuilder sb = new StringBuilder(27).append(dc.getYear()).append("-");
+	if (dc.getMonth() < 10)
+	    sb.append("0");
+	sb.append(dc.getMonth()).append("-");
+	if (dc.getDay() < 10)
+	    sb.append("0");
+	sb.append(dc.getDay()).append("T");
+	if (tc.getHour() < 10)
+	    sb.append("0");
+	sb.append(tc.getHour()).append(":");
+	if (tc.getMinute() < 10)
+	    sb.append("0");
+	sb.append(tc.getMinute()).append(":").append(sbsec).append("Z");
+	return(sb.toString());
     }
 }
