@@ -53,7 +53,7 @@ def propagate_orbits(config_list, output_file = None,
 
     channel = RemoteServer.channel()
     stub = propagation_pb2_grpc.PropagationStub(channel)
-    
+
     resp = stub.propagate.future(messages_pb2.SettingsArray(
         array = [build_settings(p) for p in config_list]))
     if (async_callback):

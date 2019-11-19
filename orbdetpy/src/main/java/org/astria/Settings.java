@@ -150,6 +150,7 @@ public final class Settings
 	public double declinationBias;
 	public double[] positionBias;
 	public double[] positionVelocityBias;
+	public String biasEstimation;
 
 	public Station()
         {
@@ -157,7 +158,7 @@ public final class Settings
 
 	public Station(double latitude, double longitude, double altitude, double azimuthBias, double elevationBias,
 		       double rangeBias, double rangeRateBias, double rightAscensionBias, double declinationBias,
-		       double[] positionBias, double[] positionVelocityBias)
+		       double[] positionBias, double[] positionVelocityBias, String biasEstimation)
         {
 	    this.latitude = latitude;
 	    this.longitude = longitude;
@@ -170,6 +171,7 @@ public final class Settings
 	    this.declinationBias = declinationBias;
 	    this.positionBias = positionBias;
 	    this.positionVelocityBias = positionVelocityBias;
+	    this.biasEstimation = biasEstimation;
 	}
     }
 
@@ -252,7 +254,7 @@ public final class Settings
     protected Atmosphere atmModel;
     protected HashMap<String, GroundStation> stations;
     protected ArrayList<ForceModel> forces;
-    protected ArrayList<Parameter> estParams;
+    protected ArrayList<Parameter> parameters;
     protected Frame propFrame;
 
     public Settings build()
@@ -260,7 +262,7 @@ public final class Settings
 	propFrame = DataManager.getFrame(propInertialFrame);
 	loadGroundStations();
 	loadForces();
-	loadEstimatedParameters();
+	loadParameters();
 	return(this);
     }
 
@@ -378,22 +380,59 @@ public final class Settings
 	}
     }
 
-    private void loadEstimatedParameters()
+    private void loadParameters()
     {
-	estParams = new ArrayList<Parameter>();
-	if (dragCoefficient.estimation != null && dragCoefficient.estimation.equals("Estimate"))
-	    estParams.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min, dragCoefficient.max,
-					dragCoefficient.value, "Estimate"));
-
-	if (rpCoeffReflection.estimation != null && rpCoeffReflection.estimation.equals("Estimate"))
-	    estParams.add(new Parameter(RadiationSensitive.REFLECTION_COEFFICIENT, rpCoeffReflection.min, rpCoeffReflection.max,
-					rpCoeffReflection.value, "Estimate"));
-
-	if (estmDMCCorrTime > 0.0 && estmDMCSigmaPert > 0.0)
+	String[] ops = {"Estimate", "Consider"};
+	parameters = new ArrayList<Parameter>();
+	for (int i = 0; i < ops.length; i++)
 	{
-	    for (int i = 0; i < 3; i++)
-		estParams.add(new Parameter(Estimation.DMC_ACC_ESTM[i], estmDMCAcceleration.min, estmDMCAcceleration.max,
-					    estmDMCAcceleration.value, "Estimate"));
+	    if (dragCoefficient.estimation != null && dragCoefficient.estimation.equals(ops[i]))
+		parameters.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min,
+					     dragCoefficient.max, dragCoefficient.value, ops[i]));
+
+	    if (rpCoeffReflection.estimation != null && rpCoeffReflection.estimation.equals(ops[i]))
+		parameters.add(new Parameter(RadiationSensitive.REFLECTION_COEFFICIENT, rpCoeffReflection.min,
+					     rpCoeffReflection.max, rpCoeffReflection.value, ops[i]));
+
+	    if (i == 0 && estmDMCCorrTime > 0.0 && estmDMCSigmaPert > 0.0)
+	    {
+		for (int j = 0; j < 3; j++)
+		    parameters.add(new Parameter(Estimation.DMC_ACC_ESTM[j], estmDMCAcceleration.min,
+						 estmDMCAcceleration.max, estmDMCAcceleration.value, ops[i]));
+	    }
+
+	    if (cfgStations == null || cfgMeasurements == null || !estmFilter.equals("UKF"))
+		continue;
+
+	    for (Map.Entry<String, Station> skv : cfgStations.entrySet())
+	    {
+		Station sv = skv.getValue();
+		if (sv.biasEstimation != null && sv.biasEstimation.equals(ops[i]))
+		{
+		    String sk = skv.getKey();
+		    for (String mk : cfgMeasurements.keySet())
+		    {
+			double bias = 0.0;
+			if (mk.equals("Azimuth"))
+			    bias = sv.azimuthBias;
+			else if (mk.equals("Elevation"))
+			    bias = sv.elevationBias;
+			else if (mk.equals("Range"))
+			    bias = sv.rangeBias;
+			else if (mk.equals("RangeRate"))
+			    bias = sv.rangeRateBias;
+			else if (mk.equals("RightAscension"))
+			    bias = sv.rightAscensionBias;
+			else if (mk.equals("Declination"))
+			    bias = sv.declinationBias;
+			else
+			    continue;
+
+			String name = new StringBuilder(sk).append(mk).toString();
+			parameters.add(new Parameter(name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, bias, ops[i]));
+		    }
+		}
+	    }
 	}
     }
 
@@ -404,9 +443,10 @@ public final class Settings
 
 	if (state0 == null)
 	{
+	    AbsoluteDate epoch;
 	    TLE parser = new TLE(propInitialTLE[0], propInitialTLE[1]);
 	    TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
-	    AbsoluteDate epoch;
+
 	    if (propStart != null)
 		epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.getTimeScale("UTC"));
 	    else
@@ -422,13 +462,13 @@ public final class Settings
 	Vector3D p = topv.getPosition();
 	Vector3D v = topv.getVelocity();
 	state0 = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
-	double[] X0 = new double[estParams.size() + 6];
+	double[] X0 = new double[parameters.size() + 6];
 	for (int i = 0; i < X0.length; i++)
 	{
 	    if (i < 6)
 		X0[i] = state0[i];
 	    else
-		X0[i] = estParams.get(i - 6).value;
+		X0[i] = parameters.get(i - 6).value;
 	}
 
 	return(X0);
@@ -469,7 +509,7 @@ public final class Settings
 	double t2 = t*t;
 	double t3 = t2*t;
 	double t4 = t3*t;
-	double[][] Q = new double[estParams.size() + 6][estParams.size() + 6];
+	double[][] Q = new double[parameters.size() + 6][parameters.size() + 6];
 
 	if (estmDMCCorrTime <= 0.0 || estmDMCSigmaPert <= 0.0)
 	{
@@ -479,6 +519,7 @@ public final class Settings
 		Q[i][i] = 0.25*t4*P[i];
 		Q[i][i+3] = 0.5*t3*P[i];
 	    }
+
 	    for (i = 3; i < 6; i++)
 	    {
 		Q[i][i] = t2*P[i];
@@ -488,7 +529,7 @@ public final class Settings
 	    return(new Array2DRowRealMatrix(Q));
 	}
 
-	int N = estParams.size() - 3;
+	int N = parameters.size() - 3;
 	double b = 1.0/estmDMCCorrTime;
 	double b2 = b*b;
 	double b3 = b2*b;
@@ -511,12 +552,14 @@ public final class Settings
 	    Q[i][i+3] = Q01;
 	    Q[i][i+N+6] = Q02;
 	}
+
 	for (i = 3; i < 6; i++)
 	{
 	    Q[i][i] = Q11;
 	    Q[i][i-3] = Q01;
 	    Q[i][i+N+3] = Q12;
 	}
+
 	for (i = N+6; i < N+9; i++)
 	{
 	    Q[i][i] = Q22;

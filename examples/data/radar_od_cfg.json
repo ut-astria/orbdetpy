@@ -84,11 +84,6 @@
 	{
 	    "TwoWay" : true,
 	    "Error" : [10.0]
-	},
-	"RangeRate" :
-	{
-	    "TwoWay" : true,
-	    "Error" : [0.1]
 	}
     },
 

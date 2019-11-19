@@ -32,7 +32,6 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
-import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -206,78 +205,30 @@ public final class Measurements
 
 	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.time), DataManager.getTimeScale("UTC"));
 	    if (m.azimuth != 0.0 && cazim != null && celev != null)
-	    {
-		AngularAzEl obs = new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation},
-						  new double[]{cazim.error[0], celev.error[0]},
-						  new double[]{1.0, 1.0}, new ObservableSatellite(0));
-		if (jsn.azimuthBias != 0.0 || jsn.elevationBias != 0.0)
-		    obs.addModifier(new Bias<AngularAzEl>(
-					new String[] {"Az", "El"}, new double[] {jsn.azimuthBias, jsn.elevationBias},
-					new double[] {1.0, 1.0}, new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
-					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
-		measObjs.add(obs);
-	    }
+		measObjs.add(new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation}, new double[]{cazim.error[0], celev.error[0]},
+					     new double[]{1.0, 1.0}, new ObservableSatellite(0)));
 
 	    if (m.rightAscension != 0.0 && crigh != null && cdecl != null)
-	    {
-		AngularRaDec obs = new AngularRaDec(gs, DataManager.getFrame("EME2000"), time,
-						    new double[]{m.rightAscension, m.declination},
-						    new double[]{crigh.error[0], cdecl.error[0]},
-						    new double[]{1.0, 1.0}, new ObservableSatellite(0));
-		if (jsn.rightAscensionBias != 0.0 || jsn.declinationBias != 0.0)
-		    obs.addModifier(new Bias<AngularRaDec>(
-					new String[] {"RA", "Dec"}, new double[] {jsn.rightAscensionBias, jsn.declinationBias},
-					new double[] {1.0, 1.0}, new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
-					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
-		measObjs.add(obs);
-	    }
+		measObjs.add(new AngularRaDec(gs, DataManager.getFrame("EME2000"), time, new double[]{m.rightAscension, m.declination},
+					      new double[]{crigh.error[0], cdecl.error[0]}, new double[]{1.0, 1.0}, new ObservableSatellite(0)));
 
 	    if (m.range != 0.0 && crang != null)
-	    {
-		Range obs = new Range(gs, crang.twoWay, time, m.range, crang.error[0], 1.0, new ObservableSatellite(0));
-		if (jsn.rangeBias != 0.0)
-		    obs.addModifier(new Bias<Range>(
-					new String[] {"Range"}, new double[] {jsn.rangeBias}, new double[] {1.0},
-					new double[] {Double.NEGATIVE_INFINITY}, new double[] {Double.POSITIVE_INFINITY}));
-		measObjs.add(obs);
-	    }
+		measObjs.add(new Range(gs, crang.twoWay, time, m.range, crang.error[0], 1.0, new ObservableSatellite(0)));
 
 	    if (m.rangeRate != 0.0 && crrat != null)
-	    {
-		RangeRate obs = new RangeRate(gs, time, m.rangeRate, crrat.error[0], 1.0, crrat.twoWay, new ObservableSatellite(0));
-		if (jsn.rangeRateBias != 0.0)
-		    obs.addModifier(new Bias<RangeRate>(
-					new String[] {"RangeRate"}, new double[] {jsn.rangeRateBias}, new double[] {1.0},
-					new double[] {Double.NEGATIVE_INFINITY}, new double[] {Double.POSITIVE_INFINITY}));
-		measObjs.add(obs);
-	    }
+		measObjs.add(new RangeRate(gs, time, m.rangeRate, crrat.error[0], 1.0, crrat.twoWay, new ObservableSatellite(0)));
 
 	    if (m.position != null && cpos != null)
 	    {
 		double[] X = m.position;
-		Position obs = new Position(time, new Vector3D(X[0], X[1], X[2]), cpos.error, 1.0, new ObservableSatellite(0));
-		if (jsn != null && jsn.positionBias != null)
-		    obs.addModifier(new Bias<Position>(
-					new String[] {"x", "y", "z"}, jsn.positionBias,	new double[] {1.0, 1.0, 1.0},
-					new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
-					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
-		measObjs.add(obs);
+		measObjs.add(new Position(time, new Vector3D(X[0], X[1], X[2]), cpos.error, 1.0, new ObservableSatellite(0)));
 	    }
 
 	    if (m.positionVelocity != null && cposvel != null)
 	    {
 		double[] X = m.positionVelocity;
-		PV obs = new PV(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]),
-				cposvel.error, 1.0, new ObservableSatellite(0));
-		if (jsn != null && jsn.positionVelocityBias != null)
-		    obs.addModifier(new Bias<PV>(
-					new String[] {"x", "y", "z", "Vx", "Vy", "Vz"}, jsn.positionVelocityBias,
-					new double[] {1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
-					new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
-						      Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
-					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
-						      Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
-		measObjs.add(obs);
+		measObjs.add(new PV(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]),
+				    cposvel.error, 1.0, new ObservableSatellite(0)));
 	    }
 	}
     }

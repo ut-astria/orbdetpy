@@ -143,12 +143,13 @@ def build_settings(param):
 
     for k, v in inp.get("Stations", {}).items():
         sta =  messages_pb2.Station(latitude=v["Latitude"], longitude=v["Longitude"],
-                                               altitude=v["Altitude"], azimuth_bias=v.get("AzimuthBias", 0.0),
-                                               elevation_bias=v.get("ElevationBias", 0.0),
-                                               range_bias=v.get("RangeBias", 0.0),
-                                               range_rate_bias=v.get("RangeRateBias", 0.0),
-                                               right_ascension_bias=v.get("RightAscensionBias", 0.0),
-                                               declination_bias=v.get("DeclinationBias", 0.0))
+                                    altitude=v["Altitude"], azimuth_bias=v.get("AzimuthBias", 0.0),
+                                    elevation_bias=v.get("ElevationBias", 0.0),
+                                    range_bias=v.get("RangeBias", 0.0),
+                                    range_rate_bias=v.get("RangeRateBias", 0.0),
+                                    right_ascension_bias=v.get("RightAscensionBias", 0.0),
+                                    declination_bias=v.get("DeclinationBias", 0.0),
+                                    bias_estimation=v.get("BiasEstimation", ""))
         sta.position_bias.extend(v.get("PositionBias", [0.0]*3))
         sta.position_velocity_bias.extend(v.get("PositionVelocityBias", [0.0]*6))
         cfg.stations[k].CopyFrom(sta)

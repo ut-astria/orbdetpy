@@ -68,6 +68,7 @@ message Station
     double declination_bias = 9;
     repeated double position_bias = 10 [packed = true];
     repeated double position_velocity_bias = 11 [packed = true];
+    string bias_estimation = 12;
 }
 
 message MeasurementSetting

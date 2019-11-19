@@ -19,6 +19,7 @@
 package org.astria;
 
 import java.util.Arrays;
+import java.util.Map;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEState;
@@ -52,6 +53,7 @@ public final class ManualPropagation implements OrdinaryDifferentialEquation, PV
     private final AbsoluteDate epoch;
     private final ODEIntegrator odeInt;
     private boolean enableDMC;
+    private int[] posParameters;
 
     private final AttitudeProvider attProvider;
     private final LofOffset lofFrame;
@@ -62,12 +64,36 @@ public final class ManualPropagation implements OrdinaryDifferentialEquation, PV
     {
 	odCfg = cfg;
 	vectorDim = vecdim;
-	stateDim = odCfg.estParams.size() + 6;
+	stateDim = odCfg.parameters.size() + 6;
 	attProvider = cfg.getAttitudeProvider();
 
 	enableDMC = true;
 	xDot = new double[vectorDim];
 	epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(cfg.propStart), DataManager.getTimeScale("UTC"));
+
+	posParameters = new int[odCfg.forces.size() + 3];
+	for (int i = 0; i < odCfg.forces.size(); i++)
+	{
+	    posParameters[i] = -1;
+	    ForceModel fmod = odCfg.forces.get(i);
+	    double[] fpar = fmod.getParameters();
+	    for (int j = 0; j < odCfg.parameters.size(); j++)
+	    {
+		if (fmod.isSupported(odCfg.parameters.get(j).name))
+		    posParameters[i] = j + 6;
+	    }
+	}
+
+	for (int i = 0; i < odCfg.parameters.size(); i++)
+	{
+	    if (odCfg.parameters.get(i).name.equals(Estimation.DMC_ACC_ESTM[0]))
+	    {
+		posParameters[posParameters.length - 3] = i + 6;
+		posParameters[posParameters.length - 2] = i + 7;
+		posParameters[posParameters.length - 1] = i + 8;
+		break;
+	    }
+	}
 
 	odeInt = new DormandPrince853Integrator(cfg.integMinTimeStep, cfg.integMaxTimeStep,
 						cfg.integAbsTolerance, cfg.integRelTolerance);
@@ -105,28 +131,27 @@ public final class ManualPropagation implements OrdinaryDifferentialEquation, PV
 
     @Override public double[] computeDerivatives(double t, double[] X)
     {
+	SpacecraftState ss;
+	Vector3D acc;
+	ForceModel fmod;
+	double[] fpar;
+
 	Arrays.fill(xDot, 0.0);
 	AbsoluteDate tm = new AbsoluteDate(epoch, t);
 	for (int i = 0; i < X.length; i += stateDim)
 	{
-	    SpacecraftState ss = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[i],   X[i+1], X[i+2]),
-											  new Vector3D(X[i+3], X[i+4], X[i+5])),
-									odCfg.propFrame, tm, Constants.EGM96_EARTH_MU),
-						     getAttitude(tm, Arrays.copyOfRange(X, i, i+6)), odCfg.rsoMass);
+	    ss = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[i],   X[i+1], X[i+2]),
+									  new Vector3D(X[i+3], X[i+4], X[i+5])),
+							odCfg.propFrame, tm, Constants.EGM96_EARTH_MU),
+				     getAttitude(tm, Arrays.copyOfRange(X, i, i+6)), odCfg.rsoMass);
 
-	    Vector3D acc = Vector3D.ZERO;
-	    for (ForceModel fmod : odCfg.forces)
+	    acc = Vector3D.ZERO;
+	    for (int j = 0; j < odCfg.forces.size(); j++)
 	    {
-		double[] fpar = fmod.getParameters();
-		if (X.length > stateDim)
-		{
-		    for (int j = 0; j < odCfg.estParams.size(); j++)
-		    {
-			Settings.Parameter emp = odCfg.estParams.get(j);
-			if (fmod.isSupported(emp.name))
-			    fpar[0] = X[i + j + 6];
-		    }
-		}
+		fmod = odCfg.forces.get(j);
+		fpar = fmod.getParameters();
+		if (posParameters[j] != -1)
+		    fpar[0] = X[i + posParameters[j]];
 		acc = acc.add(fmod.acceleration(ss, fpar));
 	    }
 
@@ -138,12 +163,12 @@ public final class ManualPropagation implements OrdinaryDifferentialEquation, PV
 	    xDot[i+5] = acc.getZ();
 	    if (enableDMC && X.length > stateDim && odCfg.estmDMCCorrTime > 0.0 && odCfg.estmDMCSigmaPert > 0.0)
 	    {
-		xDot[i+3] += X[i+stateDim-3];
-		xDot[i+4] += X[i+stateDim-2];
-		xDot[i+5] += X[i+stateDim-1];
-		xDot[i+stateDim-3] = -X[i+stateDim-3]/odCfg.estmDMCCorrTime;
-		xDot[i+stateDim-2] = -X[i+stateDim-2]/odCfg.estmDMCCorrTime;
-		xDot[i+stateDim-1] = -X[i+stateDim-1]/odCfg.estmDMCCorrTime;
+		xDot[i + 3] += X[i + posParameters[posParameters.length - 3]];
+		xDot[i + 4] += X[i + posParameters[posParameters.length - 2]];
+		xDot[i + 5] += X[i + posParameters[posParameters.length - 1]];
+		xDot[i + posParameters[posParameters.length - 3]] = -X[i + posParameters[posParameters.length - 3]]/odCfg.estmDMCCorrTime;
+		xDot[i + posParameters[posParameters.length - 2]] = -X[i + posParameters[posParameters.length - 2]]/odCfg.estmDMCCorrTime;
+		xDot[i + posParameters[posParameters.length - 1]] = -X[i + posParameters[posParameters.length - 1]]/odCfg.estmDMCCorrTime;
 	    }
 	}
 

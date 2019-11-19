@@ -79,8 +79,8 @@ public final class Estimation
     private final Settings odCfg;
     private final Measurements odObs;
 
-    private final String[] measNames;
-    private final boolean pairedMeas;
+    private String[] measNames;
+    private final boolean combinedMeas;
 
     private final AbsoluteDate epoch;
     private final AbsoluteDate propEnd;
@@ -100,9 +100,10 @@ public final class Estimation
 	    odCfg.forces.add(0, new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
 	measNames = odCfg.cfgMeasurements.keySet().toArray(new String[0]);
-	pairedMeas = measNames[0].equals("Azimuth") || measNames[0].equals("Elevation") ||
-	    measNames[0].equals("RightAscension") || measNames[0].equals("Declination") ||
-	    measNames[0].equals("Position") || measNames[0].equals("PositionVelocity");
+	Arrays.sort(measNames);
+	if (measNames[0].equals("Declination"))
+	    measNames = new String[]{"RightAscension", "Declination"};
+	combinedMeas = !measNames[0].startsWith("Range");
 
 	epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(odCfg.propStart), DataManager.getTimeScale("UTC"));
 	propEnd = new AbsoluteDate(DateTimeComponents.parseDateTime(odCfg.propEnd), DataManager.getTimeScale("UTC"));
@@ -158,14 +159,14 @@ public final class Estimation
     	    if (odCfg.propStep > 0.0)
 		handler = this;
 
-	    propBuilder = new PropagatorBuilder(odCfg, X0, new DormandPrince853IntegratorBuilder(odCfg.integMinTimeStep,odCfg.integMaxTimeStep,1.0),
-						PositionAngle.TRUE, 10.0, handler);
+	    propBuilder = new PropagatorBuilder(odCfg, X0, new DormandPrince853IntegratorBuilder(
+						    odCfg.integMinTimeStep, odCfg.integMaxTimeStep, 1.0), PositionAngle.TRUE, 10.0, handler);
 	    propBuilder.setMass(odCfg.rsoMass);
 	    for (ForceModel fm : odCfg.forces)
 		propBuilder.addForceModel(fm);
 
 	    ParameterDriversList plst = propBuilder.getPropagationParametersDrivers();
-	    for (Settings.Parameter ep : odCfg.estParams)
+	    for (Settings.Parameter ep : odCfg.parameters)
 	    {
 		ParameterDriver pdrv = new ParameterDriver(ep.name, ep.value, 1.0, ep.min, ep.max);
 		pdrv.setSelected(true);
@@ -214,7 +215,7 @@ public final class Estimation
 	@Override public void evaluationPerformed(KalmanEstimation est)
 	{
 	    int n = est.getCurrentMeasurementNumber() - 1;
-	    if (!pairedMeas)
+	    if (!combinedMeas)
 		n /= measNames.length;
 	    Measurements.Measurement raw = odObs.rawMeas[n];
 
@@ -245,22 +246,22 @@ public final class Estimation
 
 	    SpacecraftState ssta = est.getPredictedSpacecraftStates()[0];
 	    PVCoordinates pvc = ssta.getPVCoordinates();
-	    res.estimatedState = new double[odCfg.estParams.size() + 6];
+	    res.estimatedState = new double[odCfg.parameters.size() + 6];
 	    System.arraycopy(pvc.getPosition().toArray(), 0, res.estimatedState, 0, 3);
 	    System.arraycopy(pvc.getVelocity().toArray(), 0, res.estimatedState, 3, 3);
 
-	    int i = 6;
-	    List<ParameterDriversList.DelegatingDriver> plst = est.getEstimatedPropagationParameters().getDrivers();
-	    for (Settings.Parameter ep : odCfg.estParams)
-		for (ParameterDriversList.DelegatingDriver dd : plst)
-		    if (dd.getName().equals(ep.name))
-			res.estimatedState[i++] = dd.getValue();
+	    ParameterDriversList plst = est.getEstimatedPropagationParameters();
+	    for (int i = 0; i < odCfg.parameters.size(); i++)
+	    {
+		Settings.Parameter ep = odCfg.parameters.get(i);
+		res.estimatedState[i + 6] = est.getEstimatedPropagationParameters().findByName(ep.name).getValue();
+	    }
 
 	    double[] pre = est.getPredictedMeasurement().getEstimatedValue();
 	    double[] pos = est.getCorrectedMeasurement().getEstimatedValue();
-	    if (pairedMeas)
+	    if (combinedMeas)
 	    {
-		for (i = 0; i < measNames.length; i++)
+		for (int i = 0; i < measNames.length; i++)
 		{
 		    if (measNames.length == 1)
 		    {
@@ -308,12 +309,12 @@ public final class Estimation
 
 	    EstimationOutput odout = new EstimationOutput();
 	    odout.time = DataManager.getUTCString(state.getDate());
-	    odout.estimatedState = new double[odCfg.estParams.size() + 6];
+	    odout.estimatedState = new double[odCfg.parameters.size() + 6];
 	    System.arraycopy(pvc.getPosition().toArray(), 0, odout.estimatedState, 0, 3);
 	    System.arraycopy(pvc.getVelocity().toArray(), 0, odout.estimatedState, 3, 3);
-	    if (odCfg.estParams.size() > 0 && estOutput.size() > 0)
+	    if (odCfg.parameters.size() > 0 && estOutput.size() > 0)
 		System.arraycopy(estOutput.get(estOutput.size() - 1).estimatedState, 6,
-				 odout.estimatedState, 6, odCfg.estParams.size());
+				 odout.estimatedState, 6, odCfg.parameters.size());
 
 	    Rotation phi1 = new Rotation(prevPosition, pvc.getPosition());
 	    Rotation phi2 = new Rotation(prevVelocity, pvc.getVelocity());
@@ -334,12 +335,30 @@ public final class Estimation
     {
 	private void determineOrbit()
 	{
-	    int numsta = odCfg.estParams.size() + 6;
+	    int numsta = odCfg.parameters.size() + 6;
 	    int numsig = 2*numsta;
 	    int veclen = numsta*numsig;
 	    double weight = 0.5/numsta;
 	    RealMatrix P = new DiagonalMatrix(odCfg.estmCovariance);
 	    double[] Xi = odCfg.getInitialState();
+
+	    HashMap<String, Integer> biasPos = new HashMap<String, Integer>();
+	    if (odCfg.cfgStations != null)
+	    {
+		String[] stations = odCfg.cfgStations.keySet().toArray(new String[0]);
+		for (int i = 0; i < stations.length; i++)
+		{
+		    for (int j = 0; j < measNames.length; j++)
+		    {
+			for (int k = 0; k < odCfg.parameters.size(); k++)
+			{
+			    String bias = new StringBuilder(stations[i]).append(measNames[j]).toString();
+			    if (bias.equals(odCfg.parameters.get(k).name))
+				biasPos.put(bias, k + 6);
+			}
+		    }
+		}
+	    }
 
 	    int Rsize = 0;
 	    for (String s: measNames)
@@ -390,12 +409,12 @@ public final class Estimation
 		    sigma.setColumnVector(numsta + i, xhat.subtract(sqrP.getColumnVector(i)));
 		}
 
-		if (odCfg.estParams.size() > 0)
+		if (odCfg.parameters.size() > 0)
 		{
 		    double[][] sigdata = sigma.getData();
-		    for (int j = 6; j < odCfg.estParams.size() + 6; j++)
+		    for (int j = 6; j < odCfg.parameters.size() + 6; j++)
 		    {
-			Settings.Parameter tempep = odCfg.estParams.get(j - 6);
+			Settings.Parameter tempep = odCfg.parameters.get(j - 6);
 			for (int i = 0; i < numsig; i++)
 			    sigdata[j][i] = FastMath.min(FastMath.max(sigdata[j][i], tempep.min), tempep.max);
 		    }
@@ -431,7 +450,7 @@ public final class Estimation
 								     odCfg.propFrame, tm, Constants.EGM96_EARTH_MU),
 						  prop.getAttitude(tm, pv), odCfg.rsoMass);
 
-		    if (pairedMeas)
+		    if (combinedMeas || measNames.length == 1)
 		    {
 			double[] fitv = odObs.measObjs.get(mix).estimate(0, 0, ssta).getEstimatedValue();
 			spupd.setColumn(i, fitv);
@@ -442,16 +461,28 @@ public final class Estimation
 		    {
 			double[] fitv = odObs.measObjs.get(mix*2).estimate(0, 0, ssta).getEstimatedValue();
 			spupd.setEntry(0, i, fitv[0]);
-			if (Rsize > 1)
+			fitv = odObs.measObjs.get(mix*2 + 1).estimate(0, 0, ssta).getEstimatedValue();
+			spupd.setEntry(1, i, fitv[0]);
+			if (raw == null)
+			    raw = new ArrayRealVector(new double[]{odObs.measObjs.get(mix*2).getObservedValue()[0],
+								   odObs.measObjs.get(mix*2 + 1).getObservedValue()[0]});
+		    }
+		}
+
+		if (odObs.rawMeas[mix].station != null)
+		{
+		    String name = new StringBuilder(odObs.rawMeas[mix].station).append(measNames[0]).toString();
+		    Integer pos = biasPos.get(name);
+		    if (pos != null)
+		    {
+			if (measNames.length == 2)
 			{
-			    fitv = odObs.measObjs.get(mix*2 + 1).estimate(0, 0, ssta).getEstimatedValue();
-			    spupd.setEntry(1, i, fitv[0]);
-			    if (raw == null)
-				raw = new ArrayRealVector(new double[]{odObs.measObjs.get(mix*2).getObservedValue()[0],
-								       odObs.measObjs.get(mix*2 + 1).getObservedValue()[0]});
+			    name = new StringBuilder(odObs.rawMeas[mix].station).append(measNames[1]).toString();
+			    raw = raw.subtract(new ArrayRealVector(new double[]{xhatpre.getEntry(pos),
+										xhatpre.getEntry(biasPos.get(name))}));
 			}
-			else if (raw == null)
-			    raw = new ArrayRealVector(new double[]{odObs.measObjs.get(mix*2).getObservedValue()[0]});
+			else
+			    raw = raw.subtract(new ArrayRealVector(new double[]{xhatpre.getEntry(pos)}));
 		    }
 		}
 
@@ -485,7 +516,7 @@ public final class Estimation
 		odout.preFit = new HashMap<String, double[]>();
 		odout.postFit = new HashMap<String, double[]>();
 
-		if (pairedMeas)
+		if (combinedMeas || measNames.length == 1)
 		{
 		    for (int i = 0; i < measNames.length; i++)
 		    {
@@ -507,12 +538,9 @@ public final class Estimation
 		    double[] fitv = odObs.measObjs.get(mix*2).estimate(0, 0, ssta).getEstimatedValue();
 		    odout.preFit.put(measNames[0], new double[] {yhatpre.getEntry(0)});
 		    odout.postFit.put(measNames[0], fitv);
-		    if (Rsize > 1)
-		    {
-			fitv = odObs.measObjs.get(mix*2 + 1).estimate(0, 0, ssta).getEstimatedValue();
-			odout.preFit.put(measNames[1], new double[] {yhatpre.getEntry(1)});
-			odout.postFit.put(measNames[1], fitv);
-		    }
+		    fitv = odObs.measObjs.get(mix*2 + 1).estimate(0, 0, ssta).getEstimatedValue();
+		    odout.preFit.put(measNames[1], new double[] {yhatpre.getEntry(1)});
+		    odout.postFit.put(measNames[1], fitv);
 		}
 
 		estOutput.add(odout);
@@ -570,7 +598,7 @@ public final class Estimation
 
 	    public IntegrationStepHandler()
 	    {
-		numStates = odCfg.estParams.size() + 6;
+		numStates = odCfg.parameters.size() + 6;
 		weight = 0.5/numStates;
 		propSigma = new Array2DRowRealMatrix(numStates, 2*numStates);
 	    }

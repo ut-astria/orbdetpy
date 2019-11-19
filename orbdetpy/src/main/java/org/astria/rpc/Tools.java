@@ -130,7 +130,8 @@ public final class Tools
 								      v.getElevationBias(), v.getRangeBias(), v.getRangeRateBias(),
 								      v.getRightAscensionBias(), v.getDeclinationBias(),
 								      v.getPositionBiasList().stream().mapToDouble(Double::doubleValue).toArray(),
-								      v.getPositionVelocityBiasList().stream().mapToDouble(Double::doubleValue).toArray()));
+								      v.getPositionVelocityBiasList().stream().mapToDouble(Double::doubleValue).toArray(),
+								      v.getBiasEstimation()));
 	    }
 	}
 
