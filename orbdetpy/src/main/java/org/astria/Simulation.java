@@ -39,7 +39,6 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -55,40 +54,41 @@ public final class Simulation
 
     public ArrayList<Measurements.SimulatedMeasurement> simulateMeasurements()
     {
-	Random rand = new Random();
-	double[] Xi = simCfg.getInitialState();
-	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(simCfg.propStart), DataManager.getTimeScale("UTC"));
-	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(simCfg.propEnd), DataManager.getTimeScale("UTC"));
-
-	NumericalPropagator prop = new NumericalPropagator(
-	    new DormandPrince853Integrator(simCfg.integMinTimeStep, simCfg.integMaxTimeStep, simCfg.integAbsTolerance, simCfg.integRelTolerance));
+	final NumericalPropagator propagator = new NumericalPropagator(
+	    new DormandPrince853Integrator(simCfg.integMinTimeStep, simCfg.integMaxTimeStep,
+					   simCfg.integAbsTolerance, simCfg.integRelTolerance));
 	for (ForceModel fm : simCfg.forces)
-	    prop.addForceModel(fm);
+	    propagator.addForceModel(fm);
 
-	AttitudeProvider attpro = simCfg.getAttitudeProvider();
+	final AttitudeProvider attpro = simCfg.getAttitudeProvider();
 	if (attpro != null)
-	    prop.setAttitudeProvider(attpro);
+	    propagator.setAttitudeProvider(attpro);
 
-	SpacecraftState sstate0 = new SpacecraftState(
+	final double[] Xi = simCfg.getInitialState();
+	AbsoluteDate tm = DataManager.parseDateTime(simCfg.propStart);
+	final AbsoluteDate prend = DataManager.parseDateTime(simCfg.propEnd);
+
+	final SpacecraftState sstate0 = new SpacecraftState(
 	    new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]), new Vector3D(Xi[3], Xi[4], Xi[5])),
 			       simCfg.propFrame, tm, Constants.EGM96_EARTH_MU), simCfg.rsoMass);
-	prop.setInitialState(sstate0);
-	simCfg.addEventHandlers(prop, sstate0);
-	boolean evthandlers = prop.getEventsDetectors().size() > 0;
+	propagator.setInitialState(sstate0);
+	simCfg.addEventHandlers(propagator, sstate0);
+	final boolean evthandlers = propagator.getEventsDetectors().size() > 0;
 
 	double[] obs, azel;
-	double[] zeros = new double[]{0.0, 0.0};
-	double[] ones = new double[]{1.0, 1.0};
-	ObservableSatellite obssat = new ObservableSatellite(0);
-	ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>(
+	final double[] zeros = new double[]{0.0, 0.0};
+	final double[] ones = new double[]{1.0, 1.0};
+	final Random rand = new Random();
+	final ObservableSatellite obssat = new ObservableSatellite(0);
+	final ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>(
 	    (int) FastMath.abs(prend.durationFrom(tm)/simCfg.propStep) + 2);
 
 	while (true)
 	{
-	    SpacecraftState[] sta = new SpacecraftState[]{prop.propagate(tm)};
-	    Orbit orb = sta[0].getOrbit();
-	    KeplerianOrbit keporb = new KeplerianOrbit(orb);
-	    AbsoluteDate proptm = sta[0].getDate();
+	    final SpacecraftState[] sta = new SpacecraftState[]{propagator.propagate(tm)};
+	    final Orbit orb = sta[0].getOrbit();
+	    final KeplerianOrbit keporb = new KeplerianOrbit(orb);
+	    final AbsoluteDate proptm = sta[0].getDate();
 	    TimeStampedPVCoordinates pvc = sta[0].getPVCoordinates();
 	    Vector3D pos = pvc.getPosition();
 	    Vector3D vel = pvc.getVelocity();

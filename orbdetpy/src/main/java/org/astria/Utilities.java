@@ -31,7 +31,6 @@ import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 
 public final class Utilities
@@ -49,7 +48,7 @@ public final class Utilities
 	{
 	    los[i] = new Vector3D(FastMath.cos(dec[i])*FastMath.cos(ra[i]),
 				  FastMath.cos(dec[i])*FastMath.sin(ra[i]), FastMath.sin(dec[i]));
-	    time[i] = new AbsoluteDate(DateTimeComponents.parseDateTime(tmstr[i]), DataManager.getTimeScale("UTC"));
+	    time[i] = DataManager.parseDateTime(tmstr[i]);
 
 	    GroundStation sta = new GroundStation(
 		new TopocentricFrame(oae, new GeodeticPoint(gslat[i], gslon[i], gsalt[i]), Integer.toString(i)));

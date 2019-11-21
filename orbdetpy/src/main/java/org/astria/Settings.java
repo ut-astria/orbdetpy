@@ -69,7 +69,6 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.LongitudeCrossingDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -374,31 +373,37 @@ public final class Settings
 	for (Maneuver m : cfgManeuvers)
 	{
 	    if (m.triggerEvent.equals("DateTime") && m.maneuverType.equals("ConstantThrust"))
-		forces.add(new ConstantThrustManeuver(new AbsoluteDate(DateTimeComponents.parseDateTime(m.time), DataManager.getTimeScale("UTC")),
-						      m.maneuverParams[3], m.maneuverParams[4], m.maneuverParams[5],
+		forces.add(new ConstantThrustManeuver(DataManager.parseDateTime(m.time), m.maneuverParams[3], m.maneuverParams[4], m.maneuverParams[5],
 						      new Vector3D(m.maneuverParams[0], m.maneuverParams[1], m.maneuverParams[2])));
 	}
     }
 
     private void loadParameters()
     {
+	int[] counts = new int[]{0, 0};
 	String[] ops = {"Estimate", "Consider"};
 	parameters = new ArrayList<Parameter>();
 	for (int i = 0; i < ops.length; i++)
 	{
 	    if (dragCoefficient.estimation != null && dragCoefficient.estimation.equals(ops[i]))
+	    {
+		counts[i]++;
 		parameters.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min,
 					     dragCoefficient.max, dragCoefficient.value, ops[i]));
+	    }
 
 	    if (rpCoeffReflection.estimation != null && rpCoeffReflection.estimation.equals(ops[i]))
+	    {
+		counts[i]++;
 		parameters.add(new Parameter(RadiationSensitive.REFLECTION_COEFFICIENT, rpCoeffReflection.min,
 					     rpCoeffReflection.max, rpCoeffReflection.value, ops[i]));
+	    }
 
-	    if (i == 0 && estmDMCCorrTime > 0.0 && estmDMCSigmaPert > 0.0)
+	    for (int j = 0; j < 3 && i == 0 && estmDMCCorrTime > 0.0 && estmDMCSigmaPert > 0.0; j++)
 	    {
-		for (int j = 0; j < 3; j++)
-		    parameters.add(new Parameter(Estimation.DMC_ACC_ESTM[j], estmDMCAcceleration.min,
-						 estmDMCAcceleration.max, estmDMCAcceleration.value, ops[i]));
+		counts[0]++;
+		parameters.add(new Parameter(Estimation.DMC_ACC_ESTM[j], estmDMCAcceleration.min,
+					     estmDMCAcceleration.max, estmDMCAcceleration.value, ops[0]));
 	    }
 
 	    if (cfgStations == null || cfgMeasurements == null || !estmFilter.equals("UKF"))
@@ -428,6 +433,7 @@ public final class Settings
 			else
 			    continue;
 
+			counts[i]++;
 			String name = new StringBuilder(sk).append(mk).toString();
 			parameters.add(new Parameter(name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, bias, ops[i]));
 		    }
@@ -448,7 +454,7 @@ public final class Settings
 	    TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
 
 	    if (propStart != null)
-		epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.getTimeScale("UTC"));
+		epoch = DataManager.parseDateTime(propStart);
 	    else
 	    {
 		epoch = parser.getDate().shiftedBy(0.0);
@@ -457,7 +463,8 @@ public final class Settings
 	    topv = prop.getPVCoordinates(epoch, propFrame);
 	}
 	else
-	    topv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]), new Vector3D(state0[3], state0[4], state0[5]));
+	    topv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]),
+				     new Vector3D(state0[3], state0[4], state0[5]));
 
 	Vector3D p = topv.getPosition();
 	Vector3D v = topv.getVelocity();
@@ -490,7 +497,7 @@ public final class Settings
 	if (rsoAttitudeProvider.equals("FixedRate") && rsoSpinVelocity != null && rsoSpinAcceleration != null)
 	{
 	    double[] X0 = propInitialState;
-	    AbsoluteDate t0 = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.getTimeScale("UTC"));
+	    AbsoluteDate t0 = DataManager.parseDateTime(propStart);
 	    KeplerianPropagator prop = new KeplerianPropagator(new CartesianOrbit(new PVCoordinates(new Vector3D(X0[0], X0[1], X0[2]),
 												    new Vector3D(X0[3], X0[4], X0[5])),
 										  propFrame, t0, Constants.EGM96_EARTH_MU));
@@ -506,14 +513,14 @@ public final class Settings
     public RealMatrix getProcessNoiseMatrix(double t)
     {
 	int i;
-	double t2 = t*t;
-	double t3 = t2*t;
-	double t4 = t3*t;
-	double[][] Q = new double[parameters.size() + 6][parameters.size() + 6];
+	final double t2 = t*t;
+	final double t3 = t2*t;
+	final double t4 = t3*t;
+	final double[][] Q = new double[parameters.size() + 6][parameters.size() + 6];
 
-	if (estmDMCCorrTime <= 0.0 || estmDMCSigmaPert <= 0.0)
+	if (estmProcessNoise != null && estmProcessNoise.length == 6)
 	{
-	    double[] P = estmProcessNoise;
+	    final double[] P = estmProcessNoise;
 	    for (i = 0; i < 3; i++)
 	    {
 		Q[i][i] = 0.25*t4*P[i];
@@ -529,22 +536,22 @@ public final class Settings
 	    return(new Array2DRowRealMatrix(Q));
 	}
 
-	int N = parameters.size() - 3;
-	double b = 1.0/estmDMCCorrTime;
-	double b2 = b*b;
-	double b3 = b2*b;
-	double b4 = b3*b;
-	double b5 = b4*b;
-	double et = FastMath.exp(-1.0*b*t);
-	double e2t = et*et;
-	double s2 = estmDMCSigmaPert*estmDMCSigmaPert;
+	final int N = parameters.size() - 3;
+	final double b = 1.0/estmDMCCorrTime;
+	final double b2 = b*b;
+	final double b3 = b2*b;
+	final double b4 = b3*b;
+	final double b5 = b4*b;
+	final double et = FastMath.exp(-1.0*b*t);
+	final double e2t = et*et;
+	final double s2 = estmDMCSigmaPert*estmDMCSigmaPert;
 
-	double Q00 = s2*(t3/(3*b2)-t2/b3+t*(1-2*et)/b4+0.5*(1-e2t)/b5); // pos-pos
-	double Q01 = s2*(0.5*t2/b2-t*(1-et)/b3+(1-et)/b4-0.5*(1-e2t)/b4); // pos-vel
-	double Q02 = s2*(0.5*(1-e2t)/b3-t*et/b2); // pos-acc
-	double Q11 = s2*(t/b2-2*(1-et)/b3+0.5*(1-e2t)/b3); // vel-vel
-	double Q12 = s2*(0.5*(1+e2t)/b2-et/b2); // vel-acc
-	double Q22 = 0.5*s2*(1-e2t)/b; // acc-acc
+	final double Q00 = s2*(t3/(3*b2)-t2/b3+t*(1-2*et)/b4+0.5*(1-e2t)/b5); // pos-pos
+	final double Q01 = s2*(0.5*t2/b2-t*(1-et)/b3+(1-et)/b4-0.5*(1-e2t)/b4); // pos-vel
+	final double Q02 = s2*(0.5*(1-e2t)/b3-t*et/b2); // pos-acc
+	final double Q11 = s2*(t/b2-2*(1-et)/b3+0.5*(1-e2t)/b3); // vel-vel
+	final double Q12 = s2*(0.5*(1+e2t)/b2-et/b2); // vel-acc
+	final double Q22 = 0.5*s2*(1-e2t)/b; // acc-acc
 
 	for (i = 0; i < 3; i++)
 	{
@@ -583,7 +590,7 @@ public final class Settings
 
 		EventHandling<DateDetector> handler = new EventHandling<DateDetector>(m.triggerEvent, m.maneuverType,
 										      m.maneuverParams[0], (int) m.maneuverParams[2]);
-		AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.time), DataManager.getTimeScale("UTC"));
+		AbsoluteDate time = DataManager.parseDateTime(m.time);
 		for (int i = 0; i < m.maneuverParams[2]; i++)
 		{
 		    prop.addEventDetector(new DateDetector(time).withHandler(handler));

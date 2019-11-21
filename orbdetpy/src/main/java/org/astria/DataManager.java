@@ -21,6 +21,9 @@ package org.astria;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.frames.Frame;
@@ -44,11 +47,11 @@ public final class DataManager
 	public HashMap<String, double[]> data;
     }
 
+    protected static ExecutorService threadPool;
     private static String dataPath;
 
     private static HashMap<String, TimeScale> timeScales;
     private static HashMap<String, Frame> refFrames;
-
     protected static MSISEData msiseData;
 
     private DataManager()
@@ -57,6 +60,8 @@ public final class DataManager
 
     public static void initialize(String path) throws Exception
     {
+	threadPool = Executors.newFixedThreadPool(FastMath.min(Runtime.getRuntime().availableProcessors(), 40));
+
 	DataManager.dataPath = path;
 	DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File(path)));
 
@@ -157,5 +162,10 @@ public final class DataManager
 	    sb.append("0");
 	sb.append(tc.getMinute()).append(":").append(sbsec).append("Z");
 	return(sb.toString());
+    }
+
+    public static AbsoluteDate parseDateTime(String time)
+    {
+	return(new AbsoluteDate(DateTimeComponents.parseDateTime(time), getTimeScale("UTC")));
     }
 }

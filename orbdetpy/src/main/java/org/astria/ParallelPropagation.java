@@ -35,7 +35,6 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -76,11 +75,11 @@ public final class ParallelPropagation implements MultiSatStepHandler
 
     public ArrayList<PropagationOutput> propagate()
     {
-	Settings obj0 = configObjs.get(0);
-	PropagatorsParallelizer plel = new PropagatorsParallelizer(props, this);
-	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(obj0.propStart), DataManager.getTimeScale("UTC"));
+	final Settings obj0 = configObjs.get(0);
+	final PropagatorsParallelizer plel = new PropagatorsParallelizer(props, this);
+	AbsoluteDate tm = DataManager.parseDateTime(obj0.propStart);
 	AbsoluteDate proptm = new AbsoluteDate(tm, -0.1);
-	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(obj0.propEnd), DataManager.getTimeScale("UTC"));
+	final AbsoluteDate prend = DataManager.parseDateTime(obj0.propEnd);
 
 	List<SpacecraftState> staList = null;
 	propOutput = new ArrayList<PropagationOutput>((int) FastMath.abs(prend.durationFrom(tm)/obj0.propStep) + 2);
@@ -89,7 +88,7 @@ public final class ParallelPropagation implements MultiSatStepHandler
 	    staList = plel.propagate(proptm, tm);
 	    proptm = staList.get(0).getDate();
 
-	    PropagationOutput pout = new PropagationOutput(proptm, configObjs.size());
+	    final PropagationOutput pout = new PropagationOutput(proptm, configObjs.size());
 	    propOutput.add(pout);
 	    for (SpacecraftState sta : staList)
 		pout.addState(sta.getPVCoordinates(DataManager.getFrame(obj0.propInertialFrame)));
@@ -113,25 +112,25 @@ public final class ParallelPropagation implements MultiSatStepHandler
     {
 	if (cfg.propInitialTLE != null && cfg.propInitialTLE[0] != null && cfg.propInitialTLE[1] != null)
 	{
-	    TLE parser = new TLE(cfg.propInitialTLE[0], cfg.propInitialTLE[1]);
+	    final TLE parser = new TLE(cfg.propInitialTLE[0], cfg.propInitialTLE[1]);
 	    return(TLEPropagator.selectExtrapolator(parser));
 	}
 
-	NumericalPropagator prop = new NumericalPropagator(
-	    new DormandPrince853Integrator(cfg.integMinTimeStep, cfg.integMaxTimeStep, cfg.integAbsTolerance, cfg.integRelTolerance));
+	final NumericalPropagator prop = new NumericalPropagator(
+	    new DormandPrince853Integrator(cfg.integMinTimeStep, cfg.integMaxTimeStep,
+					   cfg.integAbsTolerance, cfg.integRelTolerance));
 	for (ForceModel fm : cfg.forces)
 	    prop.addForceModel(fm);
 
-	AttitudeProvider attpro = cfg.getAttitudeProvider();
+	final AttitudeProvider attpro = cfg.getAttitudeProvider();
 	if (attpro != null)
 	    prop.setAttitudeProvider(attpro);
 
-	double[] Xi = cfg.getInitialState();
-	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(cfg.propStart), DataManager.getTimeScale("UTC"));
-	prop.setInitialState(new SpacecraftState(
-				 new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
-								      new Vector3D(Xi[3], Xi[4], Xi[5])),
-						    cfg.propFrame, tm, Constants.EGM96_EARTH_MU), cfg.rsoMass));
+	final double[] Xi = cfg.getInitialState();
+	final AbsoluteDate tm = DataManager.parseDateTime(cfg.propStart);
+	prop.setInitialState(new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]),
+										      new Vector3D(Xi[3], Xi[4], Xi[5])),
+								    cfg.propFrame, tm, Constants.EGM96_EARTH_MU), cfg.rsoMass));
 	return(prop);
     }
 

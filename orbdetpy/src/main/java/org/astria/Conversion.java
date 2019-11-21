@@ -27,7 +27,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
@@ -37,8 +36,7 @@ public final class Conversion
     {
 	Frame fromFrame = DataManager.getFrame(srcFrame);
 	Frame toFrame = DataManager.getFrame(destFrame);
-	Transform xfm = fromFrame.getTransformTo(toFrame, new AbsoluteDate(DateTimeComponents.parseDateTime(time),
-									   DataManager.getTimeScale("UTC")));
+	Transform xfm = fromFrame.getTransformTo(toFrame, DataManager.parseDateTime(time));
 
 	PVCoordinates topv = null;
 	if (pva.size() == 6)
@@ -63,8 +61,7 @@ public final class Conversion
 	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 						    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 	TopocentricFrame fromframe = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
-	Transform xfm = fromframe.getTransformTo(DataManager.getFrame(frame),
-						 new AbsoluteDate(DateTimeComponents.parseDateTime(time), DataManager.getTimeScale("UTC")));
+	Transform xfm = fromframe.getTransformTo(DataManager.getFrame(frame), DataManager.parseDateTime(time));
 
 	Vector3D tovec = xfm.transformVector(new Vector3D(FastMath.cos(el)*FastMath.sin(az),
 							  FastMath.cos(el)*FastMath.cos(az), FastMath.sin(el)));
@@ -79,8 +76,7 @@ public final class Conversion
 	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 						    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 	TopocentricFrame toframe = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
-	Transform xfm = DataManager.getFrame(frame).getTransformTo(toframe, new AbsoluteDate(DateTimeComponents.parseDateTime(time),
-											     DataManager.getTimeScale("UTC")));
+	Transform xfm = DataManager.getFrame(frame).getTransformTo(toframe, DataManager.parseDateTime(time));
 
 	Vector3D tovec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra),
 							  FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));

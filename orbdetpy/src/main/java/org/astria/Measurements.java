@@ -35,7 +35,6 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.PVCoordinates;
 
 public final class Measurements
@@ -203,7 +202,7 @@ public final class Measurements
 		jsn = odCfg.cfgStations.get(m.station);
 	    }
 
-	    AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.time), DataManager.getTimeScale("UTC"));
+	    AbsoluteDate time = DataManager.parseDateTime(m.time);
 	    if (m.azimuth != 0.0 && cazim != null && celev != null)
 		measObjs.add(new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation}, new double[]{cazim.error[0], celev.error[0]},
 					     new double[]{1.0, 1.0}, new ObservableSatellite(0)));
