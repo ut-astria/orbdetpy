@@ -166,35 +166,35 @@ public final class Simulation
 		    {
 			String name = nvp.getKey();
 			Settings.Measurement val = nvp.getValue();
-			if (name.equals("Range"))
+			if (name.equalsIgnoreCase("Range"))
 			{
 			    obs = new Range(gst, val.twoWay, proptm, 0.0, 0.0, 1.0, obssat).estimate(0, 0, sta).getEstimatedValue();
 			    clone.range = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeBias;
 			}
-			else if (name.equals("RangeRate"))
+			else if (name.equalsIgnoreCase("RangeRate"))
 			{
 			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.twoWay, obssat).estimate(0, 0, sta).getEstimatedValue();
 			    clone.rangeRate = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeRateBias;
 			}
-			else if (name.equals("RightAscension") || name.equals("Declination") && clone.rightAscension == 0.0)
+			else if (name.equalsIgnoreCase("RightAscension") || name.equalsIgnoreCase("Declination") && clone.rightAscension == 0.0)
 			{
 			    obs = new AngularRaDec(gst, simCfg.propFrame, proptm, zeros, zeros, ones,
 						   obssat).estimate(0, 0, sta).getEstimatedValue();
 			    clone.rightAscension = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias;
 			    clone.declination = obs[1] + rand.nextGaussian()*val.error[0] + jsn.declinationBias;
 			}
-			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.azimuth == 0.0)
+			else if (name.equalsIgnoreCase("Azimuth") || name.equalsIgnoreCase("Elevation") && clone.azimuth == 0.0)
 			{
 			    clone.azimuth = azel[0] + rand.nextGaussian()*val.error[0] + jsn.azimuthBias;
 			    clone.elevation = azel[1] + rand.nextGaussian()*val.error[0] + jsn.elevationBias;
 			}
-			else if (name.equals("Position"))
+			else if (name.equalsIgnoreCase("Position"))
 			{
 			    clone.position = new double[3];
 			    for (int i = 0; i < 3; i++)
 				clone.position[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionBias[i];
 			}
-			else if (name.equals("PositionVelocity"))
+			else if (name.equalsIgnoreCase("PositionVelocity"))
 			{
 			    clone.positionVelocity = new double[6];
 			    for (int i = 0; i < 6; i++)

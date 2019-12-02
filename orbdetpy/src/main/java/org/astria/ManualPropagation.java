@@ -92,7 +92,7 @@ public final class ManualPropagation implements PVCoordinatesProvider
 
 	for (int i = 0; i < odCfg.parameters.size(); i++)
 	{
-	    if (odCfg.parameters.get(i).name.equals(Estimation.DMC_ACC_ESTM[0]))
+	    if (odCfg.parameters.get(i).name.equalsIgnoreCase(Estimation.DMC_ACC_ESTM[0]))
 	    {
 		posParameters[posParameters.length - 3] = i + 6;
 		posParameters[posParameters.length - 2] = i + 7;

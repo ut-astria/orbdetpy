@@ -18,8 +18,8 @@ The force model for orbit propagation currently includes:
 6. Third body perturbations from the Sun and Moon.
 
 The measurement model supports range, range-rate, angles, and inertial
-Cartesian coordinates. Filtering is done using Orekit's Extended Kalman
-Filter or our custom Unscented Kalman Filter. Dynamic Model Compensation
+Cartesian coordinates. Filtering is done with our Unscented Kalman Filter
+or Orekit's Extended Kalman Filter. Dynamic Model Compensation
 (DMC) can be used with either filter to estimate additional perturbing
 acclerations that result from unmodeled dynamics, maneuvers etc.
 
@@ -106,3 +106,11 @@ working directory is `examples/data`.
    `od_plot("radar_od_cfg.json", "sim_data.json", "od_output.json", interactive = True)`
 
    This will plot the OD results from (3).
+
+Known Issues
+------------
+
+1. In Microsoft Windows, you might receive warnings from the "Windows
+   Defender Firewall" when you import `orbdetpy`. You can safely allow
+   `orbdetpy` access to the network because this only involves a single
+   TCP port on `localhost`.

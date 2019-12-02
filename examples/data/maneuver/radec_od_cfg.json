@@ -102,6 +102,8 @@
 	    "Value" : 0.0,
 	    "Min" : -1E-3,
 	    "Max" : 1E-3
-	}
+	},
+	"OutlierSigma" : 3.0,
+	"OutlierWarmup" : 5
     }
 }

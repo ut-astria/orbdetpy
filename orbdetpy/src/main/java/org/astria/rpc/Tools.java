@@ -156,6 +156,8 @@ public final class Tools
 	cfg.estmDMCSigmaPert = req.getEstmDMCSigmaPert();
 	cfg.estmDMCAcceleration = new Settings.Parameter("", req.getEstmDMCAcceleration().getMin(), req.getEstmDMCAcceleration().getMax(),
 							 req.getEstmDMCAcceleration().getValue(), req.getEstmDMCAcceleration().getEstimation());
+	cfg.estmOutlierSigma = req.getEstmOutlierSigma();
+	cfg.estmOutlierWarmup = req.getEstmOutlierWarmup();
 	return(cfg.build());
     }
 

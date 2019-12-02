@@ -24,6 +24,7 @@ import java.util.HashMap;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
@@ -190,8 +191,8 @@ public final class Settings
 	}
     }
 
-    public double rsoMass = 1.0;
-    public double rsoArea = 1.0;
+    public double rsoMass = 5.0;
+    public double rsoArea = 0.01;
     public Facet[] rsoFacets;
     public double[] rsoSolarArrayAxis;
     public double rsoSolarArrayArea;
@@ -249,11 +250,14 @@ public final class Settings
     public double estmDMCCorrTime = 40.0;
     public double estmDMCSigmaPert = 5.0E-9;
     public Parameter estmDMCAcceleration = new Parameter("DMC", -1E-3, 1E-3, 0.0, "Estimate");
+    public double estmOutlierSigma = 0.0;
+    public int estmOutlierWarmup = 0;
 
     protected Atmosphere atmModel;
     protected HashMap<String, GroundStation> stations;
     protected ArrayList<ForceModel> forces;
     protected ArrayList<Parameter> parameters;
+    protected RealMatrix parameterMatrix;
     protected Frame propFrame;
 
     public Settings build()
@@ -275,9 +279,8 @@ public final class Settings
 	{
 	    String k = kv.getKey();
 	    Station v = kv.getValue();
-	    GroundStation sta = new GroundStation(new TopocentricFrame(new OneAxisEllipsoid(
-									   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-									   Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
+	    GroundStation sta = new GroundStation(new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+											    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
 								       new GeodeticPoint(v.latitude, v.longitude, v.altitude), k));
 	    sta.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
@@ -332,13 +335,13 @@ public final class Settings
 	    radnsc = new IsotropicRadiationSingleCoefficient(rsoArea, rpCoeffReflection.value, rpCoeffReflection.min, rpCoeffReflection.max);
 	}
 
-	if (dragModel.equals("Exponential"))
+	if (dragModel.equalsIgnoreCase("Exponential"))
 	{
 	    atmModel = new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 									    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
 						       dragExpRho0, dragExpH0, dragExpHscale);
 	}
-	else if (dragModel.equals("MSISE"))
+	else if (dragModel.equalsIgnoreCase("MSISE"))
 	{
 	    int apflag = 1;
 	    if (dragMSISEFlags != null)
@@ -372,7 +375,7 @@ public final class Settings
 	    return;
 	for (Maneuver m : cfgManeuvers)
 	{
-	    if (m.triggerEvent.equals("DateTime") && m.maneuverType.equals("ConstantThrust"))
+	    if (m.triggerEvent.equalsIgnoreCase("DateTime") && m.maneuverType.equalsIgnoreCase("ConstantThrust"))
 		forces.add(new ConstantThrustManeuver(DataManager.parseDateTime(m.time), m.maneuverParams[3], m.maneuverParams[4], m.maneuverParams[5],
 						      new Vector3D(m.maneuverParams[0], m.maneuverParams[1], m.maneuverParams[2])));
 	}
@@ -380,19 +383,20 @@ public final class Settings
 
     private void loadParameters()
     {
-	int[] counts = new int[]{0, 0};
-	String[] ops = {"Estimate", "Consider"};
+	final int[] counts = new int[]{0, 0};
+	final String[] ops = {"Estimate", "Consider"};
+
 	parameters = new ArrayList<Parameter>();
 	for (int i = 0; i < ops.length; i++)
 	{
-	    if (dragCoefficient.estimation != null && dragCoefficient.estimation.equals(ops[i]))
+	    if (dragCoefficient.estimation != null && dragCoefficient.estimation.equalsIgnoreCase(ops[i]))
 	    {
 		counts[i]++;
 		parameters.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min,
 					     dragCoefficient.max, dragCoefficient.value, ops[i]));
 	    }
 
-	    if (rpCoeffReflection.estimation != null && rpCoeffReflection.estimation.equals(ops[i]))
+	    if (rpCoeffReflection.estimation != null && rpCoeffReflection.estimation.equalsIgnoreCase(ops[i]))
 	    {
 		counts[i]++;
 		parameters.add(new Parameter(RadiationSensitive.REFLECTION_COEFFICIENT, rpCoeffReflection.min,
@@ -406,39 +410,46 @@ public final class Settings
 					     estmDMCAcceleration.max, estmDMCAcceleration.value, ops[0]));
 	    }
 
-	    if (cfgStations == null || cfgMeasurements == null || !estmFilter.equals("UKF"))
+	    if (cfgStations == null || cfgMeasurements == null || !estmFilter.equalsIgnoreCase("UKF"))
 		continue;
 
 	    for (Map.Entry<String, Station> skv : cfgStations.entrySet())
 	    {
-		Station sv = skv.getValue();
-		if (sv.biasEstimation != null && sv.biasEstimation.equals(ops[i]))
+		final Station sv = skv.getValue();
+		if (sv.biasEstimation != null && sv.biasEstimation.equalsIgnoreCase(ops[i]))
 		{
-		    String sk = skv.getKey();
+		    final String sk = skv.getKey();
 		    for (String mk : cfgMeasurements.keySet())
 		    {
 			double bias = 0.0;
-			if (mk.equals("Azimuth"))
+			if (mk.equalsIgnoreCase("Azimuth"))
 			    bias = sv.azimuthBias;
-			else if (mk.equals("Elevation"))
+			else if (mk.equalsIgnoreCase("Elevation"))
 			    bias = sv.elevationBias;
-			else if (mk.equals("Range"))
+			else if (mk.equalsIgnoreCase("Range"))
 			    bias = sv.rangeBias;
-			else if (mk.equals("RangeRate"))
+			else if (mk.equalsIgnoreCase("RangeRate"))
 			    bias = sv.rangeRateBias;
-			else if (mk.equals("RightAscension"))
+			else if (mk.equalsIgnoreCase("RightAscension"))
 			    bias = sv.rightAscensionBias;
-			else if (mk.equals("Declination"))
+			else if (mk.equalsIgnoreCase("Declination"))
 			    bias = sv.declinationBias;
 			else
 			    continue;
 
 			counts[i]++;
-			String name = new StringBuilder(sk).append(mk).toString();
+			final String name = new StringBuilder(sk).append(mk).toString();
 			parameters.add(new Parameter(name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, bias, ops[i]));
 		    }
 		}
 	    }
+	}
+
+	parameterMatrix = MatrixUtils.createRealIdentityMatrix(counts[0] + counts[1] + 6);
+	if (counts[1] > 0)
+	{
+	    final RealMatrix zeros = MatrixUtils.createRealMatrix(counts[1], counts[1]);
+	    parameterMatrix.setSubMatrix(zeros.getData(), counts[0] + 6, counts[0] + 6);
 	}
     }
 
@@ -450,8 +461,8 @@ public final class Settings
 	if (state0 == null)
 	{
 	    AbsoluteDate epoch;
-	    TLE parser = new TLE(propInitialTLE[0], propInitialTLE[1]);
-	    TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
+	    final TLE parser = new TLE(propInitialTLE[0], propInitialTLE[1]);
+	    final TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
 
 	    if (propStart != null)
 		epoch = DataManager.parseDateTime(propStart);
@@ -466,10 +477,10 @@ public final class Settings
 	    topv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]),
 				     new Vector3D(state0[3], state0[4], state0[5]));
 
-	Vector3D p = topv.getPosition();
-	Vector3D v = topv.getVelocity();
+	final Vector3D p = topv.getPosition();
+	final Vector3D v = topv.getVelocity();
 	state0 = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
-	double[] X0 = new double[parameters.size() + 6];
+	final double[] X0 = new double[parameters.size() + 6];
 	for (int i = 0; i < X0.length; i++)
 	{
 	    if (i < 6)
@@ -490,11 +501,11 @@ public final class Settings
 	OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 						      Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 
-	if (rsoAttitudeProvider.equals("NadirPointing"))
+	if (rsoAttitudeProvider.equalsIgnoreCase("NadirPointing"))
 	    attpro = new NadirPointing(propFrame, shape);
-	if (rsoAttitudeProvider.equals("BodyCenterPointing"))
+	if (rsoAttitudeProvider.equalsIgnoreCase("BodyCenterPointing"))
 	    attpro = new BodyCenterPointing(propFrame, shape);
-	if (rsoAttitudeProvider.equals("FixedRate") && rsoSpinVelocity != null && rsoSpinAcceleration != null)
+	if (rsoAttitudeProvider.equalsIgnoreCase("FixedRate") && rsoSpinVelocity != null && rsoSpinAcceleration != null)
 	{
 	    double[] X0 = propInitialState;
 	    AbsoluteDate t0 = DataManager.parseDateTime(propStart);
@@ -513,6 +524,7 @@ public final class Settings
     public RealMatrix getProcessNoiseMatrix(double t)
     {
 	int i;
+	t = FastMath.abs(t);
 	final double t2 = t*t;
 	final double t3 = t2*t;
 	final double t4 = t3*t;
@@ -583,9 +595,9 @@ public final class Settings
 	    return;
 	for (Maneuver m : cfgManeuvers)
 	{
-	    if (m.triggerEvent.equals("DateTime"))
+	    if (m.triggerEvent.equalsIgnoreCase("DateTime"))
 	    {
-		if (m.maneuverType.equals("ConstantThrust"))
+		if (m.maneuverType.equalsIgnoreCase("ConstantThrust"))
 		    continue;
 
 		EventHandling<DateDetector> handler = new EventHandling<DateDetector>(m.triggerEvent, m.maneuverType,
@@ -598,7 +610,7 @@ public final class Settings
 		}
 	    }
 
-	    if (m.triggerEvent.equals("LongitudeCrossing"))
+	    if (m.triggerEvent.equalsIgnoreCase("LongitudeCrossing"))
 	    {
 		OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 							     Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));

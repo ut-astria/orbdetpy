@@ -32,6 +32,7 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -229,6 +230,13 @@ public final class Measurements
 		measObjs.add(new PV(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]),
 				    cposvel.error, 1.0, new ObservableSatellite(0)));
 	    }
+	}
+
+	if (odCfg.estmFilter.equalsIgnoreCase("EKF") && odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0)
+	{
+	    OutlierFilter filter = new OutlierFilter(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma);
+	    for (ObservedMeasurement<?> m: measObjs)
+		m.addModifier(filter);
 	}
     }
 }

@@ -44,7 +44,7 @@ class RemoteServer:
 
         atexit.register(RemoteServer.disconnect)
         with grpc.insecure_channel(cls.rpc_uri) as chan:
-            grpc.channel_ready_future(chan).result(timeout = 10.0)
+            grpc.channel_ready_future(chan).result(timeout = 60.0)
 
     @classmethod
     def channel(cls):

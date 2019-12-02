@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BASEDIR=$(dirname "$0")
-pushd $BASEDIR > /dev/null
+BASE_DIR=$(dirname "$0")
+pushd $BASE_DIR > /dev/null
 
 python -m grpc_tools.protoc -I src/main/proto/ --python_out=./rpc --grpc_python_out=./rpc src/main/proto/*.proto
 

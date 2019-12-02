@@ -34,17 +34,24 @@ def plot(config, measurements, orbit_fit, interactive = False,
     dmcrun = (cfg["Estimation"].get("DMCCorrTime", 0.0) > 0.0 and
               cfg["Estimation"].get("DMCSigmaPert", 0.0) > 0.0)
     dmcidx = 6
-    
+
+    cd = cfg.get("Drag", {}).get("Coefficient", {}).get("Estimation", "")
+    cr = cfg.get("RadiationPressure", {}).get("Creflection", {}).get("Estimation", "")
+    if (cd == "Estimate"):
+        dmcidx += 1
+    if (cr == "Estimate"):
+        dmcidx += 1
+
     parnames = []
-    if (cfg["Drag"]["Coefficient"]["Estimation"] == "Estimate"):
-        dmcidx += 1
-        parnames.append(r"$C_D$")
-    if (cfg["RadiationPressure"]["Creflection"]["Estimation"] == "Estimate"):
-        dmcidx += 1
-        parnames.append(r"$C_R$")
-    for s in cfg.get("Stations", {}).keys():
-        for m in cfg.get("Measurements", {}).keys():
-            parnames.append(s + m)
+    if (cd == "Estimate" or (cd == "Consider" and cr == "Consider")):
+        parnames.extend([r"$C_D$", r"$C_R$"])
+    else:
+        parnames.extend([r"$C_R$", r"$C_D$"])
+
+    for sk, sv in cfg.get("Stations", {}).items():
+        if (sv.get("BiasEstimation", "") in ["Estimate", "Consider"]):
+            for m in cfg.get("Measurements", {}).keys():
+                parnames.append(sk + m)
 
     tstamp,prefit,posfit,inocov,params,estmacc,estmcov = [],[],[],[],[],[],[]
     for i, o in zip(inp, out):
@@ -90,7 +97,8 @@ def plot(config, measurements, orbit_fit, interactive = False,
     cov = numpy.array(inocov)
     par = numpy.array(params)
     estmacc = numpy.array(estmacc)
-    tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
+    start = tstamp[0] if (tstamp[0] < tstamp[-1]) else tstamp[-1]
+    tim = [(t - start).total_seconds()/3600 for t in tstamp]
 
     angles = ["Azimuth", "Elevation", "RightAscension", "Declination"]
     if (key[0] in angles and key[1] in angles):

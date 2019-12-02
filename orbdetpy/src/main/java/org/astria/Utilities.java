@@ -76,31 +76,31 @@ public final class Utilities
 	    for (TDMFile.Observation obs : blk.getObservations())
 	    {
 		String keyw = obs.getKeyword();
-		if (!(keyw.equals("RANGE") || keyw.equals("DOPPLER_INSTANTANEOUS") ||
-		      keyw.equals("ANGLE_1") || keyw.equals("ANGLE_2")))
+		if (!(keyw.equalsIgnoreCase("RANGE") || keyw.equalsIgnoreCase("DOPPLER_INSTANTANEOUS") ||
+		      keyw.equalsIgnoreCase("ANGLE_1") || keyw.equalsIgnoreCase("ANGLE_2")))
 		    continue;
 		if (i == 0)
 		    obj = new Measurements.SimulatedMeasurement();
 
 		if (atype == null)
 		{
-		    if (keyw.equals("RANGE"))
+		    if (keyw.equalsIgnoreCase("RANGE"))
 			obj.range = obs.getMeasurement()*1000.0;
-		    else if (keyw.equals("DOPPLER_INSTANTANEOUS"))
+		    else if (keyw.equalsIgnoreCase("DOPPLER_INSTANTANEOUS"))
 			obj.rangeRate = obs.getMeasurement()*1000.0;
 		}
-		else if (atype.equals("RADEC"))
+		else if (atype.equalsIgnoreCase("RADEC"))
 		{
-		    if (keyw.equals("ANGLE_1"))
+		    if (keyw.equalsIgnoreCase("ANGLE_1"))
 			obj.rightAscension = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw.equals("ANGLE_2"))
+		    else if (keyw.equalsIgnoreCase("ANGLE_2"))
 			obj.declination = obs.getMeasurement()*FastMath.PI/180.0;
 		}
-		else if (atype.equals("AZEL"))
+		else if (atype.equalsIgnoreCase("AZEL"))
 		{
-		    if (keyw.equals("ANGLE_1"))
+		    if (keyw.equalsIgnoreCase("ANGLE_1"))
 			obj.azimuth = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw.equals("ANGLE_2"))
+		    else if (keyw.equalsIgnoreCase("ANGLE_2"))
 			obj.elevation = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 

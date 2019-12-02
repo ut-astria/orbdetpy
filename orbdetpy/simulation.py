@@ -41,13 +41,12 @@ def simulate_measurements(config, output_file = None,
 
     def async_helper(resp):
         sim_data = convert_measurements(resp.result().array)
-        if (async_callback):
-            async_callback(sim_data, async_extra)
-
         if (output_file):
             write_output_file(output_file, sim_data)
 
         channel.close()
+        if (async_callback):
+            async_callback(sim_data, async_extra)
         return(sim_data)
 
     channel = RemoteServer.channel()

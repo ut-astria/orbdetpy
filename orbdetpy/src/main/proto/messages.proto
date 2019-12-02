@@ -138,6 +138,8 @@ message Settings
     double estm_DMC_corr_time = 48;
     double estm_DMC_sigma_pert = 49;
     Parameter estm_DMC_acceleration = 50;
+    double estm_outlier_sigma = 51;
+    int32 estm_outlier_warmup = 52;
 }
 
 message SettingsArray

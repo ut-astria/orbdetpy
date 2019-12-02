@@ -42,13 +42,12 @@ def propagate_orbits(config_list, output_file = None,
 
     def async_helper(resp):
         prop_data = convert_propagation(resp.result().array)
-        if (async_callback):
-            async_callback(prop_data, async_extra)
-
         if (output_file):
             write_output_file(output_file, prop_data)
 
         channel.close()
+        if (async_callback):
+            async_callback(prop_data, async_extra)
         return(prop_data)
 
     channel = RemoteServer.channel()

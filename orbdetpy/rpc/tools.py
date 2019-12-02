@@ -59,7 +59,9 @@ _settings_fields = {
     "estm_covariance": [["Estimation", "Covariance"], None],
     "estm_process_noise": [["Estimation", "ProcessNoise"], None],
     "estm_DMC_corr_time": [["Estimation", "DMCCorrTime"], 0.0],
-    "estm_DMC_sigma_pert": [["Estimation", "DMCSigmaPert"], 0.0]
+    "estm_DMC_sigma_pert": [["Estimation", "DMCSigmaPert"], 0.0],
+    "estm_outlier_sigma": [["Estimation", "OutlierSigma"], 0.0],
+    "estm_outlier_warmup": [["Estimation", "OutlierWarmup"], 0]
 }
 
 _measurement_fields = {

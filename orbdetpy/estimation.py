@@ -44,13 +44,12 @@ def determine_orbit(config, meas, output_file = None,
 
     def async_helper(resp):
         fit_data = convert_estimation(resp.result().array)
-        if (async_callback):
-            async_callback(fit_data, async_extra)
-
         if (output_file):
             write_output_file(output_file, fit_data)
 
         channel.close()
+        if (async_callback):
+            async_callback(fit_data, async_extra)
         return(fit_data)
 
     channel = RemoteServer.channel()
