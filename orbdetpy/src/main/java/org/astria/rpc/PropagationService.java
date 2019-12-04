@@ -34,7 +34,7 @@ public final class PropagationService extends PropagationGrpc.PropagationImplBas
 	    ArrayList<Settings> cfgObjs = new ArrayList<Settings>(req.getArrayCount());
 	    for (int i = 0; i < req.getArrayCount(); i++)
 		cfgObjs.add(Tools.buildSettingsFromRequest(req.getArray(i)));
-	    ArrayList<ParallelPropagation.PropagationOutput> propOut = new ParallelPropagation().propagate(cfgObjs);
+	    ArrayList<ParallelPropagation.PropagationOutput> propOut = new ParallelPropagation(cfgObjs).propagate();
 
 	    Messages.PropagationOutputArray.Builder builder = Messages.PropagationOutputArray
 		.newBuilder().addAllArray(Tools.buildResponseFromPropagation(propOut));

@@ -52,7 +52,7 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 
     @Override public Action eventOccurred(SpacecraftState state, T det, boolean incr)
     {
-	if (trigEvent.equals("LongitudeCrossing") && mnvrType.equals("StopPropagation"))
+	if (trigEvent.equalsIgnoreCase("LongitudeCrossing") && mnvrType.equalsIgnoreCase("StopPropagation"))
 	    return(Action.STOP);
 	return(Action.RESET_STATE);
     }
@@ -68,14 +68,14 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	double theta = kep.getTrueAnomaly();
 
 	Orbit neworb = null;
-	if (mnvrType.equals("NorthSouthStationing") || mnvrType.equals("EastWestStationing"))
+	if (mnvrType.equalsIgnoreCase("NorthSouthStationing") || mnvrType.equalsIgnoreCase("EastWestStationing"))
 	{
 	    PVCoordinates pvc = old.getOrbit().getPVCoordinates();
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 							  Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 	    GeodeticPoint geo = earth.transform(pvc.getPosition(), old.getFrame(), old.getDate());
 
-	    if (mnvrType.equals("NorthSouthStationing"))
+	    if (mnvrType.equalsIgnoreCase("NorthSouthStationing"))
 		geo = new GeodeticPoint(geo.getLatitude() + (target - geo.getLatitude())/steps,
 					geo.getLongitude(), geo.getAltitude());
 	    else
@@ -90,17 +90,17 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	}
 	else
 	{
-	    if (mnvrType.equals("SemiMajorAxisChange"))
+	    if (mnvrType.equalsIgnoreCase("SemiMajorAxisChange"))
 		a += (target - a)/steps;
-	    if (mnvrType.equals("PerigeeChange"))
+	    if (mnvrType.equalsIgnoreCase("PerigeeChange"))
 		a += (target - a/(1 - e))/steps;
-	    if (mnvrType.equals("EccentricityChange"))
+	    if (mnvrType.equalsIgnoreCase("EccentricityChange"))
 		e += (target - e)/steps;
-	    if (mnvrType.equals("InclinationChange"))
+	    if (mnvrType.equalsIgnoreCase("InclinationChange"))
 		i += (target - i)/steps;
-	    if (mnvrType.equals("RAANChange"))
+	    if (mnvrType.equalsIgnoreCase("RAANChange"))
 		O += (target - O)/steps;
-	    if (mnvrType.equals("ArgPerigeeChange"))
+	    if (mnvrType.equalsIgnoreCase("ArgPerigeeChange"))
 		w += (target - w)/steps;
 	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
 	}

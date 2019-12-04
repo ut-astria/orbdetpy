@@ -24,6 +24,7 @@ import java.util.HashMap;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
@@ -69,7 +70,6 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.LongitudeCrossingDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -84,6 +84,10 @@ public final class Settings
 	public double min;
 	public double max;
 	public String estimation;
+
+	public Parameter()
+	{
+	}
 
 	public Parameter(String name, double min, double max, double value, String estimation)
 	{
@@ -100,6 +104,10 @@ public final class Settings
 	public double[] normal;
 	public double area;
 
+	public Facet()
+        {
+	}
+
 	public Facet(double[] normal, double area)
         {
 	    this.normal = normal;
@@ -114,6 +122,10 @@ public final class Settings
 	public double[] triggerParams;
 	public String maneuverType;
 	public double[] maneuverParams;
+
+	public Maneuver()
+        {
+	}
 
 	public Maneuver(String time, String triggerEvent, double[] triggerParams, String maneuverType, double[] maneuverParams)
         {
@@ -138,10 +150,15 @@ public final class Settings
 	public double declinationBias;
 	public double[] positionBias;
 	public double[] positionVelocityBias;
+	public String biasEstimation;
+
+	public Station()
+        {
+	}
 
 	public Station(double latitude, double longitude, double altitude, double azimuthBias, double elevationBias,
 		       double rangeBias, double rangeRateBias, double rightAscensionBias, double declinationBias,
-		       double[] positionBias, double[] positionVelocityBias)
+		       double[] positionBias, double[] positionVelocityBias, String biasEstimation)
         {
 	    this.latitude = latitude;
 	    this.longitude = longitude;
@@ -154,6 +171,7 @@ public final class Settings
 	    this.declinationBias = declinationBias;
 	    this.positionBias = positionBias;
 	    this.positionVelocityBias = positionVelocityBias;
+	    this.biasEstimation = biasEstimation;
 	}
     }
 
@@ -162,6 +180,10 @@ public final class Settings
 	public boolean twoWay;
 	public double[] error;
 
+	public Measurement()
+        {
+	}
+
 	public Measurement(boolean twoWay, double[] error)
         {
 	    this.twoWay = twoWay;
@@ -169,14 +191,14 @@ public final class Settings
 	}
     }
 
-    public double rsoMass = 1.0;
-    public double rsoArea = 1.0;
-    public Facet[] rsoFacets = null;
-    public double[] rsoSolarArrayAxis = null;
-    public double rsoSolarArrayArea = 0.0;
-    public String rsoAttitudeProvider = null;
-    public double[] rsoSpinVelocity = null;
-    public double[] rsoSpinAcceleration = null;
+    public double rsoMass = 5.0;
+    public double rsoArea = 0.01;
+    public Facet[] rsoFacets;
+    public double[] rsoSolarArrayAxis;
+    public double rsoSolarArrayArea;
+    public String rsoAttitudeProvider;
+    public double[] rsoSpinVelocity;
+    public double[] rsoSpinAcceleration;
 
     public int gravityDegree = 20;
     public int gravityOrder = 20;
@@ -189,25 +211,25 @@ public final class Settings
 
     public String dragModel = "MSISE";
     public Parameter dragCoefficient = new Parameter("Cd", 1.0, 3.0, 2.0, "Estimate");
-    public int[][] dragMSISEFlags = null;
-    public double dragExpRho0 = 0.0;
-    public double dragExpH0 = 0.0;
-    public double dragExpHscale = 0.0;
+    public int[][] dragMSISEFlags;
+    public double dragExpRho0;
+    public double dragExpH0;
+    public double dragExpHscale;
 
     public boolean rpSun = true;
     public Parameter rpCoeffReflection = new Parameter("Cr", 1.0, 2.0, 1.5, "Estimate");
-    public double rpCoeffAbsorption = 0.0;
+    public double rpCoeffAbsorption;
 
-    public Maneuver[] cfgManeuvers = null;
+    public Maneuver[] cfgManeuvers;
 
-    public String propStart = null;
-    public String propEnd = null;
-    public double propStep = 0.0;
-    public double[] propInitialState = null;
-    public String[] propInitialTLE = null;
+    public String propStart;
+    public String propEnd;
+    public double propStep;
+    public double[] propInitialState;
+    public String[] propInitialTLE;
     public String propInertialFrame = "EME2000";
-    public String propStepHandlerStartTime = null;
-    public String propStepHandlerEndTime = null;
+    public String propStepHandlerStartTime;
+    public String propStepHandlerEndTime;
 
     public double integMinTimeStep = 1.0E-3;
     public double integMaxTimeStep = 300.0;
@@ -219,48 +241,46 @@ public final class Settings
     public boolean simIncludeExtras = false;
     public boolean simIncludeStationState = false;
 
-    public Map<String, Station> cfgStations = null;
-    public Map<String, Measurement> cfgMeasurements = null;
+    public Map<String, Station> cfgStations;
+    public Map<String, Measurement> cfgMeasurements;
 
-    public String estmFilter = null;
-    public double[] estmCovariance = null;
-    public double[] estmProcessNoise = null;
-    public double estmDMCCorrTime = 0.0;
-    public double estmDMCSigmaPert = 0.0;
-    public Parameter estmDMCAcceleration = null;
+    public String estmFilter = "UKF";
+    public double[] estmCovariance = new double[]{25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 1.00, 0.25, 1E-6, 1E-6, 1E-6};
+    public double[] estmProcessNoise;
+    public double estmDMCCorrTime = 40.0;
+    public double estmDMCSigmaPert = 5.0E-9;
+    public Parameter estmDMCAcceleration = new Parameter("DMC", -1E-3, 1E-3, 0.0, "Estimate");
+    public double estmOutlierSigma = 0.0;
+    public int estmOutlierWarmup = 0;
 
-    protected Atmosphere atmModel = null;
-    protected HashMap<String, GroundStation> stations = null;
-    protected ArrayList<ForceModel> forces = null;
-    protected ArrayList<Parameter> estParams = null;
-    protected Frame propFrame = null;
+    protected Atmosphere atmModel;
+    protected HashMap<String, GroundStation> stations;
+    protected ArrayList<ForceModel> forces;
+    protected ArrayList<Parameter> parameters;
+    protected RealMatrix parameterMatrix;
+    protected Frame propFrame;
 
     public Settings build()
     {
 	propFrame = DataManager.getFrame(propInertialFrame);
 	loadGroundStations();
 	loadForces();
-	loadEstimatedParameters();
+	loadParameters();
 	return(this);
     }
 
     private void loadGroundStations()
     {
-	if (cfgStations != null)
-	    stations = new HashMap<String, GroundStation>(cfgStations.size());
-	else
-	{
-	    stations = new HashMap<String, GroundStation>();
+	stations = new HashMap<String, GroundStation>();
+	if (cfgStations == null)
 	    return;
-	}
 
 	for (Map.Entry<String, Station> kv : cfgStations.entrySet())
 	{
 	    String k = kv.getKey();
 	    Station v = kv.getValue();
-	    GroundStation sta = new GroundStation(new TopocentricFrame(new OneAxisEllipsoid(
-									   Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-									   Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
+	    GroundStation sta = new GroundStation(new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+											    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
 								       new GeodeticPoint(v.latitude, v.longitude, v.altitude), k));
 	    sta.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
@@ -315,13 +335,13 @@ public final class Settings
 	    radnsc = new IsotropicRadiationSingleCoefficient(rsoArea, rpCoeffReflection.value, rpCoeffReflection.min, rpCoeffReflection.max);
 	}
 
-	if (dragModel.equals("Exponential"))
+	if (dragModel.equalsIgnoreCase("Exponential"))
 	{
 	    atmModel = new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 									    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF")),
 						       dragExpRho0, dragExpH0, dragExpHscale);
 	}
-	else if (dragModel.equals("MSISE"))
+	else if (dragModel.equalsIgnoreCase("MSISE"))
 	{
 	    int apflag = 1;
 	    if (dragMSISEFlags != null)
@@ -355,29 +375,81 @@ public final class Settings
 	    return;
 	for (Maneuver m : cfgManeuvers)
 	{
-	    if (m.triggerEvent.equals("DateTime") && m.maneuverType.equals("ConstantThrust"))
-		forces.add(new ConstantThrustManeuver(new AbsoluteDate(DateTimeComponents.parseDateTime(m.time), DataManager.getTimeScale("UTC")),
-						      m.maneuverParams[3], m.maneuverParams[4], m.maneuverParams[5],
+	    if (m.triggerEvent.equalsIgnoreCase("DateTime") && m.maneuverType.equalsIgnoreCase("ConstantThrust"))
+		forces.add(new ConstantThrustManeuver(DataManager.parseDateTime(m.time), m.maneuverParams[3], m.maneuverParams[4], m.maneuverParams[5],
 						      new Vector3D(m.maneuverParams[0], m.maneuverParams[1], m.maneuverParams[2])));
 	}
     }
 
-    private void loadEstimatedParameters()
+    private void loadParameters()
     {
-	estParams = new ArrayList<Parameter>();
-	if (dragCoefficient.estimation != null && dragCoefficient.estimation.equals("Estimate"))
-	    estParams.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min, dragCoefficient.max,
-					dragCoefficient.value, "Estimate"));
+	final int[] counts = new int[]{0, 0};
+	final String[] ops = {"Estimate", "Consider"};
 
-	if (rpCoeffReflection.estimation != null && rpCoeffReflection.estimation.equals("Estimate"))
-	    estParams.add(new Parameter(RadiationSensitive.REFLECTION_COEFFICIENT, rpCoeffReflection.min, rpCoeffReflection.max,
-					rpCoeffReflection.value, "Estimate"));
-
-	if (estmDMCCorrTime > 0.0 && estmDMCSigmaPert > 0.0)
+	parameters = new ArrayList<Parameter>();
+	for (int i = 0; i < ops.length; i++)
 	{
-	    for (int i = 0; i < 3; i++)
-		estParams.add(new Parameter(Estimation.DMC_ACC_ESTM[i], estmDMCAcceleration.min, estmDMCAcceleration.max,
-					    estmDMCAcceleration.value, "Estimate"));
+	    if (dragCoefficient.estimation != null && dragCoefficient.estimation.equalsIgnoreCase(ops[i]))
+	    {
+		counts[i]++;
+		parameters.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min,
+					     dragCoefficient.max, dragCoefficient.value, ops[i]));
+	    }
+
+	    if (rpCoeffReflection.estimation != null && rpCoeffReflection.estimation.equalsIgnoreCase(ops[i]))
+	    {
+		counts[i]++;
+		parameters.add(new Parameter(RadiationSensitive.REFLECTION_COEFFICIENT, rpCoeffReflection.min,
+					     rpCoeffReflection.max, rpCoeffReflection.value, ops[i]));
+	    }
+
+	    for (int j = 0; j < 3 && i == 0 && estmDMCCorrTime > 0.0 && estmDMCSigmaPert > 0.0; j++)
+	    {
+		counts[0]++;
+		parameters.add(new Parameter(Estimation.DMC_ACC_ESTM[j], estmDMCAcceleration.min,
+					     estmDMCAcceleration.max, estmDMCAcceleration.value, ops[0]));
+	    }
+
+	    if (cfgStations == null || cfgMeasurements == null || !estmFilter.equalsIgnoreCase("UKF"))
+		continue;
+
+	    for (Map.Entry<String, Station> skv : cfgStations.entrySet())
+	    {
+		final Station sv = skv.getValue();
+		if (sv.biasEstimation != null && sv.biasEstimation.equalsIgnoreCase(ops[i]))
+		{
+		    final String sk = skv.getKey();
+		    for (String mk : cfgMeasurements.keySet())
+		    {
+			double bias = 0.0;
+			if (mk.equalsIgnoreCase("Azimuth"))
+			    bias = sv.azimuthBias;
+			else if (mk.equalsIgnoreCase("Elevation"))
+			    bias = sv.elevationBias;
+			else if (mk.equalsIgnoreCase("Range"))
+			    bias = sv.rangeBias;
+			else if (mk.equalsIgnoreCase("RangeRate"))
+			    bias = sv.rangeRateBias;
+			else if (mk.equalsIgnoreCase("RightAscension"))
+			    bias = sv.rightAscensionBias;
+			else if (mk.equalsIgnoreCase("Declination"))
+			    bias = sv.declinationBias;
+			else
+			    continue;
+
+			counts[i]++;
+			final String name = new StringBuilder(sk).append(mk).toString();
+			parameters.add(new Parameter(name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, bias, ops[i]));
+		    }
+		}
+	    }
+	}
+
+	parameterMatrix = MatrixUtils.createRealIdentityMatrix(counts[0] + counts[1] + 6);
+	if (counts[1] > 0)
+	{
+	    final RealMatrix zeros = MatrixUtils.createRealMatrix(counts[1], counts[1]);
+	    parameterMatrix.setSubMatrix(zeros.getData(), counts[0] + 6, counts[0] + 6);
 	}
     }
 
@@ -388,31 +460,33 @@ public final class Settings
 
 	if (state0 == null)
 	{
-	    TLE parser = new TLE(propInitialTLE[0], propInitialTLE[1]);
-	    TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
 	    AbsoluteDate epoch;
+	    final TLE parser = new TLE(propInitialTLE[0], propInitialTLE[1]);
+	    final TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
+
 	    if (propStart != null)
-		epoch = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.getTimeScale("UTC"));
+		epoch = DataManager.parseDateTime(propStart);
 	    else
 	    {
 		epoch = parser.getDate().shiftedBy(0.0);
-		propStart = epoch.toString() + "Z";
+		propStart = DataManager.getUTCString(epoch);
 	    }
 	    topv = prop.getPVCoordinates(epoch, propFrame);
 	}
 	else
-	    topv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]), new Vector3D(state0[3], state0[4], state0[5]));
+	    topv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]),
+				     new Vector3D(state0[3], state0[4], state0[5]));
 
-	Vector3D p = topv.getPosition();
-	Vector3D v = topv.getVelocity();
+	final Vector3D p = topv.getPosition();
+	final Vector3D v = topv.getVelocity();
 	state0 = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
-	double[] X0 = new double[estParams.size() + 6];
+	final double[] X0 = new double[parameters.size() + 6];
 	for (int i = 0; i < X0.length; i++)
 	{
 	    if (i < 6)
 		X0[i] = state0[i];
 	    else
-		X0[i] = estParams.get(i - 6).value;
+		X0[i] = parameters.get(i - 6).value;
 	}
 
 	return(X0);
@@ -427,14 +501,14 @@ public final class Settings
 	OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 						      Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 
-	if (rsoAttitudeProvider.equals("NadirPointing"))
+	if (rsoAttitudeProvider.equalsIgnoreCase("NadirPointing"))
 	    attpro = new NadirPointing(propFrame, shape);
-	if (rsoAttitudeProvider.equals("BodyCenterPointing"))
+	if (rsoAttitudeProvider.equalsIgnoreCase("BodyCenterPointing"))
 	    attpro = new BodyCenterPointing(propFrame, shape);
-	if (rsoAttitudeProvider.equals("FixedRate") && rsoSpinVelocity != null && rsoSpinAcceleration != null)
+	if (rsoAttitudeProvider.equalsIgnoreCase("FixedRate") && rsoSpinVelocity != null && rsoSpinAcceleration != null)
 	{
 	    double[] X0 = propInitialState;
-	    AbsoluteDate t0 = new AbsoluteDate(DateTimeComponents.parseDateTime(propStart), DataManager.getTimeScale("UTC"));
+	    AbsoluteDate t0 = DataManager.parseDateTime(propStart);
 	    KeplerianPropagator prop = new KeplerianPropagator(new CartesianOrbit(new PVCoordinates(new Vector3D(X0[0], X0[1], X0[2]),
 												    new Vector3D(X0[3], X0[4], X0[5])),
 										  propFrame, t0, Constants.EGM96_EARTH_MU));
@@ -450,19 +524,21 @@ public final class Settings
     public RealMatrix getProcessNoiseMatrix(double t)
     {
 	int i;
-	double t2 = t*t;
-	double t3 = t2*t;
-	double t4 = t3*t;
-	double[][] Q = new double[estParams.size() + 6][estParams.size() + 6];
+	t = FastMath.abs(t);
+	final double t2 = t*t;
+	final double t3 = t2*t;
+	final double t4 = t3*t;
+	final double[][] Q = new double[parameters.size() + 6][parameters.size() + 6];
 
-	if (estmDMCCorrTime <= 0.0 || estmDMCSigmaPert <= 0.0)
+	if (estmProcessNoise != null && estmProcessNoise.length == 6)
 	{
-	    double[] P = estmProcessNoise;
+	    final double[] P = estmProcessNoise;
 	    for (i = 0; i < 3; i++)
 	    {
 		Q[i][i] = 0.25*t4*P[i];
 		Q[i][i+3] = 0.5*t3*P[i];
 	    }
+
 	    for (i = 3; i < 6; i++)
 	    {
 		Q[i][i] = t2*P[i];
@@ -472,22 +548,22 @@ public final class Settings
 	    return(new Array2DRowRealMatrix(Q));
 	}
 
-	int N = estParams.size() - 3;
-	double b = 1.0/estmDMCCorrTime;
-	double b2 = b*b;
-	double b3 = b2*b;
-	double b4 = b3*b;
-	double b5 = b4*b;
-	double et = FastMath.exp(-1.0*b*t);
-	double e2t = et*et;
-	double s2 = estmDMCSigmaPert*estmDMCSigmaPert;
+	final int N = parameters.size() - 3;
+	final double b = 1.0/estmDMCCorrTime;
+	final double b2 = b*b;
+	final double b3 = b2*b;
+	final double b4 = b3*b;
+	final double b5 = b4*b;
+	final double et = FastMath.exp(-1.0*b*t);
+	final double e2t = et*et;
+	final double s2 = estmDMCSigmaPert*estmDMCSigmaPert;
 
-	double Q00 = s2*(t3/(3*b2)-t2/b3+t*(1-2*et)/b4+0.5*(1-e2t)/b5); // pos-pos
-	double Q01 = s2*(0.5*t2/b2-t*(1-et)/b3+(1-et)/b4-0.5*(1-e2t)/b4); // pos-vel
-	double Q02 = s2*(0.5*(1-e2t)/b3-t*et/b2); // pos-acc
-	double Q11 = s2*(t/b2-2*(1-et)/b3+0.5*(1-e2t)/b3); // vel-vel
-	double Q12 = s2*(0.5*(1+e2t)/b2-et/b2); // vel-acc
-	double Q22 = 0.5*s2*(1-e2t)/b; // acc-acc
+	final double Q00 = s2*(t3/(3*b2)-t2/b3+t*(1-2*et)/b4+0.5*(1-e2t)/b5); // pos-pos
+	final double Q01 = s2*(0.5*t2/b2-t*(1-et)/b3+(1-et)/b4-0.5*(1-e2t)/b4); // pos-vel
+	final double Q02 = s2*(0.5*(1-e2t)/b3-t*et/b2); // pos-acc
+	final double Q11 = s2*(t/b2-2*(1-et)/b3+0.5*(1-e2t)/b3); // vel-vel
+	final double Q12 = s2*(0.5*(1+e2t)/b2-et/b2); // vel-acc
+	final double Q22 = 0.5*s2*(1-e2t)/b; // acc-acc
 
 	for (i = 0; i < 3; i++)
 	{
@@ -495,12 +571,14 @@ public final class Settings
 	    Q[i][i+3] = Q01;
 	    Q[i][i+N+6] = Q02;
 	}
+
 	for (i = 3; i < 6; i++)
 	{
 	    Q[i][i] = Q11;
 	    Q[i][i-3] = Q01;
 	    Q[i][i+N+3] = Q12;
 	}
+
 	for (i = N+6; i < N+9; i++)
 	{
 	    Q[i][i] = Q22;
@@ -517,14 +595,14 @@ public final class Settings
 	    return;
 	for (Maneuver m : cfgManeuvers)
 	{
-	    if (m.triggerEvent.equals("DateTime"))
+	    if (m.triggerEvent.equalsIgnoreCase("DateTime"))
 	    {
-		if (m.maneuverType.equals("ConstantThrust"))
+		if (m.maneuverType.equalsIgnoreCase("ConstantThrust"))
 		    continue;
 
 		EventHandling<DateDetector> handler = new EventHandling<DateDetector>(m.triggerEvent, m.maneuverType,
 										      m.maneuverParams[0], (int) m.maneuverParams[2]);
-		AbsoluteDate time = new AbsoluteDate(DateTimeComponents.parseDateTime(m.time), DataManager.getTimeScale("UTC"));
+		AbsoluteDate time = DataManager.parseDateTime(m.time);
 		for (int i = 0; i < m.maneuverParams[2]; i++)
 		{
 		    prop.addEventDetector(new DateDetector(time).withHandler(handler));
@@ -532,7 +610,7 @@ public final class Settings
 		}
 	    }
 
-	    if (m.triggerEvent.equals("LongitudeCrossing"))
+	    if (m.triggerEvent.equalsIgnoreCase("LongitudeCrossing"))
 	    {
 		OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 							     Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));

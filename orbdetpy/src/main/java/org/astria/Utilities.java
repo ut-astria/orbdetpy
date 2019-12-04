@@ -31,7 +31,6 @@ import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 
 public final class Utilities
@@ -49,7 +48,7 @@ public final class Utilities
 	{
 	    los[i] = new Vector3D(FastMath.cos(dec[i])*FastMath.cos(ra[i]),
 				  FastMath.cos(dec[i])*FastMath.sin(ra[i]), FastMath.sin(dec[i]));
-	    time[i] = new AbsoluteDate(DateTimeComponents.parseDateTime(tmstr[i]), DataManager.getTimeScale("UTC"));
+	    time[i] = DataManager.parseDateTime(tmstr[i]);
 
 	    GroundStation sta = new GroundStation(
 		new TopocentricFrame(oae, new GeodeticPoint(gslat[i], gslon[i], gsalt[i]), Integer.toString(i)));
@@ -77,38 +76,38 @@ public final class Utilities
 	    for (TDMFile.Observation obs : blk.getObservations())
 	    {
 		String keyw = obs.getKeyword();
-		if (!(keyw.equals("RANGE") || keyw.equals("DOPPLER_INSTANTANEOUS") ||
-		      keyw.equals("ANGLE_1") || keyw.equals("ANGLE_2")))
+		if (!(keyw.equalsIgnoreCase("RANGE") || keyw.equalsIgnoreCase("DOPPLER_INSTANTANEOUS") ||
+		      keyw.equalsIgnoreCase("ANGLE_1") || keyw.equalsIgnoreCase("ANGLE_2")))
 		    continue;
 		if (i == 0)
 		    obj = new Measurements.SimulatedMeasurement();
 
 		if (atype == null)
 		{
-		    if (keyw.equals("RANGE"))
-			obj.Range = obs.getMeasurement()*1000.0;
-		    else if (keyw.equals("DOPPLER_INSTANTANEOUS"))
-			obj.RangeRate = obs.getMeasurement()*1000.0;
+		    if (keyw.equalsIgnoreCase("RANGE"))
+			obj.range = obs.getMeasurement()*1000.0;
+		    else if (keyw.equalsIgnoreCase("DOPPLER_INSTANTANEOUS"))
+			obj.rangeRate = obs.getMeasurement()*1000.0;
 		}
-		else if (atype.equals("RADEC"))
+		else if (atype.equalsIgnoreCase("RADEC"))
 		{
-		    if (keyw.equals("ANGLE_1"))
-			obj.RightAscension = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw.equals("ANGLE_2"))
-			obj.Declination = obs.getMeasurement()*FastMath.PI/180.0;
+		    if (keyw.equalsIgnoreCase("ANGLE_1"))
+			obj.rightAscension = obs.getMeasurement()*FastMath.PI/180.0;
+		    else if (keyw.equalsIgnoreCase("ANGLE_2"))
+			obj.declination = obs.getMeasurement()*FastMath.PI/180.0;
 		}
-		else if (atype.equals("AZEL"))
+		else if (atype.equalsIgnoreCase("AZEL"))
 		{
-		    if (keyw.equals("ANGLE_1"))
-			obj.Azimuth = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw.equals("ANGLE_2"))
-			obj.Elevation = obs.getMeasurement()*FastMath.PI/180.0;
+		    if (keyw.equalsIgnoreCase("ANGLE_1"))
+			obj.azimuth = obs.getMeasurement()*FastMath.PI/180.0;
+		    else if (keyw.equalsIgnoreCase("ANGLE_2"))
+			obj.elevation = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 
 		if (++i == 2)
 		{
 		    i = 0;
-		    obj.Time = obs.getEpoch().toString() + "Z";
+		    obj.time = DataManager.getUTCString(obs.getEpoch());
 		    mall.add(obj);
 		}
 	    }

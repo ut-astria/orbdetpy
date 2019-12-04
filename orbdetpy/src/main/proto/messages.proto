@@ -68,6 +68,7 @@ message Station
     double declination_bias = 9;
     repeated double position_bias = 10 [packed = true];
     repeated double position_velocity_bias = 11 [packed = true];
+    string bias_estimation = 12;
 }
 
 message MeasurementSetting
@@ -137,6 +138,8 @@ message Settings
     double estm_DMC_corr_time = 48;
     double estm_DMC_sigma_pert = 49;
     Parameter estm_DMC_acceleration = 50;
+    double estm_outlier_sigma = 51;
+    int32 estm_outlier_warmup = 52;
 }
 
 message SettingsArray

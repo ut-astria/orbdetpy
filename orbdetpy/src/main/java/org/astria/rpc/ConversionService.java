@@ -18,7 +18,6 @@
 
 package org.astria.rpc;
 
-import java.util.List;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
@@ -30,9 +29,12 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
     {
 	try
 	{
-	    List<Double> pva = Conversion.transformFrame(req.getSrcFrame(), req.getTime(),
-							 req.getPvaList(), req.getDestFrame());
-	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder().addAllArray(pva);
+	    double[] pva = Conversion.transformFrame(req.getSrcFrame(), req.getTime(),
+						     req.getPvaList(), req.getDestFrame());
+
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
+	    for (int i = 0; i < pva.length; i++)
+		builder = builder.addArray(pva[i]);
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

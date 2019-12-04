@@ -56,7 +56,7 @@
     "Propagation" :
     {
 	"Start" : "2018-03-23T08:55:03Z",
-	"End" : "2018-03-24T08:55:03Z",
+	"End" : "2018-03-23T10:55:03Z",
 	"Step" : 300.0,
 	"InitialState" :
 	[
@@ -104,6 +104,8 @@
 	    "Value" : 0.0,
 	    "Min" : -1E-3,
 	    "Max" : 1E-3
-	}
+	},
+	"OutlierSigma" : 3.0,
+	"OutlierWarmup" : 5
     }
 }

@@ -15,15 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import io
-import os
-import glob
 import json
+from os import path
 from .version import __version__
 from orbdetpy.rpc.server import RemoteServer
 
 def read_param(param):
     if (isinstance(param, str)):
-        if (os.path.isfile(param)):
+        if (path.isfile(param)):
             with open(param, "r") as fp:
                 data = json.load(fp)
         else:
@@ -43,8 +42,9 @@ def write_output_file(outfile, data):
         json.dump(data, outfile)
 
 if (__name__ != '__main__'):
-    _rootdir = os.path.dirname(os.path.abspath(__file__))
-    _datadir = os.path.join(_rootdir, "data")
-    _libsdir = os.path.join(_rootdir, "target")
-    _jarfile = glob.glob(os.path.join(_libsdir, "astria*.jar"))[0]
+    _rootdir = path.dirname(path.abspath(__file__))
+    _datadir = path.join(_rootdir, "data")
+    _libsdir = path.join(_rootdir, "target")
+    _jarfile = path.join(_libsdir, "orbdetpy-server-{}.jar"
+                         .format(__version__))
     RemoteServer.connect(_datadir, _jarfile)

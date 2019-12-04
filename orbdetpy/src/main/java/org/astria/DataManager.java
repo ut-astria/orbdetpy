@@ -21,12 +21,18 @@ package org.astria;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
@@ -41,11 +47,11 @@ public final class DataManager
 	public HashMap<String, double[]> data;
     }
 
+    protected static ExecutorService threadPool;
     private static String dataPath;
 
     private static HashMap<String, TimeScale> timeScales;
     private static HashMap<String, Frame> refFrames;
-
     protected static MSISEData msiseData;
 
     private DataManager()
@@ -54,6 +60,8 @@ public final class DataManager
 
     public static void initialize(String path) throws Exception
     {
+	threadPool = Executors.newFixedThreadPool(FastMath.min(Runtime.getRuntime().availableProcessors(), 1024));
+
 	DataManager.dataPath = path;
 	DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File(path)));
 
@@ -120,5 +128,44 @@ public final class DataManager
 	if (name == null || !refFrames.containsKey(name))
 	    return(refFrames.get("EME2000"));
 	return(refFrames.get(name));
+    }
+
+    public static String getUTCString(AbsoluteDate time)
+    {
+	DateTimeComponents dtc = time.getComponents(getTimeScale("UTC"));
+	DateComponents dc = dtc.getDate();
+	TimeComponents tc = dtc.getTime();
+
+	StringBuilder sbsec = new StringBuilder(9);
+	if (tc.getSecond() < 10.0)
+	    sbsec.append("0");
+	sbsec.append(tc.getSecond());
+	if (sbsec.length() > 9)
+	    sbsec.setLength(9);
+	else
+	{
+	    while (sbsec.length() < 9)
+		sbsec.append("0");
+	}
+
+	StringBuilder sb = new StringBuilder(27).append(dc.getYear()).append("-");
+	if (dc.getMonth() < 10)
+	    sb.append("0");
+	sb.append(dc.getMonth()).append("-");
+	if (dc.getDay() < 10)
+	    sb.append("0");
+	sb.append(dc.getDay()).append("T");
+	if (tc.getHour() < 10)
+	    sb.append("0");
+	sb.append(tc.getHour()).append(":");
+	if (tc.getMinute() < 10)
+	    sb.append("0");
+	sb.append(tc.getMinute()).append(":").append(sbsec).append("Z");
+	return(sb.toString());
+    }
+
+    public static AbsoluteDate parseDateTime(String time)
+    {
+	return(new AbsoluteDate(DateTimeComponents.parseDateTime(time), getTimeScale("UTC")));
     }
 }

@@ -59,7 +59,9 @@ _settings_fields = {
     "estm_covariance": [["Estimation", "Covariance"], None],
     "estm_process_noise": [["Estimation", "ProcessNoise"], None],
     "estm_DMC_corr_time": [["Estimation", "DMCCorrTime"], 0.0],
-    "estm_DMC_sigma_pert": [["Estimation", "DMCSigmaPert"], 0.0]
+    "estm_DMC_sigma_pert": [["Estimation", "DMCSigmaPert"], 0.0],
+    "estm_outlier_sigma": [["Estimation", "OutlierSigma"], 0.0],
+    "estm_outlier_warmup": [["Estimation", "OutlierWarmup"], 0]
 }
 
 _measurement_fields = {
@@ -143,12 +145,13 @@ def build_settings(param):
 
     for k, v in inp.get("Stations", {}).items():
         sta =  messages_pb2.Station(latitude=v["Latitude"], longitude=v["Longitude"],
-                                               altitude=v["Altitude"], azimuth_bias=v.get("AzimuthBias", 0.0),
-                                               elevation_bias=v.get("ElevationBias", 0.0),
-                                               range_bias=v.get("RangeBias", 0.0),
-                                               range_rate_bias=v.get("RangeRateBias", 0.0),
-                                               right_ascension_bias=v.get("RightAscensionBias", 0.0),
-                                               declination_bias=v.get("DeclinationBias", 0.0))
+                                    altitude=v["Altitude"], azimuth_bias=v.get("AzimuthBias", 0.0),
+                                    elevation_bias=v.get("ElevationBias", 0.0),
+                                    range_bias=v.get("RangeBias", 0.0),
+                                    range_rate_bias=v.get("RangeRateBias", 0.0),
+                                    right_ascension_bias=v.get("RightAscensionBias", 0.0),
+                                    declination_bias=v.get("DeclinationBias", 0.0),
+                                    bias_estimation=v.get("BiasEstimation", ""))
         sta.position_bias.extend(v.get("PositionBias", [0.0]*3))
         sta.position_velocity_bias.extend(v.get("PositionVelocityBias", [0.0]*6))
         cfg.stations[k].CopyFrom(sta)
@@ -164,16 +167,6 @@ def build_settings(param):
                                                               estimation=coef.get("Estimation", "Estimate")))
     return(cfg)
 
-def convert_propagation(inputs):
-    output = []
-    for inp in inputs:
-        out = {}
-        output.append(out)
-        out["Time"] = inp.time
-        out["States"] = [list(i.array) for i in inp.states]
-
-    return(output)
-
 def build_measurements(param):
     output = []
     inputs = read_param(param)
@@ -188,6 +181,11 @@ def build_measurements(param):
                 else:
                     setattr(obj, dest, fld)
 
+    return(output)
+
+def convert_propagation(inputs):
+    output = [[inp.time, [list(i.array) for i in inp.states]]
+              for inp in inputs]
     return(output)
 
 def convert_measurements(inputs):

@@ -3,7 +3,7 @@ data simulation and orbit determination. The following sections describe
 the formatting requirements for these files.
 
 All strings in key names and values are case sensitive. Timestamps must be
-in UTC and given using the ISO 8601 format "yyyy-MM-ddThh:mm:ss.fffZ".
+in UTC and given in the ISO-8601 format "yyyy-MM-ddThh:mm:ss.ffffffZ".
 
 Configuration Files
 -------------------
@@ -39,14 +39,14 @@ Configuration files are needed for both simulation and orbit determination.
  "ExpHScale" : Altitude scale factor [m] for exponential drag.
 
  "Coefficient" : Drag coefficient {
- 
+
     "Value" : Initial value.
-    
+
     "Min" : Minimum value.
-    
+
     "Max" : Maximum value.
-    
-    "Estimation" : "Estimate" to estimate parameter or any other string to prevent estimation.
+
+    "Estimation" : "Estimate" to estimate, "Consider" to only consider the parameter in the UKF, or anything else to do neither.
     
     }
     
@@ -80,8 +80,8 @@ Configuration files are needed for both simulation and orbit determination.
 
   "Max" : Maximum value.
 
-  "Estimation" : "Estimate" to estimate parameter or any other string to prevent estimation.
-  
+  "Estimation" : "Estimate" to estimate, "Consider" to only consider the parameter in the UKF, or anything else to do neither.
+
   }
 
  }
@@ -157,6 +157,12 @@ Configuration files are needed for both simulation and orbit determination.
   "RightAscensionBias" : Optional sensor bias [rad].
 
   "DeclinationBias" : Optional sensor bias [rad].
+
+  "PositionBias" : Optional sensor bias [m, m, m].
+
+  "PositionVelocityBias" : Optional sensor bias [m, m, m, m/s, m/s, m/s].
+
+  "BiasEstimation" : (UKF only) "Estimate" to estimate, "Consider" to only consider biases, or anything else to do neither.
 
   }
   
@@ -280,6 +286,10 @@ Valid combinations of measurements are as follows:
     "Max" : Maximum value [m/s^2].
     
     }
+
+ "OutlierSigma" : Number of sigmas from innovation for a measurement to be an outlier; positive number enables outlier detection.
+
+ "OutlierWarmup" : Number of measurements to process before enabling outlier detection; positive number enables outlier detection.
 
  }
 

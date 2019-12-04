@@ -33,6 +33,25 @@ def plot(config, measurements, orbit_fit, interactive = False,
     key = list(cfg["Measurements"].keys())
     dmcrun = (cfg["Estimation"].get("DMCCorrTime", 0.0) > 0.0 and
               cfg["Estimation"].get("DMCSigmaPert", 0.0) > 0.0)
+    dmcidx = 6
+
+    cd = cfg.get("Drag", {}).get("Coefficient", {}).get("Estimation", "")
+    cr = cfg.get("RadiationPressure", {}).get("Creflection", {}).get("Estimation", "")
+    if (cd == "Estimate"):
+        dmcidx += 1
+    if (cr == "Estimate"):
+        dmcidx += 1
+
+    parnames = []
+    if (cd == "Estimate" or (cd == "Consider" and cr == "Consider")):
+        parnames.extend([r"$C_D$", r"$C_R$"])
+    else:
+        parnames.extend([r"$C_R$", r"$C_D$"])
+
+    for sk, sv in cfg.get("Stations", {}).items():
+        if (sv.get("BiasEstimation", "") in ["Estimate", "Consider"]):
+            for m in cfg.get("Measurements", {}).keys():
+                parnames.append(sk + m)
 
     tstamp,prefit,posfit,inocov,params,estmacc,estmcov = [],[],[],[],[],[],[]
     for i, o in zip(inp, out):
@@ -43,10 +62,14 @@ def plot(config, measurements, orbit_fit, interactive = False,
             posfit.append([ix-ox for ix, ox
                            in zip(i[key[0]], o["PostFit"][key[0]])])
         else:
-            prefit.append([i[key[0]]-o["PreFit"][key[0]][-1],
-                           i[key[1]]-o["PreFit"][key[1]][-1]])
-            posfit.append([i[key[0]]-o["PostFit"][key[0]][-1],
-                           i[key[1]]-o["PostFit"][key[1]][-1]])
+            if (len(key) == 2):
+                prefit.append([i[key[0]]-o["PreFit"][key[0]][-1],
+                               i[key[1]]-o["PreFit"][key[1]][-1]])
+                posfit.append([i[key[0]]-o["PostFit"][key[0]][-1],
+                               i[key[1]]-o["PostFit"][key[1]][-1]])
+            else:
+                prefit.append([i[key[0]]-o["PreFit"][key[0]][-1]])
+                posfit.append([i[key[0]]-o["PostFit"][key[0]][-1]])
 
         p = []
         for m in range(len(o["InnovationCovariance"])):
@@ -55,7 +78,8 @@ def plot(config, measurements, orbit_fit, interactive = False,
 
         if (len(o["EstimatedState"]) > 6):
             if (dmcrun):
-                params.append(o["EstimatedState"][6:-3])
+                params.append(o["EstimatedState"][6:dmcidx] +
+                              o["EstimatedState"][dmcidx+3:])
             else:
                 params.append(o["EstimatedState"][6:])
 
@@ -66,14 +90,15 @@ def plot(config, measurements, orbit_fit, interactive = False,
             v /= norm(v)
             h = numpy.cross(r, v)
             rot = numpy.vstack((r, numpy.cross(h, r), h))
-            estmacc.append(rot.dot(o["EstimatedState"][-3:]))
+            estmacc.append(rot.dot(o["EstimatedState"][dmcidx:dmcidx+3]))
 
     pre = numpy.array(prefit)
     pos = numpy.array(posfit)
     cov = numpy.array(inocov)
     par = numpy.array(params)
     estmacc = numpy.array(estmacc)
-    tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
+    start = tstamp[0] if (tstamp[0] < tstamp[-1]) else tstamp[-1]
+    tim = [(t - start).total_seconds()/3600 for t in tstamp]
 
     angles = ["Azimuth", "Elevation", "RightAscension", "Declination"]
     if (key[0] in angles and key[1] in angles):
@@ -108,7 +133,7 @@ def plot(config, measurements, orbit_fit, interactive = False,
         elif ("PositionVelocity" in key):
             plt.subplot(3, 2, order[i])
         else:
-            plt.subplot(2, 1, i + 1)
+            plt.subplot(pre.shape[-1], 1, i + 1)
         plt.semilogx(tim, pre[:,i], "ob")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
@@ -126,7 +151,7 @@ def plot(config, measurements, orbit_fit, interactive = False,
         elif ("PositionVelocity" in key):
             plt.subplot(3, 2, order[i])
         else:
-            plt.subplot(2, 1, i + 1)
+            plt.subplot(pre.shape[-1], 1, i + 1)
         plt.semilogx(tim, pos[:,i], "ob")
         plt.semilogx(tim, -cov[:,i], "-r")
         plt.semilogx(tim,  cov[:,i], "-r", label = r"Innov. 3$\sigma$")
@@ -139,12 +164,6 @@ def plot(config, measurements, orbit_fit, interactive = False,
     if (output_file_path is not None):
         outfiles.append(output_file_path + "_postfit.png")
         plt.savefig(outfiles[-1], format = "png")
-
-    parnames, parmvals = [], []
-    if (cfg["Drag"]["Coefficient"]["Estimation"] == "Estimate"):
-        parnames.append(r"$C_D$")
-    if (cfg["RadiationPressure"]["Creflection"]["Estimation"] == "Estimate"):
-        parnames.append(r"$C_R$")
 
     for i in range(par.shape[-1]):
         if (i == 0):

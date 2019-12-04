@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -28,46 +27,33 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 public final class Conversion
 {
-    public static List<Double> transformFrame(String srcframe, String time, List<Double> pva, String destframe)
+    public static double[] transformFrame(String srcFrame, String time, List<Double> pva, String destFrame)
     {
-	Frame fromframe = DataManager.getFrame(srcframe);
-	Frame toframe = DataManager.getFrame(destframe);
-	Transform xfm = fromframe.getTransformTo(toframe, new AbsoluteDate(DateTimeComponents.parseDateTime(time),
-									   DataManager.getTimeScale("UTC")));
+	Frame fromFrame = DataManager.getFrame(srcFrame);
+	Frame toFrame = DataManager.getFrame(destFrame);
+	Transform xfm = fromFrame.getTransformTo(toFrame, DataManager.parseDateTime(time));
 
 	PVCoordinates topv = null;
-	if (pva.size() == 9)
+	if (pva.size() == 6)
+	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
+								new Vector3D(pva.get(3), pva.get(4), pva.get(5))));
+	else
 	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
 								new Vector3D(pva.get(3), pva.get(4), pva.get(5)),
 								new Vector3D(pva.get(6), pva.get(7), pva.get(8))));
-	else
-	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
-								new Vector3D(pva.get(3), pva.get(4), pva.get(5))));
 
-	ArrayList<Double> output = new ArrayList<Double>(pva.size());
 	Vector3D p = topv.getPosition();
 	Vector3D v = topv.getVelocity();
-	output.add(p.getX());
-	output.add(p.getY());
-	output.add(p.getZ());
-	output.add(v.getX());
-	output.add(v.getY());
-	output.add(v.getZ());
-	if (output.size() == 9)
-	{
-	    Vector3D a = topv.getAcceleration();
-	    output.add(a.getX());
-	    output.add(a.getY());
-	    output.add(a.getZ());
-	}
+	if (pva.size() == 6)
+	    return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()});
 
-	return(output);
+	Vector3D a = topv.getAcceleration();
+	return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ(), a.getX(), a.getY(), a.getZ()});
     }
 
     public static double[] convertAzElToRaDec(String time, double az, double el, double lat, double lon, double alt, String frame)
@@ -75,8 +61,7 @@ public final class Conversion
 	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 						    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 	TopocentricFrame fromframe = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
-	Transform xfm = fromframe.getTransformTo(DataManager.getFrame(frame),
-						 new AbsoluteDate(DateTimeComponents.parseDateTime(time), DataManager.getTimeScale("UTC")));
+	Transform xfm = fromframe.getTransformTo(DataManager.getFrame(frame), DataManager.parseDateTime(time));
 
 	Vector3D tovec = xfm.transformVector(new Vector3D(FastMath.cos(el)*FastMath.sin(az),
 							  FastMath.cos(el)*FastMath.cos(az), FastMath.sin(el)));
@@ -91,8 +76,7 @@ public final class Conversion
 	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 						    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
 	TopocentricFrame toframe = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
-	Transform xfm = DataManager.getFrame(frame).getTransformTo(toframe, new AbsoluteDate(DateTimeComponents.parseDateTime(time),
-											     DataManager.getTimeScale("UTC")));
+	Transform xfm = DataManager.getFrame(frame).getTransformTo(toframe, DataManager.parseDateTime(time));
 
 	Vector3D tovec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra),
 							  FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));

@@ -39,7 +39,6 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -55,84 +54,86 @@ public final class Simulation
 
     public ArrayList<Measurements.SimulatedMeasurement> simulateMeasurements()
     {
-	Random rand = new Random();
-	double[] Xi = simCfg.getInitialState();
-	AbsoluteDate tm = new AbsoluteDate(DateTimeComponents.parseDateTime(simCfg.propStart), DataManager.getTimeScale("UTC"));
-	AbsoluteDate prend = new AbsoluteDate(DateTimeComponents.parseDateTime(simCfg.propEnd), DataManager.getTimeScale("UTC"));
-
-	NumericalPropagator prop = new NumericalPropagator(
-	    new DormandPrince853Integrator(simCfg.integMinTimeStep, simCfg.integMaxTimeStep, simCfg.integAbsTolerance, simCfg.integRelTolerance));
+	final NumericalPropagator propagator = new NumericalPropagator(
+	    new DormandPrince853Integrator(simCfg.integMinTimeStep, simCfg.integMaxTimeStep,
+					   simCfg.integAbsTolerance, simCfg.integRelTolerance));
 	for (ForceModel fm : simCfg.forces)
-	    prop.addForceModel(fm);
+	    propagator.addForceModel(fm);
 
-	AttitudeProvider attpro = simCfg.getAttitudeProvider();
+	final AttitudeProvider attpro = simCfg.getAttitudeProvider();
 	if (attpro != null)
-	    prop.setAttitudeProvider(attpro);
+	    propagator.setAttitudeProvider(attpro);
 
-	SpacecraftState sstate0 = new SpacecraftState(
+	final double[] Xi = simCfg.getInitialState();
+	AbsoluteDate tm = DataManager.parseDateTime(simCfg.propStart);
+	final AbsoluteDate prend = DataManager.parseDateTime(simCfg.propEnd);
+
+	final SpacecraftState sstate0 = new SpacecraftState(
 	    new CartesianOrbit(new PVCoordinates(new Vector3D(Xi[0], Xi[1], Xi[2]), new Vector3D(Xi[3], Xi[4], Xi[5])),
 			       simCfg.propFrame, tm, Constants.EGM96_EARTH_MU), simCfg.rsoMass);
-	prop.setInitialState(sstate0);
-	simCfg.addEventHandlers(prop, sstate0);
-	boolean evthandlers = prop.getEventsDetectors().size() > 0;
+	propagator.setInitialState(sstate0);
+	simCfg.addEventHandlers(propagator, sstate0);
+	final boolean evthandlers = propagator.getEventsDetectors().size() > 0;
 
 	double[] obs, azel;
-	double[] zeros = new double[]{0.0, 0.0};
-	double[] ones = new double[]{1.0, 1.0};
-	ObservableSatellite obssat = new ObservableSatellite(0);
-	ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>();
+	final double[] zeros = new double[]{0.0, 0.0};
+	final double[] ones = new double[]{1.0, 1.0};
+	final Random rand = new Random();
+	final ObservableSatellite obssat = new ObservableSatellite(0);
+	final ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>(
+	    (int) FastMath.abs(prend.durationFrom(tm)/simCfg.propStep) + 2);
 
 	while (true)
 	{
-	    SpacecraftState[] sta = new SpacecraftState[]{prop.propagate(tm)};
-	    Orbit orb = sta[0].getOrbit();
-	    KeplerianOrbit keporb = new KeplerianOrbit(orb);
-	    AbsoluteDate proptm = sta[0].getDate();
+	    final SpacecraftState[] sta = new SpacecraftState[]{propagator.propagate(tm)};
+	    final Orbit orb = sta[0].getOrbit();
+	    final KeplerianOrbit keporb = new KeplerianOrbit(orb);
+	    final AbsoluteDate proptm = sta[0].getDate();
 	    TimeStampedPVCoordinates pvc = sta[0].getPVCoordinates();
 	    Vector3D pos = pvc.getPosition();
 	    Vector3D vel = pvc.getVelocity();
 	    Vector3D acc = pvc.getAcceleration();
 
 	    Measurements.SimulatedMeasurement json = new Measurements.SimulatedMeasurement();
-	    json.Time = proptm.toString() + "Z";
-	    json.TrueState = new Measurements.State();
-	    json.TrueState.Cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
+	    json.time = DataManager.getUTCString(proptm);
+	    json.trueState = new Measurements.State();
+	    json.trueState.cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
 						    acc.getX(), acc.getY(), acc.getZ()};
-	    json.TrueState.Kepler = new Measurements.KeplerianElements(keporb.getA(), keporb.getE(), keporb.getI(),
-								       keporb.getRightAscensionOfAscendingNode(),
-								       keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
-	    json.TrueState.Equinoctial = new Measurements.EquinoctialElements(orb.getA(), orb.getEquinoctialEx(),
+	    json.trueState.keplerian = new Measurements.KeplerianElements(keporb.getA(), keporb.getE(), keporb.getI(),
+									  keporb.getRightAscensionOfAscendingNode(),
+									  keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
+	    json.trueState.equinoctial = new Measurements.EquinoctialElements(orb.getA(), orb.getEquinoctialEx(),
 									      orb.getEquinoctialEy(), orb.getHx(),
 									      orb.getHy(), orb.getLM());
 
 	    if (simCfg.simIncludeExtras)
 	    {
 		if (simCfg.atmModel != null)
-		    json.AtmDensity = simCfg.atmModel.getDensity(proptm, pos, simCfg.propFrame);
+		    json.atmDensity = simCfg.atmModel.getDensity(proptm, pos, simCfg.propFrame);
 		for (ForceModel fmod : simCfg.forces)
 		{
 		    double[] facc = fmod.acceleration(sta[0], fmod.getParameters()).toArray();
 		    String ftype = fmod.getClass().getSimpleName();
 		    if (ftype.equals("HolmesFeatherstoneAttractionModel") || ftype.equals("NewtonianAttraction"))
-			json.AccGravity = facc;
+			json.accGravity = facc;
 		    if (ftype.equals("DragForce"))
-			json.AccDrag = facc;
+			json.accDrag = facc;
 		    if (ftype.equals("SolidTides"))
-			json.AccSolidTides = facc;
+			json.accSolidTides = facc;
 		    if (ftype.equals("OceanTides"))
-			json.AccOceanTides = facc;
+			json.accOceanTides = facc;
 		    if (ftype.equals("SolarRadiationPressure"))
-			json.AccRadiationPressure = facc;
+			json.accRadiationPressure = facc;
 		    if (ftype.equals("ConstantThrustManeuver"))
-			json.AccThrust = facc;
+			json.accThrust = facc;
 		    if (ftype.equals("ThirdBodyAttraction"))
 		    {
-			if (json.AccThirdBodies == null)
-			    json.AccThirdBodies = facc;
+			if (json.accThirdBodies == null)
+			    json.accThirdBodies = facc;
 			else
 			{
 			    for (int ii = 0; ii < 3; ii++)
-				json.AccThirdBodies[ii] += facc[ii];
+				json.accThirdBodies[ii] += facc[ii];
 			}
 		    }
 		}
@@ -150,14 +151,14 @@ public final class Simulation
 			continue;
 
 		    Measurements.SimulatedMeasurement clone = new Measurements.SimulatedMeasurement(json);
-		    clone.Station = kv.getKey();
+		    clone.station = kv.getKey();
 		    if (simCfg.simIncludeStationState)
 		    {
 			pvc = gst.getBaseFrame().getPVCoordinates(proptm, simCfg.propFrame);
 			pos = pvc.getPosition();
 			vel = pvc.getVelocity();
 			acc = pvc.getAcceleration();
-			clone.StationState = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(),
+			clone.stationState = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(),
 							  vel.getZ(), acc.getX(), acc.getY(), acc.getZ()};
 		    }
 
@@ -165,39 +166,39 @@ public final class Simulation
 		    {
 			String name = nvp.getKey();
 			Settings.Measurement val = nvp.getValue();
-			if (name.equals("Range"))
+			if (name.equalsIgnoreCase("Range"))
 			{
 			    obs = new Range(gst, val.twoWay, proptm, 0.0, 0.0, 1.0, obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.Range = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeBias;
+			    clone.range = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeBias;
 			}
-			else if (name.equals("RangeRate"))
+			else if (name.equalsIgnoreCase("RangeRate"))
 			{
 			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.twoWay, obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.RangeRate = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeRateBias;
+			    clone.rangeRate = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeRateBias;
 			}
-			else if (name.equals("RightAscension") || name.equals("Declination") && clone.RightAscension == null)
+			else if (name.equalsIgnoreCase("RightAscension") || name.equalsIgnoreCase("Declination") && clone.rightAscension == 0.0)
 			{
 			    obs = new AngularRaDec(gst, simCfg.propFrame, proptm, zeros, zeros, ones,
 						   obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.RightAscension = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias;
-			    clone.Declination = obs[1] + rand.nextGaussian()*val.error[0] + jsn.declinationBias;
+			    clone.rightAscension = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias;
+			    clone.declination = obs[1] + rand.nextGaussian()*val.error[0] + jsn.declinationBias;
 			}
-			else if (name.equals("Azimuth") || name.equals("Elevation") && clone.Azimuth == null)
+			else if (name.equalsIgnoreCase("Azimuth") || name.equalsIgnoreCase("Elevation") && clone.azimuth == 0.0)
 			{
-			    clone.Azimuth = azel[0] + rand.nextGaussian()*val.error[0] + jsn.azimuthBias;
-			    clone.Elevation = azel[1] + rand.nextGaussian()*val.error[0] + jsn.elevationBias;
+			    clone.azimuth = azel[0] + rand.nextGaussian()*val.error[0] + jsn.azimuthBias;
+			    clone.elevation = azel[1] + rand.nextGaussian()*val.error[0] + jsn.elevationBias;
 			}
-			else if (name.equals("Position"))
+			else if (name.equalsIgnoreCase("Position"))
 			{
-			    clone.Position = new Double[3];
+			    clone.position = new double[3];
 			    for (int i = 0; i < 3; i++)
-				clone.Position[i] = clone.TrueState.Cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionBias[i];
+				clone.position[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionBias[i];
 			}
-			else if (name.equals("PositionVelocity"))
+			else if (name.equalsIgnoreCase("PositionVelocity"))
 			{
-			    clone.PositionVelocity = new Double[6];
+			    clone.positionVelocity = new double[6];
 			    for (int i = 0; i < 6; i++)
-				clone.PositionVelocity[i] = clone.TrueState.Cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionVelocityBias[i];
+				clone.positionVelocity[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionVelocityBias[i];
 			}
 		    }
 
