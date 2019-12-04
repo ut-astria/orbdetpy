@@ -52,7 +52,7 @@ PROJECT_URLS = {"Documentation": "https://github.com/ut-astria/orbdetpy",
                 "Tracker": "https://github.com/ut-astria/orbdetpy/issues"}
 PACKAGE_DATA = {"orbdetpy": ["*.py", "data/*", "data/**/*", "data/**/**/*",
                              "plotting/*.py", "rpc/*.py",
-                             "target/astria*.jar"]}
+                             "target/orbdetpy-server*.jar"]}
 
 setup(name="orbdetpy",
       packages=["orbdetpy"],

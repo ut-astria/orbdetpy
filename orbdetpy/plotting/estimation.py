@@ -72,9 +72,12 @@ def plot(config, measurements, orbit_fit, interactive = False,
                 posfit.append([i[key[0]]-o["PostFit"][key[0]][-1]])
 
         p = []
-        for m in range(len(o["InnovationCovariance"])):
+        for m in range(len(o.get("InnovationCovariance", []))):
             p.append(3.0*numpy.sqrt(o["InnovationCovariance"][m][m]))
-        inocov.append(p)
+        if (len(p) > 0):
+            inocov.append(p)
+        else:
+            inocov.append([0.0]*len(prefit[0]))
 
         if (len(o["EstimatedState"]) > 6):
             if (dmcrun):

@@ -108,7 +108,7 @@ public final class Estimation
 	    stepHandlerStart = DataManager.parseDateTime(odCfg.propStepHandlerStartTime);
 	else
 	{
-	    if (odCfg.propStep > 0.0)
+	    if (odCfg.propStep >= 0.0)
 		stepHandlerStart = epoch;
 	    else
 		stepHandlerStart = propEnd;
@@ -118,7 +118,7 @@ public final class Estimation
 	    stepHandlerEnd = DataManager.parseDateTime(odCfg.propStepHandlerEndTime);
 	else
 	{
-	    if (odCfg.propStep > 0.0)
+	    if (odCfg.propStep >= 0.0)
 		stepHandlerEnd = propEnd;
 	    else
 		stepHandlerEnd = epoch;
