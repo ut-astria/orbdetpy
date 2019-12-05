@@ -63,7 +63,6 @@ public final class ParallelPropagation implements MultiSatStepHandler
 
     private final List<Settings> configObjs;
     private final List<Propagator> props;
-    private ArrayList<PropagationOutput> propOutput;
 
     public ParallelPropagation(List<Settings> configObjs)
     {
@@ -76,29 +75,54 @@ public final class ParallelPropagation implements MultiSatStepHandler
     public ArrayList<PropagationOutput> propagate()
     {
 	final Settings obj0 = configObjs.get(0);
-	final PropagatorsParallelizer plel = new PropagatorsParallelizer(props, this);
-	AbsoluteDate tm = DataManager.parseDateTime(obj0.propStart);
-	AbsoluteDate proptm = new AbsoluteDate(tm, -0.1);
-	final AbsoluteDate prend = DataManager.parseDateTime(obj0.propEnd);
+	String start = obj0.propStart, end = obj0.propEnd;
+	double step = obj0.propStep;
+	for (Settings s: configObjs)
+	{
+	    if (obj0.propStep > 0.0)
+	    {
+		if (start.compareTo(s.propStart) > 0)
+		    start = s.propStart;
+		if (end.compareTo(s.propEnd) < 0)
+		    end = s.propEnd;
+		if (s.propStep != 0.0)
+		    step = FastMath.min(step, s.propStep);
+	    }
+	    else
+	    {
+		if (start.compareTo(s.propStart) < 0)
+		    start = s.propStart;
+		if (end.compareTo(s.propEnd) > 0)
+		    end = s.propEnd;
+		if (s.propStep != 0.0)
+		    step = FastMath.max(step, s.propStep);
+	    }
+	}
 
-	List<SpacecraftState> staList = null;
-	propOutput = new ArrayList<PropagationOutput>((int) FastMath.abs(prend.durationFrom(tm)/obj0.propStep) + 2);
+	AbsoluteDate tm = DataManager.parseDateTime(start);
+	AbsoluteDate proptm = new AbsoluteDate(tm, -0.1);
+	final AbsoluteDate prend = DataManager.parseDateTime(end);
+	final ArrayList<PropagationOutput> propOutput = new ArrayList<PropagationOutput>(
+	    (int) FastMath.abs(prend.durationFrom(tm)/step) + 2);
+	final PropagatorsParallelizer propagator = new PropagatorsParallelizer(props, this);
+
 	while (true)
 	{
-	    staList = plel.propagate(proptm, tm);
+	    final List<SpacecraftState> staList = propagator.propagate(proptm, tm);
 	    proptm = staList.get(0).getDate();
 
 	    final PropagationOutput pout = new PropagationOutput(proptm, configObjs.size());
 	    propOutput.add(pout);
-	    for (SpacecraftState sta : staList)
-		pout.addState(sta.getPVCoordinates(DataManager.getFrame(obj0.propInertialFrame)));
+	    for (int i = 0; i < staList.size(); i++)
+		pout.addState(staList.get(i).getPVCoordinates(
+				  DataManager.getFrame(configObjs.get(i).propInertialFrame)));
 
 	    double dt = prend.durationFrom(proptm);
-	    if (obj0.propStep >= 0.0)
-		tm = new AbsoluteDate(tm, FastMath.min(dt, obj0.propStep));
+	    if (step >= 0.0)
+		tm = new AbsoluteDate(tm, FastMath.min(dt, step));
 	    else
 	    {
-		tm = new AbsoluteDate(tm, FastMath.max(dt, obj0.propStep));
+		tm = new AbsoluteDate(tm, FastMath.max(dt, step));
 		dt = -dt;
 	    }
 	    if (dt <= 0.0)
@@ -113,6 +137,10 @@ public final class ParallelPropagation implements MultiSatStepHandler
 	if (cfg.propInitialTLE != null && cfg.propInitialTLE[0] != null && cfg.propInitialTLE[1] != null)
 	{
 	    final TLE parser = new TLE(cfg.propInitialTLE[0], cfg.propInitialTLE[1]);
+	    if (cfg.propStart == null || cfg.propStart.length() == 0)
+		cfg.propStart = DataManager.getUTCString(parser.getDate());
+	    if (cfg.propEnd == null || cfg.propEnd.length() == 0)
+		cfg.propEnd = cfg.propStart;
 	    return(TLEPropagator.selectExtrapolator(parser));
 	}
 
