@@ -32,6 +32,7 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -175,15 +176,6 @@ public final class Measurements
 
     private void buildMeasurementObjects(Settings odCfg)
     {
-	Settings.Measurement cazim = odCfg.cfgMeasurements.get("Azimuth");
-	Settings.Measurement celev = odCfg.cfgMeasurements.get("Elevation");
-	Settings.Measurement crigh = odCfg.cfgMeasurements.get("RightAscension");
-	Settings.Measurement cdecl = odCfg.cfgMeasurements.get("Declination");
-	Settings.Measurement crang = odCfg.cfgMeasurements.get("Range");
-	Settings.Measurement crrat = odCfg.cfgMeasurements.get("RangeRate");
-	Settings.Measurement cpos = odCfg.cfgMeasurements.get("Position");
-	Settings.Measurement cposvel = odCfg.cfgMeasurements.get("PositionVelocity");
-
 	ArrayList<Measurement> tempraw = new ArrayList<Measurement>(rawMeas.length);
 	for (Measurement m: rawMeas)
 	{
@@ -193,50 +185,112 @@ public final class Measurements
 	rawMeas = tempraw.toArray(new Measurement[0]);
 
 	measObjs = new ArrayList<ObservedMeasurement<?>>(rawMeas.length);
+	Settings.Measurement cazim = odCfg.cfgMeasurements.get("Azimuth");
+	Settings.Measurement celev = odCfg.cfgMeasurements.get("Elevation");
+	Settings.Measurement crigh = odCfg.cfgMeasurements.get("RightAscension");
+	Settings.Measurement cdecl = odCfg.cfgMeasurements.get("Declination");
+	Settings.Measurement crang = odCfg.cfgMeasurements.get("Range");
+	Settings.Measurement crrat = odCfg.cfgMeasurements.get("RangeRate");
+	Settings.Measurement cpos = odCfg.cfgMeasurements.get("Position");
+	Settings.Measurement cposvel = odCfg.cfgMeasurements.get("PositionVelocity");
+	OutlierFilter outlier = new OutlierFilter(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma);
+	boolean addBias = odCfg.estmFilter.equalsIgnoreCase("EKF");
+	boolean addOutlier = addBias && odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0;
+	ObservableSatellite satellite = new ObservableSatellite(0);
+	double[] oneOnes = new double[] {1.0};
+	double[] twoOnes = new double[] {1.0, 1.0};
+	double[] oneNegInf = new double[] {Double.NEGATIVE_INFINITY};
+	double[] onePosInf = new double[] {Double.POSITIVE_INFINITY};
+	double[] twoNegInf = new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
+	double[] twoPosInf = new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
+	String[] biasAzEl = new String[] {"Az", "El"};
+	String[] biasRaDec = new String[] {"RA", "Dec"};
+	String[] biasRange = new String[] {"Range"};
+	String[] biasRangeRate = new String[] {"RangeRate"};
+
 	for (Measurement m: rawMeas)
 	{
 	    GroundStation gs = null;
 	    Settings.Station jsn = null;
+	    AbsoluteDate time = DataManager.parseDateTime(m.time);
 	    if (m.station != null)
 	    {
 		gs = odCfg.stations.get(m.station);
 		jsn = odCfg.cfgStations.get(m.station);
 	    }
 
-	    AbsoluteDate time = DataManager.parseDateTime(m.time);
 	    if (m.azimuth != 0.0 && cazim != null && celev != null)
-		measObjs.add(new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation}, new double[]{cazim.error[0], celev.error[0]},
-					     new double[]{1.0, 1.0}, new ObservableSatellite(0)));
+	    {
+		AngularAzEl obs = new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation}, new double[] {cazim.error[0], celev.error[0]},
+						  twoOnes, satellite);
+		if (addOutlier)
+		    obs.addModifier(outlier);
+		if (addBias && (jsn.azimuthBias != 0.0 || jsn.elevationBias != 0.0))
+		    obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[] {jsn.azimuthBias, jsn.elevationBias}, twoOnes, twoNegInf, twoPosInf));
+		measObjs.add(obs);
+	    }
 
 	    if (m.rightAscension != 0.0 && crigh != null && cdecl != null)
-		measObjs.add(new AngularRaDec(gs, DataManager.getFrame("EME2000"), time, new double[]{m.rightAscension, m.declination},
-					      new double[]{crigh.error[0], cdecl.error[0]}, new double[]{1.0, 1.0}, new ObservableSatellite(0)));
+	    {
+		AngularRaDec obs = new AngularRaDec(gs, DataManager.getFrame("EME2000"), time, new double[] {m.rightAscension, m.declination},
+						    new double[]{crigh.error[0], cdecl.error[0]}, twoOnes, satellite);
+		if (addOutlier)
+		    obs.addModifier(outlier);
+		if (addBias && (jsn.rightAscensionBias != 0.0 || jsn.declinationBias != 0.0))
+		    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[] {jsn.rightAscensionBias, jsn.declinationBias}, twoOnes, twoNegInf, twoPosInf));
+		measObjs.add(obs);
+	    }
 
 	    if (m.range != 0.0 && crang != null)
-		measObjs.add(new Range(gs, crang.twoWay, time, m.range, crang.error[0], 1.0, new ObservableSatellite(0)));
+	    {
+		Range obs = new Range(gs, crang.twoWay, time, m.range, crang.error[0], 1.0, satellite);
+		if (addOutlier)
+		    obs.addModifier(outlier);
+		if (addBias && jsn.rangeBias != 0.0)
+		    obs.addModifier(new Bias<Range>(biasRange, new double[] {jsn.rangeBias}, oneOnes, oneNegInf, onePosInf));
+		measObjs.add(obs);
+	    }
 
 	    if (m.rangeRate != 0.0 && crrat != null)
-		measObjs.add(new RangeRate(gs, time, m.rangeRate, crrat.error[0], 1.0, crrat.twoWay, new ObservableSatellite(0)));
+	    {
+		RangeRate obs = new RangeRate(gs, time, m.rangeRate, crrat.error[0], 1.0, crrat.twoWay, satellite);
+		if (addOutlier)
+		    obs.addModifier(outlier);
+		if (addBias && jsn.rangeRateBias != 0.0)
+		    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[] {jsn.rangeRateBias}, oneOnes, oneNegInf, onePosInf));
+		measObjs.add(obs);
+	    }
 
 	    if (m.position != null && cpos != null)
 	    {
 		double[] X = m.position;
-		measObjs.add(new Position(time, new Vector3D(X[0], X[1], X[2]), cpos.error, 1.0, new ObservableSatellite(0)));
+		Position obs = new Position(time, new Vector3D(X[0], X[1], X[2]), cpos.error, 1.0, satellite);
+		if (addOutlier)
+		    obs.addModifier(outlier);
+		if (addBias && jsn != null && jsn.positionBias != null)
+		    obs.addModifier(new Bias<Position>(
+					new String[] {"x", "y", "z"}, jsn.positionBias,	new double[] {1.0, 1.0, 1.0},
+					new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
+					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
+		measObjs.add(obs);
 	    }
 
 	    if (m.positionVelocity != null && cposvel != null)
 	    {
 		double[] X = m.positionVelocity;
-		measObjs.add(new PV(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]),
-				    cposvel.error, 1.0, new ObservableSatellite(0)));
+		PV obs = new PV(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]), cposvel.error, 1.0, satellite);
+		if (addOutlier)
+		    obs.addModifier(outlier);
+		if (addBias && jsn != null && jsn.positionVelocityBias != null)
+		    obs.addModifier(new Bias<PV>(
+					new String[] {"x", "y", "z", "Vx", "Vy", "Vz"}, jsn.positionVelocityBias,
+					new double[] {1.0, 1.0, 1.0, 1.0, 1.0, 1.0},
+					new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
+						      Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
+					new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+						      Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY}));
+		measObjs.add(obs);
 	    }
-	}
-
-	if (odCfg.estmFilter.equalsIgnoreCase("EKF") && odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0)
-	{
-	    OutlierFilter filter = new OutlierFilter(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma);
-	    for (ObservedMeasurement<?> m: measObjs)
-		m.addModifier(filter);
 	}
     }
 }
