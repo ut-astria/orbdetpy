@@ -46,7 +46,11 @@ Installation
    `windows-x86_64`, `windows-x86_32`, `osx-x86_64`, or `osx-x86_32`,
    depending on your CPU architecture and OS.
 
-   `mvn -e -DskipTests -Dos.detected.classifier=os_cpu_type package`
+   `mvn -e -Dos.detected.classifier=os_cpu_type package`
+
+   If you are on Intel/AMD 64-bit Linux the command-line simplifies to:
+
+   `mvn -e package`
 
 Examples
 --------
