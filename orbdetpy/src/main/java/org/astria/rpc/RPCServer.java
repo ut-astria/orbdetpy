@@ -40,6 +40,7 @@ public final class RPCServer
 	DataManager.initialize(dataPath);
 
 	server = ServerBuilder.forPort(port)
+	    .maxInboundMessageSize(Integer.MAX_VALUE)
 	    .addService(new ConversionService())
 	    .addService(new EstimationService())
 	    .addService(new PropagationService())
