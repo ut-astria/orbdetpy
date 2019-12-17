@@ -43,14 +43,19 @@ def determine_orbit(config, meas, output_file = None,
     """
 
     def async_helper(resp):
-        fit_data = convert_estimation(resp.result().array)
-        if (output_file):
-            write_output_file(output_file, fit_data)
+        try:
+            fit_data = convert_estimation(resp.result().array)
+            if (output_file):
+                write_output_file(output_file, fit_data)
 
-        channel.close()
-        if (async_callback):
-            async_callback(fit_data, async_extra)
-        return(fit_data)
+            channel.close()
+            if (async_callback):
+                async_callback(fit_data, async_extra)
+            return(fit_data)
+        except Exception as exc:
+            if (async_callback):
+                async_callback(exc, async_extra)
+        return(None)
 
     channel = RemoteServer.channel()
     stub = estimation_pb2_grpc.EstimationStub(channel)

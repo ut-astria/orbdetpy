@@ -24,6 +24,8 @@ from orbdetpy.estimation import determine_orbit
 from orbdetpy.simulation import simulate_measurements
 
 def callback(data, extra):
+    if (isinstance(data, Exception)):
+        print(data)
     sem.release()
 
 print("run_tests start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))

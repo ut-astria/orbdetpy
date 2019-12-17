@@ -40,14 +40,19 @@ def simulate_measurements(config, output_file = None,
     """
 
     def async_helper(resp):
-        sim_data = convert_measurements(resp.result().array)
-        if (output_file):
-            write_output_file(output_file, sim_data)
+        try:
+            sim_data = convert_measurements(resp.result().array)
+            if (output_file):
+                write_output_file(output_file, sim_data)
 
-        channel.close()
-        if (async_callback):
-            async_callback(sim_data, async_extra)
-        return(sim_data)
+            channel.close()
+            if (async_callback):
+                async_callback(sim_data, async_extra)
+            return(sim_data)
+        except Exception as exc:
+            if (async_callback):
+                async_callback(exc, async_extra)
+        return(None)
 
     channel = RemoteServer.channel()
     stub = simulation_pb2_grpc.SimulationStub(channel)

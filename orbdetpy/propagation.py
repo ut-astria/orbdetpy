@@ -41,14 +41,19 @@ def propagate_orbits(config_list, output_file = None,
     """
 
     def async_helper(resp):
-        prop_data = convert_propagation(resp.result().array)
-        if (output_file):
-            write_output_file(output_file, prop_data)
+        try:
+            prop_data = convert_propagation(resp.result().array)
+            if (output_file):
+                write_output_file(output_file, prop_data)
 
-        channel.close()
-        if (async_callback):
-            async_callback(prop_data, async_extra)
-        return(prop_data)
+            channel.close()
+            if (async_callback):
+                async_callback(prop_data, async_extra)
+            return(prop_data)
+        except Exception as exc:
+            if (async_callback):
+                async_callback(exc, async_extra)
+        return(None)
 
     channel = RemoteServer.channel()
     stub = propagation_pb2_grpc.PropagationStub(channel)
