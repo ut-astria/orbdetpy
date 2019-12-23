@@ -19,5 +19,5 @@ BASE_DIR=$(dirname "$0")
 
 for jar_file in $BASE_DIR/target/orbdetpy-server*.jar
 do
-    java -Xmx2G -XX:+UseG1GC -jar $jar_file 50051 data/
+    java -Xmx2G -XX:+UseG1GC -jar $jar_file 50051 $BASE_DIR/data/
 done
