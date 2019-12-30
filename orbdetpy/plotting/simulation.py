@@ -28,7 +28,10 @@ def plot(config, sim_data, interactive = False, output_file_path = None):
     out = read_param(sim_data)
     tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
     for o in out:
-        rv = [x/1000.0 for x in o["TrueStateCartesian"][:6]]
+        if ("TrueStateCartesian" in o):
+            rv = [x/1000.0 for x in o["TrueStateCartesian"][:6]]
+        else:
+            rv = [x/1000.0 for x in o["EstimatedState"][:6]]
         rn = norm(rv[:3])
         vn = norm(rv[3:])
         h = cross(rv[:3], rv[3:])

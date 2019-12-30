@@ -30,16 +30,21 @@ Installation
    <http://openjdk.java.net/install/index.html>. Set the JAVA_HOME
    environment variable to point to your JDK installation. The `java`
    executable must also be in your system path.
+
 2. Install Python 3.6+ and run `pip install orbdetpy` to install orbdetpy 
    and other package dependencies from the Python Package Index (PyPI).
    If you wish to use the `develop` or other experimental branches from
    GitHub, `git clone` them and run `pip install -e .` from the top level
    `orbdetpy` folder.
-3. Update the astrodynamics data in orbdetpy/data periodically by calling
-   the `update_data()` function in the `astrodata` module. You may need
-   to run this as the root user on Unix-like systems.
-4. Source code, example programs and data files can be downloaded from 
+
+3. Source code, example programs and data files can be downloaded from 
    <https://github.com/ut-astria/orbdetpy>.
+
+4. Update the astrodynamics data in `orbdetpy/data` periodically by running
+   the following. You might need to do so as root on Unix-like systems.
+
+   `python -c "from orbdetpy.astrodata import update_data; update_data();"`
+
 5. Apache Maven 3+ is needed if you hack the Java code and need to
    rebuild the JAR files. Switch to the `orbdetpy/` folder and run the
    following, where `os_cpu_type` is `linux-x86_64`, `linux-x86_32`,
