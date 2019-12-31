@@ -17,13 +17,15 @@
 import math
 import json
 import numpy
-from numpy.linalg import norm
 import dateutil.parser
+from numpy.linalg import norm
 import matplotlib.pyplot as plt
 from orbdetpy import read_param
 
 def plot(config, measurements, orbit_fit, interactive = False,
-         output_file_path = None):
+         output_file_path = None, log_axis = True):
+    plotter = lambda x, y, z, **kw: (
+        plt.semilogx(x, y, z, **kw) if log_axis else plt.plot(x, y, z, **kw))
     cfg = read_param(config)
     inp = [x for x in read_param(measurements) if (
         "Station" in x or "Position" in x or "PositionVelocity" in x)]
@@ -137,7 +139,7 @@ def plot(config, measurements, orbit_fit, interactive = False,
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(pre.shape[-1], 1, i + 1)
-        plt.semilogx(tim, pre[:,i], "ob")
+        plotter(tim, pre[:,i], "ob")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
 
@@ -155,13 +157,11 @@ def plot(config, measurements, orbit_fit, interactive = False,
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(pre.shape[-1], 1, i + 1)
-        plt.semilogx(tim, pos[:,i], "ob")
-        plt.semilogx(tim, -cov[:,i], "-r")
-        plt.semilogx(tim,  cov[:,i], "-r", label = r"Innov. 3$\sigma$")
+        plotter(tim, pos[:,i], "ob")
+        plotter(tim, -cov[:,i], "-r")
+        plotter(tim,  cov[:,i], "-r", label = r"Innov. 3$\sigma$")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
-        if ("Position" not in key and "PositionVelocity" not in key):
-            plt.ylim(-cov[i,0], cov[i,0])
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (output_file_path is not None):
@@ -174,7 +174,7 @@ def plot(config, measurements, orbit_fit, interactive = False,
             plt.suptitle("Estimated parameters")
 
         plt.subplot(par.shape[1], 1, i + 1)
-        plt.semilogx(tim, par[:,i], "ob")
+        plotter(tim, par[:,i], "ob")
         plt.xlabel("Time [hr]")
         plt.ylabel(parnames[i])
 
@@ -190,7 +190,7 @@ def plot(config, measurements, orbit_fit, interactive = False,
         plt.suptitle("DMC estimated accelerations")
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.semilogx(tim, estmacc[:,i], "-b")
+            plotter(tim, estmacc[:,i], "-b")
             plt.xlabel("Time [hr]")
             plt.ylabel(lab[i])
 

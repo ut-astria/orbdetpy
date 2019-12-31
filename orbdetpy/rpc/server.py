@@ -53,5 +53,8 @@ class RemoteServer:
 
     @classmethod
     def disconnect(cls):
-        if (cls.rpc_server_proc):
-            cls.rpc_server_proc.terminate()
+        try:
+            if (cls.rpc_server_proc):
+                cls.rpc_server_proc.terminate()
+        except Exception as exc:
+            pass
