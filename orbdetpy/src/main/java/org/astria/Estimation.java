@@ -142,6 +142,7 @@ public final class Estimation
 
     private class ExtendedKalmanFilter implements CovarianceMatrixProvider, KalmanObserver, OrekitFixedStepHandler
     {
+	private PropagatorBuilder propBuilder;
 	private AbsoluteDate prevDate;
 	private Vector3D prevPosition;
 	private Vector3D prevVelocity;
@@ -162,9 +163,9 @@ public final class Estimation
     	    if (odCfg.propStep != 0.0)
 		handler = this;
 
-	    final PropagatorBuilder propBuilder = new PropagatorBuilder(odCfg, X0, new DormandPrince853IntegratorBuilder(
-									    odCfg.integMinTimeStep, odCfg.integMaxTimeStep, 1.0),
-									PositionAngle.TRUE, 10.0, handler);
+	    propBuilder = new PropagatorBuilder(odCfg, X0, new DormandPrince853IntegratorBuilder(
+						    odCfg.integMinTimeStep, odCfg.integMaxTimeStep, 1.0),
+						PositionAngle.TRUE, 10.0, handler, false);
 	    propBuilder.setMass(odCfg.rsoMass);
 	    for (ForceModel fm : odCfg.forces)
 		propBuilder.addForceModel(fm);
@@ -188,6 +189,7 @@ public final class Estimation
 
 	    AbstractIntegratedPropagator estimator = null;
 	    AbstractIntegratedPropagator[] estimators = filter.processMeasurements(odObs.measObjs);
+	    propBuilder.enableDMC = false;
 	    if (estimators != null)
 		estimator = estimators[0];
 	    else
@@ -218,6 +220,7 @@ public final class Estimation
 
 	@Override public void evaluationPerformed(KalmanEstimation est)
 	{
+	    propBuilder.enableDMC = true;
 	    int n = est.getCurrentMeasurementNumber() - 1;
 	    if (!combinedMeas)
 		n /= measNames.length;
@@ -411,7 +414,10 @@ public final class Estimation
 		if (measIndex < odObs.rawMeas.length)
 		    tm = DataManager.parseDateTime(odObs.rawMeas[measIndex].time);
 		else
+		{
 		    tm = propEnd;
+		    enableDMC = false;
+		}
 
 		double propStart = t0.durationFrom(epoch);
 		final double propFinal = tm.durationFrom(epoch);

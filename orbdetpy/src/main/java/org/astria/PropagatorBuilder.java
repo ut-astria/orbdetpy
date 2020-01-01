@@ -35,14 +35,16 @@ public final class PropagatorBuilder extends NumericalPropagatorBuilder
     private final Settings odCfg;
     private final DMCEquations dmcEqns;
     private final OrekitFixedStepHandler stepHandler;
+    protected boolean enableDMC;
 
     public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode,
-			     PositionAngle ang, double pos, OrekitFixedStepHandler handler)
+			     PositionAngle ang, double pos, OrekitFixedStepHandler handler, boolean enableDMC)
     {
 	super(orb, ode, ang, pos);
-	odCfg = cfg;
-	dmcEqns = new DMCEquations();
-	stepHandler = handler;
+	this.odCfg = cfg;
+	this.dmcEqns = new DMCEquations();
+	this.stepHandler = handler;
+	this.enableDMC = enableDMC;
     }
 
     @Override public NumericalPropagator buildPropagator(double[] par)
@@ -67,11 +69,11 @@ public final class PropagatorBuilder extends NumericalPropagatorBuilder
 
     class DMCEquations implements AdditionalEquations
     {
-	private double[] acceci;
+	private double[] accEci;
 
 	public DMCEquations()
 	{
-	    acceci = new double[6];
+	    accEci = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	}
 
 	public void init(SpacecraftState sta, AbsoluteDate tgt)
@@ -85,14 +87,21 @@ public final class PropagatorBuilder extends NumericalPropagatorBuilder
 
 	public double[] computeDerivatives(SpacecraftState sta, double[] pdot)
 	{
+	    if (!enableDMC)
+	    {
+		Arrays.fill(pdot, 0.0);
+		Arrays.fill(accEci, 0.0);
+		return(accEci);
+	    }
+
 	    double[] acc = sta.getAdditionalState(Estimation.DMC_ACC_PROP);
 	    for (int i = 0; i < 3; i++)
 	    {
-		acceci[i+3] = acc[i];
+		accEci[i+3] = acc[i];
 		pdot[i] = -acc[i]/odCfg.estmDMCCorrTime;
 	    }
 
-	    return(acceci);
+	    return(accEci);
 	}
     }
 }
