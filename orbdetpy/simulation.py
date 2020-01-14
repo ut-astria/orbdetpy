@@ -52,6 +52,8 @@ def simulate_measurements(config, output_file = None,
         except Exception as exc:
             if (async_callback):
                 async_callback(exc, async_extra)
+            else:
+                raise
         return(None)
 
     channel = RemoteServer.channel()
