@@ -57,6 +57,8 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.astria.MultiTargetEstimation;
+
 
 public final class Estimation
 {
@@ -132,7 +134,9 @@ public final class Estimation
 	    size += (int) FastMath.abs(propEnd.durationFrom(epoch)/odCfg.propStep) + 2;
 	estOutput = new ArrayList<EstimationOutput>(size);
 
-	if (odCfg.estmFilter.equalsIgnoreCase("UKF"))
+	if (odCfg.estmFilter.equalsIgnoreCase("MultiTarget"))
+		estOutput = new MultiTargetEstimation(odCfg, odObs).multiTargetDetermineOrbit();
+	else if (odCfg.estmFilter.equalsIgnoreCase("UKF"))
 	    new UnscentedKalmanFilter().determineOrbit();
 	else
 	    new ExtendedKalmanFilter().determineOrbit();
@@ -454,15 +458,20 @@ public final class Estimation
 		    }
 		    stepSum += step;
 
+		    
 		    final double propEnd = propStart + step;
+		    
+		    
 		    if (FastMath.abs(step) > 1.0E-6)
-			propagator.propagate(propStart, sigma, propEnd, propSigma, enableDMC);
+			propagator.propagate(propStart, sigma, propEnd, propSigma, false);
 		    else
 			propSigma.setSubMatrix(sigma.getData(), 0, 0);
-
+		    
 		    xhatPrev = addColumns(propSigma).mapMultiplyToSelf(weight);
 		    xhat = new ArrayRealVector(xhatPrev);
 		    Pprop = odCfg.getProcessNoiseMatrix(stepSum);
+		    
+		    
 		    for (int i = 0; i < numSigmas; i++)
 		    {
 			RealVector y = propSigma.getColumnVector(i).subtract(xhatPrev);
@@ -550,7 +559,7 @@ public final class Estimation
 		    RealMatrix K = Pxy.multiply(MatrixUtils.inverse(Pyy));
 		    xhat = new ArrayRealVector(xhatPrev.add(odCfg.parameterMatrix.multiply(K).operate(rawMeas.subtract(yhatpre))));
 		    P = Pprop.subtract(odCfg.parameterMatrix.multiply(K.multiply(Pyy.multiply(K.transpose()))));
-
+		    
 		    double[] pv = xhat.toArray();
 		    ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 										       new Vector3D(pv[3], pv[4], pv[5])),
