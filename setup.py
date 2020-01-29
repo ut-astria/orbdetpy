@@ -1,5 +1,5 @@
 # setup.py - PyPI installation builder.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,25 +47,25 @@ CLASSIFIERS = ["Development Status :: 5 - Production/Stable",
                "Topic :: Scientific/Engineering",
                "Topic :: Scientific/Engineering :: Astronomy",
                "Topic :: Utilities"]
-PROJECT_URLS = {"Documentation": "https://github.com/ut-astria/orbdetpy",
-                "Source": "https://github.com/ut-astria/orbdetpy",
-                "Tracker": "https://github.com/ut-astria/orbdetpy/issues"}
-PACKAGE_DATA = {"orbdetpy": ["*.py", "data/*", "data/**/*", "data/**/**/*",
-                             "plotting/*.py", "rpc/*.py",
-                             "target/orbdetpy-server*.jar"]}
+PROJECT_URLS = {"Documentation" : "https://github.com/ut-astria/orbdetpy",
+                "Source" : "https://github.com/ut-astria/orbdetpy",
+                "Tracker" : "https://github.com/ut-astria/orbdetpy/issues"}
+PACKAGE_DATA = {"orbdetpy" : ["*.py", "data/*", "data/**/*", "data/**/**/*",
+                              "plotting/*.py", "rpc/*.py",
+                              "target/orbdetpy-server*.jar"]}
 
-setup(name="orbdetpy",
-      packages=["orbdetpy"],
-      version=version_dict["__version__"],
-      description="Orbit determination routines for Python",
-      long_description=long_description,
-      long_description_content_type="text/markdown",
-      author="Shiva Iyer",
-      author_email="shiva.iyer@utexas.edu",
-      url="https://github.com/ut-astria/orbdetpy",
-      project_urls=PROJECT_URLS,
-      keywords=["orbit_determination utilities orbit space celestial_mechanics "
-                "astrodynamics estimation satellite_tracking"],
-      classifiers=CLASSIFIERS,
-      package_data=PACKAGE_DATA,
-      install_requires=requirements)
+setup(name = "orbdetpy",
+      packages = ["orbdetpy"],
+      version = version_dict["__version__"],
+      description = "Orbit determination routines for Python",
+      long_description = long_description,
+      long_description_content_type = "text/markdown",
+      author = "Shiva Iyer",
+      author_email = "shiva.iyer@utexas.edu",
+      url = "https://github.com/ut-astria/orbdetpy",
+      project_urls = PROJECT_URLS,
+      keywords = ["orbit_determination utilities orbit space celestial_mechanics "
+                  "astrodynamics estimation satellite_tracking"],
+      classifiers = CLASSIFIERS,
+      package_data = PACKAGE_DATA,
+      install_requires = requirements)

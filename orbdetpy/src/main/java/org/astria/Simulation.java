@@ -1,6 +1,6 @@
 /*
  * Simulation.java - Functions to simulate noisy measurements.
- * Copyright (C) 2018-2019 University of Texas
+ * Copyright (C) 2018-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ public final class Simulation
 	double[] obs, azel;
 	final double[] zeros = new double[]{0.0, 0.0};
 	final double[] ones = new double[]{1.0, 1.0};
-	final Random rand = new Random();
+	final Random rand = new Random(1);
 	final ObservableSatellite obssat = new ObservableSatellite(0);
 	final ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>(
 	    (int) FastMath.abs(prend.durationFrom(tm)/simCfg.propStep) + 2);

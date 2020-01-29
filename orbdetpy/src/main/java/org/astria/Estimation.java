@@ -1,6 +1,6 @@
 /*
  * Estimation.java - Implementation of estimation algorithms.
- * Copyright (C) 2018-2019 University of Texas
+ * Copyright (C) 2018-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -135,7 +135,7 @@ public final class Estimation
 	estOutput = new ArrayList<EstimationOutput>(size);
 
 	if (odCfg.estmFilter.equalsIgnoreCase("MultiTarget"))
-		estOutput = new MultiTargetEstimation(odCfg, odObs).multiTargetDetermineOrbit();
+	    estOutput = new MultiTargetEstimation(odCfg, odObs).multiTargetDetermineOrbit();
 	else if (odCfg.estmFilter.equalsIgnoreCase("UKF"))
 	    new UnscentedKalmanFilter().determineOrbit();
 	else
@@ -421,11 +421,12 @@ public final class Estimation
 		{
 		    tm = propEnd;
 		    enableDMC = false;
+		    if (FastMath.abs(tm.durationFrom(t0)) <= 1E-6)
+			break;
 		}
 
-		double propStart = t0.durationFrom(epoch);
-		final double propFinal = tm.durationFrom(epoch);
-		double stepSum = 0.0;
+		double stepStart = t0.durationFrom(epoch), stepSum = 0.0;
+		final double stepFinal = tm.durationFrom(epoch);
 		final RealMatrix Ptemp = P.scalarMultiply(numStates);
 		final RealMatrix sqrtP = new CholeskyDecomposition(
 		    Ptemp.add(Ptemp.transpose()).scalarMultiply(0.5).add(psdCorr), 1E-6, 1E-16).getL();
@@ -447,9 +448,9 @@ public final class Estimation
 		    }
 		    sigma.setSubMatrix(sigData, 0, 0);
 
-		    double step = propFinal - propStart;
-		    if (odCfg.propStep != 0.0 && (propStart >= bound0 || propFinal >= bound0) &&
-			(propStart <= bound1 || propFinal <= bound1))
+		    double step = stepFinal - stepStart;
+		    if (odCfg.propStep != 0.0 && (stepStart >= bound0 || stepFinal >= bound0) &&
+			(stepStart <= bound1 || stepFinal <= bound1))
 		    {
 			if (odCfg.propStep > 0.0)
 			    step = FastMath.min(step, odCfg.propStep);
@@ -458,12 +459,8 @@ public final class Estimation
 		    }
 		    stepSum += step;
 
-		    
-		    final double propEnd = propStart + step;
-		    
-		    
 		    if (FastMath.abs(step) > 1.0E-6)
-			propagator.propagate(propStart, sigma, propEnd, propSigma, false);
+			propagator.propagate(stepStart, sigma, stepStart + step, propSigma, enableDMC);
 		    else
 			propSigma.setSubMatrix(sigma.getData(), 0, 0);
 		    
@@ -471,24 +468,24 @@ public final class Estimation
 		    xhat = new ArrayRealVector(xhatPrev);
 		    Pprop = odCfg.getProcessNoiseMatrix(stepSum);
 		    
-		    
 		    for (int i = 0; i < numSigmas; i++)
 		    {
 			RealVector y = propSigma.getColumnVector(i).subtract(xhatPrev);
 			Pprop = Pprop.add(y.outerProduct(y).scalarMultiply(weight));
 		    }
 
-		    if (measIndex == odObs.rawMeas.length || (propEnd >= bound0 && propEnd <= bound1))
+		    if (measIndex == odObs.rawMeas.length ||
+			(odCfg.propStep != 0.0 && stepStart + step >= bound0 && stepStart + step <= bound1))
 		    {
 			EstimationOutput odout = new EstimationOutput();
-			odout.time = DataManager.getUTCString(new AbsoluteDate(epoch, propEnd));
+			odout.time = DataManager.getUTCString(new AbsoluteDate(epoch, stepStart + step));
 			odout.estimatedState = xhatPrev.toArray();
 			odout.propagatedCovariance = Pprop.getData();
 			estOutput.add(odout);
 		    }
 
-		    propStart += step;
-		    if (FastMath.abs(step) < 1.0E-6 || FastMath.abs(propFinal - propStart) < 1.0E-6)
+		    stepStart += step;
+		    if (FastMath.abs(step) < 1.0E-6 || FastMath.abs(stepFinal - stepStart) < 1.0E-6)
 			break;
 		}
 
