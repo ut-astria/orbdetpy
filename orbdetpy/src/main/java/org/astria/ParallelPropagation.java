@@ -19,7 +19,6 @@
 package org.astria;
 
 import java.util.ArrayList;
-import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -27,7 +26,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -40,7 +38,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public final class ParallelPropagation implements MultiSatStepHandler
+public final class ParallelPropagation
 {
     public static class PropagationOutput
     {
@@ -61,44 +59,72 @@ public final class ParallelPropagation implements MultiSatStepHandler
 	}
     }
 
-    private final List<Settings> configObjs;
-    private final List<Propagator> props;
-    private ArrayList<PropagationOutput> propOutput;
+    private final ArrayList<Settings> configObjs;
+    private final ArrayList<Propagator> propagators;
 
-    public ParallelPropagation(List<Settings> configObjs)
+    public ParallelPropagation(ArrayList<Settings> configObjs)
     {
 	this.configObjs = configObjs;
-	this.props = new ArrayList<Propagator>(configObjs.size());
+	this.propagators = new ArrayList<Propagator>(configObjs.size());
 	for (int i = 0; i < configObjs.size(); i++)
-	    props.add(buildPropagator(configObjs.get(i)));
+	    propagators.add(buildPropagator(configObjs.get(i)));
     }
 
-    public ArrayList<PropagationOutput> propagate()
+    public ArrayList<PropagationOutput> propagate() throws Exception
     {
 	final Settings obj0 = configObjs.get(0);
-	final PropagatorsParallelizer plel = new PropagatorsParallelizer(props, this);
-	AbsoluteDate tm = DataManager.parseDateTime(obj0.propStart);
-	AbsoluteDate proptm = new AbsoluteDate(tm, -0.1);
-	final AbsoluteDate prend = DataManager.parseDateTime(obj0.propEnd);
-
-	List<SpacecraftState> staList = null;
-	propOutput = new ArrayList<PropagationOutput>((int) FastMath.abs(prend.durationFrom(tm)/obj0.propStep) + 2);
-	while (true)
+	String start = obj0.propStart, end = obj0.propEnd;
+	double step = obj0.propStep;
+	for (Settings s: configObjs)
 	{
-	    staList = plel.propagate(proptm, tm);
-	    proptm = staList.get(0).getDate();
-
-	    final PropagationOutput pout = new PropagationOutput(proptm, configObjs.size());
-	    propOutput.add(pout);
-	    for (SpacecraftState sta : staList)
-		pout.addState(sta.getPVCoordinates(DataManager.getFrame(obj0.propInertialFrame)));
-
-	    double dt = prend.durationFrom(proptm);
-	    if (obj0.propStep >= 0.0)
-		tm = new AbsoluteDate(tm, FastMath.min(dt, obj0.propStep));
+	    if (obj0.propStep > 0.0)
+	    {
+		if (start.compareTo(s.propStart) > 0)
+		    start = s.propStart;
+		if (end.compareTo(s.propEnd) < 0)
+		    end = s.propEnd;
+		if (s.propStep != 0.0)
+		    step = FastMath.min(step, s.propStep);
+	    }
 	    else
 	    {
-		tm = new AbsoluteDate(tm, FastMath.max(dt, obj0.propStep));
+		if (start.compareTo(s.propStart) < 0)
+		    start = s.propStart;
+		if (end.compareTo(s.propEnd) > 0)
+		    end = s.propEnd;
+		if (s.propStep != 0.0)
+		    step = FastMath.max(step, s.propStep);
+	    }
+	}
+
+	AbsoluteDate tmFinal = DataManager.parseDateTime(start);
+	AbsoluteDate tmStart = new AbsoluteDate(tmFinal, -0.1);
+	final AbsoluteDate prend = DataManager.parseDateTime(end);
+	final ArrayList<PropagationOutput> propOutput = new ArrayList<PropagationOutput>(
+	    (int) FastMath.abs(prend.durationFrom(tmFinal)/step) + 2);
+
+	while (true)
+	{
+	    
+	    final AbsoluteDate t0 = tmStart;
+	    final AbsoluteDate t1 = tmFinal;
+	    final PropagationOutput pout = new PropagationOutput(tmFinal, propagators.size());
+	    propOutput.add(pout);
+
+	    for (int i = 0; i < propagators.size(); i++)
+	    {
+		final Propagator prop = propagators.get(i);
+		final SpacecraftState state = DataManager.threadPool.submit(()->prop.propagate(t0, t1)).get();
+		tmStart = state.getDate();
+		pout.addState(state.getPVCoordinates(DataManager.getFrame(configObjs.get(i).propInertialFrame)));
+	    }
+
+	    double dt = prend.durationFrom(tmStart);
+	    if (step >= 0.0)
+		tmFinal = new AbsoluteDate(tmFinal, FastMath.min(dt, step));
+	    else
+	    {
+		tmFinal = new AbsoluteDate(tmFinal, FastMath.max(dt, step));
 		dt = -dt;
 	    }
 	    if (dt <= 0.0)
@@ -113,6 +139,10 @@ public final class ParallelPropagation implements MultiSatStepHandler
 	if (cfg.propInitialTLE != null && cfg.propInitialTLE[0] != null && cfg.propInitialTLE[1] != null)
 	{
 	    final TLE parser = new TLE(cfg.propInitialTLE[0], cfg.propInitialTLE[1]);
+	    if (cfg.propStart == null || cfg.propStart.length() == 0)
+		cfg.propStart = DataManager.getUTCString(parser.getDate());
+	    if (cfg.propEnd == null || cfg.propEnd.length() == 0)
+		cfg.propEnd = cfg.propStart;
 	    return(TLEPropagator.selectExtrapolator(parser));
 	}
 
@@ -132,9 +162,5 @@ public final class ParallelPropagation implements MultiSatStepHandler
 										      new Vector3D(Xi[3], Xi[4], Xi[5])),
 								    cfg.propFrame, tm, Constants.EGM96_EARTH_MU), cfg.rsoMass));
 	return(prop);
-    }
-
-    public void handleStep(List<OrekitStepInterpolator> interpolators, boolean isLast)
-    {
     }
 }

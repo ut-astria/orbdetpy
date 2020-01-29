@@ -2,13 +2,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.astria</groupId>
   <artifactId>orbdetpy-server</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <packaging>jar</packaging>
 
   <properties>
+    <application.main.class>org.astria.rpc.RPCServer</application.main.class>
     <grpc.version>1.25.0</grpc.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.surefire.version>2.22.2</maven.surefire.version>
     <maven.clean.version>3.1.0</maven.clean.version>
     <maven.shade.version>3.2.1</maven.shade.version>
     <native.image.maven.plugin.version>19.2.1</native.image.maven.plugin.version>
@@ -50,6 +52,14 @@
       </resource>
     </resources>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+	<version>${maven.surefire.version}</version>
+        <configuration>
+          <skipTests>true</skipTests>
+        </configuration>
+      </plugin>
       <plugin>
 	<groupId>org.xolstice.maven.plugins</groupId>
 	<artifactId>protobuf-maven-plugin</artifactId>
@@ -110,7 +120,15 @@
                     implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                 <transformer
                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.astria.rpc.RPCServer</mainClass>
+                  <mainClass>${application.main.class}</mainClass>
+		  <manifestEntries>
+		    <Main-Class>${application.main.class}</Main-Class>
+		    <Specification-Title>${project.artifactId}</Specification-Title>
+                    <Specification-Version>${project.version}</Specification-Version>
+                    <Implementation-Title>${project.artifactId}</Implementation-Title>
+                    <Implementation-Version>${project.version}</Implementation-Version>
+                    <Implementation-Vendor>${project.groupId}</Implementation-Vendor>
+		  </manifestEntries>
                 </transformer>
               </transformers>
             </configuration>

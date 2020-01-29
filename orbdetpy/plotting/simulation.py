@@ -1,5 +1,5 @@
 # simulation.py - Plot simulation results.
-# Copyright (C) 2018-2019 University of Texas
+# Copyright (C) 2018-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ from math import acos, pi
 from numpy import array, cross, dot
 from numpy.linalg import norm
 from orbdetpy import read_param
+from orbdetpy.plotting import maximize_plot
 
 def plot(config, sim_data, interactive = False, output_file_path = None):
     mu = 398600.4418
@@ -28,7 +29,10 @@ def plot(config, sim_data, interactive = False, output_file_path = None):
     out = read_param(sim_data)
     tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
     for o in out:
-        rv = [x/1000.0 for x in o["TrueStateCartesian"][:6]]
+        if ("TrueStateCartesian" in o):
+            rv = [x/1000.0 for x in o["TrueStateCartesian"][:6]]
+        else:
+            rv = [x/1000.0 for x in o["EstimatedState"][:6]]
         rn = norm(rv[:3])
         vn = norm(rv[3:])
         h = cross(rv[:3], rv[3:])
@@ -65,28 +69,29 @@ def plot(config, sim_data, interactive = False, output_file_path = None):
 
     outfiles = []
     plt.figure(0)
+    maximize_plot()
     plt.subplot(611)
-    plt.plot(tim, sma, "ob")
+    plt.scatter(tim, sma, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("SMA [km]")
     plt.subplot(612)
-    plt.plot(tim, ecc, "ob")
+    plt.scatter(tim, ecc, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("Eccentricity")
     plt.subplot(613)
-    plt.plot(tim, inc, "ob")
+    plt.scatter(tim, inc, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("Inclination [deg]")
     plt.subplot(614)
-    plt.plot(tim, raan, "ob")
+    plt.scatter(tim, raan, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("RAAN [deg]")
     plt.subplot(615)
-    plt.plot(tim, argp, "ob")
+    plt.scatter(tim, argp, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("Perigee arg. [deg]")
     plt.subplot(616)
-    plt.plot(tim, tran, "ob")
+    plt.scatter(tim, tran, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("True anom. [deg]")
     if (output_file_path is not None):
@@ -94,12 +99,13 @@ def plot(config, sim_data, interactive = False, output_file_path = None):
         plt.savefig(outfiles[-1], format = "png")
 
     plt.figure(1)
+    maximize_plot()
     plt.subplot(211)
-    plt.plot(tim, hmag, "ob")
+    plt.scatter(tim, hmag, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("Angular momentum")
     plt.subplot(212)
-    plt.plot(tim, ener, "ob")
+    plt.scatter(tim, ener, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("Specific energy")
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
@@ -108,16 +114,17 @@ def plot(config, sim_data, interactive = False, output_file_path = None):
         plt.savefig(outfiles[-1], format = "png")
 
     plt.figure(2)
+    maximize_plot()
     plt.subplot(311)
-    plt.plot(tim, hvec[:,0], "ob")
+    plt.scatter(tim, hvec[:,0], marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("h(x)")
     plt.subplot(312)
-    plt.plot(tim, hvec[:,1], "ob")
+    plt.scatter(tim, hvec[:,1], marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("h(y)")
     plt.subplot(313)
-    plt.plot(tim, hvec[:,2], "ob")
+    plt.scatter(tim, hvec[:,2], marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("h(z)")
     plt.suptitle("Components of angular momentum")

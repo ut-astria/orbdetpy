@@ -30,30 +30,40 @@ Installation
    <http://openjdk.java.net/install/index.html>. Set the JAVA_HOME
    environment variable to point to your JDK installation. The `java`
    executable must also be in your system path.
+
 2. Install Python 3.6+ and run `pip install orbdetpy` to install orbdetpy 
    and other package dependencies from the Python Package Index (PyPI).
    If you wish to use the `develop` or other experimental branches from
    GitHub, `git clone` them and run `pip install -e .` from the top level
    `orbdetpy` folder.
-3. Update the astrodynamics data in orbdetpy/data periodically by calling
-   the `update_data()` function in the `astrodata` module. You may need
-   to run this as the root user on Unix-like systems.
-4. Source code, example programs and data files can be downloaded from 
+
+3. Source code, example programs and data files can be downloaded from 
    <https://github.com/ut-astria/orbdetpy>.
+
+4. Update the astrodynamics data in `orbdetpy/data` periodically by running
+   the following. You might need to do so as root on Unix-like systems.
+
+   `python -c "from orbdetpy.astrodata import update_data; update_data();"`
+
 5. Apache Maven 3+ is needed if you hack the Java code and need to
    rebuild the JAR files. Switch to the `orbdetpy/` folder and run the
    following, where `os_cpu_type` is `linux-x86_64`, `linux-x86_32`,
    `windows-x86_64`, `windows-x86_32`, `osx-x86_64`, or `osx-x86_32`,
    depending on your CPU architecture and OS.
 
-   `mvn -e -DskipTests -Dos.detected.classifier=os_cpu_type package`
+   `mvn -e -Dos.detected.classifier=os_cpu_type package`
+
+   If you are on Intel/AMD 64-bit Linux the command-line simplifies to:
+
+   `mvn -e package`
 
 Examples
 --------
 
-The following example programs can be found in the `examples` folder.
-These examples use the Python wrapper interface but calling the
-underlying Java implementation directly is straightforward.
+orbdetpy uses JSON files to store settings, measurements and estimation
+results. The files in `examples/data` show how to configure measurement
+simulation and orbit determination using radar or telescope data. The
+file `docs/file_formats.md` documents the structure of the JSON files.
 
 1. `run_tests.py` : Run all the use cases under `examples/data`. Simulated
    measurements, orbit fits, differences between simulated truth versus
@@ -64,15 +74,7 @@ underlying Java implementation directly is straightforward.
    enabling parallelization in multi-processor environments. This
    program demonstrates asynchronous operations.
 
-orbdetpy uses JSON files to store settings, measurements and estimation
-results. The files in `examples/data` show how to configure measurement
-simulation and orbit determination using radar or telescope data. The
-file `docs/file_formats.md` documents the structure of the JSON files.
-
-The following are some typical use cases. It is assumed that the current
-working directory is `examples/data`.
-
-1. Simulate state vectors and radar measurements:
+2. Simulate state vectors and radar measurements:
 
    `from orbdetpy.simulation import simulate_measurements`
 
@@ -81,31 +83,33 @@ working directory is `examples/data`.
    This will run the simulation configured in `radar_sim_cfg.json` and
    write simulated output to `sim_data.json`.
 
-2. Plot simulation results:
+3. Plot simulation results:
 
    `from orbdetpy.plotting.simulation import plot as sim_plot`
 
    `sim_plot("radar_sim_cfg.json", "sim_data.json", interactive = True)`
 
-   This will plot the simulated data generated in (1).
+   This will plot the simulated data generated in (2).
 
-3. Run OD on simulated radar data:
+4. Run OD on simulated radar data:
 
    `from orbdetpy.estimation import determine_orbit`
 
    `determine_orbit("radar_od_cfg.json", "sim_data.json", output_file = "od_output.json")`
 
-   This will run OD on the simulated radar data generated in (1)
+   This will run OD on the simulated radar data generated in (2)
    using the OD configuration in `radar_od_cfg.json` and write OD
    output to `od_output.json`.
 
-4. Plot OD results:
+5. Plot OD results:
 
    `from orbdetpy.plotting.estimation import plot as od_plot`
 
    `od_plot("radar_od_cfg.json", "sim_data.json", "od_output.json", interactive = True)`
 
-   This will plot the OD results from (3).
+   This will plot the OD results from (4).
+
+6. `propagate_TLE.py` : Propagate TLEs given by command-line arguments.
 
 Known Issues
 ------------

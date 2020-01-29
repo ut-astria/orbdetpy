@@ -1,5 +1,5 @@
 # __init__.py - orbdetpy.plotting package initialization.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,3 +13,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import matplotlib.pyplot as plt
+from matplotlib import get_backend
+
+def maximize_plot():
+    try:
+        bend = get_backend().casefold()
+        figman = plt.get_current_fig_manager()
+        if (bend == "gtk3agg"):
+            figman.window.maximize()
+    except Exception as exc:
+        pass

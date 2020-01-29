@@ -1,5 +1,5 @@
 # propagation.py - Orbit propagation functions.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,14 +41,21 @@ def propagate_orbits(config_list, output_file = None,
     """
 
     def async_helper(resp):
-        prop_data = convert_propagation(resp.result().array)
-        if (output_file):
-            write_output_file(output_file, prop_data)
+        try:
+            prop_data = convert_propagation(resp.result().array)
+            if (output_file):
+                write_output_file(output_file, prop_data)
 
-        channel.close()
-        if (async_callback):
-            async_callback(prop_data, async_extra)
-        return(prop_data)
+            channel.close()
+            if (async_callback):
+                async_callback(prop_data, async_extra)
+            return(prop_data)
+        except Exception as exc:
+            if (async_callback):
+                async_callback(exc, async_extra)
+            else:
+                raise
+        return(None)
 
     channel = RemoteServer.channel()
     stub = propagation_pb2_grpc.PropagationStub(channel)

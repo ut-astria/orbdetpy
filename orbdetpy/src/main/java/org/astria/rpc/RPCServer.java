@@ -37,9 +37,14 @@ public final class RPCServer
 
     private void start() throws Exception
     {
+	Package pack = Package.getPackage("org.astria.rpc");
+	if (pack != null && pack.getImplementationTitle() != null && pack.getImplementationVersion() != null)
+	    System.out.println(String.format("%s version %s", pack.getImplementationTitle(), pack.getImplementationVersion()));
+
 	DataManager.initialize(dataPath);
 
 	server = ServerBuilder.forPort(port)
+	    .maxInboundMessageSize(Integer.MAX_VALUE)
 	    .addService(new ConversionService())
 	    .addService(new EstimationService())
 	    .addService(new PropagationService())
@@ -51,6 +56,7 @@ public final class RPCServer
 	{
 	    @Override public void run()
 	    {
+		System.out.println("Shutting down server...");
 		RPCServer.this.stop();
 	    }
 	});

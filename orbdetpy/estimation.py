@@ -1,5 +1,5 @@
 # estimation.py - Orbit estimation functions.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,14 +43,21 @@ def determine_orbit(config, meas, output_file = None,
     """
 
     def async_helper(resp):
-        fit_data = convert_estimation(resp.result().array)
-        if (output_file):
-            write_output_file(output_file, fit_data)
+        try:
+            fit_data = convert_estimation(resp.result().array)
+            if (output_file):
+                write_output_file(output_file, fit_data)
 
-        channel.close()
-        if (async_callback):
-            async_callback(fit_data, async_extra)
-        return(fit_data)
+            channel.close()
+            if (async_callback):
+                async_callback(fit_data, async_extra)
+            return(fit_data)
+        except Exception as exc:
+            if (async_callback):
+                async_callback(exc, async_extra)
+            else:
+                raise
+        return(None)
 
     channel = RemoteServer.channel()
     stub = estimation_pb2_grpc.EstimationStub(channel)

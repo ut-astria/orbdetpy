@@ -1,5 +1,5 @@
 # estimation.py - Plot orbit determination results.
-# Copyright (C) 2018-2019 University of Texas
+# Copyright (C) 2018-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,13 +17,14 @@
 import math
 import json
 import numpy
-from numpy.linalg import norm
 import dateutil.parser
+from numpy.linalg import norm
 import matplotlib.pyplot as plt
+import matplotlib.patches as patch
 from orbdetpy import read_param
+from orbdetpy.plotting import maximize_plot
 
-def plot(config, measurements, orbit_fit, interactive = False,
-         output_file_path = None):
+def plot(config, measurements, orbit_fit, interactive = False, output_file_path = None):
     cfg = read_param(config)
     inp = [x for x in read_param(measurements) if (
         "Station" in x or "Position" in x or "PositionVelocity" in x)]
@@ -48,14 +49,25 @@ def plot(config, measurements, orbit_fit, interactive = False,
     else:
         parnames.extend([r"$C_R$", r"$C_D$"])
 
+    idx = 0
+    patches = []
+    cycle = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    cmap = {None : cycle[0]}
     for sk, sv in cfg.get("Stations", {}).items():
+        if (sk not in cmap):
+            cmap[sk] = cycle[idx]
+            patches.append(patch.Patch(color = cycle[idx], label = sk))
+            idx = (idx + 1) % len(cycle)
+
         if (sv.get("BiasEstimation", "") in ["Estimate", "Consider"]):
             for m in cfg.get("Measurements", {}).keys():
                 parnames.append(sk + m)
 
-    tstamp,prefit,posfit,inocov,params,estmacc,estmcov = [],[],[],[],[],[],[]
+    tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors = [],[],[],[],[],[],[],[]
     for i, o in zip(inp, out):
+        colors.append(cmap[o.get("Station")])
         tstamp.append(dateutil.parser.isoparse(i["Time"]))
+
         if (key[0] == "Position" or key[0] == "PositionVelocity"):
             prefit.append([ix-ox for ix, ox
                            in zip(i[key[0]], o["PreFit"][key[0]])])
@@ -72,9 +84,12 @@ def plot(config, measurements, orbit_fit, interactive = False,
                 posfit.append([i[key[0]]-o["PostFit"][key[0]][-1]])
 
         p = []
-        for m in range(len(o["InnovationCovariance"])):
+        for m in range(len(o.get("InnovationCovariance", []))):
             p.append(3.0*numpy.sqrt(o["InnovationCovariance"][m][m]))
-        inocov.append(p)
+        if (len(p) > 0):
+            inocov.append(p)
+        else:
+            inocov.append([0.0]*len(prefit[0]))
 
         if (len(o["EstimatedState"]) > 6):
             if (dmcrun):
@@ -126,6 +141,7 @@ def plot(config, measurements, orbit_fit, interactive = False,
 
     outfiles = []
     plt.figure(0)
+    maximize_plot()
     plt.suptitle("Pre-fit residuals")
     for i in range(pre.shape[-1]):
         if ("Position" in key):
@@ -134,16 +150,18 @@ def plot(config, measurements, orbit_fit, interactive = False,
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(pre.shape[-1], 1, i + 1)
-        plt.semilogx(tim, pre[:,i], "ob")
+        plt.scatter(tim, pre[:,i], color = colors, marker = "o", s = 7)
+        plt.legend(handles = patches, loc = "best")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
-    if (output_file_path is not None):
+    if (output_file_path):
         outfiles.append(output_file_path + "_prefit.png")
         plt.savefig(outfiles[-1], format = "png")
 
     plt.figure(1) 
+    maximize_plot()
     plt.suptitle("Post-fit residuals")
     for i in range(pre.shape[-1]):
         if ("Position" in key):
@@ -152,31 +170,30 @@ def plot(config, measurements, orbit_fit, interactive = False,
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(pre.shape[-1], 1, i + 1)
-        plt.semilogx(tim, pos[:,i], "ob")
-        plt.semilogx(tim, -cov[:,i], "-r")
-        plt.semilogx(tim,  cov[:,i], "-r", label = r"Innov. 3$\sigma$")
+        plt.scatter(tim, pos[:,i], color = colors, marker = "o", s = 7)
+        plt.legend(handles = patches, loc = "best")
+        plt.plot(tim, -cov[:,i], "-r")
+        plt.plot(tim,  cov[:,i], "-r")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
-        if ("Position" not in key and "PositionVelocity" not in key):
-            plt.ylim(-cov[i,0], cov[i,0])
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
-    if (output_file_path is not None):
+    if (output_file_path):
         outfiles.append(output_file_path + "_postfit.png")
         plt.savefig(outfiles[-1], format = "png")
 
     for i in range(par.shape[-1]):
         if (i == 0):
             plt.figure(2)
+            maximize_plot()
             plt.suptitle("Estimated parameters")
-
         plt.subplot(par.shape[1], 1, i + 1)
-        plt.semilogx(tim, par[:,i], "ob")
+        plt.scatter(tim, par[:,i], marker = "o", s = 7)
         plt.xlabel("Time [hr]")
         plt.ylabel(parnames[i])
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
-    if (output_file_path is not None):
+    if (output_file_path):
         outfiles.append(output_file_path + "_estpar.png")
         plt.savefig(outfiles[-1], format = "png")
 
@@ -184,15 +201,16 @@ def plot(config, measurements, orbit_fit, interactive = False,
         lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]",
                r"Cross track [$\frac{m}{s^2}$]"]
         plt.figure(3)
+        maximize_plot()
         plt.suptitle("DMC estimated accelerations")
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.semilogx(tim, estmacc[:,i], "-b")
+            plt.plot(tim, estmacc[:,i])
             plt.xlabel("Time [hr]")
             plt.ylabel(lab[i])
 
         plt.tight_layout(rect = [0, 0.03, 1, 0.95])
-        if (output_file_path is not None):
+        if (output_file_path):
             outfiles.append(output_file_path + "_estacc.png")
             plt.savefig(outfiles[-1], format = "png")
 

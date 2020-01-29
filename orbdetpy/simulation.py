@@ -1,5 +1,5 @@
 # simulation.py - Measurement simulation functions.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,14 +40,21 @@ def simulate_measurements(config, output_file = None,
     """
 
     def async_helper(resp):
-        sim_data = convert_measurements(resp.result().array)
-        if (output_file):
-            write_output_file(output_file, sim_data)
+        try:
+            sim_data = convert_measurements(resp.result().array)
+            if (output_file):
+                write_output_file(output_file, sim_data)
 
-        channel.close()
-        if (async_callback):
-            async_callback(sim_data, async_extra)
-        return(sim_data)
+            channel.close()
+            if (async_callback):
+                async_callback(sim_data, async_extra)
+            return(sim_data)
+        except Exception as exc:
+            if (async_callback):
+                async_callback(exc, async_extra)
+            else:
+                raise
+        return(None)
 
     channel = RemoteServer.channel()
     stub = simulation_pb2_grpc.SimulationStub(channel)
