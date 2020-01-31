@@ -1,0 +1,83 @@
+{
+    "Gravity" :
+    {
+	"Degree" : 20,
+	"Order" : 20
+    },
+
+    "OceanTides" :
+    {
+	"Degree" : 20,
+	"Order" : 20
+    },
+
+    "Drag" :
+    {
+	"Model" : "MSISE",
+	"Coefficient" :
+	{
+	    "Value" : 2.0
+	}
+    },
+
+    "SolidTides" :
+    {
+	"Sun" : true,
+	"Moon" : true
+    },
+
+    "ThirdBodies" :
+    {
+	"Sun" : true,
+	"Moon" : true
+    },
+
+    "RadiationPressure" :
+    {
+	"Sun" : true,
+	"Creflection" :
+	{
+            "Value" : 1.5
+	}
+    },
+
+    "SpaceObject" :
+    {
+	"Mass" : 2000.0,
+	"Area" : 20.0
+    },
+
+    "Propagation" :
+    {
+	"Start" : "2018-12-06T12:00:00Z",
+	"End" : "2018-12-07T00:00:00Z",
+	"Step" : 300.0,
+	"InitialTLE" :
+	[
+	    "1 28884U 05041A   18340.52928887 +.00000080 +00000-0 +00000-0 0  9993",
+	    "2 28884 000.0173 326.0836 0001731 279.5314 247.2032 01.00270422048183"
+	]
+    },
+
+    "Stations" :
+    {
+	"Station1" :
+	{
+            "Latitude" : 0.5578822780952235,
+            "Longitude" : -1.8017600227679735,
+            "Altitude" : 855.0
+	}
+    },
+
+    "Measurements" :
+    {
+	"RightAscension" :
+	{
+	    "Error" : [4.8E-6]
+	},
+	"Declination" :
+	{
+	    "Error" : [4.8E-6]
+	}
+    }
+}
