@@ -1,6 +1,6 @@
 /*
  * ParallelPropagation.java - Multiple object propagation functions.
- * Copyright (C) 2018-2019 University of Texas
+ * Copyright (C) 2018-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,7 +105,6 @@ public final class ParallelPropagation
 
 	while (true)
 	{
-	    
 	    final AbsoluteDate t0 = tmStart;
 	    final AbsoluteDate t1 = tmFinal;
 	    final PropagationOutput pout = new PropagationOutput(tmFinal, propagators.size());

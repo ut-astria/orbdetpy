@@ -1,5 +1,5 @@
 # server.py - RPC server connection management.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,10 +18,9 @@ import os
 import grpc
 import atexit
 import psutil
-from subprocess import DEVNULL
 
 class RemoteServer:
-    rpc_host = "localhost"
+    rpc_host = "127.0.0.1"
     rpc_port = 50051
     rpc_uri = "{}:{}".format(rpc_host, rpc_port)
     rpc_options = [("grpc.max_send_message_length", 2147483647),
@@ -39,8 +38,7 @@ class RemoteServer:
         # Start server
         cmdline = ["java", "-Xmx2G", "-XX:+UseG1GC", "-jar",
                    jarfile, str(cls.rpc_port), datadir]
-        cls.rpc_server_proc = psutil.Popen(cmdline, stdout = DEVNULL,
-                                           stderr = DEVNULL)
+        cls.rpc_server_proc = psutil.Popen(cmdline)
 
         atexit.register(RemoteServer.disconnect)
         with grpc.insecure_channel(cls.rpc_uri) as chan:

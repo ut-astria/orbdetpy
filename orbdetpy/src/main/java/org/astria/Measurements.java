@@ -1,6 +1,6 @@
 /*
  * Measurements.java - Functions to parse OD measurement files.
- * Copyright (C) 2018-2019 University of Texas
+ * Copyright (C) 2018-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -221,12 +221,13 @@ public final class Measurements
 
 	    if (m.azimuth != 0.0 && cazim != null && celev != null)
 	    {
-		AngularAzEl obs = new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation}, new double[] {cazim.error[0], celev.error[0]},
-						  twoOnes, satellite);
+		AngularAzEl obs = new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation},
+						  new double[] {cazim.error[0], celev.error[0]}, twoOnes, satellite);
 		if (addOutlier)
 		    obs.addModifier(outlier);
 		if (addBias && (jsn.azimuthBias != 0.0 || jsn.elevationBias != 0.0))
-		    obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[] {jsn.azimuthBias, jsn.elevationBias}, twoOnes, twoNegInf, twoPosInf));
+		    obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[] {jsn.azimuthBias, jsn.elevationBias},
+							  twoOnes, twoNegInf, twoPosInf));
 		measObjs.add(obs);
 	    }
 
@@ -237,7 +238,8 @@ public final class Measurements
 		if (addOutlier)
 		    obs.addModifier(outlier);
 		if (addBias && (jsn.rightAscensionBias != 0.0 || jsn.declinationBias != 0.0))
-		    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[] {jsn.rightAscensionBias, jsn.declinationBias}, twoOnes, twoNegInf, twoPosInf));
+		    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[] {jsn.rightAscensionBias, jsn.declinationBias},
+							   twoOnes, twoNegInf, twoPosInf));
 		measObjs.add(obs);
 	    }
 
