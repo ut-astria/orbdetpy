@@ -14,14 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from traceback import format_exc
 from orbdetpy import write_output_file
 from orbdetpy.rpc import messages_pb2, estimation_pb2_grpc
 from orbdetpy.rpc.server import RemoteServer
 from orbdetpy.rpc.tools import (build_settings, build_measurements,
                                 convert_estimation)
 
-def determine_orbit(config, meas, output_file = None,
-                    async_callback = None, async_extra = None):
+def determine_orbit(config, meas, output_file = None):
     """ Performs orbit determination given config and measurements.
 
     Args:
@@ -31,42 +31,38 @@ def determine_orbit(config, meas, output_file = None,
                 file-like object, or JSON encoded string).
         output_file: If specified, the orbit fit will be written to
                      the file name or text file-like object given. 
-        async_callback: Callback function to invoke asynchronously when
-                        results become available. Processing is done
-                        synchronously by default.
-        async_extra: Data to pass to the callback function in addition
-                     to the estimation results.
 
     Returns:
-        Orbit determination results in the same format as config 
-        (Dictionary or JSON encoded string) or None in asynchronous mode.
+        Orbit determination results.
     """
 
-    def async_helper(resp):
-        try:
-            fit_data = convert_estimation(resp.result().array)
-            if (output_file):
-                write_output_file(output_file, fit_data)
+    if (isinstance(config, list)):
+        od_output = []
+    else:
+        od_output = None
+        config = [config]
+    if (od_output is None):
+        meas = [meas]
+    if (output_file and not isinstance(output_file, list)):
+        output_file = [output_file]
 
-            channel.close()
-            if (async_callback):
-                async_callback(fit_data, async_extra)
-            return(fit_data)
-        except Exception as exc:
-            if (async_callback):
-                async_callback(exc, async_extra)
+    with RemoteServer.channel() as channel:
+        stub = estimation_pb2_grpc.EstimationStub(channel)
+        requests = [stub.determineOrbit.future(messages_pb2.DetermineOrbitInput(
+            config = build_settings(c),
+            measurements = build_measurements(m))) for c, m in zip(config, meas)]
+
+        for idx, req in enumerate(requests):
+            try:
+                fit_data = convert_estimation(req.result().array)
+            except Exception as exc:
+                fit_data = format_exc()
+
+            if (od_output is None):
+                od_output = fit_data
             else:
-                raise
-        return(None)
+                od_output.append(fit_data)
+            if (output_file):
+                write_output_file(output_file[idx], fit_data)
 
-    channel = RemoteServer.channel()
-    stub = estimation_pb2_grpc.EstimationStub(channel)
-
-    resp = stub.determineOrbit.future(messages_pb2.DetermineOrbitInput(
-        config = build_settings(config),
-        measurements = build_measurements(meas)))
-    if (async_callback):
-        resp.add_done_callback(async_helper)
-        return(None)
-
-    return(async_helper(resp))
+    return(od_output)

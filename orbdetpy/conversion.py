@@ -1,5 +1,5 @@
 # conversion.py - Various conversion functions.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@ def transform_frame(srcframe, time, pva, destframe):
         State vector transformed to the destination frame.
     """
 
-    with RemoteServer.channel() as chan:
-        stub = conversion_pb2_grpc.ConversionStub(chan)
+    with RemoteServer.channel() as channel:
+        stub = conversion_pb2_grpc.ConversionStub(channel)
         resp = stub.transformFrame(messages_pb2.TransformFrameInput(
             src_frame = srcframe, time = time,
             pva = pva, dest_frame = destframe))
