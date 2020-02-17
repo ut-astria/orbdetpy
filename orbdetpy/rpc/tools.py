@@ -196,7 +196,7 @@ def convert_measurements(inputs):
         for src, dest in _measurement_fields.items():
             fld = getattr(inp, src)
             if (fld):
-                out[dest] = list(fld) if dest == "TrueStateCartesian" else fld
+                out[dest] = list(fld) if (dest in ["StationState", "TrueStateCartesian"]) else fld
 
     return(output)
 
