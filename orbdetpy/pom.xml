@@ -7,14 +7,14 @@
 
   <properties>
     <application.main.class>org.astria.rpc.RPCServer</application.main.class>
-    <grpc.version>1.25.0</grpc.version>
+    <grpc.version>1.27.1</grpc.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.surefire.version>2.22.2</maven.surefire.version>
     <maven.clean.version>3.1.0</maven.clean.version>
-    <maven.shade.version>3.2.1</maven.shade.version>
+    <maven.shade.version>3.2.2</maven.shade.version>
     <native.image.maven.plugin.version>19.2.1</native.image.maven.plugin.version>
-    <orekit.version>10.0</orekit.version>
+    <orekit.version>10.1</orekit.version>
     <os.detected.classifier>linux-x86_64</os.detected.classifier>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -65,9 +65,9 @@
 	<artifactId>protobuf-maven-plugin</artifactId>
 	<version>${protobuf.maven.plugin.version}</version>
 	<configuration>
-          <protocArtifact>com.google.protobuf:protoc:3.10.0:exe:${os.detected.classifier}</protocArtifact>
+          <protocArtifact>com.google.protobuf:protoc:3.11.4:exe:${os.detected.classifier}</protocArtifact>
           <pluginId>grpc-java</pluginId>
-          <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.23.0:exe:${os.detected.classifier}</pluginArtifact>
+          <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.27.1:exe:${os.detected.classifier}</pluginArtifact>
 	</configuration>
 	<executions>
           <execution>

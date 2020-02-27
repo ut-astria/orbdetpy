@@ -37,14 +37,19 @@ def read_param(param):
 def write_output_file(outfile, data):
     if (isinstance(outfile, str)):
         with open(outfile, "w") as fp:
-            json.dump(data, fp)
+            if (isinstance(data, str)):
+                fp.write(data)
+            else:
+                json.dump(data, fp)
     elif (isinstance(outfile, io.TextIOBase)):
-        json.dump(data, outfile)
+        if (isinstance(data, str)):
+            outfile.write(data)
+        else:
+            json.dump(data, outfile)
 
 if (__name__ != '__main__'):
     _rootdir = path.dirname(path.abspath(__file__))
     _datadir = path.join(_rootdir, "data")
     _libsdir = path.join(_rootdir, "target")
-    _jarfile = path.join(_libsdir, "orbdetpy-server-{}.jar"
-                         .format(__version__))
+    _jarfile = path.join(_libsdir, "orbdetpy-server-{}.jar".format(__version__))
     RemoteServer.connect(_datadir, _jarfile)

@@ -104,6 +104,7 @@ def plot(config, measurements, orbit_fit, interactive = False, output_file_path 
             v = numpy.array(o["EstimatedState"][3:6])
             v /= norm(v)
             h = numpy.cross(r, v)
+            h /= norm(h)
             rot = numpy.vstack((r, numpy.cross(h, r), h))
             estmacc.append(rot.dot(o["EstimatedState"][dmcidx:dmcidx+3]))
 

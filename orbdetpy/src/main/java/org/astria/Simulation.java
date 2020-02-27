@@ -33,6 +33,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -75,11 +76,19 @@ public final class Simulation
 	simCfg.addEventHandlers(propagator, sstate0);
 	final boolean evthandlers = propagator.getEventsDetectors().size() > 0;
 
-	double[] obs, azel;
-	final double[] zeros = new double[]{0.0, 0.0};
-	final double[] ones = new double[]{1.0, 1.0};
 	final Random rand = new Random(1);
-	final ObservableSatellite obssat = new ObservableSatellite(0);
+	final double[] oneOnes = new double[] {1.0};
+	final double[] oneNegInf = new double[] {Double.NEGATIVE_INFINITY};
+	final double[] onePosInf = new double[] {Double.POSITIVE_INFINITY};
+	final double[] twoZeros = new double[]{0.0, 0.0};
+	final double[] twoOnes = new double[] {1.0, 1.0};
+	final double[] twoNegInf = new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
+	final double[] twoPosInf = new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
+	final String[] biasAzEl = new String[] {"Az", "El"};
+	final String[] biasRaDec = new String[] {"RA", "Dec"};
+	final String[] biasRange = new String[] {"Range"};
+	final String[] biasRangeRate = new String[] {"RangeRate"};
+	final ObservableSatellite obsSat = new ObservableSatellite(0);
 	final ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>(
 	    (int) FastMath.abs(prend.durationFrom(tm)/simCfg.propStep) + 2);
 
@@ -146,8 +155,8 @@ public final class Simulation
 		{
 		    GroundStation gst = kv.getValue();
 		    Settings.Station jsn = simCfg.cfgStations.get(kv.getKey());
-		    azel = new AngularAzEl(gst, proptm, zeros, zeros, ones, obssat).estimate(0, 0, sta).getEstimatedValue();
-		    if (simCfg.simSkipUnobservable && azel[1] <= 5E-6)
+		    AngularAzEl azel = new AngularAzEl(gst, proptm, twoZeros, twoZeros, twoOnes, obsSat);
+		    if (simCfg.simSkipUnobservable && azel.estimate(0, 0, sta).getEstimatedValue()[1] <= 5E-6)
 			continue;
 
 		    Measurements.SimulatedMeasurement clone = new Measurements.SimulatedMeasurement(json);
@@ -168,37 +177,49 @@ public final class Simulation
 			Settings.Measurement val = nvp.getValue();
 			if (name.equalsIgnoreCase("Range"))
 			{
-			    obs = new Range(gst, val.twoWay, proptm, 0.0, 0.0, 1.0, obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.range = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeBias;
+			    Range obs = new Range(gst, val.twoWay, proptm, 0.0, 0.0, 1.0, obsSat);
+			    obs.addModifier(new Bias<Range>(biasRange, new double[] {rand.nextGaussian()*val.error[0] + jsn.rangeBias},
+							    oneOnes, oneNegInf, onePosInf));
+			    clone.range = obs.estimate(0, 0, sta).getEstimatedValue()[0];
 			}
 			else if (name.equalsIgnoreCase("RangeRate"))
 			{
-			    obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.twoWay, obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.rangeRate = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rangeRateBias;
+			    RangeRate obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.twoWay, obsSat);
+			    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[] {rand.nextGaussian()*val.error[0] + jsn.rangeRateBias},
+								oneOnes, oneNegInf, onePosInf));
+			    clone.rangeRate = obs.estimate(0, 0, sta).getEstimatedValue()[0];
 			}
 			else if (name.equalsIgnoreCase("RightAscension") || name.equalsIgnoreCase("Declination") && clone.rightAscension == 0.0)
 			{
-			    obs = new AngularRaDec(gst, simCfg.propFrame, proptm, zeros, zeros, ones,
-						   obssat).estimate(0, 0, sta).getEstimatedValue();
-			    clone.rightAscension = obs[0] + rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias;
-			    clone.declination = obs[1] + rand.nextGaussian()*val.error[0] + jsn.declinationBias;
+			    AngularRaDec obs = new AngularRaDec(gst, simCfg.propFrame, proptm, twoZeros, twoZeros, twoOnes,
+								obsSat);
+			    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[] {rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias,
+											    rand.nextGaussian()*val.error[0] + jsn.declinationBias},
+				    twoOnes, twoNegInf, twoPosInf));
+			    double[] obsVal = obs.estimate(0, 0, sta).getEstimatedValue();
+			    clone.rightAscension = obsVal[0];
+			    clone.declination = obsVal[1];
 			}
 			else if (name.equalsIgnoreCase("Azimuth") || name.equalsIgnoreCase("Elevation") && clone.azimuth == 0.0)
 			{
-			    clone.azimuth = azel[0] + rand.nextGaussian()*val.error[0] + jsn.azimuthBias;
-			    clone.elevation = azel[1] + rand.nextGaussian()*val.error[0] + jsn.elevationBias;
+			    azel.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[] {rand.nextGaussian()*val.error[0] + jsn.azimuthBias,
+											   rand.nextGaussian()*val.error[0] + jsn.elevationBias},
+				    twoOnes, twoNegInf, twoPosInf));
+			    double[] obsVal = azel.estimate(0, 0, sta).getEstimatedValue();
+			    clone.azimuth = obsVal[0];
+			    clone.elevation = obsVal[1];
 			}
 			else if (name.equalsIgnoreCase("Position"))
 			{
 			    clone.position = new double[3];
 			    for (int i = 0; i < 3; i++)
-				clone.position[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionBias[i];
+				clone.position[i] = clone.trueState.cartesian[i] + rand.nextGaussian()*val.error[i] + jsn.positionBias[i];
 			}
 			else if (name.equalsIgnoreCase("PositionVelocity"))
 			{
 			    clone.positionVelocity = new double[6];
 			    for (int i = 0; i < 6; i++)
-				clone.positionVelocity[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionVelocityBias[i];
+				clone.positionVelocity[i] = clone.trueState.cartesian[i] + rand.nextGaussian()*val.error[i] + jsn.positionVelocityBias[i];
 			}
 		    }
 

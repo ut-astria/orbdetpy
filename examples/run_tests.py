@@ -1,5 +1,5 @@
 # run_tests.py - Program to run simulation and OD tests.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,21 +19,14 @@ import sys
 import json
 import math
 import time
-from threading import Semaphore
 from orbdetpy.estimation import determine_orbit
 from orbdetpy.simulation import simulate_measurements
-
-def callback(data, extra):
-    if (isinstance(data, Exception)):
-        print(data)
-    sem.release()
 
 print("run_tests start : %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
 odpdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 datdir = os.path.join(odpdir, "examples", "data")
 
-lock_count = 0
-sem = Semaphore(0)
+sim_cfg, sim_out = [], []
 for root, dirs, files in os.walk(datdir):
     outdir = os.path.join(root, "output")
     if ("output" in dirs):
@@ -43,18 +36,14 @@ for root, dirs, files in os.walk(datdir):
 
     for fname in files:
         idx = fname.find("sim_cfg.json")
-        if (idx == -1):
-            continue
-        lock_count += 1
-        print("Simulating {}".format(fname))
-        simulate_measurements(os.path.join(root, fname), async_callback = callback,
-                              output_file = os.path.join(outdir, fname[:idx] + "obs.json"))
+        if (idx != -1):
+            print("Simulating {}".format(fname))
+            sim_cfg.append(os.path.join(root, fname))
+            sim_out.append(os.path.join(outdir, fname[:idx] + "obs.json"))
 
-for i in range(lock_count):
-    sem.acquire()
+simulate_measurements(sim_cfg, output_file = sim_out)
 
-lock_count = 0
-sem = Semaphore(0)
+od_cfg, od_obs, od_out = [], [], []
 for root, dirs, files in os.walk(datdir):
     outdir = os.path.join(root, "output")
     if ("output" in dirs):
@@ -66,19 +55,15 @@ for root, dirs, files in os.walk(datdir):
             continue
 
         print("Fitting {}".format(fname))
-        with open(os.path.join(outdir, fname[:idx] + "obs.json"), "r") as fp:
-            obs = json.load(fp)
-
         for algo in ["EKF", "UKF"]:
             with open(os.path.join(root, fname), "r") as fp:
                 config = json.load(fp)
                 config["Estimation"]["Filter"] = algo
-            lock_count += 1
-            determine_orbit(config, obs, async_callback = callback,
-                            output_file = os.path.join(outdir, fname[:idx] + algo + "_fit.json"))
+            od_cfg.append(config)
+            od_obs.append(os.path.join(outdir, fname[:idx] + "obs.json"))
+            od_out.append(os.path.join(outdir, fname[:idx] + algo + "_fit.json"))
 
-for i in range(lock_count):
-    sem.acquire()
+determine_orbit(od_cfg, od_obs, output_file = od_out)
 
 for root, dirs, files in os.walk(datdir):
     outdir = os.path.join(root, "output")

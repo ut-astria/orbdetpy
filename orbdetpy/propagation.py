@@ -19,8 +19,7 @@ from orbdetpy.rpc import messages_pb2,  propagation_pb2_grpc
 from orbdetpy.rpc.server import RemoteServer
 from orbdetpy.rpc.tools import build_settings, convert_propagation
 
-def propagate_orbits(config_list, output_file = None,
-                     async_callback = None, async_extra = None):
+def propagate_orbits(config_list, output_file = None):
     """ Propagates the given objects in parallel.
 
     Args:
@@ -29,41 +28,17 @@ def propagate_orbits(config_list, output_file = None,
                      JSON encoded string).
         output_file: If specified, the output will be written to
                      the file name or text file-like object given. 
-        async_callback: Callback function to invoke asynchronously when
-                        results become available. Processing is done
-                        synchronously by default.
-        async_extra: Data to pass to the callback function in addition
-                     to the propagation results.
 
     Returns:
-        Propagated state vectors at desired time intervals
-        (List of dictionaries) or None in asynchronous mode.
+        Propagated state vectors at desired time intervals.
     """
 
-    def async_helper(resp):
-        try:
-            prop_data = convert_propagation(resp.result().array)
-            if (output_file):
-                write_output_file(output_file, prop_data)
+    with RemoteServer.channel() as channel:
+        stub = propagation_pb2_grpc.PropagationStub(channel)
+        resp = stub.propagate(messages_pb2.SettingsArray(
+            array = [build_settings(p) for p in config_list]))
 
-            channel.close()
-            if (async_callback):
-                async_callback(prop_data, async_extra)
-            return(prop_data)
-        except Exception as exc:
-            if (async_callback):
-                async_callback(exc, async_extra)
-            else:
-                raise
-        return(None)
-
-    channel = RemoteServer.channel()
-    stub = propagation_pb2_grpc.PropagationStub(channel)
-
-    resp = stub.propagate.future(messages_pb2.SettingsArray(
-        array = [build_settings(p) for p in config_list]))
-    if (async_callback):
-        resp.add_done_callback(async_helper)
-        return(None)
-
-    return(async_helper(resp))
+    prop_data = convert_propagation(resp.array)
+    if (output_file):
+        write_output_file(output_file, prop_data)
+    return(prop_data)
