@@ -232,6 +232,12 @@ message DetermineOrbitInput
     repeated Measurement measurements = 2;
 }
 
+message MultiTargetInput
+{
+    repeated Settings config = 1;
+    repeated MeasurementArray measurements = 2;
+}
+
 message TransformFrameInput
 {
     string src_frame = 1;

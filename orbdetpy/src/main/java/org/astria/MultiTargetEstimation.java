@@ -58,13 +58,9 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import org.astria.Estimation;
-
-
 public final class MultiTargetEstimation
 {
-
-    private Settings odCfg = new Settings();
+    private Settings odCfg;
 
     private final Measurements odObs;
 
@@ -77,14 +73,16 @@ public final class MultiTargetEstimation
     private final AbsoluteDate stepHandlerEnd;
     private ArrayList<Estimation.EstimationOutput> estOutput;
 
+    public MultiTargetEstimation(ArrayList<Settings> cfgList, ArrayList<Measurements> obsList)
+    {
+	this(cfgList.get(0), obsList.get(0));
+    }
 
     public MultiTargetEstimation(Settings odCfg, Measurements odObs)
     {
-    	
-    odCfg.forces.add(0, new NewtonianAttraction(Constants.EGM96_EARTH_MU));
+	odCfg.forces.add(0, new NewtonianAttraction(Constants.EGM96_EARTH_MU));
     	
 	this.odCfg = odCfg;
-	
 	this.odObs = odObs;
 	
 	measNames = this.odCfg.cfgMeasurements.keySet().toArray(new String[0]);
