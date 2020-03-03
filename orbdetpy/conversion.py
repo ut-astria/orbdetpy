@@ -24,10 +24,10 @@ def transform_frame(srcframe, time, pva, destframe):
         srcframe: Source reference frame ("EME2000", "GCRF",
                   "ITRF", "MOD", "TOD", or "TEME").
         time: State vector epoch (ISO-8601 formatted UTC string).
-        pva: State vector to transform [m, m, m, m/s, m/s, m/s] or 
-             [m, m, m, m/s, m/s, m/s, m/s^2, m/s^2, m/s^2].
+        pva: State vector to transform, can be pos or pos + vel or
+             pos + vel + acc.
         destframe: Destination reference frame ("EME2000", "GCRF",
-                   "ITRF", "MOD", "TOD", or "TEME")..
+                   "ITRF", "MOD", "TOD", or "TEME").
 
     Returns:
         State vector transformed to the destination frame.

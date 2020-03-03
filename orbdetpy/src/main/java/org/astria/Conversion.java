@@ -38,22 +38,29 @@ public final class Conversion
 	Frame toFrame = DataManager.getFrame(destFrame);
 	Transform xfm = fromFrame.getTransformTo(toFrame, DataManager.parseDateTime(time));
 
-	PVCoordinates topv = null;
-	if (pva.size() == 6)
-	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
-								new Vector3D(pva.get(3), pva.get(4), pva.get(5))));
+	if (pva.size() == 3)
+	{
+	    Vector3D p = xfm.transformPosition(new Vector3D(pva.get(0), pva.get(1), pva.get(2)));
+	    return(new double[] {p.getX(), p.getY(), p.getZ()});
+	}
+	else if (pva.size() == 6)
+	{
+	    PVCoordinates topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
+									      new Vector3D(pva.get(3), pva.get(4), pva.get(5))));
+	    Vector3D p = topv.getPosition();
+	    Vector3D v = topv.getVelocity();
+	    return(new double[] {p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()});
+	}
 	else
-	    topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
-								new Vector3D(pva.get(3), pva.get(4), pva.get(5)),
-								new Vector3D(pva.get(6), pva.get(7), pva.get(8))));
-
-	Vector3D p = topv.getPosition();
-	Vector3D v = topv.getVelocity();
-	if (pva.size() == 6)
-	    return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()});
-
-	Vector3D a = topv.getAcceleration();
-	return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ(), a.getX(), a.getY(), a.getZ()});
+	{
+	    PVCoordinates topv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
+									      new Vector3D(pva.get(3), pva.get(4), pva.get(5)),
+									      new Vector3D(pva.get(6), pva.get(7), pva.get(8))));
+	    Vector3D p = topv.getPosition();
+	    Vector3D v = topv.getVelocity();
+	    Vector3D a = topv.getAcceleration();
+	    return(new double[] {p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ(), a.getX(), a.getY(), a.getZ()});
+	}
     }
 
     public static double[] convertAzElToRaDec(String time, double az, double el, double lat, double lon, double alt, String frame)
