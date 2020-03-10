@@ -1,0 +1,123 @@
+{
+    "Gravity" :
+    {
+	"Degree" : 20,
+	"Order" : 20
+    },
+
+    "OceanTides" :
+    {
+	"Degree" : -1,
+	"Order" : -1
+    },
+
+    "Drag" :
+    {
+	"Model" : "Exponential",
+	"ExpRho0" : 3.614E-13,
+	"ExpH0": 700000.0,
+	"ExpHScale" : 88667.0,
+	"Coefficient" :
+	{
+	    "Value" : 2.0,
+	    "Min" : 0.01,
+	    "Max" : 3.00,
+	    "Estimation" : "Estimate"
+	}
+    },
+
+    "SolidTides" :
+    {
+	"Sun" : false,
+	"Moon" : false
+    },
+
+    "ThirdBodies" :
+    {
+	"Sun" : true,
+	"Moon" : true
+    },
+
+    "RadiationPressure" :
+    {
+	"Sun" : true,
+	"Creflection" :
+	{
+            "Value" : 1.5,
+            "Min" : 1.0,
+            "Max" : 2.0,
+	    "Estimation" : "Estimate"
+	}
+    },
+
+    "SpaceObject" :
+    {
+	"Name" : "MEO 1",
+	"NoradID" : 26624,
+	"Mass" : 2000.0,
+	"Area" : 20.0
+    },
+
+    "Propagation" :
+    {
+	"Start" : "2019-07-11T00:00:00Z",
+	"End" : "2019-07-11T05:00:02Z",
+	"InitialState" :
+	[
+	-20010151.1484369,
+	-12442.344312363,
+	0.2039385729,
+	0,
+	-4464.95561397887,
+	0
+	]
+    },
+
+    "Stations" :
+    {
+	"Arecibo" :
+	{
+	    "Latitude" : 0.32016610686,
+	    "Longitude" : -1.16505575707,
+	    "Altitude" : 497
+	},
+	"Ka'ena" :
+	{
+	    "Latitude" : 0.0868343901,
+	    "Longitude" : -2.58718978041,
+	    "Altitude" : 460
+	},
+	"New Boston Air Station" :
+	{
+	    "Latitude" : 0.74949349786,
+	    "Longitude" : -1.25044863878,
+	    "Altitude" : 460
+	},
+	"Kwaj" :
+	{
+            "Latitude" : 0.1522312267,
+            "Longitude" : 2.92744494054,
+            "Altitude" : 38.2246
+	}
+    },
+
+    "Measurements" :
+    {
+	"RightAscension" :
+	{
+	    "Error" : [15E-6]
+	},
+	"Declination" :
+	{
+	    "Error" : [15E-6]
+	}
+    },
+
+    "Estimation" :
+    {
+	"Filter" : "UKF",
+	"Covariance" : [25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 1.00, 0.25],
+	"ProcessNoise" : [1E-8, 1E-8, 1E-8, 1E-8, 1E-8, 1E-8],
+	"NoiseTimeDelta" : 30.0
+    }
+}

@@ -1,0 +1,112 @@
+{
+    "Gravity" :
+    {
+	"Degree" : 20,
+	"Order" : 20
+    },
+
+    "OceanTides" :
+    {
+	"Degree" : -1,
+	"Order" : -1
+    },
+
+    "Drag" :
+    {
+	"Model" : "Exponential",
+	"ExpRho0" : 3.614E-13,
+	"ExpH0": 700000.0,
+	"ExpHScale" : 88667.0,
+	"Coefficient" :
+	{
+	    "Value" : 2.0
+	}
+    },
+
+    "SolidTides" :
+    {
+	"Sun" : false,
+	"Moon" : false
+    },
+
+    "ThirdBodies" :
+    {
+	"Sun" : true,
+	"Moon" : true
+    },
+
+    "RadiationPressure" :
+    {
+	"Sun" : true,
+	"Creflection" :
+	{
+            "Value" : 1.5,
+            "Min" : 1.0,
+            "Max" : 2.0
+	}
+    },
+
+    "SpaceObject" :
+    {
+	"Name" : "MEO 0",
+	"NoradID" : 26624,
+	"Mass" : 2000.0,
+	"Area" : 20.0
+    },
+
+    "Propagation" :
+    {
+	"Start" : "2019-07-11T00:00:00Z",
+	"End" : "2019-07-11T05:00:02Z",
+	"Step" : 20.0,
+	"InitialState" :
+	[
+	-20000151.1484369,
+	21900.344312363,
+	0.2039385729,
+	0,
+	-4464.95561397887,
+	0
+	]
+    },
+
+    "Stations" :
+    {
+	"Arecibo" :
+	{
+	    "Latitude" : 0.32016610686,
+	    "Longitude" : -1.16505575707,
+	    "Altitude" : 497
+	},
+	"Ka'ena" :
+	{
+	    "Latitude" : 0.0868343901,
+	    "Longitude" : -2.58718978041,
+	    "Altitude" : 460
+	},
+	"New Boston Air Station" :
+	{
+	    "Latitude" : 0.74949349786,
+	    "Longitude" : -1.25044863878,
+	    "Altitude" : 460
+	},
+	"Kwaj" :
+	{
+            "Latitude" : 0.1522312267,
+            "Longitude" : 2.92744494054,
+            "Altitude" : 38.2246
+	}
+    },
+
+    "Measurements" :
+    {
+	"RightAscension" :
+	{
+	    "Error" : [0]
+	},
+	"Declination" :
+	{
+	    "Error" : [0]
+	}
+    }
+}
