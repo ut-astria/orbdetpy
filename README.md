@@ -111,6 +111,8 @@ file `docs/file_formats.md` documents the structure of the JSON files.
 
 6. `propagate_TLE.py` : Propagate TLEs given by command-line arguments.
 
+7. `interpolation.py` : Interpolate state vectors.
+
 Known Issues
 ------------
 

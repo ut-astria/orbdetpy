@@ -1,6 +1,6 @@
 /*
  * messages.proto - Message type declarations.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -147,17 +147,6 @@ message SettingsArray
     repeated Settings array = 1;
 }
 
-message PropagationOutput
-{
-    string time = 1;
-    repeated DoubleArray states = 2;
-}
-
-message PropagationOutputArray
-{
-    repeated PropagationOutput array = 1;
-}
-
 message Measurement
 {
     string time = 1;
@@ -209,6 +198,46 @@ message Measurement2DArray
     repeated MeasurementArray array = 1;
 }
 
+message InterpolateEphemerisInput
+{
+    string source_frame = 1;
+    repeated string time = 2;
+    repeated DoubleArray ephem = 3;
+    int32 num_points = 4;
+    string dest_frame = 5;
+    string interp_start = 6;
+    string interp_end = 7;
+    double step_size = 8;
+}
+
+message InterpolationOutput
+{
+    string time = 1;
+    repeated double state = 2 [packed = true];
+}
+
+message InterpolationOutputArray
+{
+    repeated InterpolationOutput array = 1;
+}
+
+message PropagationOutput
+{
+    string time = 1;
+    repeated DoubleArray states = 2;
+}
+
+message PropagationOutputArray
+{
+    repeated PropagationOutput array = 1;
+}
+
+message DetermineOrbitInput
+{
+    Settings config = 1;
+    repeated Measurement measurements = 2;
+}
+
 message EstimationOutput
 {
     string time = 1;
@@ -224,12 +253,6 @@ message EstimationOutput
 message EstimationOutputArray
 {
     repeated EstimationOutput array = 1;
-}
-
-message DetermineOrbitInput
-{
-    Settings config = 1;
-    repeated Measurement measurements = 2;
 }
 
 message TransformFrameInput

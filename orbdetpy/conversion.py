@@ -22,7 +22,7 @@ def transform_frame(srcframe, time, pva, destframe):
 
     Args:
         srcframe: Source reference frame ("EME2000", "GCRF",
-                  "ITRF", "MOD", "TOD", or "TEME").
+                  "ICRF", "ITRF", "MOD", "TOD", or "TEME").
         time: State vector epoch (ISO-8601 formatted UTC string).
         pva: State vector to transform, can be pos or pos + vel or
              pos + vel + acc.

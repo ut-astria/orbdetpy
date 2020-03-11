@@ -19,6 +19,11 @@ class UtilitiesStub(object):
         request_serializer=messages__pb2.ImportTDMInput.SerializeToString,
         response_deserializer=messages__pb2.Measurement2DArray.FromString,
         )
+    self.interpolateEphemeris = channel.unary_unary(
+        '/Utilities/interpolateEphemeris',
+        request_serializer=messages__pb2.InterpolateEphemerisInput.SerializeToString,
+        response_deserializer=messages__pb2.InterpolationOutputArray.FromString,
+        )
 
 
 class UtilitiesServicer(object):
@@ -32,6 +37,13 @@ class UtilitiesServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def interpolateEphemeris(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_UtilitiesServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -39,6 +51,11 @@ def add_UtilitiesServicer_to_server(servicer, server):
           servicer.importTDM,
           request_deserializer=messages__pb2.ImportTDMInput.FromString,
           response_serializer=messages__pb2.Measurement2DArray.SerializeToString,
+      ),
+      'interpolateEphemeris': grpc.unary_unary_rpc_method_handler(
+          servicer.interpolateEphemeris,
+          request_deserializer=messages__pb2.InterpolateEphemerisInput.FromString,
+          response_serializer=messages__pb2.InterpolationOutputArray.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

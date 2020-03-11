@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\020UtilitiesRequestP\000',
-  serialized_pb=b'\n\x0futilities.proto\x1a\x0emessages.proto2@\n\tUtilities\x12\x33\n\timportTDM\x12\x0f.ImportTDMInput\x1a\x13.Measurement2DArray\"\x00\x42$\n\x0eorg.astria.rpcB\x10UtilitiesRequestP\x00\x62\x06proto3'
+  serialized_pb=b'\n\x0futilities.proto\x1a\x0emessages.proto2\x91\x01\n\tUtilities\x12\x33\n\timportTDM\x12\x0f.ImportTDMInput\x1a\x13.Measurement2DArray\"\x00\x12O\n\x14interpolateEphemeris\x12\x1a.InterpolateEphemerisInput\x1a\x19.InterpolationOutputArray\"\x00\x42$\n\x0eorg.astria.rpcB\x10UtilitiesRequestP\x00\x62\x06proto3'
   ,
   dependencies=[messages__pb2.DESCRIPTOR,])
 
@@ -36,8 +36,8 @@ _UTILITIES = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=35,
-  serialized_end=99,
+  serialized_start=36,
+  serialized_end=181,
   methods=[
   _descriptor.MethodDescriptor(
     name='importTDM',
@@ -46,6 +46,15 @@ _UTILITIES = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=messages__pb2._IMPORTTDMINPUT,
     output_type=messages__pb2._MEASUREMENT2DARRAY,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='interpolateEphemeris',
+    full_name='Utilities.interpolateEphemeris',
+    index=1,
+    containing_service=None,
+    input_type=messages__pb2._INTERPOLATEEPHEMERISINPUT,
+    output_type=messages__pb2._INTERPOLATIONOUTPUTARRAY,
     serialized_options=None,
   ),
 ])
