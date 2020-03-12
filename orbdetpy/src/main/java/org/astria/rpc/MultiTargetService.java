@@ -23,8 +23,8 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Estimation;
-import org.astria.Measurements;
 import org.astria.MultiTargetEstimation;
+import org.astria.Measurements;
 import org.astria.Settings;
 
 public final class MultiTargetService extends MultiTargetGrpc.MultiTargetImplBase

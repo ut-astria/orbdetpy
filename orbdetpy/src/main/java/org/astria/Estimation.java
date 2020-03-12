@@ -134,9 +134,7 @@ public final class Estimation
 	    size += (int) FastMath.abs(propEnd.durationFrom(epoch)/odCfg.propStep) + 2;
 	estOutput = new ArrayList<EstimationOutput>(size);
 
-	if (odCfg.estmFilter.equalsIgnoreCase("MultiTarget"))
-	    estOutput = new MultiTargetEstimation(odCfg, odObs).multiTargetDetermineOrbit();
-	else if (odCfg.estmFilter.equalsIgnoreCase("UKF"))
+	if (odCfg.estmFilter.equalsIgnoreCase("UKF"))
 	    new UnscentedKalmanFilter().determineOrbit();
 	else
 	    new ExtendedKalmanFilter().determineOrbit();
