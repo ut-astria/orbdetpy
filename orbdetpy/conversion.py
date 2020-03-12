@@ -1,5 +1,5 @@
 # conversion.py - Various conversion functions.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,19 +22,19 @@ def transform_frame(srcframe, time, pva, destframe):
 
     Args:
         srcframe: Source reference frame ("EME2000", "GCRF",
-                  "ITRF", "MOD", "TOD", or "TEME").
+                  "ICRF", "ITRF", "MOD", "TOD", or "TEME").
         time: State vector epoch (ISO-8601 formatted UTC string).
-        pva: State vector to transform [m, m, m, m/s, m/s, m/s] or 
-             [m, m, m, m/s, m/s, m/s, m/s^2, m/s^2, m/s^2].
+        pva: State vector to transform, can be pos or pos + vel or
+             pos + vel + acc.
         destframe: Destination reference frame ("EME2000", "GCRF",
-                   "ITRF", "MOD", "TOD", or "TEME")..
+                   "ITRF", "MOD", "TOD", or "TEME").
 
     Returns:
         State vector transformed to the destination frame.
     """
 
-    with RemoteServer.channel() as chan:
-        stub = conversion_pb2_grpc.ConversionStub(chan)
+    with RemoteServer.channel() as channel:
+        stub = conversion_pb2_grpc.ConversionStub(channel)
         resp = stub.transformFrame(messages_pb2.TransformFrameInput(
             src_frame = srcframe, time = time,
             pva = pva, dest_frame = destframe))

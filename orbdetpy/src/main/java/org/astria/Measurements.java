@@ -1,6 +1,6 @@
 /*
  * Measurements.java - Functions to parse OD measurement files.
- * Copyright (C) 2018-2019 University of Texas
+ * Copyright (C) 2018-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -185,28 +185,28 @@ public final class Measurements
 	rawMeas = tempraw.toArray(new Measurement[0]);
 
 	measObjs = new ArrayList<ObservedMeasurement<?>>(rawMeas.length);
-	Settings.Measurement cazim = odCfg.cfgMeasurements.get("Azimuth");
-	Settings.Measurement celev = odCfg.cfgMeasurements.get("Elevation");
-	Settings.Measurement crigh = odCfg.cfgMeasurements.get("RightAscension");
-	Settings.Measurement cdecl = odCfg.cfgMeasurements.get("Declination");
-	Settings.Measurement crang = odCfg.cfgMeasurements.get("Range");
-	Settings.Measurement crrat = odCfg.cfgMeasurements.get("RangeRate");
-	Settings.Measurement cpos = odCfg.cfgMeasurements.get("Position");
-	Settings.Measurement cposvel = odCfg.cfgMeasurements.get("PositionVelocity");
-	OutlierFilter outlier = new OutlierFilter(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma);
-	boolean addBias = odCfg.estmFilter.equalsIgnoreCase("EKF");
-	boolean addOutlier = addBias && odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0;
-	ObservableSatellite satellite = new ObservableSatellite(0);
-	double[] oneOnes = new double[] {1.0};
-	double[] twoOnes = new double[] {1.0, 1.0};
-	double[] oneNegInf = new double[] {Double.NEGATIVE_INFINITY};
-	double[] onePosInf = new double[] {Double.POSITIVE_INFINITY};
-	double[] twoNegInf = new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
-	double[] twoPosInf = new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
-	String[] biasAzEl = new String[] {"Az", "El"};
-	String[] biasRaDec = new String[] {"RA", "Dec"};
-	String[] biasRange = new String[] {"Range"};
-	String[] biasRangeRate = new String[] {"RangeRate"};
+	final Settings.Measurement cazim = odCfg.cfgMeasurements.get("Azimuth");
+	final Settings.Measurement celev = odCfg.cfgMeasurements.get("Elevation");
+	final Settings.Measurement crigh = odCfg.cfgMeasurements.get("RightAscension");
+	final Settings.Measurement cdecl = odCfg.cfgMeasurements.get("Declination");
+	final Settings.Measurement crang = odCfg.cfgMeasurements.get("Range");
+	final Settings.Measurement crrat = odCfg.cfgMeasurements.get("RangeRate");
+	final Settings.Measurement cpos = odCfg.cfgMeasurements.get("Position");
+	final Settings.Measurement cposvel = odCfg.cfgMeasurements.get("PositionVelocity");
+	final OutlierFilter outlier = new OutlierFilter(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma);
+	final boolean addBias = odCfg.estmFilter.equalsIgnoreCase("EKF");
+	final boolean addOutlier = addBias && odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0;
+	final ObservableSatellite satellite = new ObservableSatellite(0);
+	final double[] oneOnes = new double[] {1.0};
+	final double[] twoOnes = new double[] {1.0, 1.0};
+	final double[] oneNegInf = new double[] {Double.NEGATIVE_INFINITY};
+	final double[] onePosInf = new double[] {Double.POSITIVE_INFINITY};
+	final double[] twoNegInf = new double[] {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
+	final double[] twoPosInf = new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
+	final String[] biasAzEl = new String[] {"Az", "El"};
+	final String[] biasRaDec = new String[] {"RA", "Dec"};
+	final String[] biasRange = new String[] {"Range"};
+	final String[] biasRangeRate = new String[] {"RangeRate"};
 
 	for (Measurement m: rawMeas)
 	{
@@ -221,12 +221,13 @@ public final class Measurements
 
 	    if (m.azimuth != 0.0 && cazim != null && celev != null)
 	    {
-		AngularAzEl obs = new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation}, new double[] {cazim.error[0], celev.error[0]},
-						  twoOnes, satellite);
+		AngularAzEl obs = new AngularAzEl(gs, time, new double[]{m.azimuth, m.elevation},
+						  new double[] {cazim.error[0], celev.error[0]}, twoOnes, satellite);
 		if (addOutlier)
 		    obs.addModifier(outlier);
 		if (addBias && (jsn.azimuthBias != 0.0 || jsn.elevationBias != 0.0))
-		    obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[] {jsn.azimuthBias, jsn.elevationBias}, twoOnes, twoNegInf, twoPosInf));
+		    obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[] {jsn.azimuthBias, jsn.elevationBias},
+							  twoOnes, twoNegInf, twoPosInf));
 		measObjs.add(obs);
 	    }
 
@@ -237,7 +238,8 @@ public final class Measurements
 		if (addOutlier)
 		    obs.addModifier(outlier);
 		if (addBias && (jsn.rightAscensionBias != 0.0 || jsn.declinationBias != 0.0))
-		    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[] {jsn.rightAscensionBias, jsn.declinationBias}, twoOnes, twoNegInf, twoPosInf));
+		    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[] {jsn.rightAscensionBias, jsn.declinationBias},
+							   twoOnes, twoNegInf, twoPosInf));
 		measObjs.add(obs);
 	    }
 

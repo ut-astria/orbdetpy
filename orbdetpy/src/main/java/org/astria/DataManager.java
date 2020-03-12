@@ -1,6 +1,6 @@
 /*
  * DataManager.java - Functions for handling data files.
- * Copyright (C) 2018-2019 University of Texas
+ * Copyright (C) 2018-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,6 +73,7 @@ public final class DataManager
 	refFrames = new HashMap<String, Frame>();
 	refFrames.put("EME2000", FramesFactory.getEME2000());
 	refFrames.put("GCRF", FramesFactory.getGCRF());
+	refFrames.put("ICRF", FramesFactory.getICRF());
 	refFrames.put("ITRF", FramesFactory.getITRF(ITRFVersion.ITRF_2014, IERSConventions.IERS_2010, false));
 	refFrames.put("MOD", FramesFactory.getMOD(IERSConventions.IERS_2010));
 	refFrames.put("TEME", FramesFactory.getTEME());
@@ -125,9 +126,10 @@ public final class DataManager
 
     public static Frame getFrame(String name)
     {
-	if (name == null || !refFrames.containsKey(name))
+	if (name != null)
+ 	    return(refFrames.get(name));
+	else
 	    return(refFrames.get("EME2000"));
-	return(refFrames.get(name));
     }
 
     public static String getUTCString(AbsoluteDate time)
