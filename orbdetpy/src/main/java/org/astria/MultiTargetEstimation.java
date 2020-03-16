@@ -231,7 +231,7 @@ public final class MultiTargetEstimation
 			}
 			
 			System.out.println(smoothIter);
-			
+			System.exit(0);
 			int measIndex = -1;
 			int additionalMeas = 0;
 			boolean ODfinished = false;
