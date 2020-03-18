@@ -57,8 +57,8 @@
     "Propagation" :
     {
 	"Start" : "2019-07-11T00:00:00Z",
-	"End" : "2019-07-11T05:00:02Z",
-	"Step" : 20.0,
+	"End" : "2019-07-11T00:30:00Z",
+	"Step" : 60.0,
 	"InitialState" :
 	[
 	-20000151.1484369,
@@ -102,11 +102,11 @@
     {
 	"RightAscension" :
 	{
-	    "Error" : [0]
+	    "Error" : [10E-6]
 	},
 	"Declination" :
 	{
-	    "Error" : [0]
+	    "Error" : [10E-6]
 	}
     }
 }

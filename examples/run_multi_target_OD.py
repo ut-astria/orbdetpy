@@ -3,7 +3,7 @@ from orbdetpy.simulation import simulate_measurements
 from orbdetpy.plotting.estimation import plot as od_plot
 import json
 
-'''
+
 simulate_measurements("data/input/MEO0_sim.json", output_file = "data/output/MEO0_sim_data.json")
 
 simulate_measurements("data/input/MEO1_sim.json", output_file = "data/output/MEO1_sim_data.json")
@@ -21,14 +21,14 @@ for meas0 in MEO0:
     
 with open("data/output/Comb_sim_data.json", 'w') as json_file:
   json.dump(MEO0, json_file)
-'''
+
 
 determine_orbit(["data/input/MEO0_od.json",
     "data/input/MEO1_od.json"],
      ["data/output/Comb_sim_data.json"],
      output_file = "data/output/MEO_od_output.json")
 
-od_plot("examples/data/input/MEO0_od.json",
+od_plot("data/input/MEO0_od.json",
  "data/output/MEO0_sim_data.json",
  "data/output/MEO_od_output.json", interactive = True)
 
