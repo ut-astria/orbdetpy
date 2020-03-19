@@ -189,7 +189,8 @@ public final class MultiTargetEstimation
 
 	    double probDetection = 0.99;
 	    int maxNumSmootherIterations = 10;
-	    double GatingThreshold = 4;
+	    double gatingThreshold = 4;
+	    boolean CARMHFOn = true;
 	    
 	    ArrayList<SingleObject> residentSpaceObjects = new ArrayList<SingleObject>();
 	    rawMeasurements = new ArrayList<ObservedMeasurement>();
@@ -263,9 +264,6 @@ public final class MultiTargetEstimation
 			    tm = propEnd;
 			    ODfinished = true;
 			}
-			
-			
-
 			
 			ArrayList<ArrayList<JPDALikelihoods>> jointEvents = new ArrayList<ArrayList<JPDALikelihoods>>();
 			ArrayList<JPDALikelihoods> singleJointEvent = new ArrayList<JPDALikelihoods>();
@@ -385,7 +383,7 @@ public final class MultiTargetEstimation
 							RealMatrix MahalaTemp = MatrixUtils.createColumnRealMatrix(Innov.toArray());
 							RealMatrix Mahalanobis = MahalaTemp.transpose().multiply(MatrixUtils.inverse(Pyy).multiply(MahalaTemp));
 							
-							if(GatingThreshold > Math.sqrt(Mahalanobis.getEntry(0,0)))
+							if(gatingThreshold > Math.sqrt(Mahalanobis.getEntry(0,0)))
 							{
 								JPDAtemp = new JPDALikelihoods();
 								
