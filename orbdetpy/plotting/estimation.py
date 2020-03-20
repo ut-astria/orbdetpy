@@ -113,8 +113,12 @@ def plot(config, measurements, orbit_fit, interactive = False, output_file_path 
     cov = numpy.array(inocov)
     par = numpy.array(params)
     estmacc = numpy.array(estmacc)
-    start = tstamp[0] if (tstamp[0] < tstamp[-1]) else tstamp[-1]
-    tim = [(t - start).total_seconds()/3600 for t in tstamp]
+
+    if (len(tstamp) > 0):
+        start = tstamp[0] if (tstamp[0] < tstamp[-1]) else tstamp[-1]
+        tim = [(t - start).total_seconds()/3600 for t in tstamp]
+    else:
+        tim = []
 
     angles = ["Azimuth", "Elevation", "RightAscension", "Declination"]
     if (key[0] in angles and key[1] in angles):
@@ -206,7 +210,8 @@ def plot(config, measurements, orbit_fit, interactive = False, output_file_path 
         plt.suptitle("DMC estimated accelerations")
         for i in range(3):
             plt.subplot(3, 1, i+1)
-            plt.plot(tim, estmacc[:,i])
+            if (len(estmacc) > 0):
+                plt.plot(tim, estmacc[:,i])
             plt.xlabel("Time [hr]")
             plt.ylabel(lab[i])
 

@@ -34,14 +34,43 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 	    ArrayList<ArrayList<Measurements.SimulatedMeasurement>> mlist =
 		Utilities.importTDM(req.getFileName(), req.getFileFormat());
 
-	    Messages.Measurement2DArray.Builder builder = Messages.Measurement2DArray.newBuilder();
+	    Messages.Measurement2DArray.Builder outer = Messages.Measurement2DArray.newBuilder();
 	    for (ArrayList<Measurements.SimulatedMeasurement> m : mlist)
 	    {
-		Messages.MeasurementArray.Builder nested = Messages.MeasurementArray.newBuilder();
-		nested.addAllArray(Tools.buildResponseFromMeasurements(m));
-		builder = builder.addArray(nested);
+		Messages.MeasurementArray.Builder inner = Messages.MeasurementArray.newBuilder()
+		    .addAllArray(Tools.buildResponseFromMeasurements(m));
+		outer = outer.addArray(inner);
 	    }
-	    resp.onNext(builder.build());
+	    resp.onNext(outer.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void interpolateEphemeris(Messages.InterpolateEphemerisInput req, StreamObserver<Messages.InterpolationOutputArray> resp)
+    {
+	try
+	{
+	    ArrayList<Double[]> ephem = new ArrayList<Double[]>(req.getEphemCount());
+	    for (int i = 0; i < req.getTimeCount(); i++)
+		ephem.add(req.getEphem(i).getArrayList().toArray(new Double[0]));
+
+	    ArrayList<Utilities.InterpolationOutput> interp = Utilities.interpolateEphemeris(req.getSourceFrame(), req.getTimeList(), ephem, req.getNumPoints(),
+											     req.getDestFrame(), req.getInterpStart(),
+											     req.getInterpEnd(), req.getStepSize());
+
+	    Messages.InterpolationOutputArray.Builder outer = Messages.InterpolationOutputArray.newBuilder();
+	    for (Utilities.InterpolationOutput i: interp)
+	    {
+		Messages.InterpolationOutput.Builder inner = Messages.InterpolationOutput.newBuilder().setTime(i.time);
+		for (int j = 0; j < 6; j++)
+		    inner = inner.addState(i.state[j]);
+		outer = outer.addArray(inner);
+	    }
+	    resp.onNext(outer.build());
 	    resp.onCompleted();
 	}
 	catch (Throwable exc)

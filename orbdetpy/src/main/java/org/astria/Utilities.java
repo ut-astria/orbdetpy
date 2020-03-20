@@ -1,6 +1,6 @@
 /*
  * Utilities.java - Various utility functions.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 package org.astria;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
@@ -28,13 +29,32 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.files.ccsds.TDMFile;
 import org.orekit.files.ccsds.TDMParser;
 import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
+import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public final class Utilities
 {
+    public static class InterpolationOutput
+    {
+	public String time;
+	public double[] state;
+
+	public InterpolationOutput(AbsoluteDate time, TimeStampedPVCoordinates pv)
+	{
+	    Vector3D p = pv.getPosition();
+	    Vector3D v = pv.getVelocity();
+	    this.time = DataManager.getUTCString(time);
+	    this.state = new double[] {p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
+	}
+    }
+
     public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, String frame, String[] tmstr,
 					    double[] ra, double[] dec, double rho1init, double rho3init)
     {
@@ -61,13 +81,13 @@ public final class Utilities
 	return(orb);
     }
 
-    public static ArrayList<ArrayList<Measurements.SimulatedMeasurement>> importTDM(String file_name, String file_format)
+    public static ArrayList<ArrayList<Measurements.SimulatedMeasurement>> importTDM(String fileName, String fileFormat)
     {
 	Measurements.SimulatedMeasurement obj = null;
 	ArrayList<ArrayList<Measurements.SimulatedMeasurement>> output =
 	    new ArrayList<ArrayList<Measurements.SimulatedMeasurement>>();
 
-	TDMFile tdm = new TDMParser().withFileFormat(TDMFileFormat.valueOf(file_format)).parse(file_name);
+	TDMFile tdm = new TDMParser().withFileFormat(TDMFileFormat.valueOf(fileFormat)).parse(fileName);
 	for (TDMFile.ObservationsBlock blk : tdm.getObservationsBlocks())
 	{
 	    int i = 0;
@@ -112,6 +132,37 @@ public final class Utilities
 		}
 	    }
 	    output.add(mall);
+	}
+
+	return(output);
+    }
+
+    public static ArrayList<InterpolationOutput> interpolateEphemeris(String sourceFrame, List<String> time, List<Double[]> ephem, int numPoints,
+								      String destFrame, String interpStart, String interpEnd, double stepSize)
+    {
+	Frame fromFrame = DataManager.getFrame(sourceFrame);
+	ArrayList<SpacecraftState> states = new ArrayList<SpacecraftState>(time.size());
+	for (int i = 0; i < time.size(); i++)
+	{
+	    Double[] pv = ephem.get(i);
+	    states.add(new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(
+								  DataManager.parseDateTime(time.get(i)), new Vector3D(pv[0], pv[1], pv[2]),
+								  new Vector3D(pv[3], pv[4], pv[5])), fromFrame, Constants.EGM96_EARTH_MU)));
+	}
+
+	Frame toFrame = DataManager.getFrame(destFrame);
+	ArrayList<InterpolationOutput> output = new ArrayList<InterpolationOutput>();
+	Ephemeris interpolator = new Ephemeris(states, numPoints);
+	AbsoluteDate tm = DataManager.parseDateTime(interpStart);
+	AbsoluteDate tmFinal = DataManager.parseDateTime(interpEnd);
+
+	while (true)
+	{
+	    output.add(new InterpolationOutput(tm, interpolator.getPVCoordinates(tm, toFrame)));
+	    double deltat = tmFinal.durationFrom(tm);
+	    if (deltat <= 0.0)
+		break;
+	    tm = new AbsoluteDate(tm, FastMath.min(deltat, stepSize));
 	}
 
 	return(output);
