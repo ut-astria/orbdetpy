@@ -119,6 +119,7 @@ public final class Tools
 	cfg.simSkipUnobservable = req.getSimSkipUnobservable();
 	cfg.simIncludeExtras = req.getSimIncludeExtras();
 	cfg.simIncludeStationState = req.getSimIncludeStationState();
+	cfg.simIncludeAngleRates = req.getSimIncludeAngleRates();
 
 	if (req.getStationsCount() > 0)
 	{
@@ -158,6 +159,11 @@ public final class Tools
 							 req.getEstmDMCAcceleration().getValue(), req.getEstmDMCAcceleration().getEstimation());
 	cfg.estmOutlierSigma = req.getEstmOutlierSigma();
 	cfg.estmOutlierWarmup = req.getEstmOutlierWarmup();
+
+	cfg.estmSmootherIterations = req.getEstmSmootherIterations();
+	cfg.estmEnableCARMHF = req.getEstmEnableCARMHF();
+	cfg.estmDetectionProbability = req.getEstmDetectionProbability();
+	cfg.estmGatingThreshold = req.getEstmGatingThreshold();
 	return(cfg.build());
     }
 
@@ -189,6 +195,8 @@ public final class Tools
 		output.rawMeas[i].position = min.getPositionList().stream().mapToDouble(Double::doubleValue).toArray();
 	    if (min.getPositionVelocityCount() > 0)
 		output.rawMeas[i].positionVelocity = min.getPositionVelocityList().stream().mapToDouble(Double::doubleValue).toArray();
+	    if (min.getAngleRatesCount() > 0)
+		output.rawMeas[i].angleRates = min.getAngleRatesList().stream().mapToDouble(Double::doubleValue).toArray();
 	}
 
 	return(output.build(config));
@@ -233,6 +241,8 @@ public final class Tools
 		builder = builder.addAllPosition(DoubleStream.of(min.position).boxed().collect(Collectors.toList()));
 	    if (min.positionVelocity != null)
 		builder = builder.addAllPositionVelocity(DoubleStream.of(min.positionVelocity).boxed().collect(Collectors.toList()));
+	    if (min.angleRates != null)
+		builder = builder.addAllAngleRates(DoubleStream.of(min.angleRates).boxed().collect(Collectors.toList()));
 	    if (min.trueState != null)
 	    {
 		builder = builder.addAllTrueStateCartesian(DoubleStream.of(min.trueState.cartesian).boxed().collect(Collectors.toList()));

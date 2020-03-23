@@ -128,6 +128,7 @@ message Settings
     bool sim_skip_unobservable = 40;
     bool sim_include_extras = 41;
     bool sim_include_station_state = 42;
+    bool sim_include_angle_rates = 57;
 
     map<string, Station> stations = 43;
     map<string, MeasurementSetting> measurements = 44;
@@ -140,6 +141,10 @@ message Settings
     Parameter estm_DMC_acceleration = 50;
     double estm_outlier_sigma = 51;
     int32 estm_outlier_warmup = 52;
+    int32 estm_smoother_iterations = 53;
+    bool estm_enable_CAR_MHF = 54;
+    double estm_detection_probability = 55;
+    double estm_gating_threshold = 56;
 }
 
 message SettingsArray
@@ -151,18 +156,15 @@ message Measurement
 {
     string time = 1;
     string station = 2;
-
     double azimuth = 3;
     double elevation = 4;
-
     double range = 5;
     double range_rate = 6;
-
     double right_ascension = 7;
     double declination = 8;
-
     repeated double position = 9 [packed = true];
     repeated double position_velocity = 10 [packed = true];
+    repeated double angle_rates = 32 [packed = true];
 
     double atmospheric_density = 11;
     repeated double acceleration_gravity = 12 [packed = true];
@@ -259,6 +261,13 @@ message MultiTargetInput
 {
     repeated Settings config = 1;
     repeated MeasurementArray measurements = 2;
+}
+
+message MultiTargetOutput
+{
+    repeated EstimationOutputArray est_output = 1;
+    repeated IntegerArray associated_obs = 2;
+    repeated int32 unassociated_obs = 3 [packed = true];
 }
 
 message TransformFrameInput

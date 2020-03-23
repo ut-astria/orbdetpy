@@ -1,6 +1,6 @@
 /*
  * Settings.java - Functions to parse OD configuration settings.
- * Copyright (C) 2018-2019 University of Texas
+ * Copyright (C) 2018-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -240,6 +240,7 @@ public final class Settings
     public boolean simSkipUnobservable = true;
     public boolean simIncludeExtras = false;
     public boolean simIncludeStationState = false;
+    public boolean simIncludeAngleRates = false;
 
     public Map<String, Station> cfgStations;
     public Map<String, Measurement> cfgMeasurements;
@@ -252,6 +253,11 @@ public final class Settings
     public Parameter estmDMCAcceleration = new Parameter("DMC", -1E-3, 1E-3, 0.0, "Estimate");
     public double estmOutlierSigma = 0.0;
     public int estmOutlierWarmup = 0;
+
+    public int estmSmootherIterations = 10;
+    public boolean estmEnableCARMHF = false;
+    public double estmDetectionProbability = 0.99;
+    public double estmGatingThreshold = 4.0;
 
     protected Atmosphere atmModel;
     protected HashMap<String, GroundStation> stations;

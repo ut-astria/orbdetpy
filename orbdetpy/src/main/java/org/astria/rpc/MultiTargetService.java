@@ -29,7 +29,7 @@ import org.astria.Settings;
 
 public final class MultiTargetService extends MultiTargetGrpc.MultiTargetImplBase
 {
-    @Override public void determineOrbit(Messages.MultiTargetInput req, StreamObserver<Messages.EstimationOutputArray> resp)
+    @Override public void determineOrbit(Messages.MultiTargetInput req, StreamObserver<Messages.MultiTargetOutput> resp)
     {
 	try
 	{
@@ -41,11 +41,24 @@ public final class MultiTargetService extends MultiTargetGrpc.MultiTargetImplBas
 	    for (int i = 0; i < req.getMeasurementsCount(); i++)
 		obsList.add(Tools.buildMeasurementsFromRequest(req.getMeasurements(i).getArrayList(), cfgList.get(i)));
 
-	    ArrayList<Estimation.EstimationOutput> estOut = new MultiTargetEstimation(cfgList, obsList).multiTargetDetermineOrbit();
+	    MultiTargetEstimation.MultiTargetOutput multiOut = new MultiTargetEstimation(cfgList, obsList).multiTargetDetermineOrbit();
 
-	    Messages.EstimationOutputArray.Builder builder = Messages.EstimationOutputArray
-		.newBuilder().addAllArray(Tools.buildResponseFromOrbitDetermination(estOut));
-	    resp.onNext(builder.build());
+	    Messages.MultiTargetOutput.Builder outer = Messages.MultiTargetOutput.newBuilder();
+	    for (ArrayList<Estimation.EstimationOutput> a: multiOut.estOutput)
+	    {
+		Messages.EstimationOutputArray.Builder inner = Messages.EstimationOutputArray
+		    .newBuilder().addAllArray(Tools.buildResponseFromOrbitDetermination(a));
+		outer = outer.addEstOutput(inner);
+	    }
+
+	    for (ArrayList<Integer> a: multiOut.associatedObs)
+	    {
+		Messages.IntegerArray.Builder inner = Messages.IntegerArray.newBuilder().addAllArray(a);
+		outer = outer.addAssociatedObs(inner);
+	    }
+
+	    outer = outer.addAllUnassociatedObs(multiOut.unassociatedObs);
+	    resp.onNext(outer.build());
 	    resp.onCompleted();
 	}
 	catch (Throwable exc)

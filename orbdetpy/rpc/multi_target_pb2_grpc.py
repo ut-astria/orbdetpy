@@ -17,7 +17,7 @@ class MultiTargetStub(object):
     self.determineOrbit = channel.unary_unary(
         '/MultiTarget/determineOrbit',
         request_serializer=messages__pb2.MultiTargetInput.SerializeToString,
-        response_deserializer=messages__pb2.EstimationOutputArray.FromString,
+        response_deserializer=messages__pb2.MultiTargetOutput.FromString,
         )
 
 
@@ -38,7 +38,7 @@ def add_MultiTargetServicer_to_server(servicer, server):
       'determineOrbit': grpc.unary_unary_rpc_method_handler(
           servicer.determineOrbit,
           request_deserializer=messages__pb2.MultiTargetInput.FromString,
-          response_serializer=messages__pb2.EstimationOutputArray.SerializeToString,
+          response_serializer=messages__pb2.MultiTargetOutput.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

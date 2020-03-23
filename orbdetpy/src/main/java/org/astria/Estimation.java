@@ -59,7 +59,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.astria.MultiTargetEstimation;
 
-
 public final class Estimation
 {
     public static class EstimationOutput

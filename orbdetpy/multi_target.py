@@ -46,7 +46,11 @@ def determine_orbit(config_list, meas_list, output_file = None):
             config = [build_settings(c) for c in config_list],
             measurements = marray))
 
-    fit_data = convert_estimation(request.array)
+    fit_data = {}
+    fit_data["Estimation"] = [convert_estimation(o.array) for o in request.est_output]
+    fit_data["Associated"] = [list(o.array) for o in request.associated_obs]
+    fit_data["Unassociated"] = list(request.unassociated_obs)
+
     if (output_file):
         write_output_file(output_file, fit_data)
     return(fit_data)

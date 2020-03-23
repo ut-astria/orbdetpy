@@ -199,6 +199,11 @@ public final class Simulation
 			    double[] obsVal = obs.estimate(0, 0, sta).getEstimatedValue();
 			    clone.rightAscension = obsVal[0];
 			    clone.declination = obsVal[1];
+			    if (simCfg.simIncludeAngleRates)
+			    {
+				// TODO : Implement RA/Dec angle rate calculations here
+				clone.angleRates = new double[] {0.0, 0.0};
+			    }
 			}
 			else if (name.equalsIgnoreCase("Azimuth") || name.equalsIgnoreCase("Elevation") && clone.azimuth == 0.0)
 			{

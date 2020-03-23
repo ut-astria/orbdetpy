@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\022MultiTargetRequestP\000',
-  serialized_pb=b'\n\x12multi_target.proto\x1a\x0emessages.proto2L\n\x0bMultiTarget\x12=\n\x0e\x64\x65termineOrbit\x12\x11.MultiTargetInput\x1a\x16.EstimationOutputArray\"\x00\x42&\n\x0eorg.astria.rpcB\x12MultiTargetRequestP\x00\x62\x06proto3'
+  serialized_pb=b'\n\x12multi_target.proto\x1a\x0emessages.proto2H\n\x0bMultiTarget\x12\x39\n\x0e\x64\x65termineOrbit\x12\x11.MultiTargetInput\x1a\x12.MultiTargetOutput\"\x00\x42&\n\x0eorg.astria.rpcB\x12MultiTargetRequestP\x00\x62\x06proto3'
   ,
   dependencies=[messages__pb2.DESCRIPTOR,])
 
@@ -37,7 +37,7 @@ _MULTITARGET = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=38,
-  serialized_end=114,
+  serialized_end=110,
   methods=[
   _descriptor.MethodDescriptor(
     name='determineOrbit',
@@ -45,7 +45,7 @@ _MULTITARGET = _descriptor.ServiceDescriptor(
     index=0,
     containing_service=None,
     input_type=messages__pb2._MULTITARGETINPUT,
-    output_type=messages__pb2._ESTIMATIONOUTPUTARRAY,
+    output_type=messages__pb2._MULTITARGETOUTPUT,
     serialized_options=None,
   ),
 ])

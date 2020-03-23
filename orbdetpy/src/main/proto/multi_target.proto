@@ -25,5 +25,5 @@ import "messages.proto";
 
 service MultiTarget
 {
-    rpc determineOrbit(MultiTargetInput) returns (EstimationOutputArray) {}
+    rpc determineOrbit(MultiTargetInput) returns (MultiTargetOutput) {}
 }

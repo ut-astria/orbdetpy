@@ -55,13 +55,18 @@ _settings_fields = {
     "sim_skip_unobservable": [["Simulation", "SkipUnobservable"], True],
     "sim_include_extras": [["Simulation", "IncludeExtras"], False],
     "sim_include_station_state": [["Simulation", "IncludeStationState"], False],
+    "sim_include_angle_rates": [["Simulation", "IncludeAngleRates"], False],
     "estm_filter": [["Estimation", "Filter"], None],
     "estm_covariance": [["Estimation", "Covariance"], None],
     "estm_process_noise": [["Estimation", "ProcessNoise"], None],
     "estm_DMC_corr_time": [["Estimation", "DMCCorrTime"], 0.0],
     "estm_DMC_sigma_pert": [["Estimation", "DMCSigmaPert"], 0.0],
     "estm_outlier_sigma": [["Estimation", "OutlierSigma"], 0.0],
-    "estm_outlier_warmup": [["Estimation", "OutlierWarmup"], 0]
+    "estm_outlier_warmup": [["Estimation", "OutlierWarmup"], 0],
+    "estm_smoother_iterations": [["Estimation", "SmootherIterations"], 10],
+    "estm_enable_CAR_MHF": [["Estimation", "EnableCARMHF"], False],
+    "estm_detection_probability": [["Estimation", "DetectionProbability"], 0.99],
+    "estm_gating_threshold": [["Estimation", "GatingThreshold"], 4.0]
 }
 
 _measurement_fields = {
@@ -75,6 +80,7 @@ _measurement_fields = {
     "declination": "Declination",
     "position": "Position",
     "position_velocity": "PositionVelocity",
+    "angle_rates": "AngleRates",
     "atmospheric_density": "AtmDensity",
     "acceleration_gravity": "AccGravity",
     "acceleration_drag": "AccDrag",
