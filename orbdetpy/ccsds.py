@@ -48,6 +48,7 @@ def export_OEM(cfg_file, obs_file, obj_id, obj_name):
     frame = cfg["Propagation"].get("InertialFrame", "EME2000")
     if (frame == "GCRF"):
         frame = "ICRF"
+    cov_data = ""
     oem_data = "CCSDS_OEM_VERS = 1.0\nCREATION_DATE = {utc_time}\n" \
                "ORIGINATOR = UT-ASTRIA\n\nMETA_START\nOBJECT_NAME = {obj_name}\n" \
                "OBJECT_ID = {obj_id}\nCENTER_NAME = EARTH\n" \
@@ -57,14 +58,25 @@ def export_OEM(cfg_file, obs_file, obj_id, obj_name):
                       ref_frame=frame, start_time=obs[0]["Time"], stop_time=obs[-1]["Time"])
 
     added = set()
+    state_key = "EstimatedState" if ("EstimatedState" in obs[0]) else "TrueStateCartesian"
     for o in obs:
         if (o["Time"] in added):
             continue
         added.add(o["Time"])
-        oem_data += "{epoch} {X[0]} {X[1]} {X[2]} {X[3]} {X[4]} " \
-                    "{X[5]} {X[6]} {X[7]} {X[8]}\n". \
-                    format(epoch=o["Time"], X = [x/1000.0 for x in o["TrueStateCartesian"]])
 
+        oem_data += "{epoch} {X[0]} {X[1]} {X[2]} {X[3]} {X[4]} {X[5]}\n". \
+                    format(epoch=o["Time"], X=[x/1E3 for x in o[state_key][:6]])
+
+        cov = o.get("EstimatedCovariance", [])
+        if (len(cov) == 0):
+            cov = o.get("PropagatedCovariance", [])
+        if (len(cov) > 0):
+            cov_data += "EPOCH = {}\n".format(o["Time"])
+        for i in range(1, min(len(cov), 6) + 1):
+            cov_data += " ".join([str(cov[j][j]/1E6) for j in range(i)]) + "\n"
+
+    if (len(cov_data) > 0):
+        return("{}\nCOVARIANCE_START\n{}COVARIANCE_STOP\n".format(oem_data, cov_data))
     return(oem_data)
 
 def export_TDM(cfg_file, obs_file, station_list, obj_id):
