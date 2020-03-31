@@ -1,6 +1,6 @@
 /*
  * conversion.proto - Conversion service protocol definitions.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,5 +26,8 @@ import "messages.proto";
 service Conversion
 {
     rpc transformFrame(TransformFrameInput) returns (DoubleArray) {}
-}
 
+    rpc convertAzElToRaDec(ConvertAnglesInput) returns (DoubleArray) {}
+
+    rpc convertRaDecToAzEl(ConvertAnglesInput) returns (DoubleArray) {}
+}

@@ -19,6 +19,16 @@ class ConversionStub(object):
         request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
         response_deserializer=messages__pb2.DoubleArray.FromString,
         )
+    self.convertAzElToRaDec = channel.unary_unary(
+        '/Conversion/convertAzElToRaDec',
+        request_serializer=messages__pb2.ConvertAnglesInput.SerializeToString,
+        response_deserializer=messages__pb2.DoubleArray.FromString,
+        )
+    self.convertRaDecToAzEl = channel.unary_unary(
+        '/Conversion/convertRaDecToAzEl',
+        request_serializer=messages__pb2.ConvertAnglesInput.SerializeToString,
+        response_deserializer=messages__pb2.DoubleArray.FromString,
+        )
 
 
 class ConversionServicer(object):
@@ -32,12 +42,36 @@ class ConversionServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def convertAzElToRaDec(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def convertRaDecToAzEl(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_ConversionServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'transformFrame': grpc.unary_unary_rpc_method_handler(
           servicer.transformFrame,
           request_deserializer=messages__pb2.TransformFrameInput.FromString,
+          response_serializer=messages__pb2.DoubleArray.SerializeToString,
+      ),
+      'convertAzElToRaDec': grpc.unary_unary_rpc_method_handler(
+          servicer.convertAzElToRaDec,
+          request_deserializer=messages__pb2.ConvertAnglesInput.FromString,
+          response_serializer=messages__pb2.DoubleArray.SerializeToString,
+      ),
+      'convertRaDecToAzEl': grpc.unary_unary_rpc_method_handler(
+          servicer.convertRaDecToAzEl,
+          request_deserializer=messages__pb2.ConvertAnglesInput.FromString,
           response_serializer=messages__pb2.DoubleArray.SerializeToString,
       ),
   }

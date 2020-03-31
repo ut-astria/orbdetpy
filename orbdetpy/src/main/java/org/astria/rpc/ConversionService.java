@@ -1,6 +1,6 @@
 /*
  * ConversionService.java - Conversion service handler.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,44 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < pva.length; i++)
 		builder = builder.addArray(pva[i]);
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void convertAzElToRaDec(Messages.ConvertAnglesInput req, StreamObserver<Messages.DoubleArray> resp)
+    {
+	try
+	{
+	    double[] raDec = Conversion.convertAzElToRaDec(req.getTime(), req.getAngle1(), req.getAngle2(), req.getLatitude(),
+							   req.getLongitude(), req.getAltitude(), req.getFrame());
+
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
+	    for (int i = 0; i < raDec.length; i++)
+		builder = builder.addArray(raDec[i]);
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void convertRaDecToAzEl(Messages.ConvertAnglesInput req, StreamObserver<Messages.DoubleArray> resp)
+    {
+	try
+	{
+	    double[] azEl = Conversion.convertRaDecToAzEl(req.getFrame(), req.getTime(), req.getAngle1(), req.getAngle2(),
+							  req.getLatitude(), req.getLongitude(), req.getAltitude());
+
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
+	    for (int i = 0; i < azEl.length; i++)
+		builder = builder.addArray(azEl[i]);
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

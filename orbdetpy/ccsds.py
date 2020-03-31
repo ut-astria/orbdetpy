@@ -49,7 +49,7 @@ def export_OEM(cfg_file, obs_file, obj_id, obj_name):
     if (frame == "GCRF"):
         frame = "ICRF"
     cov_data = ""
-    oem_data = "CCSDS_OEM_VERS = 1.0\nCREATION_DATE = {utc_time}\n" \
+    oem_data = "CCSDS_OEM_VERS = 2.0\nCREATION_DATE = {utc_time}\n" \
                "ORIGINATOR = UT-ASTRIA\n\nMETA_START\nOBJECT_NAME = {obj_name}\n" \
                "OBJECT_ID = {obj_id}\nCENTER_NAME = EARTH\n" \
                "REF_FRAME = {ref_frame}\nTIME_SYSTEM = UTC\nSTART_TIME = {start_time}\n" \

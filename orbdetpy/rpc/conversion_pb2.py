@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\021ConversionRequestP\000',
-  serialized_pb=b'\n\x10\x63onversion.proto\x1a\x0emessages.proto2D\n\nConversion\x12\x36\n\x0etransformFrame\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x43onversionRequestP\x00\x62\x06proto3'
+  serialized_pb=b'\n\x10\x63onversion.proto\x1a\x0emessages.proto2\xba\x01\n\nConversion\x12\x36\n\x0etransformFrame\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x12\x39\n\x12\x63onvertAzElToRaDec\x12\x13.ConvertAnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x39\n\x12\x63onvertRaDecToAzEl\x12\x13.ConvertAnglesInput\x1a\x0c.DoubleArray\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x43onversionRequestP\x00\x62\x06proto3'
   ,
   dependencies=[messages__pb2.DESCRIPTOR,])
 
@@ -36,8 +36,8 @@ _CONVERSION = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=36,
-  serialized_end=104,
+  serialized_start=37,
+  serialized_end=223,
   methods=[
   _descriptor.MethodDescriptor(
     name='transformFrame',
@@ -45,6 +45,24 @@ _CONVERSION = _descriptor.ServiceDescriptor(
     index=0,
     containing_service=None,
     input_type=messages__pb2._TRANSFORMFRAMEINPUT,
+    output_type=messages__pb2._DOUBLEARRAY,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='convertAzElToRaDec',
+    full_name='Conversion.convertAzElToRaDec',
+    index=1,
+    containing_service=None,
+    input_type=messages__pb2._CONVERTANGLESINPUT,
+    output_type=messages__pb2._DOUBLEARRAY,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='convertRaDecToAzEl',
+    full_name='Conversion.convertRaDecToAzEl',
+    index=2,
+    containing_service=None,
+    input_type=messages__pb2._CONVERTANGLESINPUT,
     output_type=messages__pb2._DOUBLEARRAY,
     serialized_options=None,
   ),
