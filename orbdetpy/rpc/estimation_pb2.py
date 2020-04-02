@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\021EstimationRequestP\000',
-  serialized_pb=b'\n\x10\x65stimation.proto\x1a\x0emessages.proto2N\n\nEstimation\x12@\n\x0e\x64\x65termineOrbit\x12\x14.DetermineOrbitInput\x1a\x16.EstimationOutputArray\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x45stimationRequestP\x00\x62\x06proto3'
+  serialized_pb=b'\n\x10\x65stimation.proto\x1a\x0emessages.proto2z\n\nEstimation\x12@\n\x0e\x64\x65termineOrbit\x12\x14.DetermineOrbitInput\x1a\x16.EstimationOutputArray\"\x00\x12*\n\niodLaplace\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x45stimationRequestP\x00\x62\x06proto3'
   ,
   dependencies=[messages__pb2.DESCRIPTOR,])
 
@@ -37,7 +37,7 @@ _ESTIMATION = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=36,
-  serialized_end=114,
+  serialized_end=158,
   methods=[
   _descriptor.MethodDescriptor(
     name='determineOrbit',
@@ -46,6 +46,15 @@ _ESTIMATION = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=messages__pb2._DETERMINEORBITINPUT,
     output_type=messages__pb2._ESTIMATIONOUTPUTARRAY,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='iodLaplace',
+    full_name='Estimation.iodLaplace',
+    index=1,
+    containing_service=None,
+    input_type=messages__pb2._ANGLESINPUT,
+    output_type=messages__pb2._DOUBLEARRAY,
     serialized_options=None,
   ),
 ])

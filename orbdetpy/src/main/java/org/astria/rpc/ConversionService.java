@@ -29,9 +29,7 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
     {
 	try
 	{
-	    double[] pva = Conversion.transformFrame(req.getSrcFrame(), req.getTime(),
-						     req.getPvaList(), req.getDestFrame());
-
+	    double[] pva = Conversion.transformFrame(req.getSrcFrame(), req.getTime(), req.getPvaList(), req.getDestFrame());
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < pva.length; i++)
 		builder = builder.addArray(pva[i]);
@@ -44,13 +42,12 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	}
     }
 
-    @Override public void convertAzElToRaDec(Messages.ConvertAnglesInput req, StreamObserver<Messages.DoubleArray> resp)
+    @Override public void convertAzElToRaDec(Messages.AnglesInput req, StreamObserver<Messages.DoubleArray> resp)
     {
 	try
 	{
-	    double[] raDec = Conversion.convertAzElToRaDec(req.getTime(), req.getAngle1(), req.getAngle2(), req.getLatitude(),
+	    double[] raDec = Conversion.convertAzElToRaDec(req.getTime(0), req.getAngle1(0), req.getAngle2(0), req.getLatitude(),
 							   req.getLongitude(), req.getAltitude(), req.getFrame());
-
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < raDec.length; i++)
 		builder = builder.addArray(raDec[i]);
@@ -63,13 +60,12 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	}
     }
 
-    @Override public void convertRaDecToAzEl(Messages.ConvertAnglesInput req, StreamObserver<Messages.DoubleArray> resp)
+    @Override public void convertRaDecToAzEl(Messages.AnglesInput req, StreamObserver<Messages.DoubleArray> resp)
     {
 	try
 	{
-	    double[] azEl = Conversion.convertRaDecToAzEl(req.getFrame(), req.getTime(), req.getAngle1(), req.getAngle2(),
+	    double[] azEl = Conversion.convertRaDecToAzEl(req.getFrame(), req.getTime(0), req.getAngle1(0), req.getAngle2(0),
 							  req.getLatitude(), req.getLongitude(), req.getAltitude());
-
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < azEl.length; i++)
 		builder = builder.addArray(azEl[i]);

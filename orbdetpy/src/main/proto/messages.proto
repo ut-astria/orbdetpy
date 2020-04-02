@@ -263,19 +263,19 @@ message TransformFrameInput
     string dest_frame = 4;
 }
 
-message ConvertAnglesInput
-{
-    string frame = 1;
-    string time = 2;
-    double latitude = 3;
-    double longitude = 4;
-    double altitude = 5;
-    double angle1 = 6;
-    double angle2 = 7;
-}
-
 message ImportTDMInput
 {
     string file_name = 1;
     string file_format = 2;
+}
+
+message AnglesInput
+{
+    string frame = 1;
+    repeated string time = 2;
+    double latitude = 3;
+    double longitude = 4;
+    double altitude = 5;
+    repeated double angle1 = 6 [packed = true];
+    repeated double angle2 = 7 [packed = true];
 }

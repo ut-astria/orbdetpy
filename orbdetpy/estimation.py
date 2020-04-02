@@ -26,11 +26,11 @@ def determine_orbit(config, meas, output_file = None):
 
     Args:
         config: OD configuration (Dictionary, file name, text
-                file-like object, or JSON encoded string).
+                file-like object, or JSON encoded string)
         meas: List of measurements (List, file name, text
-                file-like object, or JSON encoded string).
+                file-like object, or JSON encoded string)
         output_file: If specified, the orbit fit will be written to
-                     the file name or text file-like object given. 
+                     the file name or text file-like object given
 
     Returns:
         Orbit determination results.
@@ -66,3 +66,27 @@ def determine_orbit(config, meas, output_file = None):
                 write_output_file(output_file[idx], fit_data)
 
     return(od_output)
+
+def iod_laplace(frame, lat, lon, alt, time, ra, dec):
+    """ Estimate orbit from 3 RA/Dec angles using the Laplace method.
+
+    Args:
+        frame: Measurement and estimation reference frame ("EME2000", "GCRF")
+        lat: Observer geodetic latitude
+        lon: Observer geodetic longitude
+        alt: Observer altitude
+        time: List of 3 ISO-8601 formatted UTC strings [t1, t2, t3]
+        ra: List of 3 Right Ascensions
+        dec: List of 3 Declinations
+
+    Returns:
+        Position and velocity estimate at time t2.
+    """
+
+    with RemoteServer.channel() as channel:
+        stub = estimation_pb2_grpc.EstimationStub(channel)
+        resp = stub.iodLaplace(messages_pb2.AnglesInput(
+            time=time, angle1=ra, angle2=dec, latitude=lat,
+            longitude=lon, altitude=alt, frame=frame))
+
+    return(list(resp.array))

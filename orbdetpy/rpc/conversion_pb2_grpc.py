@@ -21,12 +21,12 @@ class ConversionStub(object):
         )
     self.convertAzElToRaDec = channel.unary_unary(
         '/Conversion/convertAzElToRaDec',
-        request_serializer=messages__pb2.ConvertAnglesInput.SerializeToString,
+        request_serializer=messages__pb2.AnglesInput.SerializeToString,
         response_deserializer=messages__pb2.DoubleArray.FromString,
         )
     self.convertRaDecToAzEl = channel.unary_unary(
         '/Conversion/convertRaDecToAzEl',
-        request_serializer=messages__pb2.ConvertAnglesInput.SerializeToString,
+        request_serializer=messages__pb2.AnglesInput.SerializeToString,
         response_deserializer=messages__pb2.DoubleArray.FromString,
         )
 
@@ -66,12 +66,12 @@ def add_ConversionServicer_to_server(servicer, server):
       ),
       'convertAzElToRaDec': grpc.unary_unary_rpc_method_handler(
           servicer.convertAzElToRaDec,
-          request_deserializer=messages__pb2.ConvertAnglesInput.FromString,
+          request_deserializer=messages__pb2.AnglesInput.FromString,
           response_serializer=messages__pb2.DoubleArray.SerializeToString,
       ),
       'convertRaDecToAzEl': grpc.unary_unary_rpc_method_handler(
           servicer.convertRaDecToAzEl,
-          request_deserializer=messages__pb2.ConvertAnglesInput.FromString,
+          request_deserializer=messages__pb2.AnglesInput.FromString,
           response_serializer=messages__pb2.DoubleArray.SerializeToString,
       ),
   }

@@ -22,12 +22,12 @@ def transform_frame(srcframe, time, pva, destframe):
 
     Args:
         srcframe: Source reference frame ("EME2000", "GCRF",
-                  "ICRF", "ITRF", "MOD", "TOD", or "TEME").
-        time: State vector epoch (ISO-8601 formatted UTC string).
+                  "ICRF", "ITRF", "MOD", "TOD", or "TEME")
+        time: State vector epoch (ISO-8601 formatted UTC string)
         pva: State vector to transform, can be pos or pos + vel or
-             pos + vel + acc.
+             pos + vel + acc
         destframe: Destination reference frame ("EME2000", "GCRF",
-                   "ITRF", "MOD", "TOD", or "TEME").
+                   "ITRF", "MOD", "TOD", or "TEME")
 
     Returns:
         State vector transformed to the destination frame.
@@ -36,8 +36,7 @@ def transform_frame(srcframe, time, pva, destframe):
     with RemoteServer.channel() as channel:
         stub = conversion_pb2_grpc.ConversionStub(channel)
         resp = stub.transformFrame(messages_pb2.TransformFrameInput(
-            src_frame = srcframe, time = time,
-            pva = pva, dest_frame = destframe))
+            src_frame=srcframe, time=time, pva=pva, dest_frame=destframe))
 
     return(list(resp.array))
 
@@ -45,13 +44,13 @@ def azel_to_radec(time, az, el, lat, lon, alt, frame):
     """ Convert Azimuth/Elevation to Right Ascension/Declination.
 
     Args:
-        time: ISO-8601 formatted UTC string.
+        time: ISO-8601 formatted UTC string
         az: Azimuth
         el: Elevation
-        lat: Geodetic latitude.
-        lon: Geodetic longitude.
-        alt: Altitude.
-        frame: Destination reference frame ("EME2000", "GCRF").
+        lat: Observer geodetic latitude
+        lon: Observer geodetic longitude
+        alt: Observer altitude
+        frame: Destination reference frame ("EME2000", "GCRF")
 
     Returns:
         Right Ascension and Declination.
@@ -59,9 +58,9 @@ def azel_to_radec(time, az, el, lat, lon, alt, frame):
 
     with RemoteServer.channel() as channel:
         stub = conversion_pb2_grpc.ConversionStub(channel)
-        resp = stub.convertAzElToRaDec(messages_pb2.ConvertAnglesInput(
-            time = time, angle1 = az, angle2 = el, latitude = lat,
-            longitude = lon, altitude = alt, frame = frame))
+        resp = stub.convertAzElToRaDec(messages_pb2.AnglesInput(
+            time=[time], angle1=[az], angle2=[el], latitude=lat,
+            longitude=lon, altitude=alt, frame=frame))
 
     return(list(resp.array))
 
@@ -69,13 +68,13 @@ def radec_to_azel(frame, time, ra, dec, lat, lon, alt):
     """ Convert Right Ascension/Declination to Azimuth/Elevation.
 
     Args:
-        frame: Source reference frame ("EME2000", "GCRF").
-        time: ISO-8601 formatted UTC string.
+        frame: Source reference frame ("EME2000", "GCRF")
+        time: ISO-8601 formatted UTC string
         ra: Right Ascension
         dec: Declination
-        lat: Geodetic latitude.
-        lon: Geodetic longitude.
-        alt: Altitude.
+        lat: Observer geodetic latitude
+        lon: Observer geodetic longitude
+        alt: Observer altitude
 
     Returns:
         Azimuth and Elevation.
@@ -83,8 +82,8 @@ def radec_to_azel(frame, time, ra, dec, lat, lon, alt):
 
     with RemoteServer.channel() as channel:
         stub = conversion_pb2_grpc.ConversionStub(channel)
-        resp = stub.convertRaDecToAzEl(messages_pb2.ConvertAnglesInput(
-            time = time, angle1 = ra, angle2 = dec, latitude = lat,
-            longitude = lon, altitude = alt, frame = frame))
+        resp = stub.convertRaDecToAzEl(messages_pb2.AnglesInput(
+            time=[time], angle1=[ra], angle2=[dec], latitude=lat,
+            longitude=lon, altitude=alt, frame=frame))
 
     return(list(resp.array))

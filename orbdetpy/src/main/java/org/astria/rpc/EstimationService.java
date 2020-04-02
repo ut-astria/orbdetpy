@@ -1,6 +1,6 @@
 /*
  * EstimationService.java - Estimation service handler.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,22 @@ import java.util.ArrayList;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import org.astria.DataManager;
 import org.astria.Estimation;
 import org.astria.Measurements;
 import org.astria.Settings;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.iod.IodLaplace;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.frames.Frame;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public final class EstimationService extends EstimationGrpc.EstimationImplBase
 {
@@ -38,6 +51,53 @@ public final class EstimationService extends EstimationGrpc.EstimationImplBase
 
 	    Messages.EstimationOutputArray.Builder builder = Messages.EstimationOutputArray
 		.newBuilder().addAllArray(Tools.buildResponseFromOrbitDetermination(estOut));
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void iodLaplace(Messages.AnglesInput req, StreamObserver<Messages.DoubleArray> resp)
+    {
+	try
+	{
+	    Vector3D[] los = new Vector3D[3];
+	    AbsoluteDate[] time = new AbsoluteDate[3];
+	    for (int i = 0; i < 3; i++)
+	    {
+		time[i] = DataManager.parseDateTime(req.getTime(i));
+		los[i] = new Vector3D(FastMath.cos(req.getAngle2(i))*FastMath.cos(req.getAngle1(i)),
+				      FastMath.cos(req.getAngle2(i))*FastMath.sin(req.getAngle1(i)),
+				      FastMath.sin(req.getAngle2(i)));
+	    }
+
+	    OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+							 Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
+	    GroundStation gs = new GroundStation(new TopocentricFrame(body, new GeodeticPoint(req.getLatitude(),
+						 req.getLongitude(), req.getAltitude()), "sensor"));
+	    gs.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
+	    gs.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
+	    gs.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
+
+	    Frame frame = DataManager.getFrame(req.getFrame());
+	    TimeStampedPVCoordinates obsPv = gs.getBaseFrame().getPVCoordinates(time[1], frame);
+	    CartesianOrbit estOrbit = new IodLaplace(Constants.EGM96_EARTH_MU).estimate(
+		frame, obsPv, time[0], los[0], time[1], los[1], time[2], los[2]);
+	    TimeStampedPVCoordinates estPv = estOrbit.getPVCoordinates();
+	    double[] estPos = estPv.getPosition().toArray();
+	    double[] estVel = estPv.getVelocity().toArray();
+
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
+	    for (int i = 0; i < 6; i++)
+	    {
+		if (i < 3)
+		    builder = builder.addArray(estPos[i]);
+		else
+		    builder = builder.addArray(estVel[i-3]);
+	    }
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

@@ -19,6 +19,11 @@ class EstimationStub(object):
         request_serializer=messages__pb2.DetermineOrbitInput.SerializeToString,
         response_deserializer=messages__pb2.EstimationOutputArray.FromString,
         )
+    self.iodLaplace = channel.unary_unary(
+        '/Estimation/iodLaplace',
+        request_serializer=messages__pb2.AnglesInput.SerializeToString,
+        response_deserializer=messages__pb2.DoubleArray.FromString,
+        )
 
 
 class EstimationServicer(object):
@@ -32,6 +37,13 @@ class EstimationServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def iodLaplace(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_EstimationServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -39,6 +51,11 @@ def add_EstimationServicer_to_server(servicer, server):
           servicer.determineOrbit,
           request_deserializer=messages__pb2.DetermineOrbitInput.FromString,
           response_serializer=messages__pb2.EstimationOutputArray.SerializeToString,
+      ),
+      'iodLaplace': grpc.unary_unary_rpc_method_handler(
+          servicer.iodLaplace,
+          request_deserializer=messages__pb2.AnglesInput.FromString,
+          response_serializer=messages__pb2.DoubleArray.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
