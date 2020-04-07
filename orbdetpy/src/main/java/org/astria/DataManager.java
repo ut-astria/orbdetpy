@@ -119,17 +119,12 @@ public final class DataManager
 
     public static TimeScale getTimeScale(String name)
     {
-	if (name == null || !timeScales.containsKey(name))
-	    return(timeScales.get("UTC"));
 	return(timeScales.get(name));
     }
 
     public static Frame getFrame(String name)
     {
-	if (name != null)
- 	    return(refFrames.get(name));
-	else
-	    return(refFrames.get("EME2000"));
+	return(refFrames.get(name));
     }
 
     public static String getUTCString(AbsoluteDate time)

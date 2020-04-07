@@ -1,5 +1,5 @@
 # tools.py - RPC utility functions.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ from orbdetpy import read_param
 from orbdetpy.rpc import messages_pb2
 
 _settings_fields = {
-    "rso_mass": [["SpaceObject", "Mass"], 1.0],
-    "rso_area": [["SpaceObject", "Area"], 1.0],
+    "rso_mass": [["SpaceObject", "Mass"], 5.0],
+    "rso_area": [["SpaceObject", "Area"], 0.01],
     "rso_solar_array_axis": [["SpaceObject", "SolarArray", "Axis"], None],
     "rso_solar_array_area": [["SpaceObject", "SolarArray", "Area"], None],
     "rso_attitude_provider": [["SpaceObject", "Attitude", "Provider"], None],
@@ -38,13 +38,13 @@ _settings_fields = {
     "drag_exp_H0": [["Drag", "ExpH0"], 0.0],
     "drag_exp_Hscale": [["Drag", "ExpHScale"], 0.0],
     "rp_sun": [["RadiationPressure", "Sun"], True],
-    "rp_coeff_absorption": [["RadiationPressure", "Cabsorption"], 0.1],
+    "rp_coeff_absorption": [["RadiationPressure", "Cabsorption"], 0.0],
     "prop_start": [["Propagation", "Start"], None],
     "prop_end": [["Propagation", "End"], None],
     "prop_step": [["Propagation", "Step"], 0.0],
     "prop_initial_state": [["Propagation", "InitialState"], None],
     "prop_initial_TLE": [["Propagation", "InitialTLE"], None],
-    "prop_inertial_frame": [["Propagation", "InertialFrame"], None],
+    "prop_inertial_frame": [["Propagation", "InertialFrame"], "EME2000"],
     "prop_step_handler_start_time": [["Propagation", "StepHandlerStartTime"], None],
     "prop_step_handler_end_time": [["Propagation", "StepHandlerEndTime"], None],
     "integ_min_time_step": [["Integration", "MinTimeStep"], 1.0E-3],
@@ -55,13 +55,20 @@ _settings_fields = {
     "sim_skip_unobservable": [["Simulation", "SkipUnobservable"], True],
     "sim_include_extras": [["Simulation", "IncludeExtras"], False],
     "sim_include_station_state": [["Simulation", "IncludeStationState"], False],
+    "sim_include_angle_rates": [["Simulation", "IncludeAngleRates"], False],
     "estm_filter": [["Estimation", "Filter"], None],
     "estm_covariance": [["Estimation", "Covariance"], None],
     "estm_process_noise": [["Estimation", "ProcessNoise"], None],
     "estm_DMC_corr_time": [["Estimation", "DMCCorrTime"], 0.0],
     "estm_DMC_sigma_pert": [["Estimation", "DMCSigmaPert"], 0.0],
     "estm_outlier_sigma": [["Estimation", "OutlierSigma"], 0.0],
-    "estm_outlier_warmup": [["Estimation", "OutlierWarmup"], 0]
+    "estm_outlier_warmup": [["Estimation", "OutlierWarmup"], 0],
+    "estm_smoother_iterations": [["Estimation", "SmootherIterations"], 10],
+    "estm_enable_PDAF": [["Estimation", "EnablePDAF"], False],
+    "estm_enable_CAR_MHF": [["Estimation", "EnableCARMHF"], False],
+    "estm_detection_probability": [["Estimation", "DetectionProbability"], 0.90],
+    "estm_gating_probability": [["Estimation", "GatingProbability"], 0.90],
+    "estm_gating_threshold": [["Estimation", "GatingThreshold"], 5.0]
 }
 
 _measurement_fields = {
@@ -75,6 +82,7 @@ _measurement_fields = {
     "declination": "Declination",
     "position": "Position",
     "position_velocity": "PositionVelocity",
+    "angle_rates": "AngleRates",
     "atmospheric_density": "AtmDensity",
     "acceleration_gravity": "AccGravity",
     "acceleration_drag": "AccDrag",
@@ -223,5 +231,7 @@ def convert_estimation(inputs):
             out["PostFit"] = {}
             for key, val in inp.post_fit.items():
                 out["PostFit"][key] = list(val.array)
+        if (inp.clutter_probability):
+            out["ClutterProbability"] = inp.clutter_probability
 
     return(output)

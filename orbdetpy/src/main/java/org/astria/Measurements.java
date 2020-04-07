@@ -112,6 +112,7 @@ public final class Measurements
 	public double declination;
 	public double[] position;
 	public double[] positionVelocity;
+	public double[] angleRates;
 
 	public Measurement()
 	{
@@ -129,6 +130,7 @@ public final class Measurements
 	    this.declination = src.declination;
 	    this.position = src.position;
 	    this.positionVelocity = src.positionVelocity;
+	    this.angleRates = src.angleRates;
 	}
     }
 

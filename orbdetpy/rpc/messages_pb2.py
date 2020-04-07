@@ -18,7 +18,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\010MessagesP\000',
-  serialized_pb=b'\n\x0emessages.proto\"!\n\x0cIntegerArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x05\x42\x02\x10\x01\" \n\x0b\x44oubleArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x01\x42\x02\x10\x01\"V\n\tParameter\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x0b\n\x03min\x18\x03 \x01(\x01\x12\x0b\n\x03max\x18\x04 \x01(\x01\x12\x12\n\nestimation\x18\x05 \x01(\t\")\n\x05\x46\x61\x63\x65t\x12\x12\n\x06normal\x18\x01 \x03(\x01\x42\x02\x10\x01\x12\x0c\n\x04\x61rea\x18\x02 \x01(\x01\"\x7f\n\x08Maneuver\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x15\n\rtrigger_event\x18\x02 \x01(\t\x12\x1a\n\x0etrigger_params\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x15\n\rmaneuver_type\x18\x04 \x01(\t\x12\x1b\n\x0fmaneuver_params\x18\x05 \x03(\x01\x42\x02\x10\x01\"\xab\x02\n\x07Station\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x01\x12\x14\n\x0c\x61zimuth_bias\x18\x04 \x01(\x01\x12\x16\n\x0e\x65levation_bias\x18\x05 \x01(\x01\x12\x12\n\nrange_bias\x18\x06 \x01(\x01\x12\x17\n\x0frange_rate_bias\x18\x07 \x01(\x01\x12\x1c\n\x14right_ascension_bias\x18\x08 \x01(\x01\x12\x18\n\x10\x64\x65\x63lination_bias\x18\t \x01(\x01\x12\x19\n\rposition_bias\x18\n \x03(\x01\x42\x02\x10\x01\x12\"\n\x16position_velocity_bias\x18\x0b \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0f\x62ias_estimation\x18\x0c \x01(\t\"8\n\x12MeasurementSetting\x12\x0f\n\x07two_way\x18\x01 \x01(\x08\x12\x11\n\x05\x65rror\x18\x02 \x03(\x01\x42\x02\x10\x01\"\xe9\x0c\n\x08Settings\x12\x10\n\x08rso_mass\x18\x01 \x01(\x01\x12\x10\n\x08rso_area\x18\x02 \x01(\x01\x12\x1a\n\nrso_facets\x18\x03 \x03(\x0b\x32\x06.Facet\x12 \n\x14rso_solar_array_axis\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x1c\n\x14rso_solar_array_area\x18\x05 \x01(\x01\x12\x1d\n\x15rso_attitude_provider\x18\x06 \x01(\t\x12\x1d\n\x11rso_spin_velocity\x18\x07 \x03(\x01\x42\x02\x10\x01\x12!\n\x15rso_spin_acceleration\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x16\n\x0egravity_degree\x18\t \x01(\x05\x12\x15\n\rgravity_order\x18\n \x01(\x05\x12\x1a\n\x12ocean_tides_degree\x18\x0b \x01(\x05\x12\x19\n\x11ocean_tides_order\x18\x0c \x01(\x05\x12\x16\n\x0ethird_body_sun\x18\r \x01(\x08\x12\x17\n\x0fthird_body_moon\x18\x0e \x01(\x08\x12\x17\n\x0fsolid_tides_sun\x18\x0f \x01(\x08\x12\x18\n\x10solid_tides_moon\x18\x10 \x01(\x08\x12\x12\n\ndrag_model\x18\x11 \x01(\t\x12$\n\x10\x64rag_coefficient\x18\x12 \x01(\x0b\x32\n.Parameter\x12\'\n\x10\x64rag_MSISE_flags\x18\x13 \x03(\x0b\x32\r.IntegerArray\x12\x15\n\rdrag_exp_rho0\x18\x14 \x01(\x01\x12\x13\n\x0b\x64rag_exp_H0\x18\x15 \x01(\x01\x12\x17\n\x0f\x64rag_exp_Hscale\x18\x16 \x01(\x01\x12\x0e\n\x06rp_sun\x18\x17 \x01(\x08\x12\'\n\x13rp_coeff_reflection\x18\x18 \x01(\x0b\x32\n.Parameter\x12\x1b\n\x13rp_coeff_absorption\x18\x19 \x01(\x01\x12\x1c\n\tmaneuvers\x18\x1a \x03(\x0b\x32\t.Maneuver\x12\x12\n\nprop_start\x18\x1b \x01(\t\x12\x10\n\x08prop_end\x18\x1c \x01(\t\x12\x11\n\tprop_step\x18\x1d \x01(\x01\x12\x1e\n\x12prop_initial_state\x18\x1e \x03(\x01\x42\x02\x10\x01\x12\x18\n\x10prop_initial_TLE\x18\x1f \x03(\t\x12\x1b\n\x13prop_inertial_frame\x18  \x01(\t\x12$\n\x1cprop_step_handler_start_time\x18! \x01(\t\x12\"\n\x1aprop_step_handler_end_time\x18\" \x01(\t\x12\x1b\n\x13integ_min_time_step\x18# \x01(\x01\x12\x1b\n\x13integ_max_time_step\x18$ \x01(\x01\x12\x1b\n\x13integ_abs_tolerance\x18% \x01(\x01\x12\x1b\n\x13integ_rel_tolerance\x18& \x01(\x01\x12\x18\n\x10sim_measurements\x18\' \x01(\x08\x12\x1d\n\x15sim_skip_unobservable\x18( \x01(\x08\x12\x1a\n\x12sim_include_extras\x18) \x01(\x08\x12!\n\x19sim_include_station_state\x18* \x01(\x08\x12)\n\x08stations\x18+ \x03(\x0b\x32\x17.Settings.StationsEntry\x12\x31\n\x0cmeasurements\x18, \x03(\x0b\x32\x1b.Settings.MeasurementsEntry\x12\x13\n\x0b\x65stm_filter\x18- \x01(\t\x12\x1b\n\x0f\x65stm_covariance\x18. \x03(\x01\x42\x02\x10\x01\x12\x1e\n\x12\x65stm_process_noise\x18/ \x03(\x01\x42\x02\x10\x01\x12\x1a\n\x12\x65stm_DMC_corr_time\x18\x30 \x01(\x01\x12\x1b\n\x13\x65stm_DMC_sigma_pert\x18\x31 \x01(\x01\x12)\n\x15\x65stm_DMC_acceleration\x18\x32 \x01(\x0b\x32\n.Parameter\x12\x1a\n\x12\x65stm_outlier_sigma\x18\x33 \x01(\x01\x12\x1b\n\x13\x65stm_outlier_warmup\x18\x34 \x01(\x05\x1a\x39\n\rStationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x17\n\x05value\x18\x02 \x01(\x0b\x32\x08.Station:\x02\x38\x01\x1aH\n\x11MeasurementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.MeasurementSetting:\x02\x38\x01\")\n\rSettingsArray\x12\x18\n\x05\x61rray\x18\x01 \x03(\x0b\x32\t.Settings\"\xbd\x06\n\x0bMeasurement\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x0f\n\x07\x61zimuth\x18\x03 \x01(\x01\x12\x11\n\televation\x18\x04 \x01(\x01\x12\r\n\x05range\x18\x05 \x01(\x01\x12\x12\n\nrange_rate\x18\x06 \x01(\x01\x12\x17\n\x0fright_ascension\x18\x07 \x01(\x01\x12\x13\n\x0b\x64\x65\x63lination\x18\x08 \x01(\x01\x12\x14\n\x08position\x18\t \x03(\x01\x42\x02\x10\x01\x12\x1d\n\x11position_velocity\x18\n \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x13\x61tmospheric_density\x18\x0b \x01(\x01\x12 \n\x14\x61\x63\x63\x65leration_gravity\x18\x0c \x03(\x01\x42\x02\x10\x01\x12\x1d\n\x11\x61\x63\x63\x65leration_drag\x18\r \x03(\x01\x42\x02\x10\x01\x12$\n\x18\x61\x63\x63\x65leration_ocean_tides\x18\x0e \x03(\x01\x42\x02\x10\x01\x12$\n\x18\x61\x63\x63\x65leration_solid_tides\x18\x0f \x03(\x01\x42\x02\x10\x01\x12%\n\x19\x61\x63\x63\x65leration_third_bodies\x18\x10 \x03(\x01\x42\x02\x10\x01\x12+\n\x1f\x61\x63\x63\x65leration_radiation_pressure\x18\x11 \x03(\x01\x42\x02\x10\x01\x12\x1f\n\x13\x61\x63\x63\x65leration_thrust\x18\x12 \x03(\x01\x42\x02\x10\x01\x12\x19\n\rstation_state\x18\x13 \x03(\x01\x42\x02\x10\x01\x12 \n\x14true_state_cartesian\x18\x14 \x03(\x01\x42\x02\x10\x01\x12\x16\n\x0etrue_state_sma\x18\x15 \x01(\x01\x12\x16\n\x0etrue_state_ecc\x18\x16 \x01(\x01\x12\x16\n\x0etrue_state_inc\x18\x17 \x01(\x01\x12\x17\n\x0ftrue_state_raan\x18\x18 \x01(\x01\x12\x17\n\x0ftrue_state_argp\x18\x19 \x01(\x01\x12\x1c\n\x14true_state_mean_anom\x18\x1a \x01(\x01\x12\x15\n\rtrue_state_ex\x18\x1b \x01(\x01\x12\x15\n\rtrue_state_ey\x18\x1c \x01(\x01\x12\x15\n\rtrue_state_hx\x18\x1d \x01(\x01\x12\x15\n\rtrue_state_hy\x18\x1e \x01(\x01\x12\x15\n\rtrue_state_lm\x18\x1f \x01(\x01\"/\n\x10MeasurementArray\x12\x1b\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x0c.Measurement\"6\n\x12Measurement2DArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.MeasurementArray\"\xc1\x01\n\x19InterpolateEphemerisInput\x12\x14\n\x0csource_frame\x18\x01 \x01(\t\x12\x0c\n\x04time\x18\x02 \x03(\t\x12\x1b\n\x05\x65phem\x18\x03 \x03(\x0b\x32\x0c.DoubleArray\x12\x12\n\nnum_points\x18\x04 \x01(\x05\x12\x12\n\ndest_frame\x18\x05 \x01(\t\x12\x14\n\x0cinterp_start\x18\x06 \x01(\t\x12\x12\n\ninterp_end\x18\x07 \x01(\t\x12\x11\n\tstep_size\x18\x08 \x01(\x01\"6\n\x13InterpolationOutput\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x11\n\x05state\x18\x02 \x03(\x01\x42\x02\x10\x01\"?\n\x18InterpolationOutputArray\x12#\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x14.InterpolationOutput\"?\n\x11PropagationOutput\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x1c\n\x06states\x18\x02 \x03(\x0b\x32\x0c.DoubleArray\";\n\x16PropagationOutputArray\x12!\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x12.PropagationOutput\"T\n\x13\x44\x65termineOrbitInput\x12\x19\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\t.Settings\x12\"\n\x0cmeasurements\x18\x02 \x03(\x0b\x32\x0c.Measurement\"\xb1\x03\n\x10\x45stimationOutput\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x1b\n\x0f\x65stimated_state\x18\x03 \x03(\x01\x42\x02\x10\x01\x12+\n\x15propagated_covariance\x18\x04 \x03(\x0b\x32\x0c.DoubleArray\x12+\n\x15innovation_covariance\x18\x05 \x03(\x0b\x32\x0c.DoubleArray\x12*\n\x14\x65stimated_covariance\x18\x06 \x03(\x0b\x32\x0c.DoubleArray\x12.\n\x07pre_fit\x18\x07 \x03(\x0b\x32\x1d.EstimationOutput.PreFitEntry\x12\x30\n\x08post_fit\x18\x08 \x03(\x0b\x32\x1e.EstimationOutput.PostFitEntry\x1a;\n\x0bPreFitEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x05value\x18\x02 \x01(\x0b\x32\x0c.DoubleArray:\x02\x38\x01\x1a<\n\x0cPostFitEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x05value\x18\x02 \x01(\x0b\x32\x0c.DoubleArray:\x02\x38\x01\"9\n\x15\x45stimationOutputArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.EstimationOutput\"[\n\x13TransformFrameInput\x12\x11\n\tsrc_frame\x18\x01 \x01(\t\x12\x0c\n\x04time\x18\x02 \x01(\t\x12\x0f\n\x03pva\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x12\n\ndest_frame\x18\x04 \x01(\t\"8\n\x0eImportTDMInput\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x13\n\x0b\x66ile_format\x18\x02 \x01(\t\"\x89\x01\n\x0b\x41nglesInput\x12\r\n\x05\x66rame\x18\x01 \x01(\t\x12\x0c\n\x04time\x18\x02 \x03(\t\x12\x10\n\x08latitude\x18\x03 \x01(\x01\x12\x11\n\tlongitude\x18\x04 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x05 \x01(\x01\x12\x12\n\x06\x61ngle1\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x12\n\x06\x61ngle2\x18\x07 \x03(\x01\x42\x02\x10\x01\x42\x1c\n\x0eorg.astria.rpcB\x08MessagesP\x00\x62\x06proto3'
+  serialized_pb=b'\n\x0emessages.proto\"!\n\x0cIntegerArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x05\x42\x02\x10\x01\" \n\x0b\x44oubleArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x01\x42\x02\x10\x01\"V\n\tParameter\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x0b\n\x03min\x18\x03 \x01(\x01\x12\x0b\n\x03max\x18\x04 \x01(\x01\x12\x12\n\nestimation\x18\x05 \x01(\t\")\n\x05\x46\x61\x63\x65t\x12\x12\n\x06normal\x18\x01 \x03(\x01\x42\x02\x10\x01\x12\x0c\n\x04\x61rea\x18\x02 \x01(\x01\"\x7f\n\x08Maneuver\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x15\n\rtrigger_event\x18\x02 \x01(\t\x12\x1a\n\x0etrigger_params\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x15\n\rmaneuver_type\x18\x04 \x01(\t\x12\x1b\n\x0fmaneuver_params\x18\x05 \x03(\x01\x42\x02\x10\x01\"\xab\x02\n\x07Station\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x01\x12\x14\n\x0c\x61zimuth_bias\x18\x04 \x01(\x01\x12\x16\n\x0e\x65levation_bias\x18\x05 \x01(\x01\x12\x12\n\nrange_bias\x18\x06 \x01(\x01\x12\x17\n\x0frange_rate_bias\x18\x07 \x01(\x01\x12\x1c\n\x14right_ascension_bias\x18\x08 \x01(\x01\x12\x18\n\x10\x64\x65\x63lination_bias\x18\t \x01(\x01\x12\x19\n\rposition_bias\x18\n \x03(\x01\x42\x02\x10\x01\x12\"\n\x16position_velocity_bias\x18\x0b \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0f\x62ias_estimation\x18\x0c \x01(\t\"8\n\x12MeasurementSetting\x12\x0f\n\x07two_way\x18\x01 \x01(\x08\x12\x11\n\x05\x65rror\x18\x02 \x03(\x01\x42\x02\x10\x01\"\xc7\x0e\n\x08Settings\x12\x10\n\x08rso_mass\x18\x01 \x01(\x01\x12\x10\n\x08rso_area\x18\x02 \x01(\x01\x12\x1a\n\nrso_facets\x18\x03 \x03(\x0b\x32\x06.Facet\x12 \n\x14rso_solar_array_axis\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x1c\n\x14rso_solar_array_area\x18\x05 \x01(\x01\x12\x1d\n\x15rso_attitude_provider\x18\x06 \x01(\t\x12\x1d\n\x11rso_spin_velocity\x18\x07 \x03(\x01\x42\x02\x10\x01\x12!\n\x15rso_spin_acceleration\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x16\n\x0egravity_degree\x18\t \x01(\x05\x12\x15\n\rgravity_order\x18\n \x01(\x05\x12\x1a\n\x12ocean_tides_degree\x18\x0b \x01(\x05\x12\x19\n\x11ocean_tides_order\x18\x0c \x01(\x05\x12\x16\n\x0ethird_body_sun\x18\r \x01(\x08\x12\x17\n\x0fthird_body_moon\x18\x0e \x01(\x08\x12\x17\n\x0fsolid_tides_sun\x18\x0f \x01(\x08\x12\x18\n\x10solid_tides_moon\x18\x10 \x01(\x08\x12\x12\n\ndrag_model\x18\x11 \x01(\t\x12$\n\x10\x64rag_coefficient\x18\x12 \x01(\x0b\x32\n.Parameter\x12\'\n\x10\x64rag_MSISE_flags\x18\x13 \x03(\x0b\x32\r.IntegerArray\x12\x15\n\rdrag_exp_rho0\x18\x14 \x01(\x01\x12\x13\n\x0b\x64rag_exp_H0\x18\x15 \x01(\x01\x12\x17\n\x0f\x64rag_exp_Hscale\x18\x16 \x01(\x01\x12\x0e\n\x06rp_sun\x18\x17 \x01(\x08\x12\'\n\x13rp_coeff_reflection\x18\x18 \x01(\x0b\x32\n.Parameter\x12\x1b\n\x13rp_coeff_absorption\x18\x19 \x01(\x01\x12\x1c\n\tmaneuvers\x18\x1a \x03(\x0b\x32\t.Maneuver\x12\x12\n\nprop_start\x18\x1b \x01(\t\x12\x10\n\x08prop_end\x18\x1c \x01(\t\x12\x11\n\tprop_step\x18\x1d \x01(\x01\x12\x1e\n\x12prop_initial_state\x18\x1e \x03(\x01\x42\x02\x10\x01\x12\x18\n\x10prop_initial_TLE\x18\x1f \x03(\t\x12\x1b\n\x13prop_inertial_frame\x18  \x01(\t\x12$\n\x1cprop_step_handler_start_time\x18! \x01(\t\x12\"\n\x1aprop_step_handler_end_time\x18\" \x01(\t\x12\x1b\n\x13integ_min_time_step\x18# \x01(\x01\x12\x1b\n\x13integ_max_time_step\x18$ \x01(\x01\x12\x1b\n\x13integ_abs_tolerance\x18% \x01(\x01\x12\x1b\n\x13integ_rel_tolerance\x18& \x01(\x01\x12\x18\n\x10sim_measurements\x18\' \x01(\x08\x12\x1d\n\x15sim_skip_unobservable\x18( \x01(\x08\x12\x1a\n\x12sim_include_extras\x18) \x01(\x08\x12!\n\x19sim_include_station_state\x18* \x01(\x08\x12\x1f\n\x17sim_include_angle_rates\x18\x39 \x01(\x08\x12)\n\x08stations\x18+ \x03(\x0b\x32\x17.Settings.StationsEntry\x12\x31\n\x0cmeasurements\x18, \x03(\x0b\x32\x1b.Settings.MeasurementsEntry\x12\x13\n\x0b\x65stm_filter\x18- \x01(\t\x12\x1b\n\x0f\x65stm_covariance\x18. \x03(\x01\x42\x02\x10\x01\x12\x1e\n\x12\x65stm_process_noise\x18/ \x03(\x01\x42\x02\x10\x01\x12\x1a\n\x12\x65stm_DMC_corr_time\x18\x30 \x01(\x01\x12\x1b\n\x13\x65stm_DMC_sigma_pert\x18\x31 \x01(\x01\x12)\n\x15\x65stm_DMC_acceleration\x18\x32 \x01(\x0b\x32\n.Parameter\x12\x1a\n\x12\x65stm_outlier_sigma\x18\x33 \x01(\x01\x12\x1b\n\x13\x65stm_outlier_warmup\x18\x34 \x01(\x05\x12 \n\x18\x65stm_smoother_iterations\x18\x35 \x01(\x05\x12\x18\n\x10\x65stm_enable_PDAF\x18: \x01(\x08\x12\x1b\n\x13\x65stm_enable_CAR_MHF\x18\x36 \x01(\x08\x12\"\n\x1a\x65stm_detection_probability\x18\x37 \x01(\x01\x12\x1f\n\x17\x65stm_gating_probability\x18; \x01(\x01\x12\x1d\n\x15\x65stm_gating_threshold\x18\x38 \x01(\x01\x1a\x39\n\rStationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x17\n\x05value\x18\x02 \x01(\x0b\x32\x08.Station:\x02\x38\x01\x1aH\n\x11MeasurementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.MeasurementSetting:\x02\x38\x01\")\n\rSettingsArray\x12\x18\n\x05\x61rray\x18\x01 \x03(\x0b\x32\t.Settings\"\xd6\x06\n\x0bMeasurement\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x0f\n\x07\x61zimuth\x18\x03 \x01(\x01\x12\x11\n\televation\x18\x04 \x01(\x01\x12\r\n\x05range\x18\x05 \x01(\x01\x12\x12\n\nrange_rate\x18\x06 \x01(\x01\x12\x17\n\x0fright_ascension\x18\x07 \x01(\x01\x12\x13\n\x0b\x64\x65\x63lination\x18\x08 \x01(\x01\x12\x14\n\x08position\x18\t \x03(\x01\x42\x02\x10\x01\x12\x1d\n\x11position_velocity\x18\n \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0b\x61ngle_rates\x18  \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x13\x61tmospheric_density\x18\x0b \x01(\x01\x12 \n\x14\x61\x63\x63\x65leration_gravity\x18\x0c \x03(\x01\x42\x02\x10\x01\x12\x1d\n\x11\x61\x63\x63\x65leration_drag\x18\r \x03(\x01\x42\x02\x10\x01\x12$\n\x18\x61\x63\x63\x65leration_ocean_tides\x18\x0e \x03(\x01\x42\x02\x10\x01\x12$\n\x18\x61\x63\x63\x65leration_solid_tides\x18\x0f \x03(\x01\x42\x02\x10\x01\x12%\n\x19\x61\x63\x63\x65leration_third_bodies\x18\x10 \x03(\x01\x42\x02\x10\x01\x12+\n\x1f\x61\x63\x63\x65leration_radiation_pressure\x18\x11 \x03(\x01\x42\x02\x10\x01\x12\x1f\n\x13\x61\x63\x63\x65leration_thrust\x18\x12 \x03(\x01\x42\x02\x10\x01\x12\x19\n\rstation_state\x18\x13 \x03(\x01\x42\x02\x10\x01\x12 \n\x14true_state_cartesian\x18\x14 \x03(\x01\x42\x02\x10\x01\x12\x16\n\x0etrue_state_sma\x18\x15 \x01(\x01\x12\x16\n\x0etrue_state_ecc\x18\x16 \x01(\x01\x12\x16\n\x0etrue_state_inc\x18\x17 \x01(\x01\x12\x17\n\x0ftrue_state_raan\x18\x18 \x01(\x01\x12\x17\n\x0ftrue_state_argp\x18\x19 \x01(\x01\x12\x1c\n\x14true_state_mean_anom\x18\x1a \x01(\x01\x12\x15\n\rtrue_state_ex\x18\x1b \x01(\x01\x12\x15\n\rtrue_state_ey\x18\x1c \x01(\x01\x12\x15\n\rtrue_state_hx\x18\x1d \x01(\x01\x12\x15\n\rtrue_state_hy\x18\x1e \x01(\x01\x12\x15\n\rtrue_state_lm\x18\x1f \x01(\x01\"/\n\x10MeasurementArray\x12\x1b\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x0c.Measurement\"6\n\x12Measurement2DArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.MeasurementArray\"\xc1\x01\n\x19InterpolateEphemerisInput\x12\x14\n\x0csource_frame\x18\x01 \x01(\t\x12\x0c\n\x04time\x18\x02 \x03(\t\x12\x1b\n\x05\x65phem\x18\x03 \x03(\x0b\x32\x0c.DoubleArray\x12\x12\n\nnum_points\x18\x04 \x01(\x05\x12\x12\n\ndest_frame\x18\x05 \x01(\t\x12\x14\n\x0cinterp_start\x18\x06 \x01(\t\x12\x12\n\ninterp_end\x18\x07 \x01(\t\x12\x11\n\tstep_size\x18\x08 \x01(\x01\"6\n\x13InterpolationOutput\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x11\n\x05state\x18\x02 \x03(\x01\x42\x02\x10\x01\"?\n\x18InterpolationOutputArray\x12#\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x14.InterpolationOutput\"?\n\x11PropagationOutput\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x1c\n\x06states\x18\x02 \x03(\x0b\x32\x0c.DoubleArray\";\n\x16PropagationOutputArray\x12!\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x12.PropagationOutput\"T\n\x13\x44\x65termineOrbitInput\x12\x19\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\t.Settings\x12\"\n\x0cmeasurements\x18\x02 \x03(\x0b\x32\x0c.Measurement\"\xce\x03\n\x10\x45stimationOutput\x12\x0c\n\x04time\x18\x01 \x01(\t\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x1b\n\x0f\x65stimated_state\x18\x03 \x03(\x01\x42\x02\x10\x01\x12+\n\x15propagated_covariance\x18\x04 \x03(\x0b\x32\x0c.DoubleArray\x12+\n\x15innovation_covariance\x18\x05 \x03(\x0b\x32\x0c.DoubleArray\x12*\n\x14\x65stimated_covariance\x18\x06 \x03(\x0b\x32\x0c.DoubleArray\x12.\n\x07pre_fit\x18\x07 \x03(\x0b\x32\x1d.EstimationOutput.PreFitEntry\x12\x30\n\x08post_fit\x18\x08 \x03(\x0b\x32\x1e.EstimationOutput.PostFitEntry\x12\x1b\n\x13\x63lutter_probability\x18\t \x01(\x01\x1a;\n\x0bPreFitEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x05value\x18\x02 \x01(\x0b\x32\x0c.DoubleArray:\x02\x38\x01\x1a<\n\x0cPostFitEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1b\n\x05value\x18\x02 \x01(\x0b\x32\x0c.DoubleArray:\x02\x38\x01\"9\n\x15\x45stimationOutputArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.EstimationOutput\"[\n\x13TransformFrameInput\x12\x11\n\tsrc_frame\x18\x01 \x01(\t\x12\x0c\n\x04time\x18\x02 \x01(\t\x12\x0f\n\x03pva\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x12\n\ndest_frame\x18\x04 \x01(\t\"8\n\x0eImportTDMInput\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x13\n\x0b\x66ile_format\x18\x02 \x01(\t\"\x89\x01\n\x0b\x41nglesInput\x12\r\n\x05\x66rame\x18\x01 \x01(\t\x12\x0c\n\x04time\x18\x02 \x03(\t\x12\x10\n\x08latitude\x18\x03 \x01(\x01\x12\x11\n\tlongitude\x18\x04 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x05 \x01(\x01\x12\x12\n\x06\x61ngle1\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x12\n\x06\x61ngle2\x18\x07 \x03(\x01\x42\x02\x10\x01\x42\x1c\n\x0eorg.astria.rpcB\x08MessagesP\x00\x62\x06proto3'
 )
 
 
@@ -421,8 +421,8 @@ _SETTINGS_STATIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2218,
-  serialized_end=2275,
+  serialized_start=2440,
+  serialized_end=2497,
 )
 
 _SETTINGS_MEASUREMENTSENTRY = _descriptor.Descriptor(
@@ -458,8 +458,8 @@ _SETTINGS_MEASUREMENTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2277,
-  serialized_end=2349,
+  serialized_start=2499,
+  serialized_end=2571,
 )
 
 _SETTINGS = _descriptor.Descriptor(
@@ -764,72 +764,121 @@ _SETTINGS = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='stations', full_name='Settings.stations', index=42,
+      name='sim_include_angle_rates', full_name='Settings.sim_include_angle_rates', index=42,
+      number=57, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='stations', full_name='Settings.stations', index=43,
       number=43, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='measurements', full_name='Settings.measurements', index=43,
+      name='measurements', full_name='Settings.measurements', index=44,
       number=44, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='estm_filter', full_name='Settings.estm_filter', index=44,
+      name='estm_filter', full_name='Settings.estm_filter', index=45,
       number=45, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='estm_covariance', full_name='Settings.estm_covariance', index=45,
+      name='estm_covariance', full_name='Settings.estm_covariance', index=46,
       number=46, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='estm_process_noise', full_name='Settings.estm_process_noise', index=46,
+      name='estm_process_noise', full_name='Settings.estm_process_noise', index=47,
       number=47, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='estm_DMC_corr_time', full_name='Settings.estm_DMC_corr_time', index=47,
+      name='estm_DMC_corr_time', full_name='Settings.estm_DMC_corr_time', index=48,
       number=48, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='estm_DMC_sigma_pert', full_name='Settings.estm_DMC_sigma_pert', index=48,
+      name='estm_DMC_sigma_pert', full_name='Settings.estm_DMC_sigma_pert', index=49,
       number=49, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='estm_DMC_acceleration', full_name='Settings.estm_DMC_acceleration', index=49,
+      name='estm_DMC_acceleration', full_name='Settings.estm_DMC_acceleration', index=50,
       number=50, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='estm_outlier_sigma', full_name='Settings.estm_outlier_sigma', index=50,
+      name='estm_outlier_sigma', full_name='Settings.estm_outlier_sigma', index=51,
       number=51, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='estm_outlier_warmup', full_name='Settings.estm_outlier_warmup', index=51,
+      name='estm_outlier_warmup', full_name='Settings.estm_outlier_warmup', index=52,
       number=52, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='estm_smoother_iterations', full_name='Settings.estm_smoother_iterations', index=53,
+      number=53, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='estm_enable_PDAF', full_name='Settings.estm_enable_PDAF', index=54,
+      number=58, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='estm_enable_CAR_MHF', full_name='Settings.estm_enable_CAR_MHF', index=55,
+      number=54, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='estm_detection_probability', full_name='Settings.estm_detection_probability', index=56,
+      number=55, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='estm_gating_probability', full_name='Settings.estm_gating_probability', index=57,
+      number=59, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='estm_gating_threshold', full_name='Settings.estm_gating_threshold', index=58,
+      number=56, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -846,7 +895,7 @@ _SETTINGS = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=708,
-  serialized_end=2349,
+  serialized_end=2571,
 )
 
 
@@ -876,8 +925,8 @@ _SETTINGSARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2351,
-  serialized_end=2392,
+  serialized_start=2573,
+  serialized_end=2614,
 )
 
 
@@ -959,147 +1008,154 @@ _MEASUREMENT = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='atmospheric_density', full_name='Measurement.atmospheric_density', index=10,
+      name='angle_rates', full_name='Measurement.angle_rates', index=10,
+      number=32, type=1, cpp_type=5, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=b'\020\001', file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='atmospheric_density', full_name='Measurement.atmospheric_density', index=11,
       number=11, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='acceleration_gravity', full_name='Measurement.acceleration_gravity', index=11,
+      name='acceleration_gravity', full_name='Measurement.acceleration_gravity', index=12,
       number=12, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='acceleration_drag', full_name='Measurement.acceleration_drag', index=12,
+      name='acceleration_drag', full_name='Measurement.acceleration_drag', index=13,
       number=13, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='acceleration_ocean_tides', full_name='Measurement.acceleration_ocean_tides', index=13,
+      name='acceleration_ocean_tides', full_name='Measurement.acceleration_ocean_tides', index=14,
       number=14, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='acceleration_solid_tides', full_name='Measurement.acceleration_solid_tides', index=14,
+      name='acceleration_solid_tides', full_name='Measurement.acceleration_solid_tides', index=15,
       number=15, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='acceleration_third_bodies', full_name='Measurement.acceleration_third_bodies', index=15,
+      name='acceleration_third_bodies', full_name='Measurement.acceleration_third_bodies', index=16,
       number=16, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='acceleration_radiation_pressure', full_name='Measurement.acceleration_radiation_pressure', index=16,
+      name='acceleration_radiation_pressure', full_name='Measurement.acceleration_radiation_pressure', index=17,
       number=17, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='acceleration_thrust', full_name='Measurement.acceleration_thrust', index=17,
+      name='acceleration_thrust', full_name='Measurement.acceleration_thrust', index=18,
       number=18, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='station_state', full_name='Measurement.station_state', index=18,
+      name='station_state', full_name='Measurement.station_state', index=19,
       number=19, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_cartesian', full_name='Measurement.true_state_cartesian', index=19,
+      name='true_state_cartesian', full_name='Measurement.true_state_cartesian', index=20,
       number=20, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=b'\020\001', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_sma', full_name='Measurement.true_state_sma', index=20,
+      name='true_state_sma', full_name='Measurement.true_state_sma', index=21,
       number=21, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_ecc', full_name='Measurement.true_state_ecc', index=21,
+      name='true_state_ecc', full_name='Measurement.true_state_ecc', index=22,
       number=22, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_inc', full_name='Measurement.true_state_inc', index=22,
+      name='true_state_inc', full_name='Measurement.true_state_inc', index=23,
       number=23, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_raan', full_name='Measurement.true_state_raan', index=23,
+      name='true_state_raan', full_name='Measurement.true_state_raan', index=24,
       number=24, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_argp', full_name='Measurement.true_state_argp', index=24,
+      name='true_state_argp', full_name='Measurement.true_state_argp', index=25,
       number=25, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_mean_anom', full_name='Measurement.true_state_mean_anom', index=25,
+      name='true_state_mean_anom', full_name='Measurement.true_state_mean_anom', index=26,
       number=26, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_ex', full_name='Measurement.true_state_ex', index=26,
+      name='true_state_ex', full_name='Measurement.true_state_ex', index=27,
       number=27, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_ey', full_name='Measurement.true_state_ey', index=27,
+      name='true_state_ey', full_name='Measurement.true_state_ey', index=28,
       number=28, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_hx', full_name='Measurement.true_state_hx', index=28,
+      name='true_state_hx', full_name='Measurement.true_state_hx', index=29,
       number=29, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_hy', full_name='Measurement.true_state_hy', index=29,
+      name='true_state_hy', full_name='Measurement.true_state_hy', index=30,
       number=30, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='true_state_lm', full_name='Measurement.true_state_lm', index=30,
+      name='true_state_lm', full_name='Measurement.true_state_lm', index=31,
       number=31, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -1117,8 +1173,8 @@ _MEASUREMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2395,
-  serialized_end=3224,
+  serialized_start=2617,
+  serialized_end=3471,
 )
 
 
@@ -1148,8 +1204,8 @@ _MEASUREMENTARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3226,
-  serialized_end=3273,
+  serialized_start=3473,
+  serialized_end=3520,
 )
 
 
@@ -1179,8 +1235,8 @@ _MEASUREMENT2DARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3275,
-  serialized_end=3329,
+  serialized_start=3522,
+  serialized_end=3576,
 )
 
 
@@ -1259,8 +1315,8 @@ _INTERPOLATEEPHEMERISINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3332,
-  serialized_end=3525,
+  serialized_start=3579,
+  serialized_end=3772,
 )
 
 
@@ -1297,8 +1353,8 @@ _INTERPOLATIONOUTPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3527,
-  serialized_end=3581,
+  serialized_start=3774,
+  serialized_end=3828,
 )
 
 
@@ -1328,8 +1384,8 @@ _INTERPOLATIONOUTPUTARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3583,
-  serialized_end=3646,
+  serialized_start=3830,
+  serialized_end=3893,
 )
 
 
@@ -1366,8 +1422,8 @@ _PROPAGATIONOUTPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3648,
-  serialized_end=3711,
+  serialized_start=3895,
+  serialized_end=3958,
 )
 
 
@@ -1397,8 +1453,8 @@ _PROPAGATIONOUTPUTARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3713,
-  serialized_end=3772,
+  serialized_start=3960,
+  serialized_end=4019,
 )
 
 
@@ -1435,8 +1491,8 @@ _DETERMINEORBITINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3774,
-  serialized_end=3858,
+  serialized_start=4021,
+  serialized_end=4105,
 )
 
 
@@ -1473,8 +1529,8 @@ _ESTIMATIONOUTPUT_PREFITENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4173,
-  serialized_end=4232,
+  serialized_start=4449,
+  serialized_end=4508,
 )
 
 _ESTIMATIONOUTPUT_POSTFITENTRY = _descriptor.Descriptor(
@@ -1510,8 +1566,8 @@ _ESTIMATIONOUTPUT_POSTFITENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4234,
-  serialized_end=4294,
+  serialized_start=4510,
+  serialized_end=4570,
 )
 
 _ESTIMATIONOUTPUT = _descriptor.Descriptor(
@@ -1577,6 +1633,13 @@ _ESTIMATIONOUTPUT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='clutter_probability', full_name='EstimationOutput.clutter_probability', index=8,
+      number=9, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -1589,8 +1652,8 @@ _ESTIMATIONOUTPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3861,
-  serialized_end=4294,
+  serialized_start=4108,
+  serialized_end=4570,
 )
 
 
@@ -1620,8 +1683,8 @@ _ESTIMATIONOUTPUTARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4296,
-  serialized_end=4353,
+  serialized_start=4572,
+  serialized_end=4629,
 )
 
 
@@ -1672,8 +1735,8 @@ _TRANSFORMFRAMEINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4355,
-  serialized_end=4446,
+  serialized_start=4631,
+  serialized_end=4722,
 )
 
 
@@ -1710,8 +1773,8 @@ _IMPORTTDMINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4448,
-  serialized_end=4504,
+  serialized_start=4724,
+  serialized_end=4780,
 )
 
 
@@ -1783,8 +1846,8 @@ _ANGLESINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4507,
-  serialized_end=4644,
+  serialized_start=4783,
+  serialized_end=4920,
 )
 
 _SETTINGS_STATIONSENTRY.fields_by_name['value'].message_type = _STATION
@@ -2056,6 +2119,7 @@ _SETTINGS.fields_by_name['estm_covariance']._options = None
 _SETTINGS.fields_by_name['estm_process_noise']._options = None
 _MEASUREMENT.fields_by_name['position']._options = None
 _MEASUREMENT.fields_by_name['position_velocity']._options = None
+_MEASUREMENT.fields_by_name['angle_rates']._options = None
 _MEASUREMENT.fields_by_name['acceleration_gravity']._options = None
 _MEASUREMENT.fields_by_name['acceleration_drag']._options = None
 _MEASUREMENT.fields_by_name['acceleration_ocean_tides']._options = None

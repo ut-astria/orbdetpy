@@ -70,6 +70,13 @@ public final class Estimation
 	public double[][] estimatedCovariance;
 	public HashMap<String, double[]> preFit;
 	public HashMap<String, double[]> postFit;
+	public Double clutterProbability;
+
+	public EstimationOutput()
+	{
+	    this.preFit = new HashMap<String, double[]>();
+	    this.postFit = new HashMap<String, double[]>();
+	}
     }
 
     private final Settings odCfg;
@@ -242,8 +249,6 @@ public final class Estimation
 	    {
 		key = measNames[0];
 		res = new EstimationOutput();
-		res.preFit = new HashMap<String, double[]>();
-		res.postFit = new HashMap<String, double[]>();
 		res.time = odObs.rawMeas[n].time;
 		res.station = odObs.rawMeas[n].station;
 		estOutput.add(res);
@@ -427,23 +432,23 @@ public final class Estimation
 		final RealMatrix sqrtP = new CholeskyDecomposition(
 		    Ptemp.add(Ptemp.transpose()).scalarMultiply(0.5).add(psdCorr), 1E-6, 1E-16).getL();
 
+		for (int i = 0; i < numStates; i++)
+		{
+		    sigma.setColumnVector(i, xhat.add(sqrtP.getColumnVector(i)));
+		    sigma.setColumnVector(numStates + i, xhat.subtract(sqrtP.getColumnVector(i)));
+		}
+
+		double[][] sigData = sigma.getData();
+		for (int j = 6; j < odCfg.parameters.size() + 6; j++)
+		{
+		    Settings.Parameter tempep = odCfg.parameters.get(j - 6);
+		    for (int i = 0; i < numSigmas; i++)
+			sigData[j][i] = FastMath.min(FastMath.max(sigData[j][i], tempep.min), tempep.max);
+		}
+		sigma.setSubMatrix(sigData, 0, 0);
+
 		while (true)
 		{
-		    for (int i = 0; i < numStates; i++)
-		    {
-			sigma.setColumnVector(i, xhat.add(sqrtP.getColumnVector(i)));
-			sigma.setColumnVector(numStates + i, xhat.subtract(sqrtP.getColumnVector(i)));
-		    }
-
-		    double[][] sigData = sigma.getData();
-		    for (int j = 6; j < odCfg.parameters.size() + 6; j++)
-		    {
-			Settings.Parameter tempep = odCfg.parameters.get(j - 6);
-			for (int i = 0; i < numSigmas; i++)
-			    sigData[j][i] = FastMath.min(FastMath.max(sigData[j][i], tempep.min), tempep.max);
-		    }
-		    sigma.setSubMatrix(sigData, 0, 0);
-
 		    double step = stepFinal - stepStart;
 		    if (odCfg.propStep != 0.0 && (stepStart >= bound0 || stepFinal >= bound0) &&
 			(stepStart <= bound1 || stepFinal <= bound1))
@@ -456,7 +461,10 @@ public final class Estimation
 		    stepSum += step;
 
 		    if (FastMath.abs(step) > 1.0E-6)
+		    {
 			propagator.propagate(stepStart, sigma, stepStart + step, propSigma, enableDMC);
+			sigma.setSubMatrix(propSigma.getData(), 0, 0);
+		    }
 		    else
 			propSigma.setSubMatrix(sigma.getData(), 0, 0);
 
@@ -548,19 +556,35 @@ public final class Estimation
 			Pxy = Pxy.add(propSigma.getColumnVector(i).subtract(xhatPrev).outerProduct(y).scalarMultiply(weight));
 		    }
 
-		    RealMatrix K = Pxy.multiply(MatrixUtils.inverse(Pyy));
-		    xhat = new ArrayRealVector(xhatPrev.add(odCfg.parameterMatrix.multiply(K).operate(rawMeas.subtract(yhatpre))));
+		    EstimationOutput odout = new EstimationOutput();
+		    RealVector error = rawMeas.subtract(yhatpre);
+		    RealMatrix invPyy = MatrixUtils.inverse(Pyy);
+		    RealMatrix K = Pxy.multiply(invPyy);
 		    P = Pprop.subtract(odCfg.parameterMatrix.multiply(K.multiply(Pyy.multiply(K.transpose()))));
+
+		    if (odCfg.estmEnablePDAF)
+		    {
+			double alpha = FastMath.exp(-0.5*error.dotProduct(invPyy.operate(error)));
+			double b = 2.0*(1.0-odCfg.estmGatingProbability*odCfg.estmDetectionProbability)*
+			    FastMath.sqrt(new CholeskyDecomposition(Pyy, 1E-6, 1E-16).getDeterminant())/
+			    (odCfg.estmDetectionProbability*odCfg.estmGatingThreshold);
+			odout.clutterProbability = b/(b + alpha);
+			xhat = new ArrayRealVector(xhatPrev.add(odCfg.parameterMatrix.multiply(K)
+								.operate(error.mapMultiply(1-odout.clutterProbability))));
+			RealMatrix yyt = error.outerProduct(error).scalarMultiply(
+			    odout.clutterProbability*(1-odout.clutterProbability));
+			P = Pprop.scalarMultiply(odout.clutterProbability).add(
+			    P.scalarMultiply(1-odout.clutterProbability)).add(
+				odCfg.parameterMatrix.multiply(K.multiply(yyt.multiply(K.transpose()))));
+		    }
+		    else
+			xhat = new ArrayRealVector(xhatPrev.add(odCfg.parameterMatrix.multiply(K).operate(error)));
 
 		    double[] pv = xhat.toArray();
 		    ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
 										       new Vector3D(pv[3], pv[4], pv[5])),
 								     odCfg.propFrame, tm, Constants.EGM96_EARTH_MU),
 						  propagator.getAttitude(tm, pv), odCfg.rsoMass);
-
-		    EstimationOutput odout = new EstimationOutput();
-		    odout.preFit = new HashMap<String, double[]>();
-		    odout.postFit = new HashMap<String, double[]>();
 
 		    if (combinedMeas || measNames.length == 1)
 		    {
@@ -589,8 +613,8 @@ public final class Estimation
 			odout.postFit.put(measNames[1], fitv);
 		    }
 
-		    if (attempt == 0 && odCfg.estmOutlierWarmup > 0 && measIndex >= odCfg.estmOutlierWarmup &&
-			odCfg.estmOutlierSigma > 0.0)
+		    if (!odCfg.estmEnablePDAF && attempt == 0 && odCfg.estmOutlierSigma > 0.0 &&
+			odCfg.estmOutlierWarmup > 0 && measIndex >= odCfg.estmOutlierWarmup)
 		    {
 			int pos = 0;
 			boolean isOutlier = false;
