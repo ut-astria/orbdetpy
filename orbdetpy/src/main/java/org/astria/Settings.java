@@ -246,7 +246,7 @@ public final class Settings
     public Map<String, Measurement> cfgMeasurements;
 
     public String estmFilter = "UKF";
-    public double[] estmCovariance = new double[]{25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 1.00, 0.25, 1E-6, 1E-6, 1E-6};
+    public double[] estmCovariance = new double[]{25E6, 25E6, 25E6, 1E2, 1E2, 1E2, 1.00, 0.25, 1E-6, 1E-6, 1E-6};
     public double[] estmProcessNoise;
     public double estmDMCCorrTime = 40.0;
     public double estmDMCSigmaPert = 5.0E-9;
@@ -257,8 +257,8 @@ public final class Settings
     public int estmSmootherIterations = 10;
     public boolean estmEnablePDAF = false;
     public boolean estmEnableCARMHF = false;
-    public double estmDetectionProbability = 0.90;
-    public double estmGatingProbability = 0.90;
+    public double estmDetectionProbability = 0.99;
+    public double estmGatingProbability = 0.99;
     public double estmGatingThreshold = 5.0;
 
     protected Atmosphere atmModel;
@@ -558,6 +558,8 @@ public final class Settings
 
 	final int N = parameters.size() - 3;
 	final double b = 1.0/estmDMCCorrTime;
+	if (b == Double.POSITIVE_INFINITY || b == Double.NEGATIVE_INFINITY)
+	    throw(new ArithmeticException());
 	final double b2 = b*b;
 	final double b3 = b2*b;
 	final double b4 = b3*b;

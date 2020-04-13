@@ -66,8 +66,8 @@ _settings_fields = {
     "estm_smoother_iterations": [["Estimation", "SmootherIterations"], 10],
     "estm_enable_PDAF": [["Estimation", "EnablePDAF"], False],
     "estm_enable_CAR_MHF": [["Estimation", "EnableCARMHF"], False],
-    "estm_detection_probability": [["Estimation", "DetectionProbability"], 0.90],
-    "estm_gating_probability": [["Estimation", "GatingProbability"], 0.90],
+    "estm_detection_probability": [["Estimation", "DetectionProbability"], 0.99],
+    "estm_gating_probability": [["Estimation", "GatingProbability"], 0.99],
     "estm_gating_threshold": [["Estimation", "GatingThreshold"], 5.0]
 }
 
