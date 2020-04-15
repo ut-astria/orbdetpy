@@ -1,99 +1,74 @@
 {
-    "Gravity" :
-    {
-	"Degree" : 20,
-	"Order" : 20
+    "rsoMass": 2000.0,
+    "rsoArea": 20.0,
+    "gravityDegree": 20,
+    "gravityOrder": 20,
+    "oceanTidesDegree": -1,
+    "oceanTidesOrder": -1,
+    "thirdBodySun": true,
+    "thirdBodyMoon": true,
+    "solidTidesSun": false,
+    "solidTidesMoon": false,
+    "dragModel": "MSISE",
+    "dragCoefficient": {
+        "value": 2.0,
+        "min": 0.01,
+        "max": 3.0,
+        "estimation": "Estimate"
     },
-
-    "OceanTides" :
-    {
-	"Degree" : -1,
-	"Order" : -1
+    "rpSun": true,
+    "rpCoeffReflection": {
+        "value": 1.5,
+        "min": 1.0,
+        "max": 2.0,
+        "estimation": "Estimate"
     },
-
-    "Drag" :
-    {
-	"Model" : "MSISE",
-	"Coefficient" :
-	{
-	    "Value" : 2.0,
-	    "Min" : 0.01,
-	    "Max" : 3.00,
-	    "Estimation" : "Estimate"
-	}
-    },
-
-    "SolidTides" :
-    {
-	"Sun" : false,
-	"Moon" : false
-    },
-
-    "ThirdBodies" :
-    {
-	"Sun" : true,
-	"Moon" : true
-    },
-
-    "RadiationPressure" :
-    {
-	"Sun" : true,
-	"Creflection" :
-	{
-            "Value" : 1.5,
-            "Min" : 1.0,
-            "Max" : 2.0,
-            "Estimation" : "Estimate"
-	}
-    },
-
-    "SpaceObject" :
-    {
-	"Mass" : 2000.0,
-	"Area" : 20.0
-    },
-
-    "Propagation" :
-    {
-	"Start" : "2018-01-01T00:02:54Z",
-	"End" : "2018-01-02T00:02:54Z",
-	"InitialState" :
-	[
-	    35796020.7669903,
-	    -22267515.537321,
-	    -87938.3477596335,
+    "propStart": "2018-01-01T00:02:54Z",
+    "propEnd": "2018-01-02T00:02:54Z",
+    "propInitialState": [
+        35796020.7669903,
+        -22267515.537321,
+        -87938.3477596335,
         1625.07170292693,
         2610.77460296534,
-	    -2.09170251623871
-	]
+        -2.09170251623871
+    ],
+    "cfgStations": {
+        "Station1": {
+            "latitude": 0.5578822780952235,
+            "longitude": -1.8017600227679735,
+            "altitude": 855.0
+        }
     },
-
-    "Stations" :
-    {
-	"Station1" :
-	{
-            "Latitude" : 0.5578822780952235,
-            "Longitude" : -1.8017600227679735,
-            "Altitude" : 855.0
-	}
+    "cfgMeasurements": {
+        "azimuth": {
+            "error": [
+                4.8e-06
+            ]
+        },
+        "elevation": {
+            "error": [
+                4.8e-06
+            ]
+        }
     },
-
-    "Measurements" :
-    {
-	"Azimuth" :
-	{
-	    "Error" : [4.8E-6]
-	},
-	"Elevation" :
-	{
-	    "Error" : [4.8E-6]
-	}
-    },
-
-    "Estimation" :
-    {
-	"Filter" : "UKF",
-	"Covariance" : [25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 1.00, 0.25],
-	"ProcessNoise" : [1E-10, 1E-10, 1E-10, 1E-10, 1E-10, 1E-10]
-    }
+    "estmFilter": "UKF",
+    "estmCovariance": [
+        25000000.0,
+        25000000.0,
+        25000000.0,
+        0.01,
+        0.01,
+        0.01,
+        1.0,
+        0.25
+    ],
+    "estmProcessNoise": [
+        1e-10,
+        1e-10,
+        1e-10,
+        1e-10,
+        1e-10,
+        1e-10
+    ]
 }

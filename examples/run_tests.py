@@ -58,7 +58,7 @@ for root, dirs, files in os.walk(datdir):
         for algo in ["EKF", "UKF"]:
             with open(os.path.join(root, fname), "r") as fp:
                 config = json.load(fp)
-                config["Estimation"]["Filter"] = algo
+                config["estmFilter"] = algo
             od_cfg.append(config)
             od_obs.append(os.path.join(outdir, fname[:idx] + "obs.json"))
             od_out.append(os.path.join(outdir, fname[:idx] + algo + "_fit.json"))
@@ -77,22 +77,22 @@ for root, dirs, files in os.walk(datdir):
 
         with open(os.path.join(outdir, fname[:idx] + "obs.json"), "r") as fp:
             obs = json.load(fp)
-        exact = [x for x in obs if ("Station" in x or "PositionVelocity" in x)]
+        exact = [x for x in obs if ("station" in x or "positionVelocity" in x)]
 
         for algo in ["EKF", "UKF"]:
             output = []
             with open(os.path.join(outdir, fname[:idx] + algo + "_fit.json"), "r") as fp:
                 fit = json.load(fp)
-            estim = [x for x in fit if ("PreFit" in x and "PostFit" in x)]
+            estim = [x for x in fit if ("preFit" in x and "postFit" in x)]
 
             for exa, est in zip(exact, estim):
-                if ("TrueStateCartesian" in exa):
-                    X = exa["TrueStateCartesian"][:6]
+                if ("trueStateCartesian" in exa):
+                    X = exa["trueStateCartesian"][:6]
                 else:
-                    X = exa["PositionVelocity"][:6]
-                diff = [X[i] - est["EstimatedState"][i] for i in range(6)]
-                sigm = [3.0*math.sqrt(est["EstimatedCovariance"][i][i]) for i in range(6)]
-                output.append({"Time" : exa["Time"], "Station" : exa.get("Station"),
+                    X = exa["positionVelocity"][:6]
+                diff = [X[i] - est["estimatedState"][i] for i in range(6)]
+                sigm = [3.0*math.sqrt(est["estimatedCovariance"][i][i]) for i in range(6)]
+                output.append({"Time" : exa["time"], "Station" : exa.get("station"),
                                "StateResidual" : diff, "Covariance3Sigma" : sigm,
                                "WithinBounds" : [diff[i] > -sigm[i] and diff[i] < sigm[i] for i in range(6)]})
 

@@ -20,11 +20,10 @@ from orbdetpy.utilities import interpolate_ephemeris
 # Propagate for 1 hour at 5 minute intervals with default settings
 start_time = "2020-03-09T22:00:02.000Z"
 final_time = "2020-03-09T23:00:02.000Z"
-configs = [{"Propagation": {
-    "Start": start_time, "End": final_time,
-    "Step": 300.0, "InitialState": [
-        -152408.16592411138, -958234.7850447478, 6908448.38149239,
-        -7545.69145990788, 285.55273115327213, -126.76601267199806]}}]
+configs = [{"propStart": start_time, "propEnd": final_time,
+            "propStep": 300.0, "propInitialState": [
+                -152408.16592411138, -958234.7850447478, 6908448.38149239,
+                -7545.69145990788, 285.55273115327213, -126.76601267199806]}]
 
 times, states = [], []
 for p in propagate_orbits(configs):

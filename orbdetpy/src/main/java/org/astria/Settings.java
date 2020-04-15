@@ -430,17 +430,17 @@ public final class Settings
 		    for (String mk : cfgMeasurements.keySet())
 		    {
 			double bias = 0.0;
-			if (mk.equalsIgnoreCase("Azimuth"))
+			if (mk.equalsIgnoreCase("azimuth"))
 			    bias = sv.azimuthBias;
-			else if (mk.equalsIgnoreCase("Elevation"))
+			else if (mk.equalsIgnoreCase("elevation"))
 			    bias = sv.elevationBias;
-			else if (mk.equalsIgnoreCase("Range"))
+			else if (mk.equalsIgnoreCase("range"))
 			    bias = sv.rangeBias;
-			else if (mk.equalsIgnoreCase("RangeRate"))
+			else if (mk.equalsIgnoreCase("rangeRate"))
 			    bias = sv.rangeRateBias;
-			else if (mk.equalsIgnoreCase("RightAscension"))
+			else if (mk.equalsIgnoreCase("rightAscension"))
 			    bias = sv.rightAscensionBias;
-			else if (mk.equalsIgnoreCase("Declination"))
+			else if (mk.equalsIgnoreCase("declination"))
 			    bias = sv.declinationBias;
 			else
 			    continue;

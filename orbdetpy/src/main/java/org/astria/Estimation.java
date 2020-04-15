@@ -104,9 +104,9 @@ public final class Estimation
 
 	measNames = odCfg.cfgMeasurements.keySet().toArray(new String[0]);
 	Arrays.sort(measNames);
-	if (measNames[0].equalsIgnoreCase("Declination"))
-	    measNames = new String[]{"RightAscension", "Declination"};
-	combinedMeas = !measNames[0].equalsIgnoreCase("Range") && !measNames[0].equalsIgnoreCase("RangeRate");
+	if (measNames[0].equalsIgnoreCase("declination"))
+	    measNames = new String[]{"rightAscension", "declination"};
+	combinedMeas = !measNames[0].equalsIgnoreCase("range") && !measNames[0].equalsIgnoreCase("rangeRate");
 
 	epoch = DataManager.parseDateTime(odCfg.propStart);
 	propEnd = DataManager.parseDateTime(odCfg.propEnd);

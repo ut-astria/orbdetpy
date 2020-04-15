@@ -1,5 +1,5 @@
 # propagate_TLE.py - Propagate many TLEs in parallel.
-# Copyright (C) 2019 University of Texas
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,11 +41,8 @@ args = parser.parse_args()
 from orbdetpy.propagation import propagate_orbits
 
 elements = getattr(args, "tle-file").read().splitlines()
-config = [{"Propagation": {"Start": args.start_time,
-                           "InitialTLE": elements[i+1:i+3],
-                           "End": args.end_time,
-                           "Step": args.step_size}}
-          for i in range(0, len(elements) - 2, 3)]
+config = [{"propStart": args.start_time, "propInitialTLE": elements[i+1:i+3],
+           "propEnd": args.end_time, "propStep": args.step_size} for i in range(0, len(elements)-2, 3)]
 
 try:
     prop_out = propagate_orbits(config)

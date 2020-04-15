@@ -248,17 +248,23 @@ public final class Tools
 	    if (min.trueState != null)
 	    {
 		builder = builder.addAllTrueStateCartesian(DoubleStream.of(min.trueState.cartesian).boxed().collect(Collectors.toList()));
-		builder = builder.setTrueStateSma(min.trueState.keplerian.sma);
-		builder = builder.setTrueStateEcc(min.trueState.keplerian.ecc);
-		builder = builder.setTrueStateInc(min.trueState.keplerian.inc);
-		builder = builder.setTrueStateRaan(min.trueState.keplerian.raan);
-		builder = builder.setTrueStateArgp(min.trueState.keplerian.argP);
-		builder = builder.setTrueStateMeanAnom(min.trueState.keplerian.meanAnom);
-		builder = builder.setTrueStateEx(min.trueState.equinoctial.ex);
-		builder = builder.setTrueStateEy(min.trueState.equinoctial.ey);
-		builder = builder.setTrueStateHx(min.trueState.equinoctial.hx);
-		builder = builder.setTrueStateHy(min.trueState.equinoctial.hy);
-		builder = builder.setTrueStateLm(min.trueState.equinoctial.lm);
+		if (min.trueState.keplerian != null)
+		{
+		    builder = builder.setTrueStateSma(min.trueState.keplerian.sma);
+		    builder = builder.setTrueStateEcc(min.trueState.keplerian.ecc);
+		    builder = builder.setTrueStateInc(min.trueState.keplerian.inc);
+		    builder = builder.setTrueStateRaan(min.trueState.keplerian.raan);
+		    builder = builder.setTrueStateArgp(min.trueState.keplerian.argP);
+		    builder = builder.setTrueStateMeanAnom(min.trueState.keplerian.meanAnom);
+		}
+		if (min.trueState.equinoctial != null)
+		{
+		    builder = builder.setTrueStateEx(min.trueState.equinoctial.ex);
+		    builder = builder.setTrueStateEy(min.trueState.equinoctial.ey);
+		    builder = builder.setTrueStateHx(min.trueState.equinoctial.hx);
+		    builder = builder.setTrueStateHy(min.trueState.equinoctial.hy);
+		    builder = builder.setTrueStateLm(min.trueState.equinoctial.lm);
+		}
 	    }
 	    if (min.atmDensity != 0.0)
 		builder = builder.setAtmosphericDensity(min.atmDensity);

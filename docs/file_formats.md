@@ -10,181 +10,79 @@ Configuration Files
 
 Configuration files are needed for both simulation and orbit determination.
 
-"Gravity" : Configure EGM96 gravity field {
-
- "Degree" : Integer in [2,360].
-
- "Order" : Integer in [0,degree].
-
- }
-
-"OceanTides" : Configure FES2004 ocean tide model {
-
- "Degree" : -1 to disable ocean tides or integer in [1,100].
-
- "Order" : -1 to disable ocean tides or integer in [0,degree].
-
- }
-
-"Drag" : Configure atmospheric density model {
-
- "Model" : "MSISE" for NRL MSISE-00 or "Exponential" for exponential drag.
-
- "MSISEFlags" : nx2 array of integers where n is in [1,23]. The first column is the flag number and the second column is the value of the corresponding MSISE flag. See <https://www.orekit.org/site-orekit-development/apidocs/org/orekit/forces/drag/atmosphere/NRLMSISE00.html> for details. All flags default to 1.
-
- "ExpRho0" : Density constant [kg/m^3] for exponential drag.
- 
- "ExpH0": Altitude constant [m] for exponential drag.
- 
- "ExpHScale" : Altitude scale factor [m] for exponential drag.
-
- "Coefficient" : Drag coefficient {
-
-    "Value" : Initial value.
-
-    "Min" : Minimum value.
-
-    "Max" : Maximum value.
-
-    "Estimation" : "Estimate" to estimate, "Consider" to only consider the parameter in the UKF, or anything else to do neither.
+"rsoMass": Object mass [kg].
     
-    }
-    
- }
+"rsoArea": Object average cross sectional area [m^2].
 
-"SolidTides" : Configure solid tides {
+"gravityDegree": EGM96 gravity field degree; integer in [2, 360].
 
- "Sun" : false to disable the Sun's contribution or true to enable.
+"gravityOrder": EGM96 gravity field order; integer in [0, degree].
 
- "Moon" : false to disable the Moon's contribution or true to enable.
+"oceanTidesDegree": FES2004 ocean tide degree; -1 to disable or integer in [1, 100].
 
- }
+"oceanTidesOrder": FES2004 ocean tide order; -1 to disable or integer in [0, degree].
 
-"ThirdBodies" : Configure third body point mass perturbations {
-
- "Sun" : false to disable the Sun's contribution or true to enable.
+"thirdBodySun": Third body perturbations; true to enable the Sun's contribution.
  
- "Moon" : false to disable the Moon's contribution or true to enable.
+"thirdBodyMoon": Third body perturbations; true to enable the Moon's contribution.
 
- }
+"solidTidesSun": Solid tides; true to enable the Sun's contribution.
 
-"RadiationPressure" : Configure radiation pressure {
+"solidTidesMoon": Solid tides; true to enable the Moon's contribution.
 
- "Sun" : false to disable the Sun's contribution or true to enable.
+"dragModel": "MSISE" for NRL MSISE-00 or "Exponential" for exponential drag.
+
+"dragCoefficient": Drag coefficient {
+
+  "value": Initial value.
+
+  "min": Minimum value.
+
+  "max": Maximum value.
+
+  "estimation": "Estimate" to estimate, "Consider" to only consider the parameter in the UKF, or anything else to do neither.
+  
+}
+
+"dragMSISEFlags": nx2 array of integers where n is in [1,23]. The first column is the flag number and the second column is the value of the corresponding MSISE flag. See <https://www.orekit.org/site-orekit-development/apidocs/org/orekit/forces/drag/atmosphere/NRLMSISE00.html> for details. All flags default to 1.
+
+"dragExpRho0": Density constant [kg/m^3] for exponential drag.
  
- "Creflection" : Coefficient of reflection {
-
-  "Value" : Initial value.
+"dragExpH0": Altitude constant [m] for exponential drag.
  
-  "Min" : Minimum value.
+"dragExpHscale": Altitude scale factor [m] for exponential drag.
 
-  "Max" : Maximum value.
+"rpSun": true to enable solar radiation pressure.
+ 
+"rpCoeffReflection": Coefficient of reflection {
 
-  "Estimation" : "Estimate" to estimate, "Consider" to only consider the parameter in the UKF, or anything else to do neither.
+  "value": Initial value.
+ 
+  "min": Minimum value.
 
-  }
+  "max": Maximum value.
 
- }
-
-"SpaceObject" : Details about the Resident Space Object {
-
- "Mass" : Object mass [kg].
-    
- "Area" : Object average cross sectional area [m^2].
-
- }
-
-"Propagation" : Propagation settings {
-
- "Start" : Epoch for InitialState; optional if InitialTLE is provided.
-
- "End" : End time for RSO state propagation.
-
- "Step" : Time step size [s]; used only for simulation runs.
-
- "InitialState" : Initial state vector. Units are [m] and [m/s] for position and velocity, respectively.
-
- "InitialTLE" : Array of 2 TLE strings which may me provided instead of InitialState.
-
- "InertialFrame" : Inertial reference frame to use for propagation and all state vector outputs. Valid
-                   values are ["GCRF", "EME2000"]; defaults to "EME2000".
-
- }
-
-"Simulation" : Optional simulation settings; not used for orbit determination runs {
-
- "SimulateMeasurements" : true to simulate measurements or false to only output state vectors;
-                          defaults to true.
-
- "SkipUnobservable" : true to skip instants when the object is below the local horizon; defaults to true.
-
- "IncludeExtras" : true to generate additional simulated data; defaults to false.
-
- "IncludeStationState" : true to include station inertial coordinates; defaults to false.
-
- }
-
-"Integration" : Optional tolerances for numerical integration {
-
- "MinTimeStep" : Minimum integration time step [s]; defaults to 1.0E-3 s.
-
- "MaxTimeStep" : Maximum integration time step [s]; defaults to 300.0 s.
-
- "AbsTolerance" : Integration absolute tolerance; defaults to 1.0E-14.
-
- "RelTolerance" : Integration relative tolerance; defaults to 1.0E-12.
+  "estimation": "Estimate" to estimate, "Consider" to only consider the parameter in the UKF, or anything else to do neither.
 
 }
- 
-"Stations" : Ground stations for measurements. {
 
- "Station_Name" : {
- 
-  "Latitude" : Geodetic latitude [rad].
-  
-  "Longitude" : Geodetic longitude [rad].
-  
-  "Altitude" : Height above mean sea level [m].
-
-  "AzimuthBias" : Optional sensor bias [rad].
-
-  "ElevationBias" : Optional sensor bias [rad].
-
-  "RangeBias" : Optional sensor bias [m].
-
-  "RangeRateBias" : Optional sensor bias [m/s].
-
-  "RightAscensionBias" : Optional sensor bias [rad].
-
-  "DeclinationBias" : Optional sensor bias [rad].
-
-  "PositionBias" : Optional sensor bias [m, m, m].
-
-  "PositionVelocityBias" : Optional sensor bias [m, m, m, m/s, m/s, m/s].
-
-  "BiasEstimation" : (UKF only) "Estimate" to estimate, "Consider" to only consider biases, or anything else to do neither.
-
-  }
-  
- }
-
-"Maneuvers" : One or more maneuvers to include during simulation or less commonly during orbit determination [
+"cfgManeuvers": One or more maneuvers to include during simulation or less commonly during orbit determination [
 
  {
  
-  "TriggerEvent" : "DateTime" to trigger at the specified time instant.
+  "triggerEvent": "DateTime" to trigger at the specified time instant.
                    "LongitudeCrossing" to detect when the given geodetic longitude is crossed.
 
-  "TriggerParams" : Not required for "DateTime".
+  "triggerParams": Not required for "DateTime".
   		    [geodetic_longitude_radians] for "LongitudeCrossing" detection.
 
-  "Time" : Time string for maneuver; required only when TriggerEvent is "DateTime".
+  "time": Time string for maneuver; required only when TriggerEvent is "DateTime".
 
-  "ManeuverType" : One of ["ConstantThrust", "NorthSouthStationing", "EastWestStationing", "SemiMajorAxisChange",
+  "maneuverType": One of ["ConstantThrust", "NorthSouthStationing", "EastWestStationing", "SemiMajorAxisChange",
                    "PerigeeChange", "EccentricityChange", "InclinationChange", "RAANChange", "ArgPerigeeChange",
 		   "StopPropagation"].
 
-  "ManeuverParams" : [dir_x, dir_y, dir_z, duration_seconds, thrust_Newtons, Isp_seconds] for "ConstantThrust".
+  "maneuverParams": [dir_x, dir_y, dir_z, duration_seconds, thrust_Newtons, Isp_seconds] for "ConstantThrust".
     		     [target_geodetic_latitude, deltav_interval, deltav_count] for "NorthSouthStationing".
                      [target_geodetic_longitude, deltav_interval, deltav_count] for "EastWestStationing".
 		     [target_SMA, deltav_interval, deltav_count] for "SemiMajorAxisChange".
@@ -199,99 +97,157 @@ Configuration files are needed for both simulation and orbit determination.
  
  ]
 
-"Measurements" : Configure input measurements for orbit determination or output measurements from simulated data {
+"propStart": Epoch for InitialState; optional if InitialTLE is provided.
 
- "Range" : {
+"propEnd": End time for RSO state propagation.
 
-  "TwoWay" : true or false.
+"propStep": Time step size [s]; used only for simulation runs.
 
-  "Error" : Theoretical measurement error [m].
+"propInitialState": Initial state vector. Units are [m] and [m/s] for position and velocity, respectively.
+
+"propInitialTLE": Array of 2 TLE strings which may me provided instead of InitialState.
+
+"propInertialFrame": Inertial reference frame to use for propagation and all state vector outputs. Valid
+                     values are ["GCRF", "EME2000"]; defaults to "EME2000".
+
+"integMinTimeStep": Minimum integration time step [s]; defaults to 1.0E-3 s.
+
+"integMaxTimeStep": Maximum integration time step [s]; defaults to 300.0 s.
+
+"integAbsTolerance": Integration absolute tolerance; defaults to 1.0E-14.
+
+"integRelTolerance": Integration relative tolerance; defaults to 1.0E-12.
+
+"simMeasurements": true to simulate measurements or false to only output state vectors;
+                   defaults to true.
+
+"simSkipUnobservable": true to skip instants when the object is below the local horizon; defaults to true.
+
+"simIncludeExtras": true to generate additional simulated data; defaults to false.
+
+"simIncludeStationState": true to include station inertial coordinates; defaults to false.
+
+"cfgStations": Ground stations for measurements. {
+
+ "Station_Name": {
+ 
+  "latitude": Geodetic latitude [rad].
+  
+  "longitude": Geodetic longitude [rad].
+  
+  "altitude": Height above mean sea level [m].
+
+  "azimuthBias": Optional sensor bias [rad].
+
+  "elevationBias": Optional sensor bias [rad].
+
+  "rangeBias": Optional sensor bias [m].
+
+  "rangeRateBias": Optional sensor bias [m/s].
+
+  "rightAscensionBias": Optional sensor bias [rad].
+
+  "declinationBias": Optional sensor bias [rad].
+
+  "positionBias": Optional sensor bias [m, m, m].
+
+  "positionVelocityBias": Optional sensor bias [m, m, m, m/s, m/s, m/s].
+
+  "biasEstimation": (UKF only) "Estimate" to estimate, "Consider" to only consider biases, or anything else to do neither.
+
+  }
   
  }
 
- "RangeRate" : {
+"cfgMeasurements": Configure input measurements for orbit determination or output measurements from simulated data {
 
-  "TwoWay" : true or false.
+ "range": {
 
-  "Error" : Theoretical measurement error [m/s].
+  "twoWay": true or false.
+
+  "error": Theoretical measurement error [m].
+  
+ }
+
+ "rangeRate": {
+
+  "twoWay": true or false.
+
+  "error": Theoretical measurement error [m/s].
 
  }
 
- "Azimuth" : {
+ "azimuth": {
 
-  "Error" : Theoretical measurement error [rad].
-
- }
-
- "Elevation" : {
-
-  "Error" : Theoretical measurement error [rad].
+  "error": Theoretical measurement error [rad].
 
  }
 
- "RightAscension" : {
+ "elevation": {
 
-  "Error" : Theoretical measurement error [rad].
-
- }
-
- "Declination" : {
-
-  "Error" : Theoretical measurement error [rad].
+  "error": Theoretical measurement error [rad].
 
  }
 
- "Position" : {
+ "rightAscension": {
 
-  "Error" : Theoretical measurement error [m, m, m].
+  "error": Theoretical measurement error [rad].
 
  }
 
- "PositionVelocity" : {
+ "declination": {
 
-  "Error" : Theoretical measurement error [m, m, m, m/s, m/s, m/s].
+  "error": Theoretical measurement error [rad].
+
+ }
+
+ "position": {
+
+  "error": Theoretical measurement error [m, m, m].
+
+ }
+
+ "positionVelocity": {
+
+  "error": Theoretical measurement error [m, m, m, m/s, m/s, m/s].
 
  }
  
  }
 
-Valid combinations of measurements are as follows:
+"estmFilter": Must be either "UKF" or "EKF".
 
-1. Range
-2. RangeRate
-3. Range + RangeRate
-4. Azimuth + Elevation
-5. RightAscension + Declination
-6. Position
-7. PositionVelocity
+"estmCovariance": Diagonal elements of covariance matrix with dimension 6 plus number of estimated parameters.
+
+"estmProcessNoise": Diagonal elements of process noise matrix with dimension 6. Not used when DMC is in effect.
+
+"estmDMCCorrTime": DMC correlation time. Setting this to zero disables DMC.
+
+"estmDMCSigmaPert": Sigma for DMC acceleration. Setting this to zero disables DMC.
+
+"estmDMCAcceleration": DMC acceleration bounds {
  
-"Estimation" : Configure parameters for estimation filters {
-
- "Filter" : Must be either "UKF" or "EKF".
-
- "Covariance" : Diagonal elements of covariance matrix with dimension 6 plus number of estimated parameters.
-
- "ProcessNoise" : Diagonal elements of process noise matrix with dimension 6. Not used when DMC is in effect.
-
- "DMCCorrTime" : DMC correlation time. Setting this to zero disables DMC.
-
- "DMCSigmaPert" : Sigma for DMC acceleration. Setting this to zero disables DMC.
-
- "DMCAcceleration" : DMC acceleration bounds {
- 
-    "Value" : Initial value [m/s^2].
+    "value": Initial value [m/s^2].
     
-    "Min" : Minimum value [m/s^2].
+    "min": Minimum value [m/s^2].
     
-    "Max" : Maximum value [m/s^2].
+    "max": Maximum value [m/s^2].
     
-    }
+  }
 
- "OutlierSigma" : Number of sigmas from innovation for a measurement to be an outlier; positive number enables outlier detection.
+"estmOutlierSigma": Number of sigmas from innovation for a measurement to be an outlier; positive number enables outlier detection.
 
- "OutlierWarmup" : Number of measurements to process before enabling outlier detection; positive number enables outlier detection.
+"estmOutlierWarmup": Number of measurements to process before enabling outlier detection; positive number enables outlier detection.
 
- }
+Valid combinations of measurements are:
+
+1. range
+2. rangeRate
+3. range + rangeRate
+4. azimuth + elevation
+5. rightAscension + declination
+6. position
+7. positionVelocity
 
 Input Files
 -----------
@@ -305,25 +261,25 @@ valid combinations listed  above.
 
  {
  
-  "Time" : Measurement time stamp
+  "time": Measurement time stamp
   
-  "Station" : Ground station name(s) from the configuration file's "Stations" array.
+  "station": Ground station name(s) from the configuration file's "cfgStations" array.
   
-  "Range" : Optional based on measurements configured in "Measurements" [m].
+  "range": Optional based on measurements configured in "cfgMeasurements" [m].
   
-  "RangeRate" : Optional based on measurements configured in "Measurements" [m/s].
+  "rangeRate": Optional based on measurements configured in "cfgMeasurements" [m/s].
 
-  "Azimuth" : Optional based on measurements configured in "Measurements" [rad].
+  "azimuth": Optional based on measurements configured in "cfgMeasurements" [rad].
 
-  "Elevation" : Optional based on measurements configured in "Measurements" [rad].
+  "elevation": Optional based on measurements configured in "cfgMeasurements" [rad].
 
-  "RightAscension" : Optional based on measurements configured in "Measurements" [rad].
+  "rightAscension": Optional based on measurements configured in "cfgMeasurements" [rad].
 
-  "Declination" : Optional based on measurements configured in "Measurements" [rad].
+  "declination": Optional based on measurements configured in "cfgMeasurements" [rad].
 
-  "Position" : Optional based on measurements configured in "Measurements" [m, m, m].
+  "position": Optional based on measurements configured in "cfgMeasurements" [m, m, m].
 
-  "PositionVelocity" : Optional based on measurements configured in "Measurements" [m, m, m, m/s, m/s, m/s].
+  "positionVelocity": Optional based on measurements configured in "cfgMeasurements" [m, m, m, m/s, m/s, m/s].
 
  }
 

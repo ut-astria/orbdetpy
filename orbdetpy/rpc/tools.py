@@ -18,161 +18,155 @@ from orbdetpy import read_param
 from orbdetpy.rpc import messages_pb2
 
 _settings_fields = {
-    "rso_mass": [["SpaceObject", "Mass"], 5.0],
-    "rso_area": [["SpaceObject", "Area"], 0.01],
-    "rso_solar_array_axis": [["SpaceObject", "SolarArray", "Axis"], None],
-    "rso_solar_array_area": [["SpaceObject", "SolarArray", "Area"], None],
-    "rso_attitude_provider": [["SpaceObject", "Attitude", "Provider"], None],
-    "rso_spin_velocity": [["SpaceObject", "Attitude", "SpinVelocity"], None],
-    "rso_spin_acceleration": [["SpaceObject", "Attitude", "SpinAcceleration"], None],
-    "gravity_degree": [["Gravity", "Degree"], 20],
-    "gravity_order": [["Gravity", "Order"], 20],
-    "ocean_tides_degree": [["OceanTides", "Degree"], 20],
-    "ocean_tides_order": [["OceanTides", "Order"], 20],
-    "third_body_sun": [["ThirdBodies", "Sun"], True],
-    "third_body_moon": [["ThirdBodies", "Moon"], True],
-    "solid_tides_sun": [["SolidTides", "Sun"], True],
-    "solid_tides_moon": [["SolidTides", "Moon"], True],
-    "drag_model": [["Drag", "Model"], "MSISE"],
-    "drag_exp_rho0": [["Drag", "ExpRho0"], 0.0],
-    "drag_exp_H0": [["Drag", "ExpH0"], 0.0],
-    "drag_exp_Hscale": [["Drag", "ExpHScale"], 0.0],
-    "rp_sun": [["RadiationPressure", "Sun"], True],
-    "rp_coeff_absorption": [["RadiationPressure", "Cabsorption"], 0.0],
-    "prop_start": [["Propagation", "Start"], None],
-    "prop_end": [["Propagation", "End"], None],
-    "prop_step": [["Propagation", "Step"], 0.0],
-    "prop_initial_state": [["Propagation", "InitialState"], None],
-    "prop_initial_TLE": [["Propagation", "InitialTLE"], None],
-    "prop_inertial_frame": [["Propagation", "InertialFrame"], "EME2000"],
-    "prop_step_handler_start_time": [["Propagation", "StepHandlerStartTime"], None],
-    "prop_step_handler_end_time": [["Propagation", "StepHandlerEndTime"], None],
-    "integ_min_time_step": [["Integration", "MinTimeStep"], 1.0E-3],
-    "integ_max_time_step": [["Integration", "MaxTimeStep"], 300.0],
-    "integ_abs_tolerance": [["Integration", "AbsTolerance"], 1.0E-14],
-    "integ_rel_tolerance": [["Integration", "RelTolerance"], 1.0E-12],
-    "sim_measurements": [["Simulation", "SimulateMeasurements"], True],
-    "sim_skip_unobservable": [["Simulation", "SkipUnobservable"], True],
-    "sim_include_extras": [["Simulation", "IncludeExtras"], False],
-    "sim_include_station_state": [["Simulation", "IncludeStationState"], False],
-    "sim_include_angle_rates": [["Simulation", "IncludeAngleRates"], False],
-    "estm_filter": [["Estimation", "Filter"], None],
-    "estm_covariance": [["Estimation", "Covariance"], None],
-    "estm_process_noise": [["Estimation", "ProcessNoise"], None],
-    "estm_DMC_corr_time": [["Estimation", "DMCCorrTime"], 0.0],
-    "estm_DMC_sigma_pert": [["Estimation", "DMCSigmaPert"], 0.0],
-    "estm_outlier_sigma": [["Estimation", "OutlierSigma"], 0.0],
-    "estm_outlier_warmup": [["Estimation", "OutlierWarmup"], 0],
-    "estm_smoother_iterations": [["Estimation", "SmootherIterations"], 10],
-    "estm_enable_PDAF": [["Estimation", "EnablePDAF"], False],
-    "estm_enable_CAR_MHF": [["Estimation", "EnableCARMHF"], False],
-    "estm_detection_probability": [["Estimation", "DetectionProbability"], 0.99],
-    "estm_gating_probability": [["Estimation", "GatingProbability"], 0.99],
-    "estm_gating_threshold": [["Estimation", "GatingThreshold"], 5.0]
+    "rso_mass": ["rsoMass", 5.0],
+    "rso_area": ["rsoArea", 0.01],
+    "rso_solar_array_axis": ["rsoSolarArrayAxis", None],
+    "rso_solar_array_area": ["rsoSolarArrayArea", None],
+    "rso_attitude_provider": ["rsoAttitudeProvider", None],
+    "rso_spin_velocity": ["rsoSpinVelocity", None],
+    "rso_spin_acceleration": ["rsoSpinAcceleration", None],
+    "gravity_degree": ["gravityDegree", 20],
+    "gravity_order": ["gravityOrder", 20],
+    "ocean_tides_degree": ["oceanTidesDegree", 20],
+    "ocean_tides_order": ["oceanTidesOrder", 20],
+    "third_body_sun": ["thirdBodySun", True],
+    "third_body_moon": ["thirdBodyMoon", True],
+    "solid_tides_sun": ["solidTidesSun", True],
+    "solid_tides_moon": ["solidTidesMoon", True],
+    "drag_model": ["dragModel", "MSISE"],
+    "drag_exp_rho0": ["dragExpRho0", 0.0],
+    "drag_exp_H0": ["dragExpH0", 0.0],
+    "drag_exp_Hscale": ["dragExpHscale", 0.0],
+    "rp_sun": ["rpSun", True],
+    "rp_coeff_absorption": ["rpCoeffAbsorption", 0.0],
+    "prop_start": ["propStart", None],
+    "prop_end": ["propEnd", None],
+    "prop_step": ["propStep", 0.0],
+    "prop_initial_state": ["propInitialState", None],
+    "prop_initial_TLE": ["propInitialTLE", None],
+    "prop_inertial_frame": ["propInertialFrame", "EME2000"],
+    "prop_step_handler_start_time": ["propStepHandlerStartTime", None],
+    "prop_step_handler_end_time": ["propStepHandlerEndTime", None],
+    "integ_min_time_step": ["integMinTimeStep", 1.0E-3],
+    "integ_max_time_step": ["integMaxTimeStep", 300.0],
+    "integ_abs_tolerance": ["integAbsTolerance", 1.0E-14],
+    "integ_rel_tolerance": ["integRelTolerance", 1.0E-12],
+    "sim_measurements": ["simMeasurements", True],
+    "sim_skip_unobservable": ["simSkipUnobservable", True],
+    "sim_include_extras": ["simIncludeExtras", False],
+    "sim_include_station_state": ["simIncludeStationState", False],
+    "sim_include_angle_rates": ["simIncludeAngleRates", False],
+    "estm_filter": ["estmFilter", None],
+    "estm_covariance": ["estmCovariance", None],
+    "estm_process_noise": ["estmProcessNoise", None],
+    "estm_DMC_corr_time": ["estmDMCCorrTime", 0.0],
+    "estm_DMC_sigma_pert": ["estmDMCSigmaPert", 0.0],
+    "estm_outlier_sigma": ["estmOutlierSigma", 0.0],
+    "estm_outlier_warmup": ["estmOutlierWarmup", 0],
+    "estm_smoother_iterations": ["estmSmootherIterations", 10],
+    "estm_enable_PDAF": ["estmEnablePDAF", False],
+    "estm_enable_CAR_MHF": ["estmEnableCARMHF", False],
+    "estm_detection_probability": ["estmDetectionProbability", 0.99],
+    "estm_gating_probability": ["estmGatingProbability", 0.99],
+    "estm_gating_threshold": ["estmGatingThreshold", 5.0]
 }
 
 _measurement_fields = {
-    "time": "Time",
-    "station": "Station",
-    "azimuth": "Azimuth",
-    "elevation": "Elevation",
-    "range": "Range",
-    "range_rate": "RangeRate",
-    "right_ascension": "RightAscension",
-    "declination": "Declination",
-    "position": "Position",
-    "position_velocity": "PositionVelocity",
-    "angle_rates": "AngleRates",
-    "atmospheric_density": "AtmDensity",
-    "acceleration_gravity": "AccGravity",
-    "acceleration_drag": "AccDrag",
-    "acceleration_ocean_tides": "AccOceanTides",
-    "acceleration_solid_tides": "AccSolidTides",
-    "acceleration_third_bodies": "AccThirdBodies",
-    "acceleration_radiation_pressure": "AccRadiationPressure",
-    "acceleration_thrust": "AccThrust",
-    "station_state": "StationState",
-    "true_state_cartesian": "TrueStateCartesian",
-    "true_state_sma": "TrueStateSMA",
-    "true_state_ecc": "TrueStateEcc",
-    "true_state_inc": "TrueStateInc",
-    "true_state_raan": "TrueStateRAAN",
-    "true_state_argp": "TrueStateArgp",
-    "true_state_mean_anom": "TrueStateMeanAnom",
-    "true_state_ex": "TrueStateEx",
-    "true_state_ey": "TrueStateEy",
-    "true_state_hx": "TrueStateHx",
-    "true_state_hy": "TrueStateHy",
-    "true_state_lm": "TrueStateLm"
+    "time": "time",
+    "station": "station",
+    "azimuth": "azimuth",
+    "elevation": "elevation",
+    "range": "range",
+    "range_rate": "rangeRate",
+    "right_ascension": "rightAscension",
+    "declination": "declination",
+    "position": "position",
+    "position_velocity": "positionVelocity",
+    "angle_rates": "angleRates",
+    "atmospheric_density": "atmDensity",
+    "acceleration_gravity": "accGravity",
+    "acceleration_drag": "accDrag",
+    "acceleration_ocean_tides": "accOceanTides",
+    "acceleration_solid_tides": "accSolidTides",
+    "acceleration_third_bodies": "accThirdBodies",
+    "acceleration_radiation_pressure": "accRadiationPressure",
+    "acceleration_thrust": "accThrust",
+    "station_state": "stationState",
+    "true_state_cartesian": "trueStateCartesian",
+    "true_state_sma": "trueStateSma",
+    "true_state_ecc": "trueStateEcc",
+    "true_state_inc": "trueStateInc",
+    "true_state_raan": "trueStateRaan",
+    "true_state_argp": "trueStateArgp",
+    "true_state_mean_anom": "trueStateMeanAnom",
+    "true_state_ex": "trueStateEx",
+    "true_state_ey": "trueStateEy",
+    "true_state_hx": "trueStateHx",
+    "true_state_hy": "trueStateHy",
+    "true_state_lm": "trueStateLm"
 }
 
 def build_settings(param):
     inp = read_param(param)
     cfg = messages_pb2.Settings()
     for dest, src in _settings_fields.items():
-        fld = inp
-        for s in src[0]:
-            fld = fld.get(s, src[1]) if s == src[0][-1] else fld.get(s)
-            if (fld is None):
-                fld = src[1]
-                break
-        if (fld is None):
-            continue
-        if (isinstance(fld, list)):
-            getattr(cfg, dest).extend(fld)
-        else:
-            setattr(cfg, dest, fld)
+        fld = inp.get(src[0], src[1])
+        if (fld is not None):
+            if (isinstance(fld, list)):
+                getattr(cfg, dest).extend(fld)
+            else:
+                setattr(cfg, dest, fld)
 
-    for f in inp.get("SpaceObject", {}).get("Facets", []):
-        fac = messages_pb2.Facet(area = f["Area"])
-        fac.normal.extend(f["Normal"])
+    for f in inp.get("rsoFacets", []):
+        fac = messages_pb2.Facet(area = f["area"])
+        fac.normal.extend(f["normal"])
         cfg.rso_facets.append(fac)
 
-    coef = inp.get("Drag", {}).get("Coefficient", {})
-    cfg.drag_coefficient.CopyFrom(messages_pb2.Parameter(name="Cd", value=coef.get("Value", 2.0),
-                                                         min=coef.get("Min", 1.0), max=coef.get("Max", 3.0),
-                                                         estimation=coef.get("Estimation", "Estimate")))
-    for f in inp.get("Drag", {}).get("MSISEFlags", []):
+    coef = inp.get("dragCoefficient", {})
+    cfg.drag_coefficient.CopyFrom(messages_pb2.Parameter(name="Cd", value=coef.get("value", 2.0),
+                                                         min=coef.get("min", 1.0), max=coef.get("max", 3.0),
+                                                         estimation=coef.get("estimation", "Estimate")))
+    for f in inp.get("dragMSISEFlags", []):
         obj = messages_pb2.IntegerArray()
         obj.array.extend(f)
         cfg.drag_MSISE_flags.append(obj)
 
-    coef = inp.get("RadiationPressure", {}).get("Creflection", {})
-    cfg.rp_coeff_reflection.CopyFrom(messages_pb2.Parameter(name="Cr", value=coef.get("Value", 1.5),
-                                                            min=coef.get("Min", 1.0), max=coef.get("Max", 2.0),
-                                                            estimation=coef.get("Estimation", "Estimate")))
+    coef = inp.get("rpCoeffReflection", {})
+    cfg.rp_coeff_reflection.CopyFrom(messages_pb2.Parameter(name="Cr", value=coef.get("value", 1.5),
+                                                            min=coef.get("min", 1.0), max=coef.get("max", 2.0),
+                                                            estimation=coef.get("estimation", "Estimate")))
 
-    for m in inp.get("Maneuvers", []):
-        man = messages_pb2.Maneuver(time = m["Time"], trigger_event = m["TriggerEvent"],
-                                    maneuver_type = m["ManeuverType"])
-        if ("TriggerParams" in m):
-            man.trigger_params.extend(m["TriggerParams"])
-        if ("ManeuverParams" in m):
-            man.maneuver_params.extend(m["ManeuverParams"])
+    for m in inp.get("cfgManeuvers", []):
+        man = messages_pb2.Maneuver(time = m["time"], trigger_event = m["triggerEvent"],
+                                    maneuver_type = m["maneuverType"])
+        if ("triggerParams" in m):
+            man.trigger_params.extend(m["triggerParams"])
+        if ("maneuverParams" in m):
+            man.maneuver_params.extend(m["maneuverParams"])
         cfg.maneuvers.append(man)
 
-    for k, v in inp.get("Stations", {}).items():
-        sta =  messages_pb2.Station(latitude=v["Latitude"], longitude=v["Longitude"],
-                                    altitude=v["Altitude"], azimuth_bias=v.get("AzimuthBias", 0.0),
-                                    elevation_bias=v.get("ElevationBias", 0.0),
-                                    range_bias=v.get("RangeBias", 0.0),
-                                    range_rate_bias=v.get("RangeRateBias", 0.0),
-                                    right_ascension_bias=v.get("RightAscensionBias", 0.0),
-                                    declination_bias=v.get("DeclinationBias", 0.0),
-                                    bias_estimation=v.get("BiasEstimation", ""))
-        sta.position_bias.extend(v.get("PositionBias", [0.0]*3))
-        sta.position_velocity_bias.extend(v.get("PositionVelocityBias", [0.0]*6))
+    for k, v in inp.get("cfgStations", {}).items():
+        sta =  messages_pb2.Station(latitude=v["latitude"], longitude=v["longitude"],
+                                    altitude=v["altitude"], azimuth_bias=v.get("azimuthBias", 0.0),
+                                    elevation_bias=v.get("elevationBias", 0.0),
+                                    range_bias=v.get("rangeBias", 0.0),
+                                    range_rate_bias=v.get("rangeRateBias", 0.0),
+                                    right_ascension_bias=v.get("rightAscensionBias", 0.0),
+                                    declination_bias=v.get("declinationBias", 0.0),
+                                    bias_estimation=v.get("biasEstimation", ""))
+        sta.position_bias.extend(v.get("positionBias", [0.0]*3))
+        sta.position_velocity_bias.extend(v.get("positionVelocityBias", [0.0]*6))
         cfg.stations[k].CopyFrom(sta)
 
-    for k, v in inp.get("Measurements", {}).items():
-        mea = messages_pb2.MeasurementSetting(two_way = v.get("TwoWay", True))
-        mea.error.extend(v["Error"])
+    for k, v in inp.get("cfgMeasurements", {}).items():
+        mea = messages_pb2.MeasurementSetting(two_way = v.get("twoWay", True))
+        mea.error.extend(v["error"])
         cfg.measurements[k].CopyFrom(mea)
 
-    coef = inp.get("Estimation", {}).get("DMCAcceleration", {})
-    cfg.estm_DMC_acceleration.CopyFrom(messages_pb2.Parameter(name="", value=coef.get("Value", 0.0),
-                                                              min=coef.get("Min", -1.0E-3), max=coef.get("Max", 1.0E-3),
-                                                              estimation=coef.get("Estimation", "Estimate")))
+    coef = inp.get("estmDMCAcceleration", {})
+    cfg.estm_DMC_acceleration.CopyFrom(messages_pb2.Parameter(name="", value=coef.get("value", 0.0),
+                                                              min=coef.get("min", -1.0E-3), max=coef.get("max", 1.0E-3),
+                                                              estimation=coef.get("estimation", "Estimate")))
     return(cfg)
 
 def build_measurements(param):
@@ -192,8 +186,7 @@ def build_measurements(param):
     return(output)
 
 def convert_propagation(inputs):
-    output = [[inp.time, [list(i.array) for i in inp.states]]
-              for inp in inputs]
+    output = [[inp.time, [list(i.array) for i in inp.states]] for inp in inputs]
     return(output)
 
 def convert_measurements(inputs):
@@ -204,7 +197,7 @@ def convert_measurements(inputs):
         for src, dest in _measurement_fields.items():
             fld = getattr(inp, src)
             if (fld):
-                out[dest] = list(fld) if (dest in ["StationState", "TrueStateCartesian"]) else fld
+                out[dest] = list(fld) if (dest in ["stationState", "trueStateCartesian"]) else fld
 
     return(output)
 
@@ -213,25 +206,25 @@ def convert_estimation(inputs):
     for inp in inputs:
         out = {}
         output.append(out)
-        out["Time"] = inp.time
+        out["time"] = inp.time
         if (inp.station):
-            out["Station"] = inp.station
-        out["EstimatedState"] = list(inp.estimated_state)
+            out["station"] = inp.station
+        out["estimatedState"] = list(inp.estimated_state)
         if (inp.propagated_covariance):
-            out["PropagatedCovariance"] = [list(i.array) for i in inp.propagated_covariance]
+            out["propagatedCovariance"] = [list(i.array) for i in inp.propagated_covariance]
         if (inp.innovation_covariance):
-            out["InnovationCovariance"] = [list(i.array) for i in inp.innovation_covariance]
+            out["innovationCovariance"] = [list(i.array) for i in inp.innovation_covariance]
         if (inp.estimated_covariance):
-            out["EstimatedCovariance"] = [list(i.array) for i in inp.estimated_covariance]
+            out["estimatedCovariance"] = [list(i.array) for i in inp.estimated_covariance]
         if (inp.pre_fit):
-            out["PreFit"] = {}
+            out["preFit"] = {}
             for key, val in inp.pre_fit.items():
-                out["PreFit"][key] = list(val.array)
+                out["preFit"][key] = list(val.array)
         if (inp.post_fit):
-            out["PostFit"] = {}
+            out["postFit"] = {}
             for key, val in inp.post_fit.items():
-                out["PostFit"][key] = list(val.array)
+                out["postFit"][key] = list(val.array)
         if (inp.clutter_probability):
-            out["ClutterProbability"] = inp.clutter_probability
+            out["clutterProbability"] = inp.clutter_probability
 
     return(output)

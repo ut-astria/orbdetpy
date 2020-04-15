@@ -86,8 +86,8 @@ public final class Simulation
 	final double[] twoPosInf = new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
 	final String[] biasAzEl = new String[] {"Az", "El"};
 	final String[] biasRaDec = new String[] {"RA", "Dec"};
-	final String[] biasRange = new String[] {"Range"};
-	final String[] biasRangeRate = new String[] {"RangeRate"};
+	final String[] biasRange = new String[] {"range"};
+	final String[] biasRangeRate = new String[] {"rangeRate"};
 	final ObservableSatellite obsSat = new ObservableSatellite(0);
 	final ArrayList<Measurements.SimulatedMeasurement> mall = new ArrayList<Measurements.SimulatedMeasurement>(
 	    (int) FastMath.abs(prend.durationFrom(tm)/simCfg.propStep) + 2);
@@ -108,17 +108,19 @@ public final class Simulation
 	    json.trueState = new Measurements.State();
 	    json.trueState.cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
 						    acc.getX(), acc.getY(), acc.getZ()};
-	    json.trueState.keplerian = new Measurements.KeplerianElements(keporb.getA(), keporb.getE(), keporb.getI(),
-									  keporb.getRightAscensionOfAscendingNode(),
-									  keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
-	    json.trueState.equinoctial = new Measurements.EquinoctialElements(orb.getA(), orb.getEquinoctialEx(),
-									      orb.getEquinoctialEy(), orb.getHx(),
-									      orb.getHy(), orb.getLM());
 
 	    if (simCfg.simIncludeExtras)
 	    {
+		json.trueState.keplerian = new Measurements.KeplerianElements(keporb.getA(), keporb.getE(), keporb.getI(),
+									      keporb.getRightAscensionOfAscendingNode(),
+									      keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
+		json.trueState.equinoctial = new Measurements.EquinoctialElements(orb.getA(), orb.getEquinoctialEx(),
+										  orb.getEquinoctialEy(), orb.getHx(),
+										  orb.getHy(), orb.getLM());
+
 		if (simCfg.atmModel != null)
 		    json.atmDensity = simCfg.atmModel.getDensity(proptm, pos, simCfg.propFrame);
+
 		for (ForceModel fmod : simCfg.forces)
 		{
 		    double[] facc = fmod.acceleration(sta[0], fmod.getParameters()).toArray();
@@ -175,21 +177,21 @@ public final class Simulation
 		    {
 			String name = nvp.getKey();
 			Settings.Measurement val = nvp.getValue();
-			if (name.equalsIgnoreCase("Range"))
+			if (name.equalsIgnoreCase("range"))
 			{
 			    Range obs = new Range(gst, val.twoWay, proptm, 0.0, 0.0, 1.0, obsSat);
 			    obs.addModifier(new Bias<Range>(biasRange, new double[] {rand.nextGaussian()*val.error[0] + jsn.rangeBias},
 							    oneOnes, oneNegInf, onePosInf));
 			    clone.range = obs.estimate(0, 0, sta).getEstimatedValue()[0];
 			}
-			else if (name.equalsIgnoreCase("RangeRate"))
+			else if (name.equalsIgnoreCase("rangeRate"))
 			{
 			    RangeRate obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.twoWay, obsSat);
 			    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[] {rand.nextGaussian()*val.error[0] + jsn.rangeRateBias},
 								oneOnes, oneNegInf, onePosInf));
 			    clone.rangeRate = obs.estimate(0, 0, sta).getEstimatedValue()[0];
 			}
-			else if (name.equalsIgnoreCase("RightAscension") || name.equalsIgnoreCase("Declination") && clone.rightAscension == 0.0)
+			else if (name.equalsIgnoreCase("rightAscension") || name.equalsIgnoreCase("declination") && clone.rightAscension == 0.0)
 			{
 			    AngularRaDec obs = new AngularRaDec(gst, simCfg.propFrame, proptm, twoZeros, twoZeros, twoOnes,
 								obsSat);
@@ -200,7 +202,7 @@ public final class Simulation
 			    clone.rightAscension = obsVal[0];
 			    clone.declination = obsVal[1];
 			}
-			else if (name.equalsIgnoreCase("Azimuth") || name.equalsIgnoreCase("Elevation") && clone.azimuth == 0.0)
+			else if (name.equalsIgnoreCase("azimuth") || name.equalsIgnoreCase("elevation") && clone.azimuth == 0.0)
 			{
 			    azel.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[] {rand.nextGaussian()*val.error[0] + jsn.azimuthBias,
 											   rand.nextGaussian()*val.error[0] + jsn.elevationBias},
@@ -209,13 +211,13 @@ public final class Simulation
 			    clone.azimuth = obsVal[0];
 			    clone.elevation = obsVal[1];
 			}
-			else if (name.equalsIgnoreCase("Position"))
+			else if (name.equalsIgnoreCase("position"))
 			{
 			    clone.position = new double[3];
 			    for (int i = 0; i < 3; i++)
 				clone.position[i] = clone.trueState.cartesian[i] + rand.nextGaussian()*val.error[i] + jsn.positionBias[i];
 			}
-			else if (name.equalsIgnoreCase("PositionVelocity"))
+			else if (name.equalsIgnoreCase("positionVelocity"))
 			{
 			    clone.positionVelocity = new double[6];
 			    for (int i = 0; i < 6; i++)

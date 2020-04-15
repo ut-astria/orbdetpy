@@ -29,10 +29,10 @@ def plot(config, sim_data, interactive = False, output_file_path = None):
     out = read_param(sim_data)
     tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
     for o in out:
-        if ("TrueStateCartesian" in o):
-            rv = [x/1000.0 for x in o["TrueStateCartesian"][:6]]
+        if ("trueStateCartesian" in o):
+            rv = [x/1000.0 for x in o["trueStateCartesian"][:6]]
         else:
-            rv = [x/1000.0 for x in o["EstimatedState"][:6]]
+            rv = [x/1000.0 for x in o["estimatedState"][:6]]
         rn = norm(rv[:3])
         vn = norm(rv[3:])
         h = cross(rv[:3], rv[3:])
@@ -53,7 +53,7 @@ def plot(config, sim_data, interactive = False, output_file_path = None):
         if (dot(rv[:3], rv[3:]) < 0):
             theta = 360.0 - theta
 
-        tstamp.append(dateutil.parser.isoparse(o["Time"]))
+        tstamp.append(dateutil.parser.isoparse(o["time"]))
         hvec.append(h)
         hmag.append(hn)
         ener.append(0.5*vn**2 - mu/rn)

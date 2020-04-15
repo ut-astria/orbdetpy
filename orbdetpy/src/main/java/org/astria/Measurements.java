@@ -187,14 +187,14 @@ public final class Measurements
 	rawMeas = tempraw.toArray(new Measurement[0]);
 
 	measObjs = new ArrayList<ObservedMeasurement<?>>(rawMeas.length);
-	final Settings.Measurement cazim = odCfg.cfgMeasurements.get("Azimuth");
-	final Settings.Measurement celev = odCfg.cfgMeasurements.get("Elevation");
-	final Settings.Measurement crigh = odCfg.cfgMeasurements.get("RightAscension");
-	final Settings.Measurement cdecl = odCfg.cfgMeasurements.get("Declination");
-	final Settings.Measurement crang = odCfg.cfgMeasurements.get("Range");
-	final Settings.Measurement crrat = odCfg.cfgMeasurements.get("RangeRate");
-	final Settings.Measurement cpos = odCfg.cfgMeasurements.get("Position");
-	final Settings.Measurement cposvel = odCfg.cfgMeasurements.get("PositionVelocity");
+	final Settings.Measurement cazim = odCfg.cfgMeasurements.get("azimuth");
+	final Settings.Measurement celev = odCfg.cfgMeasurements.get("elevation");
+	final Settings.Measurement crigh = odCfg.cfgMeasurements.get("rightAscension");
+	final Settings.Measurement cdecl = odCfg.cfgMeasurements.get("declination");
+	final Settings.Measurement crang = odCfg.cfgMeasurements.get("range");
+	final Settings.Measurement crrat = odCfg.cfgMeasurements.get("rangeRate");
+	final Settings.Measurement cpos = odCfg.cfgMeasurements.get("position");
+	final Settings.Measurement cposvel = odCfg.cfgMeasurements.get("positionVelocity");
 	final OutlierFilter outlier = new OutlierFilter(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma);
 	final boolean addBias = odCfg.estmFilter.equalsIgnoreCase("EKF");
 	final boolean addOutlier = addBias && odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0;
@@ -207,8 +207,8 @@ public final class Measurements
 	final double[] twoPosInf = new double[] {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
 	final String[] biasAzEl = new String[] {"Az", "El"};
 	final String[] biasRaDec = new String[] {"RA", "Dec"};
-	final String[] biasRange = new String[] {"Range"};
-	final String[] biasRangeRate = new String[] {"RangeRate"};
+	final String[] biasRange = new String[] {"range"};
+	final String[] biasRangeRate = new String[] {"rangeRate"};
 
 	for (Measurement m: rawMeas)
 	{

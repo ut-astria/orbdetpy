@@ -1,126 +1,100 @@
 {
-    "Gravity" :
-    {
-	"Degree" : 12,
-	"Order" : 12
+    "rsoMass": 2000.0,
+    "rsoArea": 80.0,
+    "gravityDegree": 12,
+    "gravityOrder": 12,
+    "oceanTidesDegree": -1,
+    "oceanTidesOrder": -1,
+    "thirdBodySun": true,
+    "thirdBodyMoon": true,
+    "solidTidesSun": false,
+    "solidTidesMoon": false,
+    "dragModel": "MSISE",
+    "dragCoefficient": {
+        "value": 2.2,
+        "min": 0.01,
+        "max": 3.0,
+        "estimation": "Estimate"
     },
-
-    "OceanTides" :
-    {
-	"Degree" : -1,
-	"Order" : -1
+    "rpSun": true,
+    "rpCoeffReflection": {
+        "value": 1.2,
+        "min": 1.0,
+        "max": 2.0,
+        "estimation": "Estimate"
     },
-
-    "Drag" :
-    {
-	"Model" : "MSISE",
-	"Coefficient" :
-	{
-	    "Value" : 2.2,
-	    "Min" : 0.01,
-	    "Max" : 3.00,
-	    "Estimation" : "Estimate"
-	}
+    "propStart": "2019-05-01T00:00:00Z",
+    "propEnd": "2019-05-01T02:00:00Z",
+    "propInitialState": [
+        -23183898.259,
+        35170229.755,
+        43425.075,
+        -2566.938,
+        -1692.19,
+        138.948
+    ],
+    "propInertialFrame": "GCRF",
+    "cfgStations": {
+        "Station1": {
+            "latitude": -0.1293571719,
+            "longitude": 1.26452595,
+            "altitude": -69.0
+        },
+        "Station2": {
+            "latitude": 0.3614245268,
+            "longitude": -2.727216583,
+            "altitude": 3059.0
+        },
+        "Station3": {
+            "latitude": 0.5902232291,
+            "longitude": -1.8616729,
+            "altitude": 1500.0
+        },
+        "Station4": {
+            "latitude": 0.7438139486,
+            "longitude": -1.26522408,
+            "altitude": 100.0
+        }
     },
-
-    "SolidTides" :
-    {
-	"Sun" : false,
-	"Moon" : false
+    "cfgMeasurements": {
+        "azimuth": {
+            "error": [
+                0.001
+            ]
+        },
+        "elevation": {
+            "error": [
+                0.001
+            ]
+        }
     },
-
-    "ThirdBodies" :
-    {
-	"Sun" : true,
-	"Moon" : true
-    },
-
-    "RadiationPressure" :
-    {
-	"Sun" : true,
-	"Creflection" :
-	{
-            "Value" : 1.2,
-            "Min" : 1.0,
-            "Max" : 2.0,
-            "Estimation" : "Estimate"
-	}
-    },
-
-    "SpaceObject" :
-    {
-	"Mass" : 2000.0,
-	"Area" : 80.0
-    },
-
-    "Propagation" :
-    {
-	"Start" : "2019-05-01T00:00:00Z",
-	"End" : "2019-05-01T02:00:00Z",
-	"InertialFrame" : "GCRF",
-	"InitialState" :
-	[
-	    -23183898.259,
-	    35170229.755,
-	    43425.075,
-	    -2566.938,
-	    -1692.190,
-	    138.948
-	]
-    },
-
-    "Stations" :
-    {
-	"Station1" :
-	{
-            "Latitude" : -0.1293571719,
-            "Longitude" : 1.26452595,
-            "Altitude" : -69.0
-	},
-	"Station2" :
-	{
-            "Latitude" : 0.3614245268,
-            "Longitude" : -2.727216583,
-            "Altitude" : 3059.0
-	},
-	"Station3" :
-	{
-            "Latitude" : 0.5902232291,
-            "Longitude" : -1.8616729,
-            "Altitude" : 1500.0
-	},
-	"Station4" :
-	{
-            "Latitude" : 0.7438139486,
-            "Longitude" : -1.26522408,
-            "Altitude" : 100.0
-	}
-    },
-
-    "Measurements" :
-    {
-	"Azimuth" :
-	{
-	    "Error" : [1E-3]
-	},
-	"Elevation" :
-	{
-	    "Error" : [1E-3]
-	}
-    },
-
-    "Estimation" :
-    {
-	"Filter" : "UKF",
-	"Covariance" : [25, 25, 25, 1E-6, 1E-6, 1E-6, 1.00, 0.25, 1E-6, 1E-6, 1E-6],
-	"ProcessNoise" : [1E-10, 1E-10, 1E-10, 1E-10, 1E-10, 1E-10],
-	"DMCCorrTime" : 50.0,
-	"DMCSigmaPert" : 5E-9,
-	"DMCAcceleration" :
-	{
-	    "Value" : 0.0,
-	    "Min" : -1E-3,
-	    "Max" : 1E-3
-	}
+    "estmFilter": "UKF",
+    "estmCovariance": [
+        25,
+        25,
+        25,
+        1e-06,
+        1e-06,
+        1e-06,
+        1.0,
+        0.25,
+        1e-06,
+        1e-06,
+        1e-06
+    ],
+    "estmProcessNoise": [
+        1e-10,
+        1e-10,
+        1e-10,
+        1e-10,
+        1e-10,
+        1e-10
+    ],
+    "estmDMCCorrTime": 50.0,
+    "estmDMCSigmaPert": 5e-09,
+    "estmDMCAcceleration": {
+        "value": 0.0,
+        "min": -0.001,
+        "max": 0.001
     }
 }
