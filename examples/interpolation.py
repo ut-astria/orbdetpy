@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from orbdetpy import Frame
 from orbdetpy.propagation import propagate_orbits
 from orbdetpy.utilities import interpolate_ephemeris
 
@@ -31,7 +32,7 @@ for p in propagate_orbits(configs):
     states.append(p[1][0])
 
 # Interpolate over the same period at 1 minute intervals
-interp = interpolate_ephemeris("EME2000", times, states, len(times),
-                               "EME2000", start_time, final_time, 60.0)
+interp = interpolate_ephemeris(Frame.EME2000, times, states, len(times),
+                               Frame.EME2000, start_time, final_time, 60.0)
 for i in interp:
     print(i)

@@ -1,6 +1,6 @@
 /*
  * UtilitiesService.java - Utilities service handler.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Measurements;
 import org.astria.Utilities;
+import org.orekit.frames.Predefined;
 
 public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 {
@@ -58,9 +59,9 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 	    for (int i = 0; i < req.getTimeCount(); i++)
 		ephem.add(req.getEphem(i).getArrayList().toArray(new Double[0]));
 
-	    ArrayList<Utilities.InterpolationOutput> interp = Utilities.interpolateEphemeris(req.getSourceFrame(), req.getTimeList(), ephem, req.getNumPoints(),
-											     req.getDestFrame(), req.getInterpStart(),
-											     req.getInterpEnd(), req.getStepSize());
+	    ArrayList<Utilities.InterpolationOutput> interp = Utilities.interpolateEphemeris(
+		Predefined.valueOf(req.getSourceFrame()), req.getTimeList(), ephem, req.getNumPoints(),
+		Predefined.valueOf(req.getDestFrame()), req.getInterpStart(), req.getInterpEnd(), req.getStepSize());
 
 	    Messages.InterpolationOutputArray.Builder outer = Messages.InterpolationOutputArray.newBuilder();
 	    for (Utilities.InterpolationOutput i: interp)

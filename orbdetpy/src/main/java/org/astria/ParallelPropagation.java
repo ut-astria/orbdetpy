@@ -24,6 +24,8 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.ForceModel;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -115,7 +117,7 @@ public final class ParallelPropagation
 		final Propagator prop = propagators.get(i);
 		final SpacecraftState state = DataManager.threadPool.submit(()->prop.propagate(t0, t1)).get();
 		tmStart = state.getDate();
-		pout.addState(state.getPVCoordinates(DataManager.getFrame(configObjs.get(i).propInertialFrame)));
+		pout.addState(state.getPVCoordinates(FramesFactory.getFrame(Predefined.valueOf(configObjs.get(i).propInertialFrame))));
 	    }
 
 	    double dt = prend.durationFrom(tmStart);

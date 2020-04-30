@@ -11,8 +11,8 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.surefire.version>2.22.2</maven.surefire.version>
-    <maven.clean.version>3.1.0</maven.clean.version>
     <maven.shade.version>3.2.2</maven.shade.version>
+    <maven.javadoc.version>3.2.0</maven.javadoc.version>
     <native.image.maven.plugin.version>19.2.1</native.image.maven.plugin.version>
     <orekit.version>10.1</orekit.version>
     <os.detected.classifier>linux-x86_64</os.detected.classifier>
@@ -79,19 +79,6 @@
 	</executions>
       </plugin>
       <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>${maven.clean.version}</version>
-        <executions>
-          <execution>
-            <id>auto-clean</id>
-            <phase>initialize</phase>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>${maven.shade.version}</version>
@@ -156,6 +143,13 @@
             <phase>none</phase>
           </execution>
 	</executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven.javadoc.version}</version>
+        <configuration>
+        </configuration>
       </plugin>
     </plugins>
   </build>

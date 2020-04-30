@@ -30,6 +30,8 @@ import org.orekit.files.ccsds.TDMFile;
 import org.orekit.files.ccsds.TDMParser;
 import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -55,14 +57,14 @@ public final class Utilities
 	}
     }
 
-    public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, String frame, String[] tmstr,
+    public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, Predefined frame, String[] tmstr,
 					    double[] ra, double[] dec, double rho1init, double rho3init)
     {
 	Vector3D[] los = new Vector3D[3];
 	Vector3D[] gspos = new Vector3D[3];
 	AbsoluteDate[] time = new AbsoluteDate[3];
-	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-						    Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
+	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+						    FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -72,10 +74,10 @@ public final class Utilities
 
 	    GroundStation sta = new GroundStation(
 		new TopocentricFrame(oae, new GeodeticPoint(gslat[i], gslon[i], gsalt[i]), Integer.toString(i)));
-	    gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], DataManager.getFrame(frame)).getPosition();
+	    gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], FramesFactory.getFrame(frame)).getPosition();
 	}
 
-	IodGooding good = new IodGooding(DataManager.getFrame(frame), Constants.EGM96_EARTH_MU);
+	IodGooding good = new IodGooding(FramesFactory.getFrame(frame), Constants.EGM96_EARTH_MU);
 	KeplerianOrbit orb = good.estimate(gspos[0], gspos[1], gspos[2], los[0], time[0], los[1],
 					   time[1], los[2], time[2], rho1init, rho3init);
 	return(orb);
@@ -137,10 +139,11 @@ public final class Utilities
 	return(output);
     }
 
-    public static ArrayList<InterpolationOutput> interpolateEphemeris(String sourceFrame, List<String> time, List<Double[]> ephem, int numPoints,
-								      String destFrame, String interpStart, String interpEnd, double stepSize)
+    public static ArrayList<InterpolationOutput> interpolateEphemeris(Predefined sourceFrame, List<String> time, List<Double[]> ephem,
+								      int numPoints, Predefined destFrame, String interpStart,
+								      String interpEnd, double stepSize)
     {
-	Frame fromFrame = DataManager.getFrame(sourceFrame);
+	Frame fromFrame = FramesFactory.getFrame(sourceFrame);
 	ArrayList<SpacecraftState> states = new ArrayList<SpacecraftState>(time.size());
 	for (int i = 0; i < time.size(); i++)
 	{
@@ -150,7 +153,7 @@ public final class Utilities
 								  new Vector3D(pv[3], pv[4], pv[5])), fromFrame, Constants.EGM96_EARTH_MU)));
 	}
 
-	Frame toFrame = DataManager.getFrame(destFrame);
+	Frame toFrame = FramesFactory.getFrame(destFrame);
 	ArrayList<InterpolationOutput> output = new ArrayList<InterpolationOutput>();
 	Ephemeris interpolator = new Ephemeris(states, numPoints);
 	AbsoluteDate tm = DataManager.parseDateTime(interpStart);

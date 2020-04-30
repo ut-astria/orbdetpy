@@ -19,6 +19,7 @@ import sys
 import json
 import argparse
 from datetime import datetime, timedelta
+from orbdetpy import Frame
 from orbdetpy.utilities import interpolate_ephemeris
 
 start = datetime.now()
@@ -46,7 +47,7 @@ for l in getattr(args, "ephem-file").read().splitlines()[1:]:
                           int(l[15:18])*1000) + timedelta(days = int(l[5:8])-1)).strftime(timefmt))
     states.append([float(l[t[0]:t[1]])*1000.0 for t in tokens])
 
-interp = interpolate_ephemeris("TEME", times, states, args.num_points,
-                               "EME2000", args.start_time, args.end_time, args.step_size)
+interp = interpolate_ephemeris(Frame.TEME, times, states, args.num_points,
+                               Frame.EME2000, args.start_time, args.end_time, args.step_size)
 for i in interp:
     json.dump(i, getattr(args, "output-file"), indent = 1)

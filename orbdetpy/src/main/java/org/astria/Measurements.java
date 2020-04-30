@@ -34,7 +34,8 @@ import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
-import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -235,7 +236,8 @@ public final class Measurements
 
 	    if (m.rightAscension != 0.0 && crigh != null && cdecl != null)
 	    {
-		AngularRaDec obs = new AngularRaDec(gs, DataManager.getFrame("EME2000"), time, new double[] {m.rightAscension, m.declination},
+		AngularRaDec obs = new AngularRaDec(gs, FramesFactory.getFrame(Predefined.EME2000), time,
+						    new double[] {m.rightAscension, m.declination},
 						    new double[]{crigh.error[0], cdecl.error[0]}, twoOnes, satellite);
 		if (addOutlier)
 		    obs.addModifier(outlier);

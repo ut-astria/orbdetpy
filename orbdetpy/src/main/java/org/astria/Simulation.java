@@ -74,7 +74,7 @@ public final class Simulation
 			       simCfg.propFrame, tm, Constants.EGM96_EARTH_MU), simCfg.rsoMass);
 	propagator.setInitialState(sstate0);
 	simCfg.addEventHandlers(propagator, sstate0);
-	final boolean evthandlers = propagator.getEventsDetectors().size() > 0;
+	final boolean evtHandlers = propagator.getEventsDetectors().size() > 0;
 
 	final Random rand = new Random(1);
 	final double[] oneOnes = new double[] {1.0};
@@ -95,22 +95,20 @@ public final class Simulation
 	while (true)
 	{
 	    final SpacecraftState[] sta = new SpacecraftState[]{propagator.propagate(tm)};
-	    final Orbit orb = sta[0].getOrbit();
-	    final KeplerianOrbit keporb = new KeplerianOrbit(orb);
 	    final AbsoluteDate proptm = sta[0].getDate();
 	    TimeStampedPVCoordinates pvc = sta[0].getPVCoordinates();
 	    Vector3D pos = pvc.getPosition();
 	    Vector3D vel = pvc.getVelocity();
-	    Vector3D acc = pvc.getAcceleration();
 
 	    Measurements.SimulatedMeasurement json = new Measurements.SimulatedMeasurement();
 	    json.time = DataManager.getUTCString(proptm);
 	    json.trueState = new Measurements.State();
-	    json.trueState.cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
-						    acc.getX(), acc.getY(), acc.getZ()};
+	    json.trueState.cartesian = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ()};
 
 	    if (simCfg.simIncludeExtras)
 	    {
+		final Orbit orb = sta[0].getOrbit();
+		final KeplerianOrbit keporb = new KeplerianOrbit(orb);
 		json.trueState.keplerian = new Measurements.KeplerianElements(keporb.getA(), keporb.getE(), keporb.getI(),
 									      keporb.getRightAscensionOfAscendingNode(),
 									      keporb.getPerigeeArgument(), keporb.getMeanAnomaly());
@@ -168,9 +166,7 @@ public final class Simulation
 			pvc = gst.getBaseFrame().getPVCoordinates(proptm, simCfg.propFrame);
 			pos = pvc.getPosition();
 			vel = pvc.getVelocity();
-			acc = pvc.getAcceleration();
-			clone.stationState = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(),
-							  vel.getZ(), acc.getX(), acc.getY(), acc.getZ()};
+			clone.stationState = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY()};
 		    }
 
 		    for (Map.Entry<String, Settings.Measurement> nvp : simCfg.cfgMeasurements.entrySet())
@@ -180,23 +176,22 @@ public final class Simulation
 			if (name.equalsIgnoreCase("range"))
 			{
 			    Range obs = new Range(gst, val.twoWay, proptm, 0.0, 0.0, 1.0, obsSat);
-			    obs.addModifier(new Bias<Range>(biasRange, new double[] {rand.nextGaussian()*val.error[0] + jsn.rangeBias},
+			    obs.addModifier(new Bias<Range>(biasRange, new double[]{rand.nextGaussian()*val.error[0]+jsn.rangeBias},
 							    oneOnes, oneNegInf, onePosInf));
 			    clone.range = obs.estimate(0, 0, sta).getEstimatedValue()[0];
 			}
 			else if (name.equalsIgnoreCase("rangeRate"))
 			{
 			    RangeRate obs = new RangeRate(gst, proptm, 0.0, 0.0, 1.0, val.twoWay, obsSat);
-			    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[] {rand.nextGaussian()*val.error[0] + jsn.rangeRateBias},
+			    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{rand.nextGaussian()*val.error[0]+jsn.rangeRateBias},
 								oneOnes, oneNegInf, onePosInf));
 			    clone.rangeRate = obs.estimate(0, 0, sta).getEstimatedValue()[0];
 			}
 			else if (name.equalsIgnoreCase("rightAscension") || name.equalsIgnoreCase("declination") && clone.rightAscension == 0.0)
 			{
-			    AngularRaDec obs = new AngularRaDec(gst, simCfg.propFrame, proptm, twoZeros, twoZeros, twoOnes,
-								obsSat);
-			    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[] {rand.nextGaussian()*val.error[0] + jsn.rightAscensionBias,
-											    rand.nextGaussian()*val.error[0] + jsn.declinationBias},
+			    AngularRaDec obs = new AngularRaDec(gst, simCfg.propFrame, proptm, twoZeros, twoZeros, twoOnes, obsSat);
+			    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[]{rand.nextGaussian()*val.error[0]+jsn.rightAscensionBias,
+											   rand.nextGaussian()*val.error[0]+jsn.declinationBias},
 				    twoOnes, twoNegInf, twoPosInf));
 			    double[] obsVal = obs.estimate(0, 0, sta).getEstimatedValue();
 			    clone.rightAscension = obsVal[0];
@@ -204,8 +199,8 @@ public final class Simulation
 			}
 			else if (name.equalsIgnoreCase("azimuth") || name.equalsIgnoreCase("elevation") && clone.azimuth == 0.0)
 			{
-			    azel.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[] {rand.nextGaussian()*val.error[0] + jsn.azimuthBias,
-											   rand.nextGaussian()*val.error[0] + jsn.elevationBias},
+			    azel.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{rand.nextGaussian()*val.error[0]+jsn.azimuthBias,
+											  rand.nextGaussian()*val.error[0]+jsn.elevationBias},
 				    twoOnes, twoNegInf, twoPosInf));
 			    double[] obsVal = azel.estimate(0, 0, sta).getEstimatedValue();
 			    clone.azimuth = obsVal[0];
@@ -215,13 +210,13 @@ public final class Simulation
 			{
 			    clone.position = new double[3];
 			    for (int i = 0; i < 3; i++)
-				clone.position[i] = clone.trueState.cartesian[i] + rand.nextGaussian()*val.error[i] + jsn.positionBias[i];
+				clone.position[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionBias[i];
 			}
 			else if (name.equalsIgnoreCase("positionVelocity"))
 			{
 			    clone.positionVelocity = new double[6];
 			    for (int i = 0; i < 6; i++)
-				clone.positionVelocity[i] = clone.trueState.cartesian[i] + rand.nextGaussian()*val.error[i] + jsn.positionVelocityBias[i];
+				clone.positionVelocity[i] = clone.trueState.cartesian[i]+rand.nextGaussian()*val.error[i]+jsn.positionVelocityBias[i];
 			}
 		    }
 
@@ -236,7 +231,7 @@ public final class Simulation
 		mall.add(json);
 
 	    double dt = prend.durationFrom(proptm);
-	    if (evthandlers && !proptm.equals(tm))
+	    if (evtHandlers && !proptm.equals(tm))
 		break;
 	    if (simCfg.propStep >= 0.0)
 		tm = new AbsoluteDate(tm, FastMath.min(dt, simCfg.propStep));

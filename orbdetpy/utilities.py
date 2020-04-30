@@ -23,16 +23,14 @@ def interpolate_ephemeris(source_frame, times, states, num_points,
     """ Interpolates the given state vectors.
 
     Args:
-        source_frame: Source reference frame ("EME2000", "GCRF", "ICRF",
-                      "ITRF", "MOD", "TOD", or "TEME").
-        times: Time strings of state vectors to interpolate.
-        states: State vectors to interpolate.
-        num_points: Number of states to use for interpolation.
-        dest_frame: Destination reference frame ("EME2000", "GCRF", "ICRF",
-                    "ITRF", "MOD", "TOD", or "TEME").
-        interp_start: Interpolation start time.
-        interp_end: Interpolation end time.
-        step_size: Interpolation step size [s].
+        source_frame: Source reference frame; a constant from the enum Frame
+        times: Time strings of state vectors to interpolate
+        states: State vectors to interpolate
+        num_points: Number of states to use for interpolation
+        dest_frame: Destination reference frame; a constant from the enum Frame
+        interp_start: Interpolation start time
+        interp_end: Interpolation end time
+        step_size: Interpolation step size [s]
 
     Returns:
         Interpolated time strings and state vectors.
@@ -47,8 +45,8 @@ def interpolate_ephemeris(source_frame, times, states, num_points,
     with RemoteServer.channel() as chan:
         stub = utilities_pb2_grpc.UtilitiesStub(chan)
         resp = stub.interpolateEphemeris(messages_pb2.InterpolateEphemerisInput(
-            source_frame = source_frame, time = times, ephem = state_list,
-            num_points = num_points, dest_frame = dest_frame, interp_start = interp_start,
-            interp_end = interp_end, step_size = step_size))
+            source_frame=source_frame.name, time=times, ephem=state_list,
+            num_points=num_points, dest_frame=dest_frame.name, interp_start=interp_start,
+            interp_end=interp_end, step_size=step_size))
 
     return([r.time, list(r.state)] for r in resp.array)

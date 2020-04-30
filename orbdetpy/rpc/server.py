@@ -20,7 +20,7 @@ import atexit
 import psutil
 
 class RemoteServer:
-    rpc_host = "127.0.0.1"
+    rpc_host = "localhost"
     rpc_port = 50051
     rpc_uri = "{}:{}".format(rpc_host, rpc_port)
     rpc_options = [("grpc.max_send_message_length", 2147483647),

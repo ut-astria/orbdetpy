@@ -26,17 +26,11 @@ import java.util.concurrent.ExecutorService;
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.DataProvidersManager;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UT1Scale;
-import org.orekit.utils.IERSConventions;
 
 public final class DataManager
 {
@@ -47,11 +41,8 @@ public final class DataManager
 	public HashMap<String, double[]> data;
     }
 
-    protected static ExecutorService threadPool;
     private static String dataPath;
-
-    private static HashMap<String, TimeScale> timeScales;
-    private static HashMap<String, Frame> refFrames;
+    protected static ExecutorService threadPool;
     protected static MSISEData msiseData;
 
     private DataManager()
@@ -60,25 +51,9 @@ public final class DataManager
 
     public static void initialize(String path) throws Exception
     {
-	threadPool = Executors.newFixedThreadPool(FastMath.min(Runtime.getRuntime().availableProcessors(), 1024));
-
 	DataManager.dataPath = path;
 	DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File(path)));
-
-	timeScales = new HashMap<String, TimeScale>();
-	timeScales.put("TT", TimeScalesFactory.getTT());
-	timeScales.put("UTC", TimeScalesFactory.getUTC());
-	timeScales.put("UT1", TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false));
-
-	refFrames = new HashMap<String, Frame>();
-	refFrames.put("EME2000", FramesFactory.getEME2000());
-	refFrames.put("GCRF", FramesFactory.getGCRF());
-	refFrames.put("ICRF", FramesFactory.getICRF());
-	refFrames.put("ITRF", FramesFactory.getITRF(ITRFVersion.ITRF_2014, IERSConventions.IERS_2010, false));
-	refFrames.put("MOD", FramesFactory.getMOD(IERSConventions.IERS_2010));
-	refFrames.put("TEME", FramesFactory.getTEME());
-	refFrames.put("TOD", FramesFactory.getTOD(IERSConventions.IERS_2010, false));
-
+	threadPool = Executors.newFixedThreadPool(FastMath.min(Runtime.getRuntime().availableProcessors(), 1024));
 	loadMSISEData();
     }
 
@@ -97,7 +72,7 @@ public final class DataManager
 
 	    if (msiseData.minDate == null)
 		msiseData.minDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-						     Integer.parseInt(toks[2]), getTimeScale("UTC"));
+						     Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
 
 	    double[] vals = new double[toks.length];
 	    for (int i = 0; i < toks.length; i++)
@@ -114,35 +89,25 @@ public final class DataManager
 	scan.close();
 	if (toks != null)
 	    msiseData.maxDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-						 Integer.parseInt(toks[2]), getTimeScale("UTC"));
-    }
-
-    public static TimeScale getTimeScale(String name)
-    {
-	return(timeScales.get(name));
-    }
-
-    public static Frame getFrame(String name)
-    {
-	return(refFrames.get(name));
+						 Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
     }
 
     public static String getUTCString(AbsoluteDate time)
     {
-	DateTimeComponents dtc = time.getComponents(getTimeScale("UTC"));
+	DateTimeComponents dtc = time.getComponents(TimeScalesFactory.getUTC());
 	DateComponents dc = dtc.getDate();
 	TimeComponents tc = dtc.getTime();
 
-	StringBuilder sbsec = new StringBuilder(9);
+	StringBuilder sbSec = new StringBuilder(9);
 	if (tc.getSecond() < 10.0)
-	    sbsec.append("0");
-	sbsec.append(tc.getSecond());
-	if (sbsec.length() > 9)
-	    sbsec.setLength(9);
+	    sbSec.append("0");
+	sbSec.append(tc.getSecond());
+	if (sbSec.length() > 9)
+	    sbSec.setLength(9);
 	else
 	{
-	    while (sbsec.length() < 9)
-		sbsec.append("0");
+	    while (sbSec.length() < 9)
+		sbSec.append("0");
 	}
 
 	StringBuilder sb = new StringBuilder(27).append(dc.getYear()).append("-");
@@ -157,12 +122,12 @@ public final class DataManager
 	sb.append(tc.getHour()).append(":");
 	if (tc.getMinute() < 10)
 	    sb.append("0");
-	sb.append(tc.getMinute()).append(":").append(sbsec).append("Z");
+	sb.append(tc.getMinute()).append(":").append(sbSec).append("Z");
 	return(sb.toString());
     }
 
     public static AbsoluteDate parseDateTime(String time)
     {
-	return(new AbsoluteDate(DateTimeComponents.parseDateTime(time), getTimeScale("UTC")));
+	return(new AbsoluteDate(DateTimeComponents.parseDateTime(time), TimeScalesFactory.getUTC()));
     }
 }

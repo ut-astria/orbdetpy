@@ -71,7 +71,8 @@ def iod_laplace(frame, lat, lon, alt, time, ra, dec):
     """ Estimate orbit from 3 RA/Dec angles using the Laplace method.
 
     Args:
-        frame: Measurement and estimation reference frame ("EME2000", "GCRF")
+        frame: Measurement and estimation reference frame; a constant 
+               from the enum Frame
         lat: Observer geodetic latitude
         lon: Observer geodetic longitude
         alt: Observer altitude
@@ -87,6 +88,6 @@ def iod_laplace(frame, lat, lon, alt, time, ra, dec):
         stub = estimation_pb2_grpc.EstimationStub(channel)
         resp = stub.iodLaplace(messages_pb2.AnglesInput(
             time=time, angle1=ra, angle2=dec, latitude=lat,
-            longitude=lon, altitude=alt, frame=frame))
+            longitude=lon, altitude=alt, frame=frame.name))
 
     return(list(resp.array))

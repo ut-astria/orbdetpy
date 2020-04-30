@@ -33,6 +33,8 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.iod.IodLaplace;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -74,15 +76,15 @@ public final class EstimationService extends EstimationGrpc.EstimationImplBase
 				      FastMath.sin(req.getAngle2(i)));
 	    }
 
-	    OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-							 Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
+	    OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+							 FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	    GroundStation gs = new GroundStation(new TopocentricFrame(body, new GeodeticPoint(req.getLatitude(),
 						 req.getLongitude(), req.getAltitude()), "sensor"));
 	    gs.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    gs.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    gs.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 
-	    Frame frame = DataManager.getFrame(req.getFrame());
+	    Frame frame = FramesFactory.getFrame(Predefined.valueOf(req.getFrame()));
 	    TimeStampedPVCoordinates obsPv = gs.getBaseFrame().getPVCoordinates(time[1], frame);
 	    CartesianOrbit estOrbit = new IodLaplace(Constants.EGM96_EARTH_MU).estimate(
 		frame, obsPv, time[0], los[0], time[1], los[1], time[2], los[2]);

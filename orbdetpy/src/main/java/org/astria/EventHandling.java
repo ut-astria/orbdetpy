@@ -1,6 +1,6 @@
 /*
  * EventHandling.java - Functions to handle orbit events.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -52,7 +54,7 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 
     @Override public Action eventOccurred(SpacecraftState state, T det, boolean incr)
     {
-	if (trigEvent.equalsIgnoreCase("LongitudeCrossing") && mnvrType.equalsIgnoreCase("StopPropagation"))
+	if (mnvrType != null && mnvrType.equalsIgnoreCase("StopPropagation"))
 	    return(Action.STOP);
 	return(Action.RESET_STATE);
     }
@@ -71,8 +73,8 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	if (mnvrType.equalsIgnoreCase("NorthSouthStationing") || mnvrType.equalsIgnoreCase("EastWestStationing"))
 	{
 	    PVCoordinates pvc = old.getOrbit().getPVCoordinates();
-	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-							  Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
+	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	    GeodeticPoint geo = earth.transform(pvc.getPosition(), old.getFrame(), old.getDate());
 
 	    if (mnvrType.equalsIgnoreCase("NorthSouthStationing"))
