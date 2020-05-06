@@ -24,7 +24,7 @@ import matplotlib.patches as patch
 from orbdetpy import read_param
 from orbdetpy.plotting import maximize_plot
 
-def plot(config, measurements, orbit_fit, interactive = False, output_file_path = None):
+def plot(config, measurements, orbit_fit, interactive=False, output_file_path=None, estim_param=True):
     cfg = read_param(config)
     inp = [x for x in read_param(measurements) if (
         "station" in x or "position" in x or "positionVelocity" in x)]
@@ -85,13 +85,13 @@ def plot(config, measurements, orbit_fit, interactive = False, output_file_path 
         else:
             inocov.append([0.0]*len(prefit[0]))
 
-        if (len(o["estimatedState"]) > 6):
+        if (estim_param and len(o["estimatedState"]) > 6):
             if (dmcrun):
                 params.append(o["estimatedState"][6:dmcidx] + o["estimatedState"][dmcidx+3:])
             else:
                 params.append(o["estimatedState"][6:])
 
-        if (dmcrun):
+        if (estim_param and dmcrun):
             r = numpy.array(o["estimatedState"][:3])
             r /= norm(r)
             v = numpy.array(o["estimatedState"][3:6])
@@ -104,8 +104,9 @@ def plot(config, measurements, orbit_fit, interactive = False, output_file_path 
     pre = numpy.array(prefit)
     pos = numpy.array(posfit)
     cov = numpy.array(inocov)
-    par = numpy.array(params)
-    estmacc = numpy.array(estmacc)
+    if (estim_param):
+        par = numpy.array(params)
+        estmacc = numpy.array(estmacc)
 
     if (len(tstamp) > 0):
         start = tstamp[0] if (tstamp[0] < tstamp[-1]) else tstamp[-1]
@@ -131,7 +132,8 @@ def plot(config, measurements, orbit_fit, interactive = False, output_file_path 
         ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$"]
         order = [1, 2, 3]
     elif ("positionVelocity" in key):
-        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$", r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$"]
+        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$",
+                 r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$"]
         order = [1, 3, 5, 2, 4, 6]
     else:
         ylabs = key
@@ -179,37 +181,39 @@ def plot(config, measurements, orbit_fit, interactive = False, output_file_path 
         outfiles.append(output_file_path + "_postfit.png")
         plt.savefig(outfiles[-1], format = "png")
 
-    for i in range(par.shape[-1]):
-        if (i == 0):
-            plt.figure(2)
-            maximize_plot()
-            plt.suptitle("Estimated parameters")
-        plt.subplot(par.shape[1], 1, i + 1)
-        plt.scatter(tim, par[:,i], marker = "o", s = 7)
-        plt.xlabel("Time [hr]")
-        plt.ylabel(parnames[i])
-
-    plt.tight_layout(rect = [0, 0.03, 1, 0.95])
-    if (output_file_path):
-        outfiles.append(output_file_path + "_estpar.png")
-        plt.savefig(outfiles[-1], format = "png")
-
-    if (dmcrun):
-        lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]", r"Cross track [$\frac{m}{s^2}$]"]
-        plt.figure(3)
-        maximize_plot()
-        plt.suptitle("DMC estimated accelerations")
-        for i in range(3):
-            plt.subplot(3, 1, i+1)
-            if (len(estmacc) > 0):
-                plt.plot(tim, estmacc[:,i])
+    if (estim_param):
+        for i in range(par.shape[-1]):
+            if (i == 0):
+                plt.figure(2)
+                maximize_plot()
+                plt.suptitle("Estimated parameters")
+            plt.subplot(par.shape[1], 1, i + 1)
+            plt.scatter(tim, par[:,i], marker = "o", s = 7)
             plt.xlabel("Time [hr]")
-            plt.ylabel(lab[i])
+            plt.ylabel(parnames[i])
 
         plt.tight_layout(rect = [0, 0.03, 1, 0.95])
         if (output_file_path):
-            outfiles.append(output_file_path + "_estacc.png")
+            outfiles.append(output_file_path + "_estpar.png")
             plt.savefig(outfiles[-1], format = "png")
+
+        if (dmcrun):
+            lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]",
+                   r"Cross track [$\frac{m}{s^2}$]"]
+            plt.figure(3)
+            maximize_plot()
+            plt.suptitle("DMC estimated accelerations")
+            for i in range(3):
+                plt.subplot(3, 1, i+1)
+                if (len(estmacc) > 0):
+                    plt.plot(tim, estmacc[:,i])
+                plt.xlabel("Time [hr]")
+                plt.ylabel(lab[i])
+
+            plt.tight_layout(rect = [0, 0.03, 1, 0.95])
+            if (output_file_path):
+                outfiles.append(output_file_path + "_estacc.png")
+                plt.savefig(outfiles[-1], format = "png")
 
     if (interactive):
         plt.show()
