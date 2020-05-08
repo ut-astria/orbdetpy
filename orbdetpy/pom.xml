@@ -7,13 +7,12 @@
 
   <properties>
     <application.main.class>org.astria.rpc.RPCServer</application.main.class>
-    <grpc.version>1.27.1</grpc.version>
+    <grpc.version>1.29.0</grpc.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.surefire.version>2.22.2</maven.surefire.version>
-    <maven.shade.version>3.2.2</maven.shade.version>
+    <maven.shade.version>3.2.3</maven.shade.version>
     <maven.javadoc.version>3.2.0</maven.javadoc.version>
-    <native.image.maven.plugin.version>19.2.1</native.image.maven.plugin.version>
     <orekit.version>10.1</orekit.version>
     <os.detected.classifier>linux-x86_64</os.detected.classifier>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -121,28 +120,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-	<groupId>com.oracle.substratevm</groupId>
-	<artifactId>native-image-maven-plugin</artifactId>
-	<version>19.2.1</version>
-	<configuration>
-	  <imageName>${project.artifactId}-${project.version}</imageName>
-	  <buildArgs>
-	    --no-fallback
-	    --allow-incomplete-classpath
-	    -H:ConfigurationFileDirectories=${project.basedir}/graal
-	    --initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger 
-	  </buildArgs>
-	</configuration>
-	<executions>
-          <execution>
-            <goals>
-              <goal>native-image</goal>
-            </goals>
-            <phase>none</phase>
-          </execution>
-	</executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
