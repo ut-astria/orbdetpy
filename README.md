@@ -87,7 +87,7 @@ file `docs/file_formats.md` documents the structure of the JSON files.
 
    `from orbdetpy.plotting.simulation import plot as sim_plot`
 
-   `sim_plot("radar_sim_cfg.json", "sim_data.json", interactive = True)`
+   `sim_plot("sim_data.json", interactive = True)`
 
    This will plot the simulated data generated in (2).
 

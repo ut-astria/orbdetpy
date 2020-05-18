@@ -23,9 +23,8 @@ from numpy.linalg import norm
 from orbdetpy import read_param
 from orbdetpy.plotting import maximize_plot
 
-def plot(config, sim_data, interactive = False, output_file_path = None):
+def plot(sim_data, interactive = False, output_file_path = None):
     mu = 398600.4418
-    cfg = read_param(config)
     out = read_param(sim_data)
     tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
     for o in out:
