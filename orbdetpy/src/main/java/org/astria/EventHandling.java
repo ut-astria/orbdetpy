@@ -39,17 +39,13 @@ import org.orekit.utils.PVCoordinates;
 
 public final class EventHandling<T extends EventDetector> implements EventHandler<T>
 {
-    private final String trigEvent;
     private final String mnvrType;
-    private final double target;
-    private int steps;
+    private final double delta;
 
-    public EventHandling(String trigEvent, String mnvrType, double target, int steps)
+    public EventHandling(String mnvrType, double delta)
     {
-	this.trigEvent = trigEvent;
 	this.mnvrType = mnvrType;
-	this.target = target;
-	this.steps = steps;
+	this.delta = delta;
     }
 
     @Override public Action eventOccurred(SpacecraftState state, T det, boolean incr)
@@ -78,11 +74,9 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	    GeodeticPoint geo = earth.transform(pvc.getPosition(), old.getFrame(), old.getDate());
 
 	    if (mnvrType.equalsIgnoreCase("NorthSouthStationing"))
-		geo = new GeodeticPoint(geo.getLatitude() + (target - geo.getLatitude())/steps,
-					geo.getLongitude(), geo.getAltitude());
+		geo = new GeodeticPoint(geo.getLatitude() + delta, geo.getLongitude(), geo.getAltitude());
 	    else
-		geo = new GeodeticPoint(geo.getLatitude(), geo.getLongitude() +
-					(target - geo.getLongitude())/steps, geo.getAltitude());
+		geo = new GeodeticPoint(geo.getLatitude(), geo.getLongitude() + delta, geo.getAltitude());
 
 	    Transform xfm = earth.getFrame().getTransformTo(old.getFrame(), old.getDate());
 	    Vector3D newpos = xfm.transformPosition(earth.transform(geo));
@@ -93,23 +87,24 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	else
 	{
 	    if (mnvrType.equalsIgnoreCase("SemiMajorAxisChange"))
-		a += (target - a)/steps;
-	    if (mnvrType.equalsIgnoreCase("PerigeeChange"))
-		a += (target - a/(1 - e))/steps;
-	    if (mnvrType.equalsIgnoreCase("EccentricityChange"))
-		e += (target - e)/steps;
-	    if (mnvrType.equalsIgnoreCase("InclinationChange"))
-		i += (target - i)/steps;
-	    if (mnvrType.equalsIgnoreCase("RAANChange"))
-		O += (target - O)/steps;
-	    if (mnvrType.equalsIgnoreCase("ArgPerigeeChange"))
-		w += (target - w)/steps;
-	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
+		a += delta;
+	    else if (mnvrType.equalsIgnoreCase("PerigeeChange"))
+		a += delta/(1 - e);
+	    else if (mnvrType.equalsIgnoreCase("EccentricityChange"))
+		e += delta;
+	    else if (mnvrType.equalsIgnoreCase("InclinationChange"))
+		i += delta;
+	    else if (mnvrType.equalsIgnoreCase("RAANChange"))
+		O += delta;
+	    else if (mnvrType.equalsIgnoreCase("ArgPerigeeChange"))
+		w += delta;
+	    else
+		throw(new RuntimeException("Invalid maneuver type"));
+
+	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(),
+					old.getDate(), old.getMu());
 	}
 
-	steps--;
-	if (neworb == null)
-	    return(old);
 	return(new SpacecraftState(neworb, old.getAttitude(), old.getMass(), old.getAdditionalStates()));
     }
 }

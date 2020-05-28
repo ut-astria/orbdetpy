@@ -31,11 +31,10 @@ Installation
    environment variable to point to your JDK installation. The `java`
    executable must also be in your system path.
 
-2. Install Python 3.6+ and run `pip install orbdetpy` to install orbdetpy 
-   and other package dependencies from the Python Package Index (PyPI).
-   If you wish to use the `develop` or other experimental branches from
-   GitHub, `git clone` them and run `pip install -e .` from the top level
-   `orbdetpy` folder.
+2. Install Python 3.7.0 or higher and run `pip install orbdetpy` to install
+   orbdetpy and other package dependencies. If you wish to use the `develop`
+   or other experimental branches from GitHub, `git clone` them and run
+   `pip install -e .` from the top level `orbdetpy` folder.
 
 3. Source code, example programs and data files can be downloaded from 
    <https://github.com/ut-astria/orbdetpy>.

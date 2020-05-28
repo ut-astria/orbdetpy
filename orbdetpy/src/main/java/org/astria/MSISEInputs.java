@@ -1,6 +1,6 @@
 /*
  * MSISEInputs.java - Class for reading MSISE space weather data.
- * Copyright (C) 2018-2019 University of Texas
+ * Copyright (C) 2018-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,16 +55,14 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
     {
 	String p = DataManager.getUTCString(new AbsoluteDate(date, -86400.0));
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-	double[] v = swData.get(k);
-	return(v[26]);
+	return(swData.get(k)[26]);
     }
 
     public double getAverageFlux(AbsoluteDate date)
     {
 	String p = DataManager.getUTCString(date);
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-	double[] v = swData.get(k);
-	return(v[28]);
+	return(swData.get(k)[28]);
     }
 
     public double[] getAp(AbsoluteDate date)
@@ -75,25 +73,22 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 	    {
 		String p = DataManager.getUTCString(date);
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		double[] v = swData.get(k);
-		apVals[0] = v[22];
+		apVals[0] = swData.get(k)[22];
 	    }
 	    else if (i <= 4)
 	    {
-		String p = DataManager.getUTCString(new AbsoluteDate(date, -10800.0*(i - 1)));
+		String p = DataManager.getUTCString(new AbsoluteDate(date, -10800.0*(i-1)));
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		double[] v = swData.get(k);
-		apVals[i] = v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];
+		apVals[i] = swData.get(k)[Integer.parseInt(p.substring(11, 13))/3+14];
 	    }
 	    else
 	    {
 		apVals[i] = 0.0;
-		for (int j = 8*i - 36; j <= 8*i - 29; j++)
+		for (int j = 8*i-36; j <= 8*i-29; j++)
 		{
-		    String p = DataManager.getUTCString(new AbsoluteDate(date, -10800.0*(j - 1)));
+		    String p = DataManager.getUTCString(new AbsoluteDate(date, -10800.0*(j-1)));
 		    String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		    double[] v = swData.get(k);
-		    apVals[i] += v[Integer.parseInt(p.substring(11, 13)) / 3 + 14];
+		    apVals[i] += swData.get(k)[Integer.parseInt(p.substring(11, 13))/3+14];
 		}
 		apVals[i] = apVals[i]/8;
 	    }

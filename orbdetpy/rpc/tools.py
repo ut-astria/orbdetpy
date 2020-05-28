@@ -19,7 +19,7 @@ from orbdetpy.rpc import messages_pb2
 
 _settings_fields = {
     "rso_mass": ["rsoMass", 5.0],
-    "rso_area": ["rsoArea", 0.01],
+    "rso_area": ["rsoArea", 0.1],
     "rso_solar_array_axis": ["rsoSolarArrayAxis", None],
     "rso_solar_array_area": ["rsoSolarArrayArea", None],
     "rso_attitude_provider": ["rsoAttitudeProvider", None],
@@ -34,9 +34,9 @@ _settings_fields = {
     "solid_tides_sun": ["solidTidesSun", True],
     "solid_tides_moon": ["solidTidesMoon", True],
     "drag_model": ["dragModel", "MSISE"],
-    "drag_exp_rho0": ["dragExpRho0", 0.0],
-    "drag_exp_H0": ["dragExpH0", 0.0],
-    "drag_exp_Hscale": ["dragExpHscale", 0.0],
+    "drag_exp_rho0": ["dragExpRho0", 3.614E-13],
+    "drag_exp_H0": ["dragExpH0", 700000.0],
+    "drag_exp_Hscale": ["dragExpHscale", 88667.0],
     "rp_sun": ["rpSun", True],
     "rp_coeff_absorption": ["rpCoeffAbsorption", 0.0],
     "prop_start": ["propStart", None],

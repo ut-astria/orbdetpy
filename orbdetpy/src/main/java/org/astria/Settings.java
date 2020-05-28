@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.HashMap;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.spherical.twod.S2Point;
-import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -71,8 +69,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.GroundFieldOfViewDetector;
 import org.orekit.propagation.events.LongitudeCrossingDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -199,7 +197,7 @@ public final class Settings
     }
 
     public double rsoMass = 5.0;
-    public double rsoArea = 0.01;
+    public double rsoArea = 0.1;
     public Facet[] rsoFacets;
     public double[] rsoSolarArrayAxis;
     public double rsoSolarArrayArea;
@@ -219,9 +217,9 @@ public final class Settings
     public String dragModel = "MSISE";
     public Parameter dragCoefficient = new Parameter("Cd", 1.0, 3.0, 2.0, "Estimate");
     public int[][] dragMSISEFlags;
-    public double dragExpRho0;
-    public double dragExpH0;
-    public double dragExpHscale;
+    public double dragExpRho0 = 3.614E-13;
+    public double dragExpH0 = 700000.0;
+    public double dragExpHscale = 88667.0;
 
     public boolean rpSun = true;
     public Parameter rpCoeffReflection = new Parameter("Cr", 1.0, 2.0, 1.5, "Estimate");
@@ -615,49 +613,30 @@ public final class Settings
     {
 	if (cfgManeuvers == null)
 	    return;
-	for (Maneuver m : cfgManeuvers)
+	for (Maneuver m: cfgManeuvers)
 	{
+	    if (m.maneuverType.equalsIgnoreCase("ConstantThrust"))
+		continue;
 	    if (m.triggerEvent.equalsIgnoreCase("DateTime"))
 	    {
-		if (m.maneuverType.equalsIgnoreCase("ConstantThrust"))
-		    continue;
-		EventHandling<DateDetector> handler = new EventHandling<DateDetector>(m.triggerEvent, m.maneuverType,
-										      m.maneuverParams[0], (int)m.maneuverParams[2]);
-		AbsoluteDate time = DataManager.parseDateTime(m.time);
-		for (int i = 0; i < m.maneuverParams[2]; i++)
-		{
-		    prop.addEventDetector(new DateDetector(time).withHandler(handler));
-		    time = new AbsoluteDate(time, m.maneuverParams[1]);
-		}
+		EventHandling<DateDetector> handler = new EventHandling<DateDetector>(m.maneuverType, m.maneuverParams[0]);
+		prop.addEventDetector(new DateDetector(DataManager.parseDateTime(m.time)).withHandler(handler));
 	    }
 	    else if (m.triggerEvent.equalsIgnoreCase("LongitudeCrossing"))
 	    {
 		OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
 							     FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 		EventHandling<LongitudeCrossingDetector> handler = new EventHandling<LongitudeCrossingDetector>(
-		    m.triggerEvent, m.maneuverType, 0.0, 1);
+		    m.maneuverType, m.maneuverParams[0]);
 		prop.addEventDetector(new LongitudeCrossingDetector(body, m.triggerParams[0]).withHandler(handler));
 	    }
-	    else if (m.triggerEvent.equalsIgnoreCase("GroundFieldOfView"))
+	    else if (m.triggerEvent.equalsIgnoreCase("ApsideCrossing"))
 	    {
-		TopocentricFrame frame = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-		    Constants.WGS84_EARTH_FLATTENING, FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP)),
-		    new GeodeticPoint(m.triggerParams[0], m.triggerParams[1], m.triggerParams[2]), "");
-
-		S2Point[] vertices = new S2Point[(m.triggerParams.length-3)/2];
-		for (int i = 0; i < vertices.length; i++)
-		{
-		    double[] azEl = Conversion.convertRaDecToAzEl(Predefined.EME2000, m.time, m.triggerParams[i*2+3], m.triggerParams[i*2+4],
-								  m.triggerParams[0], m.triggerParams[1], m.triggerParams[2]);
-		    vertices[i] = new S2Point(azEl[0], 0.5*FastMath.PI-azEl[1]);
-		}
-		PolygonalFieldOfView fov = new PolygonalFieldOfView(
-		    new SphericalPolygonsSet(2*FastMath.ulp(4*FastMath.PI), vertices), 4.9E-6);
-
-		EventHandling<GroundFieldOfViewDetector> handler = new EventHandling<GroundFieldOfViewDetector>(
-		    m.triggerEvent, m.maneuverType, 0.0, 1);
-		prop.addEventDetector(new GroundFieldOfViewDetector(frame, fov).withHandler(handler));
+		EventHandling<ApsideDetector> handler = new EventHandling<ApsideDetector>(m.maneuverType, m.maneuverParams[0]);
+		prop.addEventDetector(new ApsideDetector(state.getOrbit()).withHandler(handler));
 	    }
+	    else
+		throw(new RuntimeException("Invalid maneuver trigger event"));
 	}
     }
 }
