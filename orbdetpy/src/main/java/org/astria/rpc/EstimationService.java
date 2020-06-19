@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import org.astria.DataManager;
 import org.astria.Estimation;
 import org.astria.Measurements;
 import org.astria.Settings;
@@ -70,7 +69,7 @@ public final class EstimationService extends EstimationGrpc.EstimationImplBase
 	    AbsoluteDate[] time = new AbsoluteDate[3];
 	    for (int i = 0; i < 3; i++)
 	    {
-		time[i] = DataManager.parseDateTime(req.getTime(i));
+		time[i] = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
 		los[i] = new Vector3D(FastMath.cos(req.getAngle2(i))*FastMath.cos(req.getAngle1(i)),
 				      FastMath.cos(req.getAngle2(i))*FastMath.sin(req.getAngle1(i)),
 				      FastMath.sin(req.getAngle2(i)));

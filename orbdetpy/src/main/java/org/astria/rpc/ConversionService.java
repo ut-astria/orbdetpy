@@ -18,11 +18,14 @@
 
 package org.astria.rpc;
 
+import com.google.protobuf.DoubleValue;
+import com.google.protobuf.StringValue;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Conversion;
 import org.orekit.frames.Predefined;
+import org.orekit.time.AbsoluteDate;
 
 public final class ConversionService extends ConversionGrpc.ConversionImplBase
 {
@@ -30,7 +33,7 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
     {
 	try
 	{
-	    double[] pva = Conversion.transformFrame(Predefined.valueOf(req.getSrcFrame()), req.getTime(),
+	    double[] pva = Conversion.transformFrame(Predefined.valueOf(req.getSrcFrame()), AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime()),
 						     req.getPvaList(), Predefined.valueOf(req.getDestFrame()));
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < pva.length; i++)
@@ -48,8 +51,9 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
     {
 	try
 	{
-	    double[] raDec = Conversion.convertAzElToRaDec(req.getTime(0), req.getAngle1(0), req.getAngle2(0), req.getLatitude(),
-							   req.getLongitude(), req.getAltitude(), Predefined.valueOf(req.getFrame()));
+	    double[] raDec = Conversion.convertAzElToRaDec(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0)), req.getAngle1(0),
+							   req.getAngle2(0), req.getLatitude(), req.getLongitude(),
+							   req.getAltitude(), Predefined.valueOf(req.getFrame()));
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < raDec.length; i++)
 		builder = builder.addArray(raDec[i]);
@@ -66,11 +70,40 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
     {
 	try
 	{
-	    double[] azEl = Conversion.convertRaDecToAzEl(Predefined.valueOf(req.getFrame()), req.getTime(0), req.getAngle1(0),
-							  req.getAngle2(0), req.getLatitude(), req.getLongitude(), req.getAltitude());
+	    double[] azEl = Conversion.convertRaDecToAzEl(Predefined.valueOf(req.getFrame()), AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0)),
+							  req.getAngle1(0), req.getAngle2(0), req.getLatitude(),
+							  req.getLongitude(), req.getAltitude());
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < azEl.length; i++)
 		builder = builder.addArray(azEl[i]);
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void getUTCString(DoubleValue req, StreamObserver<StringValue> resp)
+    {
+	try
+	{
+	    StringValue.Builder builder = StringValue.newBuilder().setValue(Conversion.getUTCString(req.getValue()));
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void getJ2000EpochOffset(StringValue req, StreamObserver<DoubleValue> resp)
+    {
+	try
+	{
+	    DoubleValue.Builder builder = DoubleValue.newBuilder().setValue(Conversion.getJ2000EpochOffset(req.getValue()));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

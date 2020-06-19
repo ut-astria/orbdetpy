@@ -1,5 +1,5 @@
 /*
- * Conversion.java - Various utility functions.
+ * Conversion.java - Various conversion functions.
  * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,16 +29,20 @@ import org.orekit.frames.Predefined;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 public final class Conversion
 {
-    public static double[] transformFrame(Predefined srcFrame, String time, List<Double> pva, Predefined destFrame)
+    public static double[] transformFrame(Predefined srcFrame, AbsoluteDate time, List<Double> pva, Predefined destFrame)
     {
 	Frame fromFrame = FramesFactory.getFrame(srcFrame);
 	Frame toFrame = FramesFactory.getFrame(destFrame);
-	Transform xfm = fromFrame.getTransformTo(toFrame, DataManager.parseDateTime(time));
+	Transform xfm = fromFrame.getTransformTo(toFrame, time);
 
 	if (pva.size() == 3)
 	{
@@ -65,12 +69,13 @@ public final class Conversion
 	}
     }
 
-    public static double[] convertAzElToRaDec(String time, double az, double el, double lat, double lon, double alt, Predefined frame)
+    public static double[] convertAzElToRaDec(AbsoluteDate time, double az, double el, double lat,
+					      double lon, double alt, Predefined frame)
     {
 	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
 						    FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	TopocentricFrame fromFrame = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
-	Transform xfm = fromFrame.getTransformTo(FramesFactory.getFrame(frame), DataManager.parseDateTime(time));
+	Transform xfm = fromFrame.getTransformTo(FramesFactory.getFrame(frame), time);
 
 	Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(el)*FastMath.sin(az),
 							  FastMath.cos(el)*FastMath.cos(az), FastMath.sin(el)));
@@ -79,17 +84,58 @@ public final class Conversion
 	return(new double[]{FastMath.atan2(y, x), FastMath.atan2(toVec.getZ(), FastMath.sqrt(x*x + y*y))});
     }
 
-    public static double[] convertRaDecToAzEl(Predefined frame, String time, double ra, double dec, double lat, double lon, double alt)
+    public static double[] convertRaDecToAzEl(Predefined frame, AbsoluteDate time, double ra, double dec,
+					      double lat, double lon, double alt)
     {
 	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
 						    FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	TopocentricFrame toframe = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
-	Transform xfm = FramesFactory.getFrame(frame).getTransformTo(toframe, DataManager.parseDateTime(time));
+	Transform xfm = FramesFactory.getFrame(frame).getTransformTo(toframe, time);
 
 	Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra),
 							  FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));
 	double x = toVec.getX();
 	double y = toVec.getY();
 	return(new double[]{FastMath.atan2(x, y), FastMath.atan2(toVec.getZ(), FastMath.sqrt(x*x + y*y))});
+    }
+
+    public static String getUTCString(double j2000Offset)
+    {
+	DateTimeComponents dtc = AbsoluteDate.J2000_EPOCH.shiftedBy(j2000Offset).getComponents(TimeScalesFactory.getUTC());
+	DateComponents dc = dtc.getDate();
+	TimeComponents tc = dtc.getTime();
+
+	StringBuilder sbSec = new StringBuilder(9);
+	if (tc.getSecond() < 10.0)
+	    sbSec.append("0");
+	sbSec.append(tc.getSecond());
+	if (sbSec.length() > 9)
+	    sbSec.setLength(9);
+	else
+	{
+	    while (sbSec.length() < 9)
+		sbSec.append("0");
+	}
+
+	StringBuilder sb = new StringBuilder(27).append(dc.getYear()).append("-");
+	if (dc.getMonth() < 10)
+	    sb.append("0");
+	sb.append(dc.getMonth()).append("-");
+	if (dc.getDay() < 10)
+	    sb.append("0");
+	sb.append(dc.getDay()).append("T");
+	if (tc.getHour() < 10)
+	    sb.append("0");
+	sb.append(tc.getHour()).append(":");
+	if (tc.getMinute() < 10)
+	    sb.append("0");
+	sb.append(tc.getMinute()).append(":").append(sbSec).append("Z");
+	return(sb.toString());
+    }
+
+    public static double getJ2000EpochOffset(String utcTime)
+    {
+	return(new AbsoluteDate(DateTimeComponents.parseDateTime(utcTime), TimeScalesFactory.getUTC())
+	       .durationFrom(AbsoluteDate.J2000_EPOCH));
     }
 }

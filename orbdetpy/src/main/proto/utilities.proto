@@ -27,5 +27,5 @@ service Utilities
 {
     rpc importTDM(ImportTDMInput) returns (Measurement2DArray) {}
 
-    rpc interpolateEphemeris(InterpolateEphemerisInput) returns (InterpolationOutputArray) {}
+    rpc interpolateEphemeris(InterpolateEphemerisInput) returns (MeasurementArray) {}
 }

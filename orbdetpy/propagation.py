@@ -14,31 +14,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from orbdetpy import write_output_file
-from orbdetpy.rpc import messages_pb2,  propagation_pb2_grpc
+from typing import List
+from orbdetpy.rpc.messages_pb2 import Settings, SettingsArray
+from orbdetpy.rpc.propagation_pb2_grpc import PropagationStub
 from orbdetpy.rpc.server import RemoteServer
-from orbdetpy.rpc.tools import build_settings, convert_propagation
 
-def propagate_orbits(config_list, output_file = None):
-    """ Propagates the given objects in parallel.
+def propagate_orbits(cfg_list: List[Settings]):
+    """Propagate orbits and optionally simulate measurements.
 
-    Args:
-        config_list: List of configurations (each a dictionary,
-                     file name, text file-like object, or
-                     JSON encoded string).
-        output_file: If specified, the output will be written to
-                     the file name or text file-like object given. 
+    Parameters
+    ----------
+    cfg_list: List of Settings objects.
 
-    Returns:
-        Propagated state vectors at desired time intervals.
+    Returns
+    -------
+    Propagated state vectors and simulated measurements.
     """
 
     with RemoteServer.channel() as channel:
-        stub = propagation_pb2_grpc.PropagationStub(channel)
-        resp = stub.propagate(messages_pb2.SettingsArray(
-            array = [build_settings(p) for p in config_list]))
-
-    prop_data = convert_propagation(resp.array)
-    if (output_file):
-        write_output_file(output_file, prop_data)
-    return(prop_data)
+        resp = PropagationStub(channel).propagate(
+            SettingsArray(array=[p for p in cfg_list]))
+    return(resp.array)

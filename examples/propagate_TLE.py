@@ -16,7 +16,6 @@
 
 import os
 import sys
-import json
 import argparse
 from datetime import datetime, timedelta
 
@@ -26,7 +25,6 @@ timefmt = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 parser = argparse.ArgumentParser(formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("tle-file", help="Input TLE file", type=argparse.FileType("r"))
-parser.add_argument("output-file", help="File to write results", type=argparse.FileType("w"))
 parser.add_argument("--start-time", help="Propagation start time",
                     default=datetime(day0.year, day0.month, day0.day).strftime(timefmt))
 parser.add_argument("--end-time", help="Propagation end time",
@@ -38,14 +36,20 @@ if (len(sys.argv) == 1):
     exit(1)
 args = parser.parse_args()
 
+from orbdetpy import configure
+from orbdetpy.conversion import get_J2000_epoch_offset
 from orbdetpy.propagation import propagate_orbits
 
-elements = getattr(args, "tle-file").read().splitlines()
-config = [{"propStart": args.start_time, "propInitialTLE": elements[i+1:i+3],
-           "propEnd": args.end_time, "propStep": args.step_size} for i in range(0, len(elements)-2, 3)]
+start = get_J2000_epoch_offset(args.start_time)
+end = get_J2000_epoch_offset(args.end_time)
+config, elements = [], getattr(args, "tle-file").read().splitlines()
+for i in range(0, len(elements)-2, 3):
+    config.append(configure(prop_start=start, prop_initial_TLE=elements[i+1:i+3],
+                            prop_end=end, prop_step=args.step_size))
 
 try:
-    prop_out = propagate_orbits(config)
-    json.dump(prop_out, getattr(args, "output-file"), indent = 1)
+    for o in propagate_orbits(config):
+        for i in o.array:
+            print(i.time, i.true_state)
 except Exception as exc:
     print(exc)

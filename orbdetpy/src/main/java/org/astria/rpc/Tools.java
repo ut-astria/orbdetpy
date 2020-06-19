@@ -29,30 +29,31 @@ import java.util.List;
 import java.util.Map;
 import org.astria.Estimation;
 import org.astria.Measurements;
-import org.astria.ParallelPropagation;
 import org.astria.Settings;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
+import org.orekit.time.AbsoluteDate;
 
 public final class Tools
 {
     public static Settings buildSettingsFromRequest(Messages.Settings req)
     {
 	Settings cfg = new Settings();
+	Settings.EstimationType[] estmTypes = Settings.EstimationType.values();
+
 	cfg.rsoMass = req.getRsoMass();
 	cfg.rsoArea = req.getRsoArea();
 	if (req.getRsoFacetsCount() > 0)
 	{
 	    cfg.rsoFacets = new Settings.Facet[req.getRsoFacetsCount()];
 	    for (int i = 0; i < cfg.rsoFacets.length; i++)
-	    {
 		cfg.rsoFacets[i] = new Settings.Facet(req.getRsoFacets(i).getNormalList().stream().mapToDouble(Double::doubleValue).toArray(),
 						      req.getRsoFacets(i).getArea());
-	    }
 	}
 	if (req.getRsoSolarArrayAxisCount() > 0)
 	    cfg.rsoSolarArrayAxis = req.getRsoSolarArrayAxisList().stream().mapToDouble(Double::doubleValue).toArray();
 	cfg.rsoSolarArrayArea = req.getRsoSolarArrayArea();
-	if (req.getRsoAttitudeProvider().length() > 0)
-	    cfg.rsoAttitudeProvider = req.getRsoAttitudeProvider();
+	cfg.rsoAttitudeProvider = Settings.AttitudeType.values()[req.getRsoAttitudeProvider()];
 	if (req.getRsoSpinVelocityCount() > 0)
 	    cfg.rsoSpinVelocity = req.getRsoSpinVelocityList().stream().mapToDouble(Double::doubleValue).toArray();
 	if (req.getRsoSpinAccelerationCount() > 0)
@@ -67,59 +68,55 @@ public final class Tools
 	cfg.solidTidesSun = req.getSolidTidesSun();
 	cfg.solidTidesMoon = req.getSolidTidesMoon();
 
-	cfg.dragModel = req.getDragModel();
-	cfg.dragCoefficient = new Settings.Parameter(req.getDragCoefficient().getName(), req.getDragCoefficient().getMin(),
-						     req.getDragCoefficient().getMax(), req.getDragCoefficient().getValue(),
-						     req.getDragCoefficient().getEstimation());
+	cfg.dragModel = Settings.DragModel.values()[req.getDragModel()];
+	if (req.getDragCoefficient().getValue() > 0.0)
+	    cfg.dragCoefficient = new Settings.Parameter("Cd", req.getDragCoefficient().getMin(), req.getDragCoefficient().getMax(),
+							 req.getDragCoefficient().getValue(), estmTypes[req.getDragCoefficient().getEstimation()]);
 	cfg.dragMSISEFlags = unpackInteger2DArray(req.getDragMSISEFlagsList());
 	cfg.dragExpRho0 = req.getDragExpRho0();
 	cfg.dragExpH0 = req.getDragExpH0();
 	cfg.dragExpHscale = req.getDragExpHscale();
 
 	cfg.rpSun = req.getRpSun();
-	cfg.rpCoeffReflection = new Settings.Parameter(req.getRpCoeffReflection().getName(), req.getRpCoeffReflection().getMin(),
-						       req.getRpCoeffReflection().getMax(), req.getRpCoeffReflection().getValue(),
-						       req.getRpCoeffReflection().getEstimation());
+	if (req.getRpCoeffReflection().getValue() > 0.0)
+	    cfg.rpCoeffReflection = new Settings.Parameter("Cr", req.getRpCoeffReflection().getMin(), req.getRpCoeffReflection().getMax(),
+							   req.getRpCoeffReflection().getValue(), estmTypes[req.getRpCoeffReflection().getEstimation()]);
 	cfg.rpCoeffAbsorption = req.getRpCoeffAbsorption();
 
 	if (req.getManeuversCount() > 0)
 	{
+	    Settings.ManeuverType[] mnvrVals = Settings.ManeuverType.values();
+	    Settings.ManeuverTrigger[] trigVals = Settings.ManeuverTrigger.values();
 	    cfg.cfgManeuvers = new Settings.Maneuver[req.getManeuversCount()];
 	    for (int i = 0; i < cfg.cfgManeuvers.length; i++)
-	    {
-		cfg.cfgManeuvers[i] = new Settings.Maneuver(req.getManeuvers(i).getTime(), req.getManeuvers(i).getTriggerEvent(),
+		cfg.cfgManeuvers[i] = new Settings.Maneuver(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getManeuvers(i).getTime()),
+							    trigVals[req.getManeuvers(i).getTriggerEvent()],
 							    req.getManeuvers(i).getTriggerParamsList().stream().mapToDouble(Double::doubleValue).toArray(),
-							    req.getManeuvers(i).getManeuverType(),
+							    mnvrVals[req.getManeuvers(i).getManeuverType()],
 							    req.getManeuvers(i).getManeuverParamsList().stream().mapToDouble(Double::doubleValue).toArray());
-	    }
 	}
 
-	if (req.getPropStart().length() > 0)
-	    cfg.propStart = req.getPropStart();
-	if (req.getPropEnd().length() > 0)
-	    cfg.propEnd = req.getPropEnd();
+	if (req.getPropStart() != 0.0)
+	    cfg.propStart = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropStart());
+	if (req.getPropEnd() != 0.0)
+	    cfg.propEnd = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropEnd());
 	cfg.propStep = req.getPropStep();
 	if (req.getPropInitialStateCount() > 0)
 	    cfg.propInitialState = req.getPropInitialStateList().stream().mapToDouble(Double::doubleValue).toArray();
 	if (req.getPropInitialTLECount() > 0)
 	    cfg.propInitialTLE = req.getPropInitialTLEList().toArray(new String[0]);
 	if (req.getPropInertialFrame().length() > 0)
-	    cfg.propInertialFrame = req.getPropInertialFrame();
-	if (req.getPropStepHandlerStartTime().length() > 0)
-	    cfg.propStepHandlerStartTime = req.getPropStepHandlerStartTime();
-	if (req.getPropStepHandlerEndTime().length() > 0)
-	    cfg.propStepHandlerEndTime = req.getPropStepHandlerEndTime();
+	    cfg.propInertialFrame = FramesFactory.getFrame(Predefined.valueOf(req.getPropInertialFrame()));
+	if (req.getPropStepHandlerStartTime() != 0.0)
+	    cfg.propStepHandlerStartTime = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropStepHandlerStartTime());
+	if (req.getPropStepHandlerEndTime() != 0.0)
+	    cfg.propStepHandlerEndTime = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropStepHandlerEndTime());
 
 	cfg.integMinTimeStep = req.getIntegMinTimeStep();
 	cfg.integMaxTimeStep = req.getIntegMaxTimeStep();
 	cfg.integAbsTolerance = req.getIntegAbsTolerance();
 	cfg.integRelTolerance = req.getIntegRelTolerance();
-
 	cfg.simMeasurements = req.getSimMeasurements();
-	cfg.simSkipUnobservable = req.getSimSkipUnobservable();
-	cfg.simIncludeExtras = req.getSimIncludeExtras();
-	cfg.simIncludeStationState = req.getSimIncludeStationState();
-	cfg.simIncludeAngleRates = req.getSimIncludeAngleRates();
 
 	if (req.getStationsCount() > 0)
 	{
@@ -127,42 +124,41 @@ public final class Tools
 	    for (Map.Entry<String, Messages.Station> kv : req.getStationsMap().entrySet())
 	    {
 		Messages.Station v = kv.getValue();
-		cfg.cfgStations.put(kv.getKey(), new Settings.Station(v.getLatitude(), v.getLongitude(), v.getAltitude(), v.getAzimuthBias(),
-								      v.getElevationBias(), v.getRangeBias(), v.getRangeRateBias(),
-								      v.getRightAscensionBias(), v.getDeclinationBias(),
-								      v.getPositionBiasList().stream().mapToDouble(Double::doubleValue).toArray(),
-								      v.getPositionVelocityBiasList().stream().mapToDouble(Double::doubleValue).toArray(),
-								      v.getBiasEstimation()));
+		cfg.cfgStations.put(kv.getKey(), new Settings.Station(v.getLatitude(), v.getLongitude(), v.getAltitude(),
+								      v.getBiasList().stream().mapToDouble(Double::doubleValue).toArray(),
+								      estmTypes[v.getBiasEstimation()]));
 	    }
 	}
 
 	if (req.getMeasurementsCount() > 0)
 	{
-	    cfg.cfgMeasurements = new HashMap<String, Settings.Measurement>(req.getMeasurementsCount());
-	    for (Map.Entry<String, Messages.MeasurementSetting> kv : req.getMeasurementsMap().entrySet())
+	    Settings.MeasurementType[] values = Settings.MeasurementType.values();
+	    cfg.cfgMeasurements = new HashMap<Settings.MeasurementType, Settings.Measurement>(req.getMeasurementsCount());
+	    for (Map.Entry<Integer, Messages.MeasurementSetting> kv: req.getMeasurementsMap().entrySet())
 	    {
 		Messages.MeasurementSetting v = kv.getValue();
-		cfg.cfgMeasurements.put(kv.getKey(), new Settings.Measurement(v.getTwoWay(),
-									      v.getErrorList().stream().mapToDouble(Double::doubleValue).toArray()));
+		cfg.cfgMeasurements.put(values[kv.getKey()],
+					new Settings.Measurement(v.getTwoWay(), v.getErrorList().stream().mapToDouble(Double::doubleValue).toArray()));
 	    }
 	}
 
-	if (req.getEstmFilter().length() > 0)
-	    cfg.estmFilter = req.getEstmFilter();
+	cfg.estmFilter = Settings.Filter.values()[req.getEstmFilter()];
 	if (req.getEstmCovarianceCount() > 0)
 	    cfg.estmCovariance = req.getEstmCovarianceList().stream().mapToDouble(Double::doubleValue).toArray();
 	if (req.getEstmProcessNoiseCount() > 0)
 	    cfg.estmProcessNoise = req.getEstmProcessNoiseList().stream().mapToDouble(Double::doubleValue).toArray();
-	cfg.estmDMCCorrTime = req.getEstmDMCCorrTime();
-	cfg.estmDMCSigmaPert = req.getEstmDMCSigmaPert();
-	cfg.estmDMCAcceleration = new Settings.Parameter("", req.getEstmDMCAcceleration().getMin(), req.getEstmDMCAcceleration().getMax(),
-							 req.getEstmDMCAcceleration().getValue(), req.getEstmDMCAcceleration().getEstimation());
+	if (req.getEstmDMCCorrTime() > 0.0)
+	    cfg.estmDMCCorrTime = req.getEstmDMCCorrTime();
+	if (req.getEstmDMCSigmaPert() > 0.0)
+	    cfg.estmDMCSigmaPert = req.getEstmDMCSigmaPert();
+	if (req.getEstmDMCAcceleration().getMin()*req.getEstmDMCAcceleration().getMax() != 0.0)
+	    cfg.estmDMCAcceleration = new Settings.Parameter("DMC", req.getEstmDMCAcceleration().getMin(), req.getEstmDMCAcceleration().getMax(),
+							     req.getEstmDMCAcceleration().getValue(), estmTypes[req.getEstmDMCAcceleration().getEstimation()]);
 	cfg.estmOutlierSigma = req.getEstmOutlierSigma();
 	cfg.estmOutlierWarmup = req.getEstmOutlierWarmup();
 
 	cfg.estmSmootherIterations = req.getEstmSmootherIterations();
 	cfg.estmEnablePDAF = req.getEstmEnablePDAF();
-	cfg.estmEnableCARMHF = req.getEstmEnableCARMHF();
 	cfg.estmDetectionProbability = req.getEstmDetectionProbability();
 	cfg.estmGatingProbability = req.getEstmGatingProbability();
 	cfg.estmGatingThreshold = req.getEstmGatingThreshold();
@@ -177,26 +173,11 @@ public final class Tools
 	{
 	    Messages.Measurement min = req.get(i);
 	    output.rawMeas[i] = new Measurements.Measurement();
-	    if (min.getTime().length() > 0)
-		output.rawMeas[i].time = min.getTime();
+	    output.rawMeas[i].time = AbsoluteDate.J2000_EPOCH.shiftedBy(min.getTime());
 	    if (min.getStation().length() > 0)
 		output.rawMeas[i].station = min.getStation();
-	    if (min.getAzimuth() != 0.0)
-		output.rawMeas[i].azimuth = min.getAzimuth();
-	    if (min.getElevation() != 0.0)
-		output.rawMeas[i].elevation = min.getElevation();
-	    if (min.getRange() != 0.0)
-		output.rawMeas[i].range = min.getRange();
-	    if (min.getRangeRate() != 0.0)
-		output.rawMeas[i].rangeRate = min.getRangeRate();
-	    if (min.getRightAscension() != 0.0)
-		output.rawMeas[i].rightAscension = min.getRightAscension();
-	    if (min.getDeclination() != 0.0)
-		output.rawMeas[i].declination = min.getDeclination();
-	    if (min.getPositionCount() > 0)
-		output.rawMeas[i].position = min.getPositionList().stream().mapToDouble(Double::doubleValue).toArray();
-	    if (min.getPositionVelocityCount() > 0)
-		output.rawMeas[i].positionVelocity = min.getPositionVelocityList().stream().mapToDouble(Double::doubleValue).toArray();
+	    if (min.getValuesCount() > 0)
+		output.rawMeas[i].values = min.getValuesList().stream().mapToDouble(Double::doubleValue).toArray();
 	    if (min.getAngleRatesCount() > 0)
 		output.rawMeas[i].angleRates = min.getAngleRatesList().stream().mapToDouble(Double::doubleValue).toArray();
 	}
@@ -204,94 +185,21 @@ public final class Tools
 	return(output.build(config));
     }
 
-    public static List<Messages.PropagationOutput> buildResponseFromPropagation(ArrayList<ParallelPropagation.PropagationOutput> plist)
-    {
-	ArrayList<Messages.PropagationOutput> output = new ArrayList<Messages.PropagationOutput>(plist.size());
-	for (ParallelPropagation.PropagationOutput pin: plist)
-	{
-	    Messages.PropagationOutput.Builder builder = Messages.PropagationOutput.newBuilder().setTime(pin.time);
-	    for (double[] state: pin.states)
-		builder = builder.addStates(Messages.DoubleArray.newBuilder()
-					    .addAllArray(DoubleStream.of(state).boxed().collect(Collectors.toList())).build());
-	    output.add(builder.build());
-	}
-
-	return(output);
-    }
-
-    public static List<Messages.Measurement> buildResponseFromMeasurements(ArrayList<Measurements.SimulatedMeasurement> mlist)
+    public static List<Messages.Measurement> buildResponseFromMeasurements(ArrayList<Measurements.Measurement> mlist)
     {
 	ArrayList<Messages.Measurement> output = new ArrayList<Messages.Measurement>(mlist.size());
-	for (Measurements.SimulatedMeasurement min: mlist)
+	for (Measurements.Measurement min: mlist)
 	{
-	    Messages.Measurement.Builder builder = Messages.Measurement.newBuilder().setTime(min.time);
+	    Messages.Measurement.Builder builder = Messages.Measurement.newBuilder()
+		.setTime(min.time.durationFrom(AbsoluteDate.J2000_EPOCH));
 	    if (min.station != null && min.station.length() > 0)
 		builder = builder.setStation(min.station);
-	    if (min.azimuth != 0.0)
-		builder = builder.setAzimuth(min.azimuth);
-	    if (min.elevation != 0.0)
-		builder = builder.setElevation(min.elevation);
-	    if (min.range != 0.0)
-		builder = builder.setRange(min.range);
-	    if (min.rangeRate != 0.0)
-		builder = builder.setRangeRate(min.rangeRate);
-	    if (min.rightAscension != 0.0)
-		builder = builder.setRightAscension(min.rightAscension);
-	    if (min.declination != 0.0)
-		builder = builder.setDeclination(min.declination);
-	    if (min.position != null)
-		builder = builder.addAllPosition(DoubleStream.of(min.position).boxed().collect(Collectors.toList()));
-	    if (min.positionVelocity != null)
-		builder = builder.addAllPositionVelocity(DoubleStream.of(min.positionVelocity).boxed().collect(Collectors.toList()));
+	    if (min.values != null)
+		builder = builder.addAllValues(DoubleStream.of(min.values).boxed().collect(Collectors.toList()));
 	    if (min.angleRates != null)
 		builder = builder.addAllAngleRates(DoubleStream.of(min.angleRates).boxed().collect(Collectors.toList()));
 	    if (min.trueState != null)
-	    {
-		builder = builder.addAllTrueStateCartesian(DoubleStream.of(min.trueState.cartesian).boxed().collect(Collectors.toList()));
-		if (min.trueState.keplerian != null)
-		{
-		    builder = builder.setTrueStateSma(min.trueState.keplerian.sma);
-		    builder = builder.setTrueStateEcc(min.trueState.keplerian.ecc);
-		    builder = builder.setTrueStateInc(min.trueState.keplerian.inc);
-		    builder = builder.setTrueStateRaan(min.trueState.keplerian.raan);
-		    builder = builder.setTrueStateArgp(min.trueState.keplerian.argP);
-		    builder = builder.setTrueStateMeanAnom(min.trueState.keplerian.meanAnom);
-		}
-		if (min.trueState.equinoctial != null)
-		{
-		    builder = builder.setTrueStateEx(min.trueState.equinoctial.ex);
-		    builder = builder.setTrueStateEy(min.trueState.equinoctial.ey);
-		    builder = builder.setTrueStateHx(min.trueState.equinoctial.hx);
-		    builder = builder.setTrueStateHy(min.trueState.equinoctial.hy);
-		    builder = builder.setTrueStateLm(min.trueState.equinoctial.lm);
-		}
-	    }
-	    if (min.atmDensity != 0.0)
-		builder = builder.setAtmosphericDensity(min.atmDensity);
-	    if (min.accGravity != null)
-		builder = builder.addAllAccelerationGravity(
-		    DoubleStream.of(min.accGravity).boxed().collect(Collectors.toList()));
-	    if (min.accDrag != null)
-		builder = builder.addAllAccelerationDrag(
-		    DoubleStream.of(min.accDrag).boxed().collect(Collectors.toList()));
-	    if (min.accOceanTides != null)
-		builder = builder.addAllAccelerationOceanTides(
-		    DoubleStream.of(min.accOceanTides).boxed().collect(Collectors.toList()));
-	    if (min.accSolidTides != null)
-		builder = builder.addAllAccelerationSolidTides(
-		    DoubleStream.of(min.accSolidTides).boxed().collect(Collectors.toList()));
-	    if (min.accThirdBodies != null)
-		builder = builder.addAllAccelerationThirdBodies(
-		    DoubleStream.of(min.accThirdBodies).boxed().collect(Collectors.toList()));
-	    if (min.accRadiationPressure != null)
-		builder = builder.addAllAccelerationRadiationPressure(
-		    DoubleStream.of(min.accRadiationPressure).boxed().collect(Collectors.toList()));
-	    if (min.accThrust != null)
-		builder = builder.addAllAccelerationThrust(
-		    DoubleStream.of(min.accThrust).boxed().collect(Collectors.toList()));
-	    if (min.stationState != null)
-		builder = builder.addAllStationState(
-		    DoubleStream.of(min.stationState).boxed().collect(Collectors.toList()));
+		builder = builder.addAllTrueState(DoubleStream.of(min.trueState).boxed().collect(Collectors.toList()));
 	    output.add(builder.build());
 	}
 
@@ -300,40 +208,24 @@ public final class Tools
 
     public static List<Messages.EstimationOutput> buildResponseFromOrbitDetermination(ArrayList<Estimation.EstimationOutput> elist)
     {
-	List<Messages.DoubleArray> dub;
 	ArrayList<Messages.EstimationOutput> output = new ArrayList<Messages.EstimationOutput>(elist.size());
 	for (Estimation.EstimationOutput ein: elist)
 	{
 	    Messages.EstimationOutput.Builder builder = Messages.EstimationOutput.newBuilder()
-		.setTime(ein.time)
+		.setTime(ein.time.durationFrom(AbsoluteDate.J2000_EPOCH))
 		.addAllEstimatedState(DoubleStream.of(ein.estimatedState).boxed().collect(Collectors.toList()));
 	    if (ein.station != null && ein.station.length() > 0)
 		builder = builder.setStation(ein.station);
-	    dub = packDouble2DArray(ein.propagatedCovariance);
-	    if (dub != null)
-		builder = builder.addAllPropagatedCovariance(dub);
-	    dub = packDouble2DArray(ein.innovationCovariance);
-	    if (dub != null)
-		builder = builder.addAllInnovationCovariance(dub);
-	    dub = packDouble2DArray(ein.estimatedCovariance);
-	    if (dub != null)
-		builder = builder.addAllEstimatedCovariance(dub);
+	    if (ein.propagatedCovariance != null)
+		builder = builder.addAllPropagatedCovariance(DoubleStream.of(ein.propagatedCovariance).boxed().collect(Collectors.toList()));
+	    if (ein.innovationCovariance != null)
+		builder = builder.addAllInnovationCovariance(DoubleStream.of(ein.innovationCovariance).boxed().collect(Collectors.toList()));
+	    if (ein.estimatedCovariance != null)
+		builder = builder.addAllEstimatedCovariance(DoubleStream.of(ein.estimatedCovariance).boxed().collect(Collectors.toList()));
 	    if (ein.preFit != null)
-	    {
-		for (Map.Entry<String, double[]> kv : ein.preFit.entrySet())
-		{
-		    builder = builder.putPreFit(kv.getKey(), Messages.DoubleArray.newBuilder().addAllArray(
-						    DoubleStream.of(kv.getValue()).boxed().collect(Collectors.toList())).build());
-		}
-	    }
+		builder = builder.addAllPreFit(DoubleStream.of(ein.preFit).boxed().collect(Collectors.toList()));
 	    if (ein.postFit != null)
-	    {
-		for (Map.Entry<String, double[]> kv : ein.postFit.entrySet())
-		{
-		    builder = builder.putPostFit(kv.getKey(), Messages.DoubleArray.newBuilder().addAllArray(
-						     DoubleStream.of(kv.getValue()).boxed().collect(Collectors.toList())).build());
-		}
-	    }
+		builder = builder.addAllPostFit(DoubleStream.of(ein.postFit).boxed().collect(Collectors.toList()));
 	    if (ein.clutterProbability != null)
 		builder = builder.setClutterProbability(ein.clutterProbability);
 	    output.add(builder.build());
@@ -342,21 +234,6 @@ public final class Tools
 	return(output);
     }
 
-    public static List<Messages.DoubleArray> packDouble2DArray(double[][] in)
-    {
-	if (in == null || in.length == 0)
-	    return(null);
-	List<Messages.DoubleArray> out = new ArrayList<Messages.DoubleArray>(in.length);
-	for (int i = 0; i < in.length; i++)
-	{
-	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder()
-		.addAllArray(DoubleStream.of(in[i]).boxed().collect(Collectors.toList()));
-	    out.add(builder.build());
-	}
-
-	return(out);
-    }
-    
     public static int[][] unpackInteger2DArray(List<Messages.IntegerArray> in)
     {
 	if (in.size() == 0)

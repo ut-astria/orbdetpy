@@ -1,6 +1,6 @@
 /*
  * ManualPropagation.java - Low level numerical state propagation.
- * Copyright (C) 2018-2019 University of Texas
+ * Copyright (C) 2018-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,6 @@ public final class ManualPropagation implements PVCoordinatesProvider
     private double propStart;
     private double propFinal;
 
-    private final AbsoluteDate epoch;
     private final AttitudeProvider attProvider;
     private final LofOffset lofFrame;
     private AbsoluteDate savedTime;
@@ -72,9 +71,8 @@ public final class ManualPropagation implements PVCoordinatesProvider
 	for (int i = 0; i < tasks.length; i++)
 	    tasks[i] = new Task();
 
-	epoch = DataManager.parseDateTime(odCfg.propStart);
 	attProvider = odCfg.getAttitudeProvider();
-	lofFrame = new LofOffset(odCfg.propFrame, LOFType.VVLH);
+	lofFrame = new LofOffset(odCfg.propInertialFrame, LOFType.VVLH);
 
 	enableDMC = true;
 	posParameters = new int[odCfg.forces.size() + 3];
@@ -141,14 +139,14 @@ public final class ManualPropagation implements PVCoordinatesProvider
 	savedPos = new TimeStampedPVCoordinates(time, new Vector3D(X[0], X[1], X[2]),
 						new Vector3D(X[3], X[4], X[5]));
 	if (attProvider != null)
-	    return(attProvider.getAttitude(this, time, odCfg.propFrame));
+	    return(attProvider.getAttitude(this, time, odCfg.propInertialFrame));
 	else
-	    return(lofFrame.getAttitude(this, time, odCfg.propFrame));
+	    return(lofFrame.getAttitude(this, time, odCfg.propInertialFrame));
     }
 
     @Override public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
     {
-	return(odCfg.propFrame.getTransformTo(frame, date).
+	return(odCfg.propInertialFrame.getTransformTo(frame, date).
 	       transformPVCoordinates(savedPos.shiftedBy(date.durationFrom(savedTime))));
     }
 
@@ -193,10 +191,10 @@ public final class ManualPropagation implements PVCoordinatesProvider
 	    final double[] xDot = new double[stateDim];
 	    Arrays.fill(xDot, 0.0);
 
-	    final AbsoluteDate tm = new AbsoluteDate(epoch, t);
+	    final AbsoluteDate tm = new AbsoluteDate(odCfg.propStart, t);
 	    final SpacecraftState ss = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[0], X[1], X[2]),
 												new Vector3D(X[3], X[4], X[5])),
-									      odCfg.propFrame, tm, Constants.EGM96_EARTH_MU),
+									      odCfg.propInertialFrame, tm, Constants.EGM96_EARTH_MU),
 							   getAttitude(tm, Arrays.copyOfRange(X, 0, 6)), odCfg.rsoMass);
 
 	    Vector3D acc = Vector3D.ZERO;

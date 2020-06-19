@@ -21,6 +21,7 @@ option java_multiple_files = false;
 option java_package = "org.astria.rpc";
 option java_outer_classname = "ConversionRequest";
 
+import "google/protobuf/wrappers.proto";
 import "messages.proto";
 
 service Conversion
@@ -30,4 +31,8 @@ service Conversion
     rpc convertAzElToRaDec(AnglesInput) returns (DoubleArray) {}
 
     rpc convertRaDecToAzEl(AnglesInput) returns (DoubleArray) {}
+
+    rpc getUTCString(google.protobuf.DoubleValue) returns (google.protobuf.StringValue) {}
+
+    rpc getJ2000EpochOffset(google.protobuf.StringValue) returns (google.protobuf.DoubleValue) {}
 }

@@ -27,9 +27,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 
 public final class DataManager
@@ -90,44 +87,5 @@ public final class DataManager
 	if (toks != null)
 	    msiseData.maxDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
 						 Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
-    }
-
-    public static String getUTCString(AbsoluteDate time)
-    {
-	DateTimeComponents dtc = time.getComponents(TimeScalesFactory.getUTC());
-	DateComponents dc = dtc.getDate();
-	TimeComponents tc = dtc.getTime();
-
-	StringBuilder sbSec = new StringBuilder(9);
-	if (tc.getSecond() < 10.0)
-	    sbSec.append("0");
-	sbSec.append(tc.getSecond());
-	if (sbSec.length() > 9)
-	    sbSec.setLength(9);
-	else
-	{
-	    while (sbSec.length() < 9)
-		sbSec.append("0");
-	}
-
-	StringBuilder sb = new StringBuilder(27).append(dc.getYear()).append("-");
-	if (dc.getMonth() < 10)
-	    sb.append("0");
-	sb.append(dc.getMonth()).append("-");
-	if (dc.getDay() < 10)
-	    sb.append("0");
-	sb.append(dc.getDay()).append("T");
-	if (tc.getHour() < 10)
-	    sb.append("0");
-	sb.append(tc.getHour()).append(":");
-	if (tc.getMinute() < 10)
-	    sb.append("0");
-	sb.append(tc.getMinute()).append(":").append(sbSec).append("Z");
-	return(sb.toString());
-    }
-
-    public static AbsoluteDate parseDateTime(String time)
-    {
-	return(new AbsoluteDate(DateTimeComponents.parseDateTime(time), TimeScalesFactory.getUTC()));
     }
 }

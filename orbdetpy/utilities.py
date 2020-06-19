@@ -14,39 +14,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import grpc
-from orbdetpy.rpc import messages_pb2, utilities_pb2_grpc
+from typing import List
+from orbdetpy.rpc.messages_pb2 import DoubleArray, InterpolateEphemerisInput
 from orbdetpy.rpc.server import RemoteServer
+from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
 
-def interpolate_ephemeris(source_frame, times, states, num_points,
-                          dest_frame, interp_start, interp_end, step_size):
-    """ Interpolates the given state vectors.
+def interpolate_ephemeris(source_frame: int, times: List[float], states, num_points: int,
+                          dest_frame: int, interp_start: float, interp_end: float, step_size: float):
+    """Interpolates the given state vectors.
 
-    Args:
-        source_frame: Source reference frame; a constant from the enum Frame
-        times: Time strings of state vectors to interpolate
-        states: State vectors to interpolate
-        num_points: Number of states to use for interpolation
-        dest_frame: Destination reference frame; a constant from the enum Frame
-        interp_start: Interpolation start time
-        interp_end: Interpolation end time
-        step_size: Interpolation step size [s]
+    Parameters
+    ----------
+    source_frame : Source reference frame; a constant from Frame.
+    times : Times of state vectors; each a TT offset from J2000 epoch [s].
+    states : State vectors to interpolate.
+    num_points : Number of states to use for interpolation.
+    dest_frame : Destination reference frame; a constant from Frame.
+    interp_start : Interpolation start time.
+    interp_end : Interpolation end time.
+    step_size : Interpolation step size [s].
 
-    Returns:
-        Interpolated time strings and state vectors.
+    Returns
+    -------
+    Interpolated times and state vectors.
     """
 
-    state_list = []
-    for s in states:
-        da = messages_pb2.DoubleArray()
-        da.array.MergeFrom(s)
-        state_list.append(da)
-
     with RemoteServer.channel() as chan:
-        stub = utilities_pb2_grpc.UtilitiesStub(chan)
-        resp = stub.interpolateEphemeris(messages_pb2.InterpolateEphemerisInput(
-            source_frame=source_frame.name, time=times, ephem=state_list,
-            num_points=num_points, dest_frame=dest_frame.name, interp_start=interp_start,
+        state_list = [DoubleArray(array = s) for s in states]
+        resp = UtilitiesStub(chan).interpolateEphemeris(InterpolateEphemerisInput(
+            source_frame=source_frame, time=times, ephem=state_list,
+            num_points=num_points, dest_frame=dest_frame, interp_start=interp_start,
             interp_end=interp_end, step_size=step_size))
-
-    return([r.time, list(r.state)] for r in resp.array)
+    return(resp.array)

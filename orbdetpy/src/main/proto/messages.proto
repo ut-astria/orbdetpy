@@ -33,11 +33,10 @@ message DoubleArray
 
 message Parameter
 {
-    string name = 1;
-    double value = 2;
-    double min = 3;
-    double max = 4;
-    string estimation = 5;
+    double value = 1;
+    double min = 2;
+    double max = 3;
+    int32 estimation = 4;
 }
 
 message Facet
@@ -48,10 +47,10 @@ message Facet
 
 message Maneuver
 {
-    string time = 1;
-    string trigger_event = 2;
+    double time = 1;
+    int32 trigger_event = 2;
     repeated double trigger_params = 3 [packed = true];
-    string maneuver_type = 4;
+    int32 maneuver_type = 4;
     repeated double maneuver_params = 5 [packed = true];
 }
 
@@ -60,15 +59,8 @@ message Station
     double latitude = 1;
     double longitude = 2;
     double altitude = 3;
-    double azimuth_bias = 4;
-    double elevation_bias = 5;
-    double range_bias = 6;
-    double range_rate_bias = 7;
-    double right_ascension_bias = 8;
-    double declination_bias = 9;
-    repeated double position_bias = 10 [packed = true];
-    repeated double position_velocity_bias = 11 [packed = true];
-    string bias_estimation = 12;
+    repeated double bias = 4 [packed = true];
+    int32 bias_estimation = 5;
 }
 
 message MeasurementSetting
@@ -84,7 +76,7 @@ message Settings
     repeated Facet rso_facets = 3;
     repeated double rso_solar_array_axis = 4 [packed = true];
     double rso_solar_array_area = 5;
-    string rso_attitude_provider = 6;
+    int32 rso_attitude_provider = 6;
     repeated double rso_spin_velocity = 7 [packed = true];
     repeated double rso_spin_acceleration = 8 [packed = true];
 
@@ -97,7 +89,7 @@ message Settings
     bool solid_tides_sun = 15;
     bool solid_tides_moon = 16;
 
-    string drag_model = 17;
+    int32 drag_model = 17;
     Parameter drag_coefficient = 18;
     repeated IntegerArray drag_MSISE_flags = 19;
     double drag_exp_rho0 = 20;
@@ -110,14 +102,14 @@ message Settings
 
     repeated Maneuver maneuvers = 26;
 
-    string prop_start = 27;
-    string prop_end = 28;
+    double prop_start = 27;
+    double prop_end = 28;
     double prop_step = 29;
     repeated double prop_initial_state = 30 [packed = true];
     repeated string prop_initial_TLE = 31;
     string prop_inertial_frame = 32;
-    string prop_step_handler_start_time = 33;
-    string prop_step_handler_end_time = 34;
+    double prop_step_handler_start_time = 33;
+    double prop_step_handler_end_time = 34;
 
     double integ_min_time_step = 35;
     double integ_max_time_step = 36;
@@ -125,28 +117,23 @@ message Settings
     double integ_rel_tolerance = 38;
 
     bool sim_measurements = 39;
-    bool sim_skip_unobservable = 40;
-    bool sim_include_extras = 41;
-    bool sim_include_station_state = 42;
-    bool sim_include_angle_rates = 57;
 
-    map<string, Station> stations = 43;
-    map<string, MeasurementSetting> measurements = 44;
+    map<string, Station> stations = 40;
+    map<int32, MeasurementSetting> measurements = 41;
 
-    string estm_filter = 45;
-    repeated double estm_covariance = 46 [packed = true];
-    repeated double estm_process_noise = 47 [packed = true];
-    double estm_DMC_corr_time = 48;
-    double estm_DMC_sigma_pert = 49;
-    Parameter estm_DMC_acceleration = 50;
-    double estm_outlier_sigma = 51;
-    int32 estm_outlier_warmup = 52;
-    int32 estm_smoother_iterations = 53;
-    bool estm_enable_PDAF = 58;
-    bool estm_enable_CAR_MHF = 54;
-    double estm_detection_probability = 55;
-    double estm_gating_probability = 59;
-    double estm_gating_threshold = 56;
+    int32 estm_filter = 42;
+    repeated double estm_covariance = 43 [packed = true];
+    repeated double estm_process_noise = 44 [packed = true];
+    double estm_DMC_corr_time = 45;
+    double estm_DMC_sigma_pert = 46;
+    Parameter estm_DMC_acceleration = 47;
+    double estm_outlier_sigma = 48;
+    int32 estm_outlier_warmup = 49;
+    int32 estm_smoother_iterations = 50;
+    bool estm_enable_PDAF = 51;
+    double estm_detection_probability = 52;
+    double estm_gating_probability = 53;
+    double estm_gating_threshold = 54;
 }
 
 message SettingsArray
@@ -156,40 +143,11 @@ message SettingsArray
 
 message Measurement
 {
-    string time = 1;
+    double time = 1;
     string station = 2;
-    double azimuth = 3;
-    double elevation = 4;
-    double range = 5;
-    double range_rate = 6;
-    double right_ascension = 7;
-    double declination = 8;
-    repeated double position = 9 [packed = true];
-    repeated double position_velocity = 10 [packed = true];
-    repeated double angle_rates = 32 [packed = true];
-
-    double atmospheric_density = 11;
-    repeated double acceleration_gravity = 12 [packed = true];
-    repeated double acceleration_drag = 13 [packed = true];
-    repeated double acceleration_ocean_tides = 14 [packed = true];
-    repeated double acceleration_solid_tides = 15 [packed = true];
-    repeated double acceleration_third_bodies = 16 [packed = true];
-    repeated double acceleration_radiation_pressure = 17 [packed = true];
-    repeated double acceleration_thrust = 18 [packed = true];
-    repeated double station_state = 19 [packed = true];
-
-    repeated double true_state_cartesian = 20 [packed = true];
-    double true_state_sma = 21;
-    double true_state_ecc = 22;
-    double true_state_inc = 23;
-    double true_state_raan = 24;
-    double true_state_argp = 25;
-    double true_state_mean_anom = 26;
-    double true_state_ex = 27;
-    double true_state_ey = 28;
-    double true_state_hx = 29;
-    double true_state_hy = 30;
-    double true_state_lm = 31;
+    repeated double values = 3 [packed = true];
+    repeated double angle_rates = 4 [packed = true];
+    repeated double true_state = 5 [packed = true];
 }
 
 message MeasurementArray
@@ -202,40 +160,6 @@ message Measurement2DArray
     repeated MeasurementArray array = 1;
 }
 
-message InterpolateEphemerisInput
-{
-    string source_frame = 1;
-    repeated string time = 2;
-    repeated DoubleArray ephem = 3;
-    int32 num_points = 4;
-    string dest_frame = 5;
-    string interp_start = 6;
-    string interp_end = 7;
-    double step_size = 8;
-}
-
-message InterpolationOutput
-{
-    string time = 1;
-    repeated double state = 2 [packed = true];
-}
-
-message InterpolationOutputArray
-{
-    repeated InterpolationOutput array = 1;
-}
-
-message PropagationOutput
-{
-    string time = 1;
-    repeated DoubleArray states = 2;
-}
-
-message PropagationOutputArray
-{
-    repeated PropagationOutput array = 1;
-}
-
 message DetermineOrbitInput
 {
     Settings config = 1;
@@ -244,14 +168,14 @@ message DetermineOrbitInput
 
 message EstimationOutput
 {
-    string time = 1;
+    double time = 1;
     string station = 2;
     repeated double estimated_state  = 3 [packed = true];
-    repeated DoubleArray propagated_covariance = 4;
-    repeated DoubleArray innovation_covariance = 5;
-    repeated DoubleArray estimated_covariance = 6;
-    map<string, DoubleArray> pre_fit = 7;
-    map<string, DoubleArray> post_fit = 8;
+    repeated double propagated_covariance = 4 [packed = true];
+    repeated double innovation_covariance = 5 [packed = true];
+    repeated double estimated_covariance = 6 [packed = true];
+    repeated double pre_fit = 7 [packed = true];
+    repeated double post_fit = 8 [packed = true];
     double clutter_probability = 9;
 }
 
@@ -263,7 +187,7 @@ message EstimationOutputArray
 message TransformFrameInput
 {
     string src_frame = 1;
-    string time = 2;
+    double time = 2;
     repeated double pva = 3 [packed = true];
     string dest_frame = 4;
 }
@@ -271,16 +195,28 @@ message TransformFrameInput
 message ImportTDMInput
 {
     string file_name = 1;
-    string file_format = 2;
+    int32 file_format = 2;
 }
 
 message AnglesInput
 {
     string frame = 1;
-    repeated string time = 2;
+    repeated double time = 2 [packed = true];
     double latitude = 3;
     double longitude = 4;
     double altitude = 5;
     repeated double angle1 = 6 [packed = true];
     repeated double angle2 = 7 [packed = true];
+}
+
+message InterpolateEphemerisInput
+{
+    string source_frame = 1;
+    repeated double time = 2 [packed = true];
+    repeated DoubleArray ephem = 3;
+    int32 num_points = 4;
+    string dest_frame = 5;
+    double interp_start = 6;
+    double interp_end = 7;
+    double step_size = 8;
 }

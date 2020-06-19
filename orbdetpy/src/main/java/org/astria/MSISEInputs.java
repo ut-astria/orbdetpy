@@ -29,8 +29,7 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
     private final HashMap<String, double[]> swData;
     private final double[] apVals;
     
-    public MSISEInputs(AbsoluteDate min, AbsoluteDate max,
-		       HashMap<String, double[]> sw, int apflag)
+    public MSISEInputs(AbsoluteDate min, AbsoluteDate max, HashMap<String, double[]> sw, int apflag)
     {
 	minDate = min;
 	maxDate = max;
@@ -53,14 +52,14 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 
     public double getDailyFlux(AbsoluteDate date)
     {
-	String p = DataManager.getUTCString(new AbsoluteDate(date, -86400.0));
+	String p = date.shiftedBy(-86400.0).toString();
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 	return(swData.get(k)[26]);
     }
 
     public double getAverageFlux(AbsoluteDate date)
     {
-	String p = DataManager.getUTCString(date);
+	String p = date.toString();
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 	return(swData.get(k)[28]);
     }
@@ -71,13 +70,13 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 	{
 	    if (i == 0)
 	    {
-		String p = DataManager.getUTCString(date);
+		String p = date.toString();
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 		apVals[0] = swData.get(k)[22];
 	    }
 	    else if (i <= 4)
 	    {
-		String p = DataManager.getUTCString(new AbsoluteDate(date, -10800.0*(i-1)));
+		String p = date.shiftedBy(-10800.0*(i-1)).toString();
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 		apVals[i] = swData.get(k)[Integer.parseInt(p.substring(11, 13))/3+14];
 	    }
@@ -86,7 +85,7 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 		apVals[i] = 0.0;
 		for (int j = 8*i-36; j <= 8*i-29; j++)
 		{
-		    String p = DataManager.getUTCString(new AbsoluteDate(date, -10800.0*(j-1)));
+		    String p = date.shiftedBy(-10800.0*(j-1)).toString();
 		    String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
 		    apVals[i] += swData.get(k)[Integer.parseInt(p.substring(11, 13))/3+14];
 		}

@@ -39,20 +39,26 @@ import org.orekit.utils.PVCoordinates;
 
 public final class EventHandling<T extends EventDetector> implements EventHandler<T>
 {
-    private final String mnvrType;
+    private final Settings.ManeuverType maneuverType;
     private final double delta;
 
-    public EventHandling(String mnvrType, double delta)
+    public EventHandling(Settings.ManeuverType maneuverType, double delta)
     {
-	this.mnvrType = mnvrType;
+	this.maneuverType = maneuverType;
 	this.delta = delta;
     }
 
     @Override public Action eventOccurred(SpacecraftState state, T det, boolean incr)
     {
-	if (mnvrType != null && mnvrType.equalsIgnoreCase("StopPropagation"))
-	    return(Action.STOP);
-	return(Action.RESET_STATE);
+	if (maneuverType != Settings.ManeuverType.UNDEFINED)
+	{
+	    if (maneuverType == Settings.ManeuverType.STOP_PROPAGATION)
+		return(Action.STOP);
+	    if (delta != 0.0)
+		return(Action.RESET_STATE);
+	}
+
+	return(Action.CONTINUE);
     }
 
     @Override public SpacecraftState resetState(T det, SpacecraftState old)
@@ -66,14 +72,14 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	double theta = kep.getTrueAnomaly();
 
 	Orbit neworb = null;
-	if (mnvrType.equalsIgnoreCase("NorthSouthStationing") || mnvrType.equalsIgnoreCase("EastWestStationing"))
+	if (maneuverType == Settings.ManeuverType.NORTH_SOUTH_STATIONING || maneuverType == Settings.ManeuverType.EAST_WEST_STATIONING)
 	{
 	    PVCoordinates pvc = old.getOrbit().getPVCoordinates();
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
 							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	    GeodeticPoint geo = earth.transform(pvc.getPosition(), old.getFrame(), old.getDate());
 
-	    if (mnvrType.equalsIgnoreCase("NorthSouthStationing"))
+	    if (maneuverType == Settings.ManeuverType.NORTH_SOUTH_STATIONING)
 		geo = new GeodeticPoint(geo.getLatitude() + delta, geo.getLongitude(), geo.getAltitude());
 	    else
 		geo = new GeodeticPoint(geo.getLatitude(), geo.getLongitude() + delta, geo.getAltitude());
@@ -86,20 +92,29 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	}
 	else
 	{
-	    if (mnvrType.equalsIgnoreCase("SemiMajorAxisChange"))
+	    switch (maneuverType)
+	    {
+	    case SEMI_MAJOR_AXIS_CHANGE:
 		a += delta;
-	    else if (mnvrType.equalsIgnoreCase("PerigeeChange"))
+		break;
+	    case PERIGEE_CHANGE:
 		a += delta/(1 - e);
-	    else if (mnvrType.equalsIgnoreCase("EccentricityChange"))
+		break;
+	    case ECCENTRICITY_CHANGE:
 		e += delta;
-	    else if (mnvrType.equalsIgnoreCase("InclinationChange"))
+		break;
+	    case INCLINATION_CHANGE:
 		i += delta;
-	    else if (mnvrType.equalsIgnoreCase("RAANChange"))
+		break;
+	    case RAAN_CHANGE:
 		O += delta;
-	    else if (mnvrType.equalsIgnoreCase("ArgPerigeeChange"))
+		break;
+	    case ARG_PERIGEE_CHANGE:
 		w += delta;
-	    else
+		break;
+	    default:
 		throw(new RuntimeException("Invalid maneuver type"));
+	    }
 
 	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(),
 					old.getDate(), old.getMu());

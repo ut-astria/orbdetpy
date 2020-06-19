@@ -14,24 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
-import dateutil.parser
 import matplotlib.pyplot as plt
 from math import acos, pi
 from numpy import array, cross, dot
 from numpy.linalg import norm
-from orbdetpy import read_param
 from orbdetpy.plotting import maximize_plot
 
 def plot(sim_data, interactive = False, output_file_path = None):
     mu = 398600.4418
-    out = read_param(sim_data)
     tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
-    for o in out:
-        if ("trueStateCartesian" in o):
-            rv = [x/1000.0 for x in o["trueStateCartesian"][:6]]
+    for o in sim_data:
+        if (hasattr(o, "true_state")):
+            rv = [x/1000.0 for x in o.true_state[:6]]
         else:
-            rv = [x/1000.0 for x in o["estimatedState"][:6]]
+            rv = [x/1000.0 for x in o.estimated_state[:6]]
         rn = norm(rv[:3])
         vn = norm(rv[3:])
         h = cross(rv[:3], rv[3:])
@@ -52,7 +48,7 @@ def plot(sim_data, interactive = False, output_file_path = None):
         if (dot(rv[:3], rv[3:]) < 0):
             theta = 360.0 - theta
 
-        tstamp.append(dateutil.parser.isoparse(o["time"]))
+        tstamp.append(o.time)
         hvec.append(h)
         hmag.append(hn)
         ener.append(0.5*vn**2 - mu/rn)
@@ -64,7 +60,7 @@ def plot(sim_data, interactive = False, output_file_path = None):
         tran.append(theta)
 
     hvec = array(hvec)
-    tim = [(t - tstamp[0]).total_seconds()/3600 for t in tstamp]
+    tim = [(t - tstamp[0])/3600 for t in tstamp]
 
     outfiles = []
     plt.figure(0)
@@ -72,27 +68,28 @@ def plot(sim_data, interactive = False, output_file_path = None):
     plt.subplot(611)
     plt.scatter(tim, sma, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
-    plt.ylabel("SMA [km]")
+    plt.ylabel("a [km]")
     plt.subplot(612)
     plt.scatter(tim, ecc, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
-    plt.ylabel("Eccentricity")
+    plt.ylabel("e")
     plt.subplot(613)
     plt.scatter(tim, inc, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
-    plt.ylabel("Inclination [deg]")
+    plt.ylabel("i [deg]")
     plt.subplot(614)
     plt.scatter(tim, raan, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
-    plt.ylabel("RAAN [deg]")
+    plt.ylabel(r"$\Omega$ [deg]")
     plt.subplot(615)
     plt.scatter(tim, argp, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
-    plt.ylabel("Perigee arg. [deg]")
+    plt.ylabel(r"$\omega$ arg. [deg]")
     plt.subplot(616)
     plt.scatter(tim, tran, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
-    plt.ylabel("True anom. [deg]")
+    plt.ylabel(r"$\theta$ [deg]")
+    plt.suptitle("Orbital elements")
     if (output_file_path is not None):
         outfiles.append(output_file_path + "_elements.png")
         plt.savefig(outfiles[-1], format = "png")
@@ -126,7 +123,7 @@ def plot(sim_data, interactive = False, output_file_path = None):
     plt.scatter(tim, hvec[:,2], marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("h(z)")
-    plt.suptitle("Components of angular momentum")
+    plt.suptitle("Angular momentum components")
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (output_file_path is not None):
         outfiles.append(output_file_path + "_momentum_components.png")
