@@ -70,8 +70,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.GroundFieldOfViewDetector;
 import org.orekit.propagation.events.LongitudeCrossingDetector;
 import org.orekit.time.AbsoluteDate;
@@ -143,13 +145,17 @@ public final class Settings
 	public double fovElevation;
 	public double fovAperture;
 
-	public Station(double latitude, double longitude, double altitude, double[] bias, EstimationType biasEstimation)
+	public Station(double latitude, double longitude, double altitude, double[] bias, EstimationType biasEstimation,
+		       double fovAzimuth, double fovElevation, double fovAperture)
         {
 	    this.latitude = latitude;
 	    this.longitude = longitude;
 	    this.altitude = altitude;
 	    this.bias = bias;
 	    this.biasEstimation = biasEstimation;
+	    this.fovAzimuth = fovAzimuth;
+	    this.fovElevation = fovElevation;
+	    this.fovAperture = fovAperture;
 	}
     }
 
@@ -670,50 +676,67 @@ public final class Settings
 	return(new Array2DRowRealMatrix(Q));
     }
 
-    public void addEventHandlers(Propagator prop)
+    public ArrayList<EventHandling> addEventHandlers(Propagator prop, boolean checkVisibility)
     {
 	EventHandling handler;
+	ArrayList<EventHandling> handles = new ArrayList<EventHandling>();
 
-	if (cfgStations != null)
+	if (checkVisibility && cfgStations != null)
 	{
+	    AbstractDetector detector;
 	    for (Map.Entry<String, Station> kv: cfgStations.entrySet())
 	    {
-		Station s = kv.getValue();
-		if (s.fovAperture <= 5E-6)
-		    continue;
-		Vector3D center = new Vector3D(FastMath.cos(s.fovElevation)*FastMath.sin(s.fovAzimuth),
-					       FastMath.cos(s.fovElevation)*FastMath.cos(s.fovAzimuth), FastMath.sin(s.fovElevation));
-		CircularFieldOfView fov = new CircularFieldOfView(center, 0.5*s.fovAperture, 5E-6);
-		handler = new EventHandling<GroundFieldOfViewDetector>(null, 0);
-		prop.addEventDetector(new GroundFieldOfViewDetector(stations.get(kv.getKey()).getBaseFrame(), fov).withHandler(handler));
+		Station stn = kv.getValue();
+		if (stn.fovAperture <= 1E-6)
+		{
+		    detector = new ElevationDetector(stations.get(kv.getKey()).getBaseFrame());
+		    handler = new EventHandling<ElevationDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(),
+								   detector.g(prop.getInitialState()) > 0.0);
+		}
+		else
+		{
+		    Vector3D center = new Vector3D(FastMath.cos(stn.fovElevation)*FastMath.sin(stn.fovAzimuth),
+						   FastMath.cos(stn.fovElevation)*FastMath.cos(stn.fovAzimuth),
+						   FastMath.sin(stn.fovElevation));
+		    CircularFieldOfView fov = new CircularFieldOfView(center, 0.5*stn.fovAperture, 1E-6);
+		    detector = new GroundFieldOfViewDetector(stations.get(kv.getKey()).getBaseFrame(), fov);
+		    handler = new EventHandling<GroundFieldOfViewDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(),
+									   detector.g(prop.getInitialState()) < 0.0);
+		}
+
+		handles.add(handler);
+		prop.addEventDetector(detector.withHandler(handler));
 	    }
 	}
 
 	if (cfgManeuvers == null)
-	    return;
+	    return(handles);
 	for (Maneuver m: cfgManeuvers)
 	{
 	    if (m.maneuverType == ManeuverType.CONSTANT_THRUST)
 		continue;
 	    if (m.triggerEvent == ManeuverTrigger.DATE_TIME)
 	    {
-		handler = new EventHandling<DateDetector>(m.maneuverType, m.maneuverParams[0]);
+		handler = new EventHandling<DateDetector>(m.maneuverType, m.maneuverParams[0], null, null);
 		prop.addEventDetector(new DateDetector(m.time).withHandler(handler));
 	    }
 	    else if (m.triggerEvent == ManeuverTrigger.LONGITUDE_CROSSING)
 	    {
 		OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
 							     FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-		handler = new EventHandling<LongitudeCrossingDetector>(m.maneuverType, m.maneuverParams[0]);
+		handler = new EventHandling<LongitudeCrossingDetector>(m.maneuverType, m.maneuverParams[0], null, null);
 		prop.addEventDetector(new LongitudeCrossingDetector(body, m.triggerParams[0]).withHandler(handler));
 	    }
 	    else if (m.triggerEvent == ManeuverTrigger.APSIDE_CROSSING)
 	    {
-		handler = new EventHandling<ApsideDetector>(m.maneuverType, m.maneuverParams[0]);
+		handler = new EventHandling<ApsideDetector>(m.maneuverType, m.maneuverParams[0], null, null);
 		prop.addEventDetector(new ApsideDetector(prop.getInitialState().getOrbit()).withHandler(handler));
 	    }
 	    else
 		throw(new RuntimeException("Invalid maneuver trigger event"));
+	    handles.add(handler);
 	}
+
+	return(handles);
     }
 }

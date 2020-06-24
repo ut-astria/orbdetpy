@@ -39,17 +39,38 @@ import org.orekit.utils.PVCoordinates;
 
 public final class EventHandling<T extends EventDetector> implements EventHandler<T>
 {
-    private final Settings.ManeuverType maneuverType;
-    private final double delta;
+    public final Settings.ManeuverType maneuverType;
+    public final double delta;
+    public final String stationName;
+    public Boolean isVisible;
 
-    public EventHandling(Settings.ManeuverType maneuverType, double delta)
+    public EventHandling(Settings.ManeuverType maneuverType, double delta, String stationName, Boolean isVisible)
     {
 	this.maneuverType = maneuverType;
 	this.delta = delta;
+	this.stationName = stationName;
+	this.isVisible = isVisible;
     }
 
-    @Override public Action eventOccurred(SpacecraftState state, T det, boolean incr)
+    @Override public Action eventOccurred(SpacecraftState state, T detector, boolean increasing)
     {
+	if (maneuverType == Settings.ManeuverType.UNDEFINED && stationName != null)
+	{
+	    String name = detector.getClass().getSimpleName();
+	    if (name.equalsIgnoreCase("ElevationDetector"))
+	    {
+		isVisible = increasing;
+		if (!increasing)
+		    return(Action.STOP);
+	    }
+	    else if (name.equalsIgnoreCase("GroundFieldOfViewDetector"))
+	    {
+		isVisible = !increasing;
+		if (increasing)
+		    return(Action.STOP);
+	    }
+	}
+
 	if (maneuverType != Settings.ManeuverType.UNDEFINED)
 	{
 	    if (maneuverType == Settings.ManeuverType.STOP_PROPAGATION)

@@ -63,7 +63,7 @@ public final class PropagatorBuilder extends NumericalPropagatorBuilder
 									   plst.findByName(Estimation.DMC_ACC_ESTM[2]).getValue()));
 	}
 
-	odCfg.addEventHandlers(prop);
+	odCfg.addEventHandlers(prop, false);
 	return(prop);
     }
 

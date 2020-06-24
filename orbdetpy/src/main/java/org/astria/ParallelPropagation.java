@@ -42,8 +42,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
-import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
@@ -54,13 +52,15 @@ public final class ParallelPropagation
 {
     private final ArrayList<Settings> configObjs;
     private final ArrayList<Propagator> propagators;
+    private final ArrayList<ArrayList<EventHandling>> eventHandlers;
 
     public ParallelPropagation(ArrayList<Settings> configObjs)
     {
 	this.configObjs = configObjs;
 	this.propagators = new ArrayList<Propagator>(configObjs.size());
+	this.eventHandlers = new ArrayList<ArrayList<EventHandling>>(configObjs.size());
 	for (int i = 0; i < configObjs.size(); i++)
-	    propagators.add(buildPropagator(configObjs.get(i)));
+	    buildPropagator(configObjs.get(i));
     }
 
     public ArrayList<ArrayList<Measurements.Measurement>> propagate() throws Exception
@@ -106,7 +106,7 @@ public final class ParallelPropagation
 		Propagator prop = propagators.get(i);
 		SpacecraftState state = DataManager.threadPool.submit(()->prop.propagate(t0, t1)).get();
 		tmStart = state.getDate();
-		Simulation.simulate(configObjs.get(i), state, output.get(i));
+		Simulation.simulate(configObjs.get(i), state, eventHandlers.get(i), output.get(i));
 	    }
 
 	    double dt = end.durationFrom(tmStart);
@@ -124,7 +124,7 @@ public final class ParallelPropagation
 	return(output);
     }
 
-    private Propagator buildPropagator(Settings cfg)
+    private void buildPropagator(Settings cfg)
     {
 	Propagator prop;
 	if (cfg.propInitialTLE != null && cfg.propInitialTLE.length == 2)
@@ -151,8 +151,9 @@ public final class ParallelPropagation
 	AttitudeProvider attProv = cfg.getAttitudeProvider();
 	if (attProv != null)
 	    prop.setAttitudeProvider(attProv);
-	cfg.addEventHandlers(prop);
-	return(prop);
+
+	propagators.add(prop);
+	eventHandlers.add(cfg.addEventHandlers(prop, cfg.simMeasurements));
     }
 
     private static class Simulation
@@ -173,7 +174,8 @@ public final class ParallelPropagation
 	private static final ObservableSatellite obsSat = new ObservableSatellite(0);
 	private static final SpacecraftState[] ssStates = new SpacecraftState[1];
 
-	public static void simulate(Settings simCfg, SpacecraftState state, ArrayList<Measurements.Measurement> measOut)
+	public static void simulate(Settings simCfg, SpacecraftState state, ArrayList<EventHandling> handlers,
+				    ArrayList<Measurements.Measurement> measOut)
 	{
 	    TimeStampedPVCoordinates pvc = state.getPVCoordinates(simCfg.propInertialFrame);
 	    Measurements.Measurement meas = new Measurements.Measurement(pvc);
@@ -186,13 +188,23 @@ public final class ParallelPropagation
 	    ssStates[0] = state;
 	    for (Map.Entry<String, GroundStation> kv: simCfg.stations.entrySet())
 	    {
-		GroundStation gst = kv.getValue();
-		AngularAzEl azel = new AngularAzEl(gst, pvc.getDate(), twoZeros, twoZeros, twoOnes, obsSat);
-		if (azel.estimate(0, 0, ssStates).getEstimatedValue()[1] <= 5E-6)
+		boolean isVisible = false;
+		String gsName = kv.getKey();
+		for (EventHandling hnd: handlers)
+		{
+		    if (hnd.maneuverType == Settings.ManeuverType.UNDEFINED && hnd.stationName != null &&
+			hnd.stationName.equals(gsName))
+		    {
+			isVisible = hnd.isVisible;
+			break;
+		    }
+		}
+		if (!isVisible)
 		    continue;
 
 		Measurements.Measurement clone = new Measurements.Measurement(meas);
-		clone.station = kv.getKey();
+		clone.station = gsName;
+		measOut.add(clone);
 
 		double[] bias;
 		Settings.Station jsn = simCfg.cfgStations.get(clone.station);
@@ -201,6 +213,7 @@ public final class ParallelPropagation
 		else
 		    bias = twoZeros;
 
+		GroundStation gst = kv.getValue();
 		for (Map.Entry<Settings.MeasurementType, Settings.Measurement> nvp: simCfg.cfgMeasurements.entrySet())
 		{
 		    Settings.MeasurementType name = nvp.getKey();
@@ -235,14 +248,13 @@ public final class ParallelPropagation
 		    else if (name == Settings.MeasurementType.AZIMUTH || name == Settings.MeasurementType.ELEVATION &&
 			     clone.values == null)
 		    {
-			azel.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{rand.nextGaussian()*val.error[0]+bias[0],
-										      rand.nextGaussian()*val.error[0]+bias[1]},
+			AngularAzEl obs = new AngularAzEl(gst, pvc.getDate(), twoZeros, twoZeros, twoOnes, obsSat);
+			obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{rand.nextGaussian()*val.error[0]+bias[0],
+										     rand.nextGaussian()*val.error[0]+bias[1]},
 				twoOnes, twoNegInf, twoPosInf));
-			clone.values = azel.estimate(0, 0, ssStates).getEstimatedValue();
+			clone.values = obs.estimate(0, 0, ssStates).getEstimatedValue();
 		    }
 		}
-
-		measOut.add(clone);
 	    }
 	}
     }

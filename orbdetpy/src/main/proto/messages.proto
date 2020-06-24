@@ -61,6 +61,9 @@ message Station
     double altitude = 3;
     repeated double bias = 4 [packed = true];
     int32 bias_estimation = 5;
+    double fov_azimuth = 6;
+    double fov_elevation = 7;
+    double fov_aperture = 8;
 }
 
 message MeasurementSetting

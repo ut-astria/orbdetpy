@@ -18,7 +18,7 @@ import math
 from os import path
 from typing import List, Optional, Tuple
 from .version import __version__
-from orbdetpy.rpc.messages_pb2 import Facet, Maneuver, Parameter, Settings
+from orbdetpy.rpc.messages_pb2 import Facet, Maneuver, Parameter, Settings, Station
 from orbdetpy.rpc.server import RemoteServer
 
 def configure(**kwargs)->Settings:
@@ -47,7 +47,7 @@ def configure(**kwargs)->Settings:
                     estm_smoother_iterations=10, estm_enable_PDAF=False, estm_detection_probability=0.99,
                     estm_gating_probability=0.99, estm_gating_threshold=5.0, **kwargs))
 
-def add_facet(cfg: Settings, normal: Tuple[float, float, float], area: float)->None:
+def add_facet(cfg: Settings, normal: Tuple[float, float, float], area: float)->Facet:
     """Add a facet to a box-wing spacecraft model.
 
     Parameters
@@ -58,13 +58,14 @@ def add_facet(cfg: Settings, normal: Tuple[float, float, float], area: float)->N
 
     Returns
     -------
-    None.
+    Added Facet object
     """
 
     cfg.rso_facets.append(Facet(normal=normal, area=area))
+    return(cfg.rso_facets[-1])
 
 def add_maneuver(cfg: Settings, time: float, trigger_event: int, trigger_params: Optional[List[float]],
-                 maneuver_type: int, maneuver_params: Optional[List[float]])->None:
+                 maneuver_type: int, maneuver_params: Optional[List[float]])->Maneuver:
     """Add maneuver to propagation force models.
 
     Parameters
@@ -78,13 +79,15 @@ def add_maneuver(cfg: Settings, time: float, trigger_event: int, trigger_params:
 
     Returns
     -------
-    None.
+    Added Maneuver object.
     """
 
     cfg.maneuvers.append(Maneuver(time=time, trigger_event=trigger_event, trigger_params=trigger_params,
                                   maneuver_type=maneuver_type, maneuver_params=maneuver_params))
+    return(cfg.maneuvers[-1])
 
-def add_station(cfg: Settings, name: str, latitude: float, longitude: float, altitude: float)->None:
+def add_station(cfg: Settings, name: str, latitude: float, longitude: float, altitude: float,
+                fov_azimuth: float=0.0, fov_elevation: float=0.0, fov_aperture: float=0.0)->Station:
     """Add a ground station.
 
     Parameters
@@ -94,15 +97,22 @@ def add_station(cfg: Settings, name: str, latitude: float, longitude: float, alt
     latitude : Station WGS-84 latitude [rad].
     longitude : Station WGS-84 longitude [rad].
     altitude : Station height above WGS-84 reference geoid [m].
+    fov_azimuth : FOV center azimuth [rad].
+    fov_elevation : FOV center elevation [rad].
+    fov_aperture : FOV aperture angle [rad].
 
     Returns
     -------
-    None.
+    Added Station object.
     """
 
     cfg.stations[name].latitude = latitude
     cfg.stations[name].longitude = longitude
     cfg.stations[name].altitude = altitude
+    cfg.stations[name].fov_azimuth = fov_azimuth
+    cfg.stations[name].fov_elevation = fov_elevation
+    cfg.stations[name].fov_aperture = fov_aperture
+    return(cfg.stations[name])
 
 class AttitudeType():
     """Orekit attitude providers.

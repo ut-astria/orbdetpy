@@ -124,9 +124,10 @@ public final class Tools
 	    for (Map.Entry<String, Messages.Station> kv : req.getStationsMap().entrySet())
 	    {
 		Messages.Station v = kv.getValue();
-		cfg.cfgStations.put(kv.getKey(), new Settings.Station(v.getLatitude(), v.getLongitude(), v.getAltitude(),
-								      v.getBiasList().stream().mapToDouble(Double::doubleValue).toArray(),
-								      estmTypes[v.getBiasEstimation()]));
+		cfg.cfgStations.put(kv.getKey(),
+				    new Settings.Station(v.getLatitude(), v.getLongitude(), v.getAltitude(),
+							 v.getBiasList().stream().mapToDouble(Double::doubleValue).toArray(),
+							 estmTypes[v.getBiasEstimation()], v.getFovAzimuth(), v.getFovElevation(), v.getFovAperture()));
 	    }
 	}
 

@@ -53,17 +53,18 @@ cfg = configure(prop_start=get_J2000_epoch_offset("2019-05-01T00:00:00Z"),
 
 # Define ground stations
 add_station(cfg, "Maui", 0.3614, -2.7272, 3059.0)
-add_station(cfg, "Millstone", 0.7438, -1.2652, 100.0)
+add_station(cfg, "Millstone", 0.7438, -1.2652, 100.0, fov_azimuth=-2.75,
+            fov_elevation=0.62, fov_aperture=15*Constant.DEGREE)
 
 # Uncomment sections below to choose measurement types
-#cfg.measurements[MeasurementType.AZIMUTH].error[:] = [Constant.ARC_SECOND]
-#cfg.measurements[MeasurementType.ELEVATION].error[:] = [Constant.ARC_SECOND]
+cfg.measurements[MeasurementType.AZIMUTH].error[:] = [Constant.ARC_SECOND]
+cfg.measurements[MeasurementType.ELEVATION].error[:] = [Constant.ARC_SECOND]
 
 #cfg.measurements[MeasurementType.RANGE].error[:] = [10.0]
 #cfg.measurements[MeasurementType.RANGE_RATE].error[:] = [0.1]
 
-cfg.measurements[MeasurementType.RIGHT_ASCENSION].error[:] = [Constant.ARC_SECOND]
-cfg.measurements[MeasurementType.DECLINATION].error[:] = [Constant.ARC_SECOND]
+#cfg.measurements[MeasurementType.RIGHT_ASCENSION].error[:] = [Constant.ARC_SECOND]
+#cfg.measurements[MeasurementType.DECLINATION].error[:] = [Constant.ARC_SECOND]
 
 # Propagate orbits and generate measurements
 meas = propagate_orbits([cfg])[0].array
