@@ -6,4 +6,4 @@ dist/
 orbdetpy.egg-info/
 *.pyc
 *.class
-
+*.json

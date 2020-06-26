@@ -59,12 +59,15 @@ Installation
 Examples
 --------
 
-1. `propagate_TLE.py` : Propagate TLEs given by command-line arguments.
+1. `predict_passes.py` : Predict satellite passes for ground stations from
+   TLEs. Get the elements from sites such as <http://www.celestrak.com>.
 
-2. `test_estimation.py` : Demonstrate measurement simulation and orbit
+2. `propagate_TLE.py` : Propagate TLEs given by command-line arguments.
+
+3. `test_estimation.py` : Demonstrate measurement simulation and orbit
    determination capabilities.
 
-3. `test_interpolation.py` : Interpolate state vectors.
+4. `test_interpolation.py` : Interpolate state vectors.
 
 Known Issues
 ------------
