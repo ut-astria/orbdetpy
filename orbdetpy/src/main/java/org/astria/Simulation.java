@@ -201,8 +201,41 @@ public final class Simulation
 			    clone.declination = obsVal[1];
 			    if (simCfg.simIncludeAngleRates)
 			    {
-				// TODO : Implement RA/Dec angle rate calculations here
-				clone.angleRates = new double[] {0.0, 0.0};
+
+					pvc = gst.getBaseFrame().getPVCoordinates(proptm, simCfg.propFrame);
+					pos = pvc.getPosition();
+					vel = pvc.getVelocity();
+					double[] gstPosVel = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ()};
+			    	
+			    	double[] posVel = new double[6];
+				    for (int i = 0; i < 3; i++) {
+				    	posVel[i] = clone.trueState.cartesian[i] - gstPosVel[i];
+				    }
+					
+					double delT = Math.sqrt(Math.pow(posVel[0],2) + Math.pow(posVel[1],2) + Math.pow(posVel[2],2)) / Constants.SPEED_OF_LIGHT;
+					
+					
+				    final SpacecraftState[] staLT = new SpacecraftState[]{propagator.propagate(new AbsoluteDate(tm,-delT))};
+				    pvc = sta[0].getPVCoordinates();
+				    pos = pvc.getPosition();
+				    vel = pvc.getVelocity();
+				    acc = pvc.getAcceleration();
+					double[] satPosVel = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ()};
+					
+					
+				    for (int i = 0; i < 3; i++) {
+				    	posVel[i] = clone.trueState.cartesian[i] - gstPosVel[i];
+				    	posVel[i+3] = clone.trueState.cartesian[i+3] - gstPosVel[i+3];
+				    }
+			    	
+				    double raRate = ((posVel[3] * posVel[1]) - (posVel[4] * posVel[0])) / (-Math.pow(posVel[1],2) - Math.pow(posVel[0],2));
+				    double range = Math.sqrt(Math.pow(posVel[0],2) + Math.pow(posVel[1],2) + Math.pow(posVel[2],2));
+				    double rangeRate = ((posVel[0] * posVel[3]) + (posVel[1] * posVel[4]) + (posVel[2] * posVel[5])) / range;
+				    double decRate = (posVel[5] - rangeRate * posVel[2] / range) / Math.sqrt(Math.pow(posVel[0],2) + Math.pow(posVel[1],2));
+				    
+				    clone.angleRates = new double[] {raRate, decRate};
+
+				    
 			    }
 			}
 			else if (name.equalsIgnoreCase("Azimuth") || name.equalsIgnoreCase("Elevation") && clone.azimuth == 0.0)

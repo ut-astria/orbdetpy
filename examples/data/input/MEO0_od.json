@@ -64,10 +64,10 @@
 	"End" : "2019-07-11T00:30:00Z",
 	"InitialState" :
 	[
-	-20001151.1484369,
-	21700.344312363,
-	0.3039385729,
-	0.3,
+	-20000151.1484369,
+	21900.344312363,
+	0.2039385729,
+	0,
 	-4464.95561397887,
 	0
 	]
@@ -118,6 +118,10 @@
 	"Filter" : "UKF",
 	"Covariance" : [25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 1.00, 0.25],
 	"ProcessNoise" : [1E-8, 1E-8, 1E-8, 1E-8, 1E-8, 1E-8],
-	"NoiseTimeDelta" : 30.0
+	"NoiseTimeDelta" : 30.0,
+	"SmootherIterations" : 10,
+	"EnableCARMHF" : true,
+	"DetectionProbability" : 0.99,
+	"GatingThreshold" : 4
     }
 }

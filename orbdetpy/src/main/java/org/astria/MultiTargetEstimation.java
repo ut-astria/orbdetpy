@@ -166,7 +166,7 @@ public final class MultiTargetEstimation
 		}
 	    }
 	    
-	    final int totalObjNum = cfgList.size();
+	    int totalObjNum = cfgList.size();
 	    final int numStates = odCfg.parameters.size() + 6;
 	    final int numSigmas = 2*numStates;
 	    final double weight = 0.5/numStates;
@@ -176,12 +176,9 @@ public final class MultiTargetEstimation
 	    final SpacecraftState[] ssta = new SpacecraftState[1];
 	    final ManualPropagation propagator = new ManualPropagation(odCfg);
 
-	    double probDetection = 0.99;
-	    int maxNumSmootherIterations = 10;
-	    double gatingThreshold = 4;
-	    boolean CARMHFOn = true;
-	    
 	    ArrayList<SingleObject> residentSpaceObjects = new ArrayList<SingleObject>();
+	    ArrayList<SingleObject> promotedTracks = new ArrayList<SingleObject>();
+
 	    rawMeasurements = new ArrayList<ObservedMeasurement>();
 	    
 	    for(int i = 0; i < odObs.measObjs.size(); i++)
@@ -191,20 +188,24 @@ public final class MultiTargetEstimation
 	    for(int objNum = 0; objNum < totalObjNum; objNum++)
 		residentSpaceObjects.add(new SingleObject(cfgList.get(objNum), numStates, numSigmas, Rsize));
 
-	    for(int smoothIter = 0; smoothIter < maxNumSmootherIterations; smoothIter++)
+	    for(int smoothIter = 0; smoothIter < odCfg.estmSmootherIterations; smoothIter++)
 	    {
 		unassociatedObs = new ArrayList<ObservedMeasurement>(rawMeasurements);
 		// Re-initialize ICs with previous smoothed results.
+		
+		
 		if(smoothIter >= 1)
 		{
 			for(int objNum = 0; objNum < totalObjNum; objNum++)
 			{
+				
 				SingleObject currSC = residentSpaceObjects.get(objNum);
-
+				
 				currSC.xhat = new ArrayRealVector(currSC.estOutput.get(0).estimatedState);
 				currSC.xhatPrev = new ArrayRealVector(currSC.estOutput.get(0).estimatedState);
 				currSC.P = currSC.PInitial;
-
+				currSC.dataAssociated = true;
+						
 				tm = new AbsoluteDate(currSC.estOutput.get(0).time, DataManager.getTimeScale("UTC"));
 				currSC.smootherData = new ArrayList<smootherTimeStep>();
 
@@ -308,7 +309,7 @@ public final class MultiTargetEstimation
 		    if (FastMath.abs(step) > 1.0E-6)
 			propagator.propagate(stepStart, currSC.sigma, stepStart + step, currSC.propSigma, false);
 		    else
-		currSC.propSigma.setSubMatrix(currSC.sigma.getData(), 0, 0);
+	    	currSC.propSigma.setSubMatrix(currSC.sigma.getData(), 0, 0);
 
 
 		    currSC.xhatPrev = addColumns(currSC.propSigma).mapMultiplyToSelf(weight);
@@ -340,7 +341,7 @@ public final class MultiTargetEstimation
 				if(!ODfinished)
 				{
 					JPDALikelihoods JPDAtemp = new JPDALikelihoods();
-					JPDAtemp.psi = (1 - probDetection);
+					JPDAtemp.psi = (1 - odCfg.estmDetectionProbability);
 					JPDAtemp.object = objNum;
 					JPDAtemp.measurement = 0;
 
@@ -348,9 +349,12 @@ public final class MultiTargetEstimation
 					//Compute predicted measurement, compare to each measurement					    
 				    for(int measNum = 0; measNum <= additionalMeas; measNum++)
 				    {
-					RealVector rawMeas = updatePrep(currSC, tm, measIndex+measNum, numSigmas, propagator, biasPos);
+				    	RealVector rawMeas = updatePrep(currSC, tm, measIndex+measNum, numSigmas, propagator, biasPos);
 					    RealVector yhatpre = addColumns(currSC.estimMeas).mapMultiplyToSelf(weight);
 
+						System.out.println("meas: " + rawMeas);
+
+					    
 					    RealMatrix Pyy = R.copy();
 					    for (int i = 0; i < numSigmas; i++)
 					    {
@@ -358,13 +362,13 @@ public final class MultiTargetEstimation
 						Pyy = Pyy.add(y.outerProduct(y).scalarMultiply(weight));
 					    }
 
+						System.out.println("y: " + yhatpre);
 
 						RealVector Innov = rawMeas.subtract(yhatpre);
 
 						RealMatrix MahalaTemp = MatrixUtils.createColumnRealMatrix(Innov.toArray());
 						RealMatrix Mahalanobis = MahalaTemp.transpose().multiply(MatrixUtils.inverse(Pyy).multiply(MahalaTemp));
-
-						if(gatingThreshold > Math.sqrt(Mahalanobis.getEntry(0,0)))
+						if(odCfg.estmGatingThreshold > Math.sqrt(Mahalanobis.getEntry(0,0)))
 						{
 							JPDAtemp = new JPDALikelihoods();
 
@@ -456,7 +460,7 @@ public final class MultiTargetEstimation
 
 			    //for(int j = 0; j < states.get(JointEvents.get(maxProbIndex).get(i).object).size(); j++)
 			    residentSpaceObjects.get(jointEvents.get(maxProbIndex).get(i).object).dataAssociated = true;
-//indicate all hypotheses for a given object have been associated.
+		    	//indicate all hypotheses for a given object have been associated.
 			}
 		}
 
@@ -752,54 +756,71 @@ public final class MultiTargetEstimation
 	    }
 		}
 
-		//I changed true to false and vice versa here. Check later....
 	    //Check McReynolds and potentially break out
-		boolean promotedTrackReset = true;
+		boolean promotedTrackReset = false;
 		int objNum = 0;
 		while(objNum < totalObjNum)
 		{
 		    SingleObject currSC = residentSpaceObjects.get(objNum);
-		    if(smoothIter >= 1 && currSC.McReynoldsConsistencyPass == false)
+		    if(smoothIter >= 1 && currSC.McReynoldsConsistencyPass == true)
 		    {
-			promotedTrackReset = false;
-			//Remove me vvvvvv
-			objNum++;
+				promotedTrackReset = true;
+			    //Compute new Innov Covar.
+
+				for (measIndex = 0; measIndex < currSC.associatedObsIndex.size(); measIndex++)
+				{
+				    RealMatrix Ptemp = new Array2DRowRealMatrix(currSC.estOutput.get(measIndex).estimatedCovariance);
+				    currSC.xhatPrev = new ArrayRealVector(currSC.estOutput.get(measIndex).estimatedState);
+				    currSC.propSigma = GenerateSigmaPoints(currSC.xhatPrev, Ptemp, numStates, numSigmas);
+
+				    RealVector rawMeas = updatePrep(currSC, tm, currSC.associatedObsIndex.get(measIndex), numSigmas, propagator, biasPos);
+				    RealMatrix Pyy = R.copy();
+				    RealVector yhatpre = addColumns(currSC.estimMeas).mapMultiplyToSelf(weight);
+				    for (int i = 0; i < numSigmas; i++)
+				    {
+					RealVector y = currSC.estimMeas.getColumnVector(i).subtract(yhatpre);
+					Pyy = Pyy.add(y.outerProduct(y).scalarMultiply(weight));
+				    }
+				    currSC.estOutput.get(measIndex).innovationCovariance = Pyy.getData();
+				}
+				
+				promotedTracks.add(currSC);
+
+				
+				residentSpaceObjects.remove(currSC);
+				totalObjNum--;
 		    }
 		    else
 		    {
-			objNum++;
+		    	objNum++;
 		    }
 		}   
 
 		if (promotedTrackReset)
-		    break;
-	    }
-
-	    //If broken out, compute new Innov Covar.
-	    for(int objNum = 0; objNum < totalObjNum; objNum++)
-	    {
-		SingleObject currSC = residentSpaceObjects.get(objNum);
-		for (int measIndex = 0; measIndex < currSC.associatedObsIndex.size(); measIndex++)
-		{
-		    RealMatrix Ptemp = new Array2DRowRealMatrix(currSC.estOutput.get(measIndex).estimatedCovariance);
-		    currSC.xhatPrev = new ArrayRealVector(currSC.estOutput.get(measIndex).estimatedState);
-		    currSC.propSigma = GenerateSigmaPoints(currSC.xhatPrev, Ptemp, numStates, numSigmas);
-
-		    RealVector rawMeas = updatePrep(currSC, tm, currSC.associatedObsIndex.get(measIndex), numSigmas, propagator, biasPos);
-		    RealMatrix Pyy = R.copy();
-		    RealVector yhatpre = addColumns(currSC.estimMeas).mapMultiplyToSelf(weight);
-		    for (int i = 0; i < numSigmas; i++)
+		{	
+			//remove associated obs from raw measurement dataset
+		    for(objNum = 0; objNum < promotedTracks.size(); objNum++)
 		    {
-			RealVector y = currSC.estimMeas.getColumnVector(i).subtract(yhatpre);
-			Pyy = Pyy.add(y.outerProduct(y).scalarMultiply(weight));
+		    SingleObject currSC = promotedTracks.get(objNum);
+			int counter = 0;
+			for(int measNum = 0; measNum < currSC.associatedObsIndex.size(); measNum++)
+			{
+				rawMeasurements.remove(measNum - counter);
+				odObs.measObjs.remove(measNum - counter);
+				counter++;
+			}
 		    }
-		    currSC.estOutput.get(measIndex).innovationCovariance = Pyy.getData();
+			
+		    break;
 		}
+		
 	    }
 
-	    multiOutput.estOutput = new ArrayList<ArrayList<Estimation.EstimationOutput>>(residentSpaceObjects.size());
-	    multiOutput.associatedObs = new ArrayList<ArrayList<Integer>>(residentSpaceObjects.size());
-	    for (SingleObject obj: residentSpaceObjects)
+
+
+	    multiOutput.estOutput = new ArrayList<ArrayList<Estimation.EstimationOutput>>(promotedTracks.size());
+	    multiOutput.associatedObs = new ArrayList<ArrayList<Integer>>(promotedTracks.size());
+	    for (SingleObject obj: promotedTracks)
 	    {
 		multiOutput.estOutput.add(obj.estOutput);
 		multiOutput.associatedObs.add(obj.associatedObsIndex);

@@ -108,5 +108,9 @@
 	{
 	    "Error" : [10E-6]
 	}
-    }
+    },
+    "Simulation" :
+    {
+	"IncludeAngleRates": true
+	}
 }
