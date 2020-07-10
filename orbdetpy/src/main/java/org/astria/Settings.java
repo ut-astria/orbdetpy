@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.HashMap;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.spherical.twod.S2Point;
+import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -61,6 +63,7 @@ import org.orekit.frames.Predefined;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.geometry.fov.CircularFieldOfView;
+import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
@@ -74,6 +77,7 @@ import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.ElevationDetector;
+import org.orekit.propagation.events.GeographicZoneDetector;
 import org.orekit.propagation.events.GroundFieldOfViewDetector;
 import org.orekit.propagation.events.LongitudeCrossingDetector;
 import org.orekit.time.AbsoluteDate;
@@ -319,9 +323,7 @@ public final class Settings
     public double propStep;
     public double[] propInitialState;
     public String[] propInitialTLE;
-    public Frame propInertialFrame = FramesFactory.getFrame(Predefined.EME2000);
-    public AbsoluteDate propStepHandlerStartTime;
-    public AbsoluteDate propStepHandlerEndTime;
+    public Frame propInertialFrame = FramesFactory.getFrame(Predefined.GCRF);
 
     public double integMinTimeStep = 1.0E-3;
     public double integMaxTimeStep = 300.0;
@@ -332,6 +334,7 @@ public final class Settings
 
     public Map<String, Station> cfgStations;
     public Map<MeasurementType, Measurement> cfgMeasurements;
+    public double[] geoZoneLatLon;
 
     public Filter estmFilter = Filter.UNSCENTED_KALMAN;
     public double[] estmCovariance = new double[]{25E6, 25E6, 25E6, 1E2, 1E2, 1E2, 1.00, 0.25, 1E-6, 1E-6, 1E-6};
@@ -341,7 +344,6 @@ public final class Settings
     public Parameter estmDMCAcceleration = new Parameter("DMC", -1E-3, 1E-3, 0.0, EstimationType.ESTIMATE);
     public double estmOutlierSigma = 0.0;
     public int estmOutlierWarmup = 0;
-
     public int estmSmootherIterations = 10;
     public boolean estmEnablePDAF = false;
     public double estmDetectionProbability = 0.99;
@@ -676,12 +678,27 @@ public final class Settings
 	return(new Array2DRowRealMatrix(Q));
     }
 
-    public ArrayList<EventHandling> addEventHandlers(Propagator prop, boolean checkVisibility)
+    public ArrayList<EventHandling> addEventHandlers(Propagator prop, SpacecraftState initialState)
     {
 	EventHandling handler;
 	ArrayList<EventHandling> handles = new ArrayList<EventHandling>();
 
-	if (checkVisibility && cfgStations != null)
+	if (geoZoneLatLon != null && geoZoneLatLon.length >= 6)
+	{
+	    S2Point[] vertices = new S2Point[(int)(geoZoneLatLon.length/2)];
+	    for (int i = 0; i <= geoZoneLatLon.length-2; i += 2)
+		vertices[(int)(i/2)] = new S2Point(geoZoneLatLon[i+1], 0.5*FastMath.PI-geoZoneLatLon[i]);
+
+	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
+	    SphericalPolygonsSet set = new SphericalPolygonsSet(1E-10, vertices);
+	    GeographicZoneDetector detector = new GeographicZoneDetector(earth, set, FastMath.toRadians(0.5));
+	    handler = new EventHandling<GeographicZoneDetector>(ManeuverType.UNDEFINED, 0, EventHandling.GEO_ZONE_NAME, detector.g(initialState) < 0.0);
+	    prop.addEventDetector(detector.withHandler(handler));
+	    handles.add(handler);
+	}
+
+	if (cfgStations != null)
 	{
 	    AbstractDetector detector;
 	    for (Map.Entry<String, Station> kv: cfgStations.entrySet())
@@ -689,23 +706,22 @@ public final class Settings
 		Station stn = kv.getValue();
 		if (stn.fovAperture <= 1E-6)
 		{
-		    detector = new ElevationDetector(stations.get(kv.getKey()).getBaseFrame());
-		    handler = new EventHandling<ElevationDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(),
-								   detector.g(prop.getInitialState()) > 0.0);
+		    detector = new ElevationDetector(stations.get(kv.getKey()).getBaseFrame())
+			.withRefraction(new EarthITU453AtmosphereRefraction(stn.altitude))
+			.withConstantElevation(FastMath.toRadians(5.0));
+		    handler = new EventHandling<ElevationDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) > 0.0);
 		}
 		else
 		{
 		    Vector3D center = new Vector3D(FastMath.cos(stn.fovElevation)*FastMath.sin(stn.fovAzimuth),
-						   FastMath.cos(stn.fovElevation)*FastMath.cos(stn.fovAzimuth),
-						   FastMath.sin(stn.fovElevation));
+						   FastMath.cos(stn.fovElevation)*FastMath.cos(stn.fovAzimuth), FastMath.sin(stn.fovElevation));
 		    CircularFieldOfView fov = new CircularFieldOfView(center, 0.5*stn.fovAperture, 1E-6);
 		    detector = new GroundFieldOfViewDetector(stations.get(kv.getKey()).getBaseFrame(), fov);
-		    handler = new EventHandling<GroundFieldOfViewDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(),
-									   detector.g(prop.getInitialState()) < 0.0);
+		    handler = new EventHandling<GroundFieldOfViewDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) < 0.0);
 		}
 
-		handles.add(handler);
 		prop.addEventDetector(detector.withHandler(handler));
+		handles.add(handler);
 	    }
 	}
 
@@ -730,7 +746,7 @@ public final class Settings
 	    else if (m.triggerEvent == ManeuverTrigger.APSIDE_CROSSING)
 	    {
 		handler = new EventHandling<ApsideDetector>(m.maneuverType, m.maneuverParams[0], null, null);
-		prop.addEventDetector(new ApsideDetector(prop.getInitialState().getOrbit()).withHandler(handler));
+		prop.addEventDetector(new ApsideDetector(initialState.getOrbit()).withHandler(handler));
 	    }
 	    else
 		throw(new RuntimeException("Invalid maneuver trigger event"));

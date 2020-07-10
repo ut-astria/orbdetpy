@@ -82,8 +82,7 @@ public final class Utilities
 	    for (TDMFile.Observation obs: blk.getObservations())
 	    {
 		String keyw = obs.getKeyword();
-		if (!(keyw.equalsIgnoreCase("RANGE") || keyw.equalsIgnoreCase("DOPPLER_INSTANTANEOUS") ||
-		      keyw.equalsIgnoreCase("ANGLE_1") || keyw.equalsIgnoreCase("ANGLE_2")))
+		if (!(keyw.equals("RANGE") || keyw.equals("DOPPLER_INSTANTANEOUS") || keyw.equals("ANGLE_1") || keyw.equals("ANGLE_2")))
 		    continue;
 		if (i == 0)
 		{
@@ -93,23 +92,23 @@ public final class Utilities
 
 		if (atype == null)
 		{
-		    if (keyw.equalsIgnoreCase("RANGE"))
+		    if (keyw.equals("RANGE"))
 			obj.values[0] = obs.getMeasurement()*1000.0;
-		    else if (keyw.equalsIgnoreCase("DOPPLER_INSTANTANEOUS"))
+		    else if (keyw.equals("DOPPLER_INSTANTANEOUS"))
 			obj.values[1] = obs.getMeasurement()*1000.0;
 		}
-		else if (atype.equalsIgnoreCase("RADEC"))
+		else if (atype.equals("RADEC"))
 		{
-		    if (keyw.equalsIgnoreCase("ANGLE_1"))
+		    if (keyw.equals("ANGLE_1"))
 			obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw.equalsIgnoreCase("ANGLE_2"))
+		    else if (keyw.equals("ANGLE_2"))
 			obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
 		}
-		else if (atype.equalsIgnoreCase("AZEL"))
+		else if (atype.equals("AZEL"))
 		{
-		    if (keyw.equalsIgnoreCase("ANGLE_1"))
+		    if (keyw.equals("ANGLE_1"))
 			obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw.equalsIgnoreCase("ANGLE_2"))
+		    else if (keyw.equals("ANGLE_2"))
 			obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 

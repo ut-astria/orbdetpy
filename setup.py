@@ -64,7 +64,7 @@ setup(name="orbdetpy",
       url="https://github.com/ut-astria/orbdetpy",
       project_urls=PROJECT_URLS,
       keywords=["orbit_determination utilities orbit space celestial_mechanics "
-                "astrodynamics estimation satellite_tracking"],
+                "astrodynamics estimation satellite_tracking pass_prediction"],
       classifiers=CLASSIFIERS,
       package_data=PACKAGE_DATA,
       install_requires=requirements)

@@ -32,6 +32,12 @@ service Conversion
 
     rpc convertRaDecToAzEl(AnglesInput) returns (DoubleArray) {}
 
+    rpc convertPosToLLA(TransformFrameInput) returns (DoubleArray) {}
+
+    rpc convertElemToPv(TransformFrameInput) returns (DoubleArray) {}
+
+    rpc convertPvToElem(TransformFrameInput) returns (DoubleArray) {}
+
     rpc getUTCString(google.protobuf.DoubleValue) returns (google.protobuf.StringValue) {}
 
     rpc getJ2000EpochOffset(google.protobuf.StringValue) returns (google.protobuf.DoubleValue) {}

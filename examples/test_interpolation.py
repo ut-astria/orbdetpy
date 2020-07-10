@@ -21,10 +21,8 @@ from orbdetpy.utilities import interpolate_ephemeris
 
 # Propagate for 1 hour at 5 minute intervals with default settings
 cfg = configure(prop_start=get_J2000_epoch_offset("2020-03-09T22:00:02.000Z"),
-                prop_initial_state=[-152408.166, -958234.785, 6908448.381,
-                                    -7545.691, 285.553, -126.766],
-                prop_end=get_J2000_epoch_offset("2020-03-09T23:00:02.000Z"),
-                prop_step=300.0)
+                prop_initial_state=[-152408.166, -958234.785, 6908448.381, -7545.691, 285.553, -126.766],
+                prop_end=get_J2000_epoch_offset("2020-03-09T23:00:02.000Z"), prop_step=300.0)
 
 times, states = [], []
 for o in propagate_orbits([cfg])[0].array:
@@ -32,7 +30,6 @@ for o in propagate_orbits([cfg])[0].array:
     states.append(o.true_state)
 
 # Interpolate over the same period at 1 minute intervals
-interp = interpolate_ephemeris(Frame.EME2000, times, states, len(times),
-                               Frame.EME2000, cfg.prop_start, cfg.prop_end, 60.0)
-for i in interp:
+for i in interpolate_ephemeris(Frame.GCRF, times, states, len(times),
+                               Frame.GCRF, cfg.prop_start, cfg.prop_end, 60.0):
     print(i.time, i.true_state)

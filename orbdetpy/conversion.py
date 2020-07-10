@@ -20,9 +20,8 @@ from orbdetpy.rpc.conversion_pb2_grpc import ConversionStub
 from orbdetpy.rpc.messages_pb2 import AnglesInput, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
 
-def transform_frame(src_frame: int, time: float,
-                    pva: List[float], dest_frame: int)->List[float]:
-    """Transforms a state vector from one frame to another.
+def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: int)->List[float]:
+    """Transform a state vector from one frame to another.
 
     Parameters
     ----------
@@ -53,7 +52,7 @@ def azel_to_radec(time: float, az: float, el: float, lat: float,
     lat : Observer WGS-84 latitude [rad].
     lon : Observer WGS-84 longitude [rad].
     alt : Observer height above WGS-84 reference ellipsoid [m].
-    frame : Destination reference frame; Frame.EME2000 or Frame.GCRF.
+    frame : Destination reference frame; Frame.GCRF or Frame.EME2000.
 
     Returns
     -------
@@ -72,7 +71,7 @@ def radec_to_azel(frame: int, time: float, ra: float, dec: float,
 
     Parameters
     ----------
-    frame : Source reference frame; Frame.EME2000 or Frame.GCRF.
+    frame : Source reference frame; Frame.GCRF or Frame.EME2000.
     time : Offset in TT from J2000 epoch [s].
     ra : Right Ascension [rad].
     dec : Declination [rad].
@@ -89,6 +88,69 @@ def radec_to_azel(frame: int, time: float, ra: float, dec: float,
         resp = ConversionStub(chan).convertRaDecToAzEl(AnglesInput(
             time=[time], angle1=[ra], angle2=[dec], latitude=lat,
             longitude=lon, altitude=alt, frame=frame))
+    return(resp.array)
+
+def pos_to_lla(frame: int, time: float, pos: List[float])->List[float]:
+    """Convert an inertial position to WGS-84 lat/lon/alt.
+
+    Parameters
+    ----------
+    frame : Inertial reference frame; a constant from Frame.
+    time : Offset in TT from J2000 epoch [s].
+    pos : Inertial position vector.
+
+    Returns
+    -------
+    WGS-84 latitude [rad], longitude [rad], altitude [m].
+    """
+
+    with RemoteServer.channel() as chan:
+        resp = ConversionStub(chan).convertPosToLLA(TransformFrameInput(
+            src_frame=frame, time=time, pva=pos))
+    return(resp.array)
+
+def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
+               raan: float, argp: float, mean_anom: float)->List[float]:
+    """Convert osculating orbital elements to Cartesian state vector.
+
+    Parameters
+    ----------
+    frame : Inertial reference frame; a constant from Frame.
+    time : Offset in TT from J2000 epoch [s].
+    sma : Semi-major axis [m].
+    ecc : Eccentricity.
+    inc : Inclination [rad].
+    raan : RA of ascending node [rad].
+    argp : Argument of perigee [rad].
+    mean_anom : Mean anomaly [rad].
+
+    Returns
+    -------
+    Cartesian state vector.
+    """
+
+    with RemoteServer.channel() as chan:
+        resp = ConversionStub(chan).convertElemToPv(TransformFrameInput(
+            src_frame=frame, time=time, pva=[sma,ecc,inc,raan,argp,mean_anom]))
+    return(resp.array)
+
+def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
+    """Convert Cartesian state vector to osculating orbital elements.
+
+    Parameters
+    ----------
+    frame : Inertial reference frame; a constant from Frame.
+    time : Offset in TT from J2000 epoch [s].
+    pv : Inertial Cartesian state vector.
+
+    Returns
+    -------
+    SMA,eccentricity,inclination,RAAN,perigee argument,mean anomaly,true anomaly
+    """
+
+    with RemoteServer.channel() as chan:
+        resp = ConversionStub(chan).convertPvToElem(TransformFrameInput(
+            src_frame=frame, time=time, pva=pv))
     return(resp.array)
 
 def get_UTC_string(j2000_offset: float)->str:

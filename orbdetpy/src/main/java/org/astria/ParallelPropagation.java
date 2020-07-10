@@ -21,6 +21,7 @@ package org.astria;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Future;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -35,7 +36,9 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -51,74 +54,73 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public final class ParallelPropagation
 {
     private final ArrayList<Settings> configObjs;
-    private final ArrayList<Propagator> propagators;
-    private final ArrayList<ArrayList<EventHandling>> eventHandlers;
+    private final int objectCount;
+    private ArrayList<Propagator> propagators;
+    private ArrayList<ArrayList<EventHandling>> eventHandlers;
+    private ArrayList<AbsoluteDate> stepEnd;
 
     public ParallelPropagation(ArrayList<Settings> configObjs)
     {
 	this.configObjs = configObjs;
-	this.propagators = new ArrayList<Propagator>(configObjs.size());
-	this.eventHandlers = new ArrayList<ArrayList<EventHandling>>(configObjs.size());
-	for (int i = 0; i < configObjs.size(); i++)
-	    buildPropagator(configObjs.get(i));
+	this.objectCount = configObjs.size();
     }
 
     public ArrayList<ArrayList<Measurements.Measurement>> propagate() throws Exception
     {
-	Settings obj0 = configObjs.get(0);
-	AbsoluteDate start = obj0.propStart, end = obj0.propEnd;
-	double step = obj0.propStep;
-	for (Settings s: configObjs)
+	propagators = new ArrayList<Propagator>(objectCount);
+	eventHandlers = new ArrayList<ArrayList<EventHandling>>(objectCount);
+	stepEnd = new ArrayList<AbsoluteDate>(objectCount);
+	ArrayList<Future<SpacecraftState>> futures = new ArrayList<Future<SpacecraftState>>(objectCount);
+	ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>(objectCount);
+	for (Settings cfg: configObjs)
 	{
-	    if (obj0.propStep > 0.0)
-	    {
-		if (start.durationFrom(s.propStart) > 0.0)
-		    start = s.propStart;
-		if (end.durationFrom(s.propEnd) < 0.0)
-		    end = s.propEnd;
-		if (s.propStep != 0.0)
-		    step = FastMath.min(step, s.propStep);
-	    }
-	    else
-	    {
-		if (start.durationFrom(s.propStart) < 0.0)
-		    start = s.propStart;
-		if (end.durationFrom(s.propEnd) > 0.0)
-		    end = s.propEnd;
-		if (s.propStep != 0.0)
-		    step = FastMath.max(step, s.propStep);
-	    }
+	    buildPropagator(cfg);
+	    futures.add(null);
+	    output.add(new ArrayList<Measurements.Measurement>());
 	}
 
-	AbsoluteDate tmFinal = start;
-	AbsoluteDate tmStart = new AbsoluteDate(tmFinal, -0.1);
-	int capacity = (int)FastMath.abs(end.durationFrom(start)/step) + 2;
-	ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>(propagators.size());
-	for (int i = 0; i < propagators.size(); i++)
-	    output.add(new ArrayList<Measurements.Measurement>(capacity));
-
-	while (true)
+	boolean allDone = false;
+	while (!allDone)
 	{
-	    AbsoluteDate t0 = tmStart;
-	    AbsoluteDate t1 = tmFinal;
-	    for (int i = 0; i < propagators.size(); i++)
+	    allDone = true;
+	    for (int i = 0; i < objectCount; i++)
 	    {
-		Propagator prop = propagators.get(i);
-		SpacecraftState state = DataManager.threadPool.submit(()->prop.propagate(t0, t1)).get();
-		tmStart = state.getDate();
-		Simulation.simulate(configObjs.get(i), state, eventHandlers.get(i), output.get(i));
+		AbsoluteDate end = stepEnd.get(i);
+		if (end != null)
+		{
+		    allDone = false;
+		    Propagator prop = propagators.get(i);
+		    futures.set(i, DataManager.threadPool.submit(()->prop.propagate(end)));
+		}
+		else
+		    futures.set(i, null);
 	    }
 
-	    double dt = end.durationFrom(tmStart);
-	    if (step >= 0.0)
-		tmFinal = new AbsoluteDate(tmFinal, FastMath.min(dt, step));
-	    else
+	    for (int i = 0; !allDone && i < objectCount; i++)
 	    {
-		tmFinal = new AbsoluteDate(tmFinal, FastMath.max(dt, step));
-		dt = -dt;
+		Future<SpacecraftState> future = futures.get(i);
+		if (future == null)
+		    continue;
+
+		Settings cfg = configObjs.get(i);
+		SpacecraftState state = future.get();
+		if (Simulation.simulate(cfg, state, eventHandlers.get(i), output.get(i)) ||
+		    (stepEnd.get(i) != null && stepEnd.get(i).equals(cfg.propEnd)))
+		{
+		    double dt = cfg.propEnd.durationFrom(state.getDate());
+		    if (dt != 0.0)
+		    {
+			if (cfg.propStep > 0.0)
+			    stepEnd.set(i, state.getDate().shiftedBy(FastMath.min(dt, cfg.propStep)));
+			else
+			    stepEnd.set(i, state.getDate().shiftedBy(FastMath.max(dt, cfg.propStep)));
+		    }
+		    else
+			stepEnd.set(i, null);
+		}
+		else
+		    stepEnd.set(i, cfg.propEnd);
 	    }
-	    if (dt <= 0.0)
-		break;
 	}
 
 	return(output);
@@ -127,6 +129,7 @@ public final class ParallelPropagation
     private void buildPropagator(Settings cfg)
     {
 	Propagator prop;
+	SpacecraftState state;
 	if (cfg.propInitialTLE != null && cfg.propInitialTLE.length == 2)
 	{
 	    TLE parser = new TLE(cfg.propInitialTLE[0], cfg.propInitialTLE[1]);
@@ -135,16 +138,18 @@ public final class ParallelPropagation
 		cfg.propStart = parser.getDate();
 	    if (cfg.propEnd == null)
 		cfg.propEnd = cfg.propStart;
+	    state = prop.propagate(cfg.propStart);
 	}
 	else
 	{
 	    double[] X = cfg.getInitialState();
+	    state = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5])),
+							   cfg.propInertialFrame, cfg.propStart, Constants.EGM96_EARTH_MU), cfg.rsoMass);
 	    NumericalPropagator np = new NumericalPropagator(
 		new DormandPrince853Integrator(cfg.integMinTimeStep, cfg.integMaxTimeStep, cfg.integAbsTolerance, cfg.integRelTolerance));
 	    for (ForceModel fm: cfg.forces)
 		np.addForceModel(fm);
-	    np.setInitialState(new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5])),
-								      cfg.propInertialFrame, cfg.propStart, Constants.EGM96_EARTH_MU), cfg.rsoMass));
+	    np.setInitialState(state);
 	    prop = np;
 	}
 
@@ -153,7 +158,11 @@ public final class ParallelPropagation
 	    prop.setAttitudeProvider(attProv);
 
 	propagators.add(prop);
-	eventHandlers.add(cfg.addEventHandlers(prop, cfg.simMeasurements));
+	eventHandlers.add(cfg.addEventHandlers(prop, state));
+	if (cfg.propStep != 0.0)
+	    stepEnd.add(cfg.propStart);
+	else
+	    throw(new RuntimeException("Invalid propagation step size"));
     }
 
     private static class Simulation
@@ -174,26 +183,37 @@ public final class ParallelPropagation
 	private static final ObservableSatellite obsSat = new ObservableSatellite(0);
 	private static final SpacecraftState[] ssStates = new SpacecraftState[1];
 
-	public static void simulate(Settings simCfg, SpacecraftState state, ArrayList<EventHandling> handlers,
-				    ArrayList<Measurements.Measurement> measOut)
+	public static boolean simulate(Settings simCfg, SpacecraftState state, ArrayList<EventHandling> handlers,
+				       ArrayList<Measurements.Measurement> measOut)
 	{
 	    TimeStampedPVCoordinates pvc = state.getPVCoordinates(simCfg.propInertialFrame);
 	    Measurements.Measurement meas = new Measurements.Measurement(pvc);
 	    if (!simCfg.simMeasurements)
 	    {
-		measOut.add(meas);
-		return;
+		boolean isVisible = true;
+		for (EventHandling hnd: handlers)
+		{
+		    if (hnd.isVisible != null && hnd.stationName != null && hnd.stationName.equals(EventHandling.GEO_ZONE_NAME))
+		    {
+			isVisible = hnd.isVisible;
+			break;
+		    }
+		}
+
+		if (isVisible)
+		    measOut.add(meas);
+		return(isVisible);
 	    }
 
 	    ssStates[0] = state;
+	    boolean continueProp = false;
 	    for (Map.Entry<String, GroundStation> kv: simCfg.stations.entrySet())
 	    {
 		boolean isVisible = false;
 		String gsName = kv.getKey();
 		for (EventHandling hnd: handlers)
 		{
-		    if (hnd.maneuverType == Settings.ManeuverType.UNDEFINED && hnd.stationName != null &&
-			hnd.stationName.equals(gsName))
+		    if (hnd.isVisible != null && hnd.stationName != null && hnd.stationName.equals(gsName))
 		    {
 			isVisible = hnd.isVisible;
 			break;
@@ -202,18 +222,19 @@ public final class ParallelPropagation
 		if (!isVisible)
 		    continue;
 
-		Measurements.Measurement clone = new Measurements.Measurement(meas);
-		clone.station = gsName;
-		measOut.add(clone);
-
 		double[] bias;
-		Settings.Station jsn = simCfg.cfgStations.get(clone.station);
+		continueProp = true;
+		Settings.Station jsn = simCfg.cfgStations.get(gsName);
 		if (jsn.bias != null && jsn.bias.length > 0)
 		    bias = jsn.bias;
 		else
 		    bias = twoZeros;
 
 		GroundStation gst = kv.getValue();
+		Measurements.Measurement clone = new Measurements.Measurement(meas);
+		clone.station = gsName;
+		measOut.add(clone);
+
 		for (Map.Entry<Settings.MeasurementType, Settings.Measurement> nvp: simCfg.cfgMeasurements.entrySet())
 		{
 		    Settings.MeasurementType name = nvp.getKey();
@@ -236,26 +257,29 @@ public final class ParallelPropagation
 			    clone.values = new double[2];
 			clone.values[1] = obs.estimate(0, 0, ssStates).getEstimatedValue()[0];
 		    }
-		    else if (name == Settings.MeasurementType.RIGHT_ASCENSION || name == Settings.MeasurementType.DECLINATION &&
-			     clone.values == null)
+		    else if (name == Settings.MeasurementType.RIGHT_ASCENSION || name == Settings.MeasurementType.DECLINATION)
 		    {
 			AngularRaDec obs = new AngularRaDec(gst, simCfg.propInertialFrame, pvc.getDate(), twoZeros, twoZeros, twoOnes, obsSat);
 			obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[]{rand.nextGaussian()*val.error[0]+bias[0],
 										       rand.nextGaussian()*val.error[0]+bias[1]},
 				twoOnes, twoNegInf, twoPosInf));
 			clone.values = obs.estimate(0, 0, ssStates).getEstimatedValue();
+			break;
 		    }
-		    else if (name == Settings.MeasurementType.AZIMUTH || name == Settings.MeasurementType.ELEVATION &&
-			     clone.values == null)
+		    else if (name == Settings.MeasurementType.AZIMUTH || name == Settings.MeasurementType.ELEVATION)
 		    {
 			AngularAzEl obs = new AngularAzEl(gst, pvc.getDate(), twoZeros, twoZeros, twoOnes, obsSat);
+			obs.addModifier(new AngularRadioRefractionModifier(new EarthITU453AtmosphereRefraction(jsn.altitude)));
 			obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{rand.nextGaussian()*val.error[0]+bias[0],
 										     rand.nextGaussian()*val.error[0]+bias[1]},
 				twoOnes, twoNegInf, twoPosInf));
 			clone.values = obs.estimate(0, 0, ssStates).getEstimatedValue();
+			break;
 		    }
 		}
 	    }
+
+	    return(continueProp);
 	}
     }
 }

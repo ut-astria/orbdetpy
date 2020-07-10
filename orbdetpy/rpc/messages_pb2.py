@@ -18,7 +18,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\010MessagesP\000',
-  serialized_pb=b'\n\x0emessages.proto\"!\n\x0cIntegerArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x05\x42\x02\x10\x01\" \n\x0b\x44oubleArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x01\x42\x02\x10\x01\"H\n\tParameter\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x0b\n\x03min\x18\x02 \x01(\x01\x12\x0b\n\x03max\x18\x03 \x01(\x01\x12\x12\n\nestimation\x18\x04 \x01(\x05\")\n\x05\x46\x61\x63\x65t\x12\x12\n\x06normal\x18\x01 \x03(\x01\x42\x02\x10\x01\x12\x0c\n\x04\x61rea\x18\x02 \x01(\x01\"\x7f\n\x08Maneuver\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x15\n\rtrigger_event\x18\x02 \x01(\x05\x12\x1a\n\x0etrigger_params\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x15\n\rmaneuver_type\x18\x04 \x01(\x05\x12\x1b\n\x0fmaneuver_params\x18\x05 \x03(\x01\x42\x02\x10\x01\"\xad\x01\n\x07Station\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x01\x12\x10\n\x04\x62ias\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0f\x62ias_estimation\x18\x05 \x01(\x05\x12\x13\n\x0b\x66ov_azimuth\x18\x06 \x01(\x01\x12\x15\n\rfov_elevation\x18\x07 \x01(\x01\x12\x14\n\x0c\x66ov_aperture\x18\x08 \x01(\x01\"8\n\x12MeasurementSetting\x12\x0f\n\x07two_way\x18\x01 \x01(\x08\x12\x11\n\x05\x65rror\x18\x02 \x03(\x01\x42\x02\x10\x01\"\xab\r\n\x08Settings\x12\x10\n\x08rso_mass\x18\x01 \x01(\x01\x12\x10\n\x08rso_area\x18\x02 \x01(\x01\x12\x1a\n\nrso_facets\x18\x03 \x03(\x0b\x32\x06.Facet\x12 \n\x14rso_solar_array_axis\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x1c\n\x14rso_solar_array_area\x18\x05 \x01(\x01\x12\x1d\n\x15rso_attitude_provider\x18\x06 \x01(\x05\x12\x1d\n\x11rso_spin_velocity\x18\x07 \x03(\x01\x42\x02\x10\x01\x12!\n\x15rso_spin_acceleration\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x16\n\x0egravity_degree\x18\t \x01(\x05\x12\x15\n\rgravity_order\x18\n \x01(\x05\x12\x1a\n\x12ocean_tides_degree\x18\x0b \x01(\x05\x12\x19\n\x11ocean_tides_order\x18\x0c \x01(\x05\x12\x16\n\x0ethird_body_sun\x18\r \x01(\x08\x12\x17\n\x0fthird_body_moon\x18\x0e \x01(\x08\x12\x17\n\x0fsolid_tides_sun\x18\x0f \x01(\x08\x12\x18\n\x10solid_tides_moon\x18\x10 \x01(\x08\x12\x12\n\ndrag_model\x18\x11 \x01(\x05\x12$\n\x10\x64rag_coefficient\x18\x12 \x01(\x0b\x32\n.Parameter\x12\'\n\x10\x64rag_MSISE_flags\x18\x13 \x03(\x0b\x32\r.IntegerArray\x12\x15\n\rdrag_exp_rho0\x18\x14 \x01(\x01\x12\x13\n\x0b\x64rag_exp_H0\x18\x15 \x01(\x01\x12\x17\n\x0f\x64rag_exp_Hscale\x18\x16 \x01(\x01\x12\x0e\n\x06rp_sun\x18\x17 \x01(\x08\x12\'\n\x13rp_coeff_reflection\x18\x18 \x01(\x0b\x32\n.Parameter\x12\x1b\n\x13rp_coeff_absorption\x18\x19 \x01(\x01\x12\x1c\n\tmaneuvers\x18\x1a \x03(\x0b\x32\t.Maneuver\x12\x12\n\nprop_start\x18\x1b \x01(\x01\x12\x10\n\x08prop_end\x18\x1c \x01(\x01\x12\x11\n\tprop_step\x18\x1d \x01(\x01\x12\x1e\n\x12prop_initial_state\x18\x1e \x03(\x01\x42\x02\x10\x01\x12\x18\n\x10prop_initial_TLE\x18\x1f \x03(\t\x12\x1b\n\x13prop_inertial_frame\x18  \x01(\t\x12$\n\x1cprop_step_handler_start_time\x18! \x01(\x01\x12\"\n\x1aprop_step_handler_end_time\x18\" \x01(\x01\x12\x1b\n\x13integ_min_time_step\x18# \x01(\x01\x12\x1b\n\x13integ_max_time_step\x18$ \x01(\x01\x12\x1b\n\x13integ_abs_tolerance\x18% \x01(\x01\x12\x1b\n\x13integ_rel_tolerance\x18& \x01(\x01\x12\x18\n\x10sim_measurements\x18\' \x01(\x08\x12)\n\x08stations\x18( \x03(\x0b\x32\x17.Settings.StationsEntry\x12\x31\n\x0cmeasurements\x18) \x03(\x0b\x32\x1b.Settings.MeasurementsEntry\x12\x13\n\x0b\x65stm_filter\x18* \x01(\x05\x12\x1b\n\x0f\x65stm_covariance\x18+ \x03(\x01\x42\x02\x10\x01\x12\x1e\n\x12\x65stm_process_noise\x18, \x03(\x01\x42\x02\x10\x01\x12\x1a\n\x12\x65stm_DMC_corr_time\x18- \x01(\x01\x12\x1b\n\x13\x65stm_DMC_sigma_pert\x18. \x01(\x01\x12)\n\x15\x65stm_DMC_acceleration\x18/ \x01(\x0b\x32\n.Parameter\x12\x1a\n\x12\x65stm_outlier_sigma\x18\x30 \x01(\x01\x12\x1b\n\x13\x65stm_outlier_warmup\x18\x31 \x01(\x05\x12 \n\x18\x65stm_smoother_iterations\x18\x32 \x01(\x05\x12\x18\n\x10\x65stm_enable_PDAF\x18\x33 \x01(\x08\x12\"\n\x1a\x65stm_detection_probability\x18\x34 \x01(\x01\x12\x1f\n\x17\x65stm_gating_probability\x18\x35 \x01(\x01\x12\x1d\n\x15\x65stm_gating_threshold\x18\x36 \x01(\x01\x1a\x39\n\rStationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x17\n\x05value\x18\x02 \x01(\x0b\x32\x08.Station:\x02\x38\x01\x1aH\n\x11MeasurementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.MeasurementSetting:\x02\x38\x01\")\n\rSettingsArray\x12\x18\n\x05\x61rray\x18\x01 \x03(\x0b\x32\t.Settings\"q\n\x0bMeasurement\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x12\n\x06values\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0b\x61ngle_rates\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x16\n\ntrue_state\x18\x05 \x03(\x01\x42\x02\x10\x01\"/\n\x10MeasurementArray\x12\x1b\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x0c.Measurement\"6\n\x12Measurement2DArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.MeasurementArray\"T\n\x13\x44\x65termineOrbitInput\x12\x19\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\t.Settings\x12\"\n\x0cmeasurements\x18\x02 \x03(\x0b\x32\x0c.Measurement\"\xfe\x01\n\x10\x45stimationOutput\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x1b\n\x0f\x65stimated_state\x18\x03 \x03(\x01\x42\x02\x10\x01\x12!\n\x15propagated_covariance\x18\x04 \x03(\x01\x42\x02\x10\x01\x12!\n\x15innovation_covariance\x18\x05 \x03(\x01\x42\x02\x10\x01\x12 \n\x14\x65stimated_covariance\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x13\n\x07pre_fit\x18\x07 \x03(\x01\x42\x02\x10\x01\x12\x14\n\x08post_fit\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x13\x63lutter_probability\x18\t \x01(\x01\"9\n\x15\x45stimationOutputArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.EstimationOutput\"[\n\x13TransformFrameInput\x12\x11\n\tsrc_frame\x18\x01 \x01(\t\x12\x0c\n\x04time\x18\x02 \x01(\x01\x12\x0f\n\x03pva\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x12\n\ndest_frame\x18\x04 \x01(\t\"8\n\x0eImportTDMInput\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x13\n\x0b\x66ile_format\x18\x02 \x01(\x05\"\x8d\x01\n\x0b\x41nglesInput\x12\r\n\x05\x66rame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x10\n\x08latitude\x18\x03 \x01(\x01\x12\x11\n\tlongitude\x18\x04 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x05 \x01(\x01\x12\x12\n\x06\x61ngle1\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x12\n\x06\x61ngle2\x18\x07 \x03(\x01\x42\x02\x10\x01\"\xc5\x01\n\x19InterpolateEphemerisInput\x12\x14\n\x0csource_frame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x05\x65phem\x18\x03 \x03(\x0b\x32\x0c.DoubleArray\x12\x12\n\nnum_points\x18\x04 \x01(\x05\x12\x12\n\ndest_frame\x18\x05 \x01(\t\x12\x14\n\x0cinterp_start\x18\x06 \x01(\x01\x12\x12\n\ninterp_end\x18\x07 \x01(\x01\x12\x11\n\tstep_size\x18\x08 \x01(\x01\x42\x1c\n\x0eorg.astria.rpcB\x08MessagesP\x00\x62\x06proto3'
+  create_key=_descriptor._internal_create_key,
+  serialized_pb=b'\n\x0emessages.proto\"!\n\x0cIntegerArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x05\x42\x02\x10\x01\" \n\x0b\x44oubleArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x01\x42\x02\x10\x01\"H\n\tParameter\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x0b\n\x03min\x18\x02 \x01(\x01\x12\x0b\n\x03max\x18\x03 \x01(\x01\x12\x12\n\nestimation\x18\x04 \x01(\x05\")\n\x05\x46\x61\x63\x65t\x12\x12\n\x06normal\x18\x01 \x03(\x01\x42\x02\x10\x01\x12\x0c\n\x04\x61rea\x18\x02 \x01(\x01\"\x7f\n\x08Maneuver\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x15\n\rtrigger_event\x18\x02 \x01(\x05\x12\x1a\n\x0etrigger_params\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x15\n\rmaneuver_type\x18\x04 \x01(\x05\x12\x1b\n\x0fmaneuver_params\x18\x05 \x03(\x01\x42\x02\x10\x01\"\xad\x01\n\x07Station\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x01\x12\x10\n\x04\x62ias\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0f\x62ias_estimation\x18\x05 \x01(\x05\x12\x13\n\x0b\x66ov_azimuth\x18\x06 \x01(\x01\x12\x15\n\rfov_elevation\x18\x07 \x01(\x01\x12\x14\n\x0c\x66ov_aperture\x18\x08 \x01(\x01\"8\n\x12MeasurementSetting\x12\x0f\n\x07two_way\x18\x01 \x01(\x08\x12\x11\n\x05\x65rror\x18\x02 \x03(\x01\x42\x02\x10\x01\"\xff\x0c\n\x08Settings\x12\x10\n\x08rso_mass\x18\x01 \x01(\x01\x12\x10\n\x08rso_area\x18\x02 \x01(\x01\x12\x1a\n\nrso_facets\x18\x03 \x03(\x0b\x32\x06.Facet\x12 \n\x14rso_solar_array_axis\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x1c\n\x14rso_solar_array_area\x18\x05 \x01(\x01\x12\x1d\n\x15rso_attitude_provider\x18\x06 \x01(\x05\x12\x1d\n\x11rso_spin_velocity\x18\x07 \x03(\x01\x42\x02\x10\x01\x12!\n\x15rso_spin_acceleration\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x16\n\x0egravity_degree\x18\t \x01(\x05\x12\x15\n\rgravity_order\x18\n \x01(\x05\x12\x1a\n\x12ocean_tides_degree\x18\x0b \x01(\x05\x12\x19\n\x11ocean_tides_order\x18\x0c \x01(\x05\x12\x16\n\x0ethird_body_sun\x18\r \x01(\x08\x12\x17\n\x0fthird_body_moon\x18\x0e \x01(\x08\x12\x17\n\x0fsolid_tides_sun\x18\x0f \x01(\x08\x12\x18\n\x10solid_tides_moon\x18\x10 \x01(\x08\x12\x12\n\ndrag_model\x18\x11 \x01(\x05\x12$\n\x10\x64rag_coefficient\x18\x12 \x01(\x0b\x32\n.Parameter\x12\'\n\x10\x64rag_MSISE_flags\x18\x13 \x03(\x0b\x32\r.IntegerArray\x12\x15\n\rdrag_exp_rho0\x18\x14 \x01(\x01\x12\x13\n\x0b\x64rag_exp_H0\x18\x15 \x01(\x01\x12\x17\n\x0f\x64rag_exp_Hscale\x18\x16 \x01(\x01\x12\x0e\n\x06rp_sun\x18\x17 \x01(\x08\x12\'\n\x13rp_coeff_reflection\x18\x18 \x01(\x0b\x32\n.Parameter\x12\x1b\n\x13rp_coeff_absorption\x18\x19 \x01(\x01\x12\x1c\n\tmaneuvers\x18\x1a \x03(\x0b\x32\t.Maneuver\x12\x12\n\nprop_start\x18\x1b \x01(\x01\x12\x10\n\x08prop_end\x18\x1c \x01(\x01\x12\x11\n\tprop_step\x18\x1d \x01(\x01\x12\x1e\n\x12prop_initial_state\x18\x1e \x03(\x01\x42\x02\x10\x01\x12\x18\n\x10prop_initial_TLE\x18\x1f \x03(\t\x12\x1b\n\x13prop_inertial_frame\x18  \x01(\t\x12\x1b\n\x13integ_min_time_step\x18! \x01(\x01\x12\x1b\n\x13integ_max_time_step\x18\" \x01(\x01\x12\x1b\n\x13integ_abs_tolerance\x18# \x01(\x01\x12\x1b\n\x13integ_rel_tolerance\x18$ \x01(\x01\x12\x18\n\x10sim_measurements\x18% \x01(\x08\x12)\n\x08stations\x18& \x03(\x0b\x32\x17.Settings.StationsEntry\x12\x31\n\x0cmeasurements\x18\' \x03(\x0b\x32\x1b.Settings.MeasurementsEntry\x12\x1c\n\x10geo_zone_lat_lon\x18( \x03(\x01\x42\x02\x10\x01\x12\x13\n\x0b\x65stm_filter\x18) \x01(\x05\x12\x1b\n\x0f\x65stm_covariance\x18* \x03(\x01\x42\x02\x10\x01\x12\x1e\n\x12\x65stm_process_noise\x18+ \x03(\x01\x42\x02\x10\x01\x12\x1a\n\x12\x65stm_DMC_corr_time\x18, \x01(\x01\x12\x1b\n\x13\x65stm_DMC_sigma_pert\x18- \x01(\x01\x12)\n\x15\x65stm_DMC_acceleration\x18. \x01(\x0b\x32\n.Parameter\x12\x1a\n\x12\x65stm_outlier_sigma\x18/ \x01(\x01\x12\x1b\n\x13\x65stm_outlier_warmup\x18\x30 \x01(\x05\x12 \n\x18\x65stm_smoother_iterations\x18\x31 \x01(\x05\x12\x18\n\x10\x65stm_enable_PDAF\x18\x32 \x01(\x08\x12\"\n\x1a\x65stm_detection_probability\x18\x33 \x01(\x01\x12\x1f\n\x17\x65stm_gating_probability\x18\x34 \x01(\x01\x12\x1d\n\x15\x65stm_gating_threshold\x18\x35 \x01(\x01\x1a\x39\n\rStationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x17\n\x05value\x18\x02 \x01(\x0b\x32\x08.Station:\x02\x38\x01\x1aH\n\x11MeasurementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.MeasurementSetting:\x02\x38\x01\")\n\rSettingsArray\x12\x18\n\x05\x61rray\x18\x01 \x03(\x0b\x32\t.Settings\"q\n\x0bMeasurement\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x12\n\x06values\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0b\x61ngle_rates\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x16\n\ntrue_state\x18\x05 \x03(\x01\x42\x02\x10\x01\"/\n\x10MeasurementArray\x12\x1b\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x0c.Measurement\"6\n\x12Measurement2DArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.MeasurementArray\"T\n\x13\x44\x65termineOrbitInput\x12\x19\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\t.Settings\x12\"\n\x0cmeasurements\x18\x02 \x03(\x0b\x32\x0c.Measurement\"\xfe\x01\n\x10\x45stimationOutput\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x1b\n\x0f\x65stimated_state\x18\x03 \x03(\x01\x42\x02\x10\x01\x12!\n\x15propagated_covariance\x18\x04 \x03(\x01\x42\x02\x10\x01\x12!\n\x15innovation_covariance\x18\x05 \x03(\x01\x42\x02\x10\x01\x12 \n\x14\x65stimated_covariance\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x13\n\x07pre_fit\x18\x07 \x03(\x01\x42\x02\x10\x01\x12\x14\n\x08post_fit\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x13\x63lutter_probability\x18\t \x01(\x01\"9\n\x15\x45stimationOutputArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.EstimationOutput\"[\n\x13TransformFrameInput\x12\x11\n\tsrc_frame\x18\x01 \x01(\t\x12\x0c\n\x04time\x18\x02 \x01(\x01\x12\x0f\n\x03pva\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x12\n\ndest_frame\x18\x04 \x01(\t\"8\n\x0eImportTDMInput\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x13\n\x0b\x66ile_format\x18\x02 \x01(\x05\"\x8d\x01\n\x0b\x41nglesInput\x12\r\n\x05\x66rame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x10\n\x08latitude\x18\x03 \x01(\x01\x12\x11\n\tlongitude\x18\x04 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x05 \x01(\x01\x12\x12\n\x06\x61ngle1\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x12\n\x06\x61ngle2\x18\x07 \x03(\x01\x42\x02\x10\x01\"\xc5\x01\n\x19InterpolateEphemerisInput\x12\x14\n\x0csource_frame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x05\x65phem\x18\x03 \x03(\x0b\x32\x0c.DoubleArray\x12\x12\n\nnum_points\x18\x04 \x01(\x05\x12\x12\n\ndest_frame\x18\x05 \x01(\t\x12\x14\n\x0cinterp_start\x18\x06 \x01(\x01\x12\x12\n\ninterp_end\x18\x07 \x01(\x01\x12\x11\n\tstep_size\x18\x08 \x01(\x01\x42\x1c\n\x0eorg.astria.rpcB\x08MessagesP\x00\x62\x06proto3'
 )
 
 
@@ -30,6 +31,7 @@ _INTEGERARRAY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='array', full_name='IntegerArray.array', index=0,
@@ -37,7 +39,7 @@ _INTEGERARRAY = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -61,6 +63,7 @@ _DOUBLEARRAY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='array', full_name='DoubleArray.array', index=0,
@@ -68,7 +71,7 @@ _DOUBLEARRAY = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -92,6 +95,7 @@ _PARAMETER = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='value', full_name='Parameter.value', index=0,
@@ -99,28 +103,28 @@ _PARAMETER = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='min', full_name='Parameter.min', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='max', full_name='Parameter.max', index=2,
       number=3, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='estimation', full_name='Parameter.estimation', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -144,6 +148,7 @@ _FACET = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='normal', full_name='Facet.normal', index=0,
@@ -151,14 +156,14 @@ _FACET = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='area', full_name='Facet.area', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -182,6 +187,7 @@ _MANEUVER = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='time', full_name='Maneuver.time', index=0,
@@ -189,35 +195,35 @@ _MANEUVER = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='trigger_event', full_name='Maneuver.trigger_event', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='trigger_params', full_name='Maneuver.trigger_params', index=2,
       number=3, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='maneuver_type', full_name='Maneuver.maneuver_type', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='maneuver_params', full_name='Maneuver.maneuver_params', index=4,
       number=5, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -241,6 +247,7 @@ _STATION = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='latitude', full_name='Station.latitude', index=0,
@@ -248,56 +255,56 @@ _STATION = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='longitude', full_name='Station.longitude', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='altitude', full_name='Station.altitude', index=2,
       number=3, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='bias', full_name='Station.bias', index=3,
       number=4, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='bias_estimation', full_name='Station.bias_estimation', index=4,
       number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='fov_azimuth', full_name='Station.fov_azimuth', index=5,
       number=6, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='fov_elevation', full_name='Station.fov_elevation', index=6,
       number=7, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='fov_aperture', full_name='Station.fov_aperture', index=7,
       number=8, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -321,6 +328,7 @@ _MEASUREMENTSETTING = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='two_way', full_name='MeasurementSetting.two_way', index=0,
@@ -328,14 +336,14 @@ _MEASUREMENTSETTING = _descriptor.Descriptor(
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='error', full_name='MeasurementSetting.error', index=1,
       number=2, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -359,6 +367,7 @@ _SETTINGS_STATIONSENTRY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='key', full_name='Settings.StationsEntry.key', index=0,
@@ -366,14 +375,14 @@ _SETTINGS_STATIONSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='value', full_name='Settings.StationsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -386,8 +395,8 @@ _SETTINGS_STATIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2144,
-  serialized_end=2201,
+  serialized_start=2100,
+  serialized_end=2157,
 )
 
 _SETTINGS_MEASUREMENTSENTRY = _descriptor.Descriptor(
@@ -396,6 +405,7 @@ _SETTINGS_MEASUREMENTSENTRY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='key', full_name='Settings.MeasurementsEntry.key', index=0,
@@ -403,14 +413,14 @@ _SETTINGS_MEASUREMENTSENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='value', full_name='Settings.MeasurementsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -423,8 +433,8 @@ _SETTINGS_MEASUREMENTSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2203,
-  serialized_end=2275,
+  serialized_start=2159,
+  serialized_end=2231,
 )
 
 _SETTINGS = _descriptor.Descriptor(
@@ -433,6 +443,7 @@ _SETTINGS = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='rso_mass', full_name='Settings.rso_mass', index=0,
@@ -440,378 +451,371 @@ _SETTINGS = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rso_area', full_name='Settings.rso_area', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rso_facets', full_name='Settings.rso_facets', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rso_solar_array_axis', full_name='Settings.rso_solar_array_axis', index=3,
       number=4, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rso_solar_array_area', full_name='Settings.rso_solar_array_area', index=4,
       number=5, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rso_attitude_provider', full_name='Settings.rso_attitude_provider', index=5,
       number=6, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rso_spin_velocity', full_name='Settings.rso_spin_velocity', index=6,
       number=7, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rso_spin_acceleration', full_name='Settings.rso_spin_acceleration', index=7,
       number=8, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='gravity_degree', full_name='Settings.gravity_degree', index=8,
       number=9, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='gravity_order', full_name='Settings.gravity_order', index=9,
       number=10, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='ocean_tides_degree', full_name='Settings.ocean_tides_degree', index=10,
       number=11, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='ocean_tides_order', full_name='Settings.ocean_tides_order', index=11,
       number=12, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='third_body_sun', full_name='Settings.third_body_sun', index=12,
       number=13, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='third_body_moon', full_name='Settings.third_body_moon', index=13,
       number=14, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='solid_tides_sun', full_name='Settings.solid_tides_sun', index=14,
       number=15, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='solid_tides_moon', full_name='Settings.solid_tides_moon', index=15,
       number=16, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='drag_model', full_name='Settings.drag_model', index=16,
       number=17, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='drag_coefficient', full_name='Settings.drag_coefficient', index=17,
       number=18, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='drag_MSISE_flags', full_name='Settings.drag_MSISE_flags', index=18,
       number=19, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='drag_exp_rho0', full_name='Settings.drag_exp_rho0', index=19,
       number=20, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='drag_exp_H0', full_name='Settings.drag_exp_H0', index=20,
       number=21, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='drag_exp_Hscale', full_name='Settings.drag_exp_Hscale', index=21,
       number=22, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rp_sun', full_name='Settings.rp_sun', index=22,
       number=23, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rp_coeff_reflection', full_name='Settings.rp_coeff_reflection', index=23,
       number=24, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='rp_coeff_absorption', full_name='Settings.rp_coeff_absorption', index=24,
       number=25, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='maneuvers', full_name='Settings.maneuvers', index=25,
       number=26, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='prop_start', full_name='Settings.prop_start', index=26,
       number=27, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='prop_end', full_name='Settings.prop_end', index=27,
       number=28, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='prop_step', full_name='Settings.prop_step', index=28,
       number=29, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='prop_initial_state', full_name='Settings.prop_initial_state', index=29,
       number=30, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='prop_initial_TLE', full_name='Settings.prop_initial_TLE', index=30,
       number=31, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='prop_inertial_frame', full_name='Settings.prop_inertial_frame', index=31,
       number=32, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='prop_step_handler_start_time', full_name='Settings.prop_step_handler_start_time', index=32,
+      name='integ_min_time_step', full_name='Settings.integ_min_time_step', index=32,
       number=33, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='prop_step_handler_end_time', full_name='Settings.prop_step_handler_end_time', index=33,
+      name='integ_max_time_step', full_name='Settings.integ_max_time_step', index=33,
       number=34, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='integ_min_time_step', full_name='Settings.integ_min_time_step', index=34,
+      name='integ_abs_tolerance', full_name='Settings.integ_abs_tolerance', index=34,
       number=35, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='integ_max_time_step', full_name='Settings.integ_max_time_step', index=35,
+      name='integ_rel_tolerance', full_name='Settings.integ_rel_tolerance', index=35,
       number=36, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='integ_abs_tolerance', full_name='Settings.integ_abs_tolerance', index=36,
-      number=37, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='integ_rel_tolerance', full_name='Settings.integ_rel_tolerance', index=37,
-      number=38, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='sim_measurements', full_name='Settings.sim_measurements', index=38,
-      number=39, type=8, cpp_type=7, label=1,
+      name='sim_measurements', full_name='Settings.sim_measurements', index=36,
+      number=37, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='stations', full_name='Settings.stations', index=39,
-      number=40, type=11, cpp_type=10, label=3,
+      name='stations', full_name='Settings.stations', index=37,
+      number=38, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='measurements', full_name='Settings.measurements', index=40,
-      number=41, type=11, cpp_type=10, label=3,
+      name='measurements', full_name='Settings.measurements', index=38,
+      number=39, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_filter', full_name='Settings.estm_filter', index=41,
-      number=42, type=5, cpp_type=1, label=1,
+      name='geo_zone_lat_lon', full_name='Settings.geo_zone_lat_lon', index=39,
+      number=40, type=1, cpp_type=5, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='estm_filter', full_name='Settings.estm_filter', index=40,
+      number=41, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_covariance', full_name='Settings.estm_covariance', index=42,
+      name='estm_covariance', full_name='Settings.estm_covariance', index=41,
+      number=42, type=1, cpp_type=5, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='estm_process_noise', full_name='Settings.estm_process_noise', index=42,
       number=43, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_process_noise', full_name='Settings.estm_process_noise', index=43,
-      number=44, type=1, cpp_type=5, label=3,
-      has_default_value=False, default_value=[],
+      name='estm_DMC_corr_time', full_name='Settings.estm_DMC_corr_time', index=43,
+      number=44, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_DMC_corr_time', full_name='Settings.estm_DMC_corr_time', index=44,
+      name='estm_DMC_sigma_pert', full_name='Settings.estm_DMC_sigma_pert', index=44,
       number=45, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_DMC_sigma_pert', full_name='Settings.estm_DMC_sigma_pert', index=45,
-      number=46, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='estm_DMC_acceleration', full_name='Settings.estm_DMC_acceleration', index=46,
-      number=47, type=11, cpp_type=10, label=1,
+      name='estm_DMC_acceleration', full_name='Settings.estm_DMC_acceleration', index=45,
+      number=46, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_outlier_sigma', full_name='Settings.estm_outlier_sigma', index=47,
-      number=48, type=1, cpp_type=5, label=1,
+      name='estm_outlier_sigma', full_name='Settings.estm_outlier_sigma', index=46,
+      number=47, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_outlier_warmup', full_name='Settings.estm_outlier_warmup', index=48,
+      name='estm_outlier_warmup', full_name='Settings.estm_outlier_warmup', index=47,
+      number=48, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='estm_smoother_iterations', full_name='Settings.estm_smoother_iterations', index=48,
       number=49, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_smoother_iterations', full_name='Settings.estm_smoother_iterations', index=49,
-      number=50, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='estm_enable_PDAF', full_name='Settings.estm_enable_PDAF', index=50,
-      number=51, type=8, cpp_type=7, label=1,
+      name='estm_enable_PDAF', full_name='Settings.estm_enable_PDAF', index=49,
+      number=50, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_detection_probability', full_name='Settings.estm_detection_probability', index=51,
+      name='estm_detection_probability', full_name='Settings.estm_detection_probability', index=50,
+      number=51, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='estm_gating_probability', full_name='Settings.estm_gating_probability', index=51,
       number=52, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='estm_gating_probability', full_name='Settings.estm_gating_probability', index=52,
+      name='estm_gating_threshold', full_name='Settings.estm_gating_threshold', index=52,
       number=53, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='estm_gating_threshold', full_name='Settings.estm_gating_threshold', index=53,
-      number=54, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -825,7 +829,7 @@ _SETTINGS = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=568,
-  serialized_end=2275,
+  serialized_end=2231,
 )
 
 
@@ -835,6 +839,7 @@ _SETTINGSARRAY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='array', full_name='SettingsArray.array', index=0,
@@ -842,7 +847,7 @@ _SETTINGSARRAY = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -855,8 +860,8 @@ _SETTINGSARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2277,
-  serialized_end=2318,
+  serialized_start=2233,
+  serialized_end=2274,
 )
 
 
@@ -866,6 +871,7 @@ _MEASUREMENT = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='time', full_name='Measurement.time', index=0,
@@ -873,35 +879,35 @@ _MEASUREMENT = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='station', full_name='Measurement.station', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='values', full_name='Measurement.values', index=2,
       number=3, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='angle_rates', full_name='Measurement.angle_rates', index=3,
       number=4, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='true_state', full_name='Measurement.true_state', index=4,
       number=5, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -914,8 +920,8 @@ _MEASUREMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2320,
-  serialized_end=2433,
+  serialized_start=2276,
+  serialized_end=2389,
 )
 
 
@@ -925,6 +931,7 @@ _MEASUREMENTARRAY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='array', full_name='MeasurementArray.array', index=0,
@@ -932,7 +939,7 @@ _MEASUREMENTARRAY = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -945,8 +952,8 @@ _MEASUREMENTARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2435,
-  serialized_end=2482,
+  serialized_start=2391,
+  serialized_end=2438,
 )
 
 
@@ -956,6 +963,7 @@ _MEASUREMENT2DARRAY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='array', full_name='Measurement2DArray.array', index=0,
@@ -963,7 +971,7 @@ _MEASUREMENT2DARRAY = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -976,8 +984,8 @@ _MEASUREMENT2DARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2484,
-  serialized_end=2538,
+  serialized_start=2440,
+  serialized_end=2494,
 )
 
 
@@ -987,6 +995,7 @@ _DETERMINEORBITINPUT = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='config', full_name='DetermineOrbitInput.config', index=0,
@@ -994,14 +1003,14 @@ _DETERMINEORBITINPUT = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='measurements', full_name='DetermineOrbitInput.measurements', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -1014,8 +1023,8 @@ _DETERMINEORBITINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2540,
-  serialized_end=2624,
+  serialized_start=2496,
+  serialized_end=2580,
 )
 
 
@@ -1025,6 +1034,7 @@ _ESTIMATIONOUTPUT = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='time', full_name='EstimationOutput.time', index=0,
@@ -1032,63 +1042,63 @@ _ESTIMATIONOUTPUT = _descriptor.Descriptor(
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='station', full_name='EstimationOutput.station', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='estimated_state', full_name='EstimationOutput.estimated_state', index=2,
       number=3, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='propagated_covariance', full_name='EstimationOutput.propagated_covariance', index=3,
       number=4, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='innovation_covariance', full_name='EstimationOutput.innovation_covariance', index=4,
       number=5, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='estimated_covariance', full_name='EstimationOutput.estimated_covariance', index=5,
       number=6, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='pre_fit', full_name='EstimationOutput.pre_fit', index=6,
       number=7, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='post_fit', full_name='EstimationOutput.post_fit', index=7,
       number=8, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='clutter_probability', full_name='EstimationOutput.clutter_probability', index=8,
       number=9, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -1101,8 +1111,8 @@ _ESTIMATIONOUTPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2627,
-  serialized_end=2881,
+  serialized_start=2583,
+  serialized_end=2837,
 )
 
 
@@ -1112,6 +1122,7 @@ _ESTIMATIONOUTPUTARRAY = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='array', full_name='EstimationOutputArray.array', index=0,
@@ -1119,7 +1130,7 @@ _ESTIMATIONOUTPUTARRAY = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -1132,8 +1143,8 @@ _ESTIMATIONOUTPUTARRAY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2883,
-  serialized_end=2940,
+  serialized_start=2839,
+  serialized_end=2896,
 )
 
 
@@ -1143,6 +1154,7 @@ _TRANSFORMFRAMEINPUT = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='src_frame', full_name='TransformFrameInput.src_frame', index=0,
@@ -1150,28 +1162,28 @@ _TRANSFORMFRAMEINPUT = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='time', full_name='TransformFrameInput.time', index=1,
       number=2, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='pva', full_name='TransformFrameInput.pva', index=2,
       number=3, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='dest_frame', full_name='TransformFrameInput.dest_frame', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -1184,8 +1196,8 @@ _TRANSFORMFRAMEINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2942,
-  serialized_end=3033,
+  serialized_start=2898,
+  serialized_end=2989,
 )
 
 
@@ -1195,6 +1207,7 @@ _IMPORTTDMINPUT = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='file_name', full_name='ImportTDMInput.file_name', index=0,
@@ -1202,14 +1215,14 @@ _IMPORTTDMINPUT = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='file_format', full_name='ImportTDMInput.file_format', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -1222,8 +1235,8 @@ _IMPORTTDMINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3035,
-  serialized_end=3091,
+  serialized_start=2991,
+  serialized_end=3047,
 )
 
 
@@ -1233,6 +1246,7 @@ _ANGLESINPUT = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='frame', full_name='AnglesInput.frame', index=0,
@@ -1240,49 +1254,49 @@ _ANGLESINPUT = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='time', full_name='AnglesInput.time', index=1,
       number=2, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='latitude', full_name='AnglesInput.latitude', index=2,
       number=3, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='longitude', full_name='AnglesInput.longitude', index=3,
       number=4, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='altitude', full_name='AnglesInput.altitude', index=4,
       number=5, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='angle1', full_name='AnglesInput.angle1', index=5,
       number=6, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='angle2', full_name='AnglesInput.angle2', index=6,
       number=7, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -1295,8 +1309,8 @@ _ANGLESINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3094,
-  serialized_end=3235,
+  serialized_start=3050,
+  serialized_end=3191,
 )
 
 
@@ -1306,6 +1320,7 @@ _INTERPOLATEEPHEMERISINPUT = _descriptor.Descriptor(
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
+  create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
       name='source_frame', full_name='InterpolateEphemerisInput.source_frame', index=0,
@@ -1313,56 +1328,56 @@ _INTERPOLATEEPHEMERISINPUT = _descriptor.Descriptor(
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='time', full_name='InterpolateEphemerisInput.time', index=1,
       number=2, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=b'\020\001', file=DESCRIPTOR),
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='ephem', full_name='InterpolateEphemerisInput.ephem', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='num_points', full_name='InterpolateEphemerisInput.num_points', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='dest_frame', full_name='InterpolateEphemerisInput.dest_frame', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='interp_start', full_name='InterpolateEphemerisInput.interp_start', index=5,
       number=6, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='interp_end', full_name='InterpolateEphemerisInput.interp_end', index=6,
       number=7, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
       name='step_size', full_name='InterpolateEphemerisInput.step_size', index=7,
       number=8, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -1375,8 +1390,8 @@ _INTERPOLATEEPHEMERISINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3238,
-  serialized_end=3435,
+  serialized_start=3194,
+  serialized_end=3391,
 )
 
 _SETTINGS_STATIONSENTRY.fields_by_name['value'].message_type = _STATION
@@ -1583,6 +1598,7 @@ _SETTINGS.fields_by_name['rso_solar_array_axis']._options = None
 _SETTINGS.fields_by_name['rso_spin_velocity']._options = None
 _SETTINGS.fields_by_name['rso_spin_acceleration']._options = None
 _SETTINGS.fields_by_name['prop_initial_state']._options = None
+_SETTINGS.fields_by_name['geo_zone_lat_lon']._options = None
 _SETTINGS.fields_by_name['estm_covariance']._options = None
 _SETTINGS.fields_by_name['estm_process_noise']._options = None
 _MEASUREMENT.fields_by_name['values']._options = None

@@ -39,6 +39,8 @@ import org.orekit.utils.PVCoordinates;
 
 public final class EventHandling<T extends EventDetector> implements EventHandler<T>
 {
+    public final static String GEO_ZONE_NAME = "Geographic Region";
+
     public final Settings.ManeuverType maneuverType;
     public final double delta;
     public final String stationName;
@@ -57,16 +59,16 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	if (maneuverType == Settings.ManeuverType.UNDEFINED && stationName != null)
 	{
 	    String name = detector.getClass().getSimpleName();
-	    if (name.equalsIgnoreCase("ElevationDetector"))
+	    if (name.equals("ElevationDetector"))
 	    {
 		isVisible = increasing;
-		if (!increasing)
+		if (increasing)
 		    return(Action.STOP);
 	    }
-	    else if (name.equalsIgnoreCase("GroundFieldOfViewDetector"))
+	    else if (name.equals("GroundFieldOfViewDetector") || name.equals("GeographicZoneDetector"))
 	    {
 		isVisible = !increasing;
-		if (increasing)
+		if (!increasing)
 		    return(Action.STOP);
 	    }
 	}

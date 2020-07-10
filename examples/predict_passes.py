@@ -18,8 +18,8 @@ import json
 from os import path
 import datetime as dt
 import tkinter as tk
-from orbdetpy import configure, add_station, MeasurementType, Constant
-from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string
+from orbdetpy import add_station, configure, Constant, Frame, MeasurementType
+from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string, pos_to_lla
 from orbdetpy.propagation import propagate_orbits
 
 class Application(tk.Frame):
@@ -35,46 +35,61 @@ class Application(tk.Frame):
         self.load_settings()
 
     def create_widgets(self):
-        tk.Label(self, text="Latitude [deg]").grid(row=0, sticky="E")
+        r = 0
+        label = """Enter one Lat/Lon/Alt and optional sensor FOV for a single ground station -or-
+        Enter 3+ comma separated Lat/Lon vertices in CCW order for geographic regions. 
+        """
+        tk.Label(self, text=label).grid(row=r, columnspan=6)
+
+        r += 1
+        tk.Label(self, text="Latitude [deg]").grid(row=r, sticky="E")
         self.latitude = tk.Entry(self, width=19)
-        self.latitude.grid(row=0, column=1, sticky="W")
-        tk.Label(self, text="Longitude [deg]").grid(row=0, column=2, sticky="E")
+        self.latitude.grid(row=r, column=1, sticky="W")
+        tk.Label(self, text="Longitude [deg]").grid(row=r, column=2, sticky="E")
         self.longitude = tk.Entry(self, width=19)
-        self.longitude.grid(row=0, column=3, sticky="W")
-        tk.Label(self, text="Altitude [m]").grid(row=0, column=4, sticky="E")
+        self.longitude.grid(row=r, column=3, sticky="W")
+        tk.Label(self, text="Altitude [m]").grid(row=r, column=4, sticky="E")
         self.altitude = tk.Entry(self, width=12)
-        self.altitude.grid(row=0, column=5, sticky="W")
+        self.altitude.grid(row=r, column=5, sticky="W")
 
-        tk.Label(self, text="FOV azimuth [deg]").grid(row=1, sticky="E")
+        r += 1
+        tk.Label(self, text="FOV azimuth [deg]").grid(row=r, sticky="E")
         self.fov_azimuth = tk.Entry(self, width=19)
-        self.fov_azimuth.grid(row=1, column=1, sticky="W")
-        tk.Label(self, text="FOV elevation [deg]").grid(row=1, column=2, sticky="E")
+        self.fov_azimuth.grid(row=r, column=1, sticky="W")
+        tk.Label(self, text="FOV elevation [deg]").grid(row=r, column=2, sticky="E")
         self.fov_elevation = tk.Entry(self, width=19)
-        self.fov_elevation.grid(row=1, column=3, sticky="W")
-        tk.Label(self, text="FOV aperture [deg]").grid(row=1, column=4, sticky="E")
+        self.fov_elevation.grid(row=r, column=3, sticky="W")
+        tk.Label(self, text="FOV aperture [deg]").grid(row=r, column=4, sticky="E")
         self.fov_aperture = tk.Entry(self, width=12)
-        self.fov_aperture.grid(row=1, column=5, sticky="W")
+        self.fov_aperture.grid(row=r, column=5, sticky="W")
 
-        tk.Label(self, text="Start UTC").grid(row=2, sticky="E")
+        r += 1
+        tk.Label(self, text="Start UTC").grid(row=r, sticky="E")
         self.start_time = tk.Entry(self, width=19)
-        self.start_time.grid(row=2, column=1, sticky="W")
-        tk.Label(self, text="End UTC").grid(row=2, column=2, sticky="E")
+        self.start_time.grid(row=r, column=1, sticky="W")
+        tk.Label(self, text="End UTC").grid(row=r, column=2, sticky="E")
         self.end_time = tk.Entry(self, width=19)
-        self.end_time.grid(row=2, column=3, sticky="W")
-        tk.Label(self, text="Step size [s]").grid(row=2, column=4, sticky="E")
+        self.end_time.grid(row=r, column=3, sticky="W")
+        tk.Label(self, text="Step size [s]").grid(row=r, column=4, sticky="E")
         self.step_size = tk.Entry(self, width=12)
-        self.step_size.grid(row=2, column=5, sticky="W")
+        self.step_size.grid(row=r, column=5, sticky="W")
 
-        tk.Label(self, text="Two line elements").grid(row=3, sticky="E")
+        r += 1
+        tk.Label(self, text="Two line elements").grid(row=r, sticky="E")
         self.tle = tk.Text(self, height=9, width=72)
-        self.tle.grid(row=3, column=1, columnspan=6, sticky="W")
+        self.tle.grid(row=r, column=1, columnspan=6, sticky="W")
 
+        r += 1
         self.predict = tk.Button(self, text="Predict passes", command=self.predict)
-        self.predict.grid(row=4, columnspan=6)
+        self.predict.grid(row=r, columnspan=6)
 
-        tk.Label(self, text="UTC, Azimuth [deg], Elevation [deg]").grid(row=5, columnspan=6)
-        self.output = tk.Text(self, height=18, width=90)
-        self.output.grid(row=6, columnspan=6)
+        r += 1
+        self.output_label = tk.Label(self, text="Output")
+        self.output_label.grid(row=r, columnspan=6)
+
+        r += 1
+        self.output = tk.Text(self, height=15, width=90)
+        self.output.grid(row=r, columnspan=6)
 
     def load_settings(self):
         cfg = {}
@@ -94,14 +109,13 @@ class Application(tk.Frame):
         self.end_time.insert(0, dt.datetime(d1.year, d1.month, d1.day).strftime("%Y-%m-%dT%H:%M:%SZ"))
         self.step_size.insert(0, 60.0)
         self.tle.insert(tk.END, cfg.get("tle", ""))
-        self.output.insert(tk.END, cfg.get("output", ""))
+        self.output.insert(tk.END, "")
 
     def save_settings(self):
         cfg = {}
         for f in ["latitude", "longitude", "altitude", "fov_azimuth", "fov_elevation",
-                  "fov_aperture", "tle", "output"]:
-            cfg[f] = getattr(self, f).get("0.0", "end-1c") if (
-                f in ["tle", "output"]) else getattr(self, f).get()
+                  "fov_aperture", "tle"]:
+            cfg[f] = getattr(self, f).get("0.0", "end-1c") if (f == "tle") else getattr(self, f).get()
 
         self.master.destroy()
         with open(self.cfg_file, "w") as fp:
@@ -113,33 +127,50 @@ class Application(tk.Frame):
         end = get_J2000_epoch_offset(self.end_time.get())
         data, tle = {}, [l for l in self.tle.get("0.0", "end-1c").splitlines()
                          if l.startswith("1") or l.startswith("2")]
+
         for f in ["latitude", "longitude", "altitude", "fov_azimuth", "fov_elevation",
                   "fov_aperture", "step_size"]:
-            data[f] = float(getattr(self, f).get())
+            data[f] = [float(t.strip()) for t in getattr(self, f).get().split(",")]
             if (f not in ["altitude", "step_size"]):
-                data[f] *= Constant.DEGREE
+                data[f] = [d*Constant.DEGREE_TO_RAD for d in data[f]]
 
         cfg_list = []
+        sim_meas = len(data["latitude"]) <= 2 or len(data["latitude"]) != len(data["longitude"])
         for i in range(0, len(tle), 2):
             cfg_list.append(configure(prop_start=start, prop_initial_TLE=tle[i:i+2],
-                                      prop_end=end, prop_step=data["step_size"],
-                                      sim_measurements=True))
-            add_station(cfg_list[-1], "Sensor", data["latitude"], data["longitude"],
-                        data["altitude"], data["fov_azimuth"], data["fov_elevation"],
-                        data["fov_aperture"])
+                                      prop_end=end, prop_step=data["step_size"][0],
+                                      sim_measurements=sim_meas))
+            if (not sim_meas):
+                cfg_list[-1].geo_zone_lat_lon[:] = [l for ll in zip(data["latitude"], data["longitude"])
+                                                    for l in ll]
+                continue
+
+            add_station(cfg_list[-1], "Sensor", data["latitude"][0], data["longitude"][0],
+                        data["altitude"][0], data["fov_azimuth"][0], data["fov_elevation"][0],
+                        data["fov_aperture"][0])
             cfg_list[-1].measurements[MeasurementType.AZIMUTH].error[:] = [0.0]
             cfg_list[-1].measurements[MeasurementType.ELEVATION].error[:] = [0.0]
 
         if (len(cfg_list)):
             i = 0
             self.output.delete("0.0", tk.END)
+            if (sim_meas):
+                self.output_label["text"] = "UTC, Azimuth [deg], Elevation [deg]"
+            else:
+                self.output_label["text"] = "UTC, Latitude [deg], Longitude [deg], Altitude [m]"
+
             for o in propagate_orbits(cfg_list):
                 self.output.insert(tk.END, "\nObject {}:\n".format(tle[i][2:7]))
                 i += 2
                 for m in o.array:
-                    self.output.insert(tk.END, "{}: {:.5f}, {:.5f}\n".format(
-                        get_UTC_string(m.time), (m.values[0]/Constant.DEGREE + 360)%360,
-                        m.values[1]/Constant.DEGREE))
+                    if (sim_meas):
+                        self.output.insert(tk.END, "{}: {:.5f}, {:.5f}\n".format(
+                            get_UTC_string(m.time), (m.values[0]/Constant.DEGREE_TO_RAD + 360)%360,
+                            m.values[1]/Constant.DEGREE_TO_RAD))
+                    else:
+                        lla = pos_to_lla(Frame.GCRF, m.time, m.true_state)
+                        self.output.insert(tk.END, "{}: {:.5f}, {:.5f}, {:.2f}\n".format(
+                            get_UTC_string(m.time), lla[0]/Constant.DEGREE_TO_RAD, lla[1]/Constant.DEGREE_TO_RAD, lla[2]))
 
         self.predict["state"] = "normal"
 

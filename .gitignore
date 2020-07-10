@@ -4,6 +4,6 @@ output/
 build/
 dist/
 orbdetpy.egg-info/
-*.pyc
-*.class
 *.json
+*.oem
+*.tdm

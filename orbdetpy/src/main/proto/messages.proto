@@ -111,32 +111,31 @@ message Settings
     repeated double prop_initial_state = 30 [packed = true];
     repeated string prop_initial_TLE = 31;
     string prop_inertial_frame = 32;
-    double prop_step_handler_start_time = 33;
-    double prop_step_handler_end_time = 34;
 
-    double integ_min_time_step = 35;
-    double integ_max_time_step = 36;
-    double integ_abs_tolerance = 37;
-    double integ_rel_tolerance = 38;
+    double integ_min_time_step = 33;
+    double integ_max_time_step = 34;
+    double integ_abs_tolerance = 35;
+    double integ_rel_tolerance = 36;
 
-    bool sim_measurements = 39;
+    bool sim_measurements = 37;
 
-    map<string, Station> stations = 40;
-    map<int32, MeasurementSetting> measurements = 41;
+    map<string, Station> stations = 38;
+    map<int32, MeasurementSetting> measurements = 39;
+    repeated double geo_zone_lat_lon = 40 [packed = true];
 
-    int32 estm_filter = 42;
-    repeated double estm_covariance = 43 [packed = true];
-    repeated double estm_process_noise = 44 [packed = true];
-    double estm_DMC_corr_time = 45;
-    double estm_DMC_sigma_pert = 46;
-    Parameter estm_DMC_acceleration = 47;
-    double estm_outlier_sigma = 48;
-    int32 estm_outlier_warmup = 49;
-    int32 estm_smoother_iterations = 50;
-    bool estm_enable_PDAF = 51;
-    double estm_detection_probability = 52;
-    double estm_gating_probability = 53;
-    double estm_gating_threshold = 54;
+    int32 estm_filter = 41;
+    repeated double estm_covariance = 42 [packed = true];
+    repeated double estm_process_noise = 43 [packed = true];
+    double estm_DMC_corr_time = 44;
+    double estm_DMC_sigma_pert = 45;
+    Parameter estm_DMC_acceleration = 46;
+    double estm_outlier_sigma = 47;
+    int32 estm_outlier_warmup = 48;
+    int32 estm_smoother_iterations = 49;
+    bool estm_enable_PDAF = 50;
+    double estm_detection_probability = 51;
+    double estm_gating_probability = 52;
+    double estm_gating_threshold = 53;
 }
 
 message SettingsArray

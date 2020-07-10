@@ -99,6 +99,14 @@ public final class Conversion
 	return(new double[]{FastMath.atan2(x, y), FastMath.atan2(toVec.getZ(), FastMath.sqrt(x*x + y*y))});
     }
 
+    public static double[] convertPosToLLA(Predefined frame, AbsoluteDate time, List<Double> pos)
+    {
+	OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+						      FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
+	GeodeticPoint point = earth.transform(new Vector3D(pos.get(0), pos.get(1), pos.get(2)), FramesFactory.getFrame(frame), time);
+	return(new double[]{point.getLatitude(), point.getLongitude(), point.getAltitude()});
+    }
+
     public static String getUTCString(double j2000Offset)
     {
 	DateTimeComponents dtc = AbsoluteDate.J2000_EPOCH.shiftedBy(j2000Offset).getComponents(TimeScalesFactory.getUTC());

@@ -107,10 +107,6 @@ public final class Tools
 	    cfg.propInitialTLE = req.getPropInitialTLEList().toArray(new String[0]);
 	if (req.getPropInertialFrame().length() > 0)
 	    cfg.propInertialFrame = FramesFactory.getFrame(Predefined.valueOf(req.getPropInertialFrame()));
-	if (req.getPropStepHandlerStartTime() != 0.0)
-	    cfg.propStepHandlerStartTime = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropStepHandlerStartTime());
-	if (req.getPropStepHandlerEndTime() != 0.0)
-	    cfg.propStepHandlerEndTime = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropStepHandlerEndTime());
 
 	cfg.integMinTimeStep = req.getIntegMinTimeStep();
 	cfg.integMaxTimeStep = req.getIntegMaxTimeStep();
@@ -143,6 +139,9 @@ public final class Tools
 	    }
 	}
 
+	if (req.getGeoZoneLatLonCount() > 0)
+	    cfg.geoZoneLatLon = req.getGeoZoneLatLonList().stream().mapToDouble(Double::doubleValue).toArray();
+
 	cfg.estmFilter = Settings.Filter.values()[req.getEstmFilter()];
 	if (req.getEstmCovarianceCount() > 0)
 	    cfg.estmCovariance = req.getEstmCovarianceList().stream().mapToDouble(Double::doubleValue).toArray();
@@ -157,7 +156,6 @@ public final class Tools
 							     req.getEstmDMCAcceleration().getValue(), estmTypes[req.getEstmDMCAcceleration().getEstimation()]);
 	cfg.estmOutlierSigma = req.getEstmOutlierSigma();
 	cfg.estmOutlierWarmup = req.getEstmOutlierWarmup();
-
 	cfg.estmSmootherIterations = req.getEstmSmootherIterations();
 	cfg.estmEnablePDAF = req.getEstmEnablePDAF();
 	cfg.estmDetectionProbability = req.getEstmDetectionProbability();

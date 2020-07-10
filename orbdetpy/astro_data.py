@@ -16,18 +16,16 @@
 
 import requests
 from os import path
-from orbdetpy import _datadir
+from orbdetpy import _data_dir
 
 def format_weather(lines: str)->str:
     """Re-format space weather data into a more efficient form.
     """
 
-    c1 = [0, 5,  8, 11, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 47, 51,
-          55, 59, 63, 67, 71, 75, 79, 83, 87, 89, 93,  99, 101, 107,
-          113, 119, 125]
-    c2 = [5, 8, 11, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 47, 51, 55,
-          59, 63, 67, 71, 75, 79, 83, 87, 89, 93, 99, 101, 107, 113,
-          119, 125, 131]
+    c1 = [0, 5,  8, 11, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 47, 51, 55, 59, 63, 67,
+          71, 75, 79, 83, 87, 89, 93,  99, 101, 107, 113, 119, 125]
+    c2 = [5, 8, 11, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 47, 51, 55, 59, 63, 67, 71,
+          75, 79, 83, 87, 89, 93, 99, 101, 107, 113, 119, 125, 131]
 
     data = ""
     for line in lines.splitlines():
@@ -42,24 +40,22 @@ def update_data()->None:
     """Download and re-format astrodynamics data from multiple sources.
     """
 
-    updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
-                path.join(_datadir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
+    updates = [["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(_data_dir, "SpaceWeather.dat"), format_weather],
+               ["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
+                path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
                ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
-                path.join(_datadir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
-               ["http://maia.usno.navy.mil/ser7/tai-utc.dat",
-                path.join(_datadir, "tai-utc.dat"), None],
-               ["http://www.celestrak.com/SpaceData/SW-All.txt",
-                path.join(_datadir, "SpaceWeather.dat"), format_weather]]
+                path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
+               ["http://maia.usno.navy.mil/ser7/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None]]
 
     for u in updates:
         print("Updating {}".format(u[1]))
         try:
-            resp = requests.get(u[0], timeout=180.0)
-            if (resp.status_code != 200):
+            resp = requests.get(u[0], timeout=1.0)
+            if (resp.status_code != requests.codes.ok):
                 print("Error {} in {}".format(resp.status_code, u[0]))
                 continue
         except Exception as exc:
-            print(repr(exc))
+            print(exc)
             continue
 
         with open(u[1], "w") as f:

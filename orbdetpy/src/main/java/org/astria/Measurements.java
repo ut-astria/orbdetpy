@@ -32,11 +32,13 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.Transform;
+import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -130,6 +132,7 @@ public final class Measurements
 	    {
 		AngularAzEl obs = new AngularAzEl(gs, m.time, new double[]{m.values[0], m.values[1]},
 						  new double[]{cazim.error[0], celev.error[0]}, twoOnes, satellite);
+		obs.addModifier(new AngularRadioRefractionModifier(new EarthITU453AtmosphereRefraction(jsn.altitude)));
 		if (addOutlier)
 		    obs.addModifier(outlier);
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
@@ -139,7 +142,7 @@ public final class Measurements
 
 	    if (crigh != null && cdecl != null)
 	    {
-		AngularRaDec obs = new AngularRaDec(gs, FramesFactory.getFrame(Predefined.EME2000), m.time, new double[]{m.values[0], m.values[1]},
+		AngularRaDec obs = new AngularRaDec(gs, odCfg.propInertialFrame, m.time, new double[]{m.values[0], m.values[1]},
 						    new double[]{crigh.error[0], cdecl.error[0]}, twoOnes, satellite);
 		if (addOutlier)
 		    obs.addModifier(outlier);

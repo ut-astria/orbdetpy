@@ -40,7 +40,7 @@ def configure(**kwargs)->Settings:
                     drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.ESTIMATE),
                     drag_exp_rho0=3.614E-13, drag_exp_H0=700000.0, drag_exp_Hscale=88667.0, rp_sun=True,
                     rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.ESTIMATE),
-                    prop_inertial_frame=Frame.EME2000, integ_min_time_step=1E-3, integ_max_time_step=300.0,
+                    prop_inertial_frame=Frame.GCRF, integ_min_time_step=1E-3, integ_max_time_step=300.0,
                     integ_abs_tolerance=1E-14, integ_rel_tolerance=1E-12, estm_filter=Filter.UNSCENTED_KALMAN,
                     estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
                     estm_DMC_acceleration=Parameter(value=0.0, min=-1E-3, max=1E-3, estimation=EstimationType.ESTIMATE),
@@ -252,19 +252,19 @@ class Constant():
     """Miscellaneous constants.
     """
 
-    DEGREE = (math.pi/180)
-    ARC_SECOND = (math.pi/648000)
+    DEGREE_TO_RAD = (math.pi/180)
+    ARC_SECOND_TO_RAD = (math.pi/648000)
     PLUS_I = (1, 0, 0)
     PLUS_J = (0, 1, 0)
     PLUS_K = (0, 0, 1)
     MINUS_I = (-1, 0, 0)
     MINUS_J = (0, -1, 0)
     MINUS_K = (0, 0, -1)
-    ZERO = (0, 0, 0)
+    ZERO_VECTOR = (0, 0, 0)
 
 if (__name__ != '__main__'):
-    _rootdir = path.dirname(path.abspath(__file__))
-    _datadir = path.join(_rootdir, "orekit-data")
-    _libsdir = path.join(_rootdir, "target")
-    _jarfile = path.join(_libsdir, "orbdetpy-server-{}.jar".format(__version__))
-    RemoteServer.connect(_datadir, _jarfile)
+    _root_dir = path.dirname(path.abspath(path.realpath(__file__)))
+    _data_dir = path.join(_root_dir, "orekit-data")
+    _libs_dir = path.join(_root_dir, "target")
+    _jar_file = path.join(_libs_dir, "orbdetpy-server-{}.jar".format(__version__))
+    RemoteServer.connect(_data_dir, _jar_file)

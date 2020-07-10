@@ -17,7 +17,7 @@
 import math
 from datetime import datetime
 from typing import List, Optional
-from orbdetpy import MeasurementType
+from orbdetpy import Frame, MeasurementType
 from orbdetpy.conversion import get_UTC_string
 from orbdetpy.rpc.messages_pb2 import ImportTDMInput, Settings
 from orbdetpy.rpc.server import RemoteServer
@@ -38,7 +38,7 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str)->str:
     Ephemerides in OEM format.
     """
 
-    frame = "ICRF" if (cfg.prop_inertial_frame == "GCRF") else cfg.prop_inertial_frame
+    frame = Frame.ICRF if (cfg.prop_inertial_frame == Frame.GCRF) else cfg.prop_inertial_frame
     utcnow = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     oem_data = "CCSDS_OEM_VERS = 2.0\nCREATION_DATE = {utc_time}\n" \
                "ORIGINATOR = UT-ASTRIA\n\nMETA_START\nOBJECT_NAME = {obj_name}\n" \
@@ -72,7 +72,7 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str)->str:
         return("{}\nCOVARIANCE_START\n{}COVARIANCE_STOP\n".format(oem_data, cov_data))
     return(oem_data)
 
-def export_TDM(cfg: Settings, obs, obj_id: str, station_list: Optional[List[str]] = None)->str:
+def export_TDM(cfg: Settings, obs, obj_id: str, station_list: Optional[List[str]]=None)->str:
     """Export tracking data in CCSDS TDM format.
 
     Parameters
@@ -89,7 +89,7 @@ def export_TDM(cfg: Settings, obs, obj_id: str, station_list: Optional[List[str]
 
     miter = cfg.measurements.keys()
     if (MeasurementType.RIGHT_ASCENSION in miter and MeasurementType.DECLINATION in miter):
-        frame = "ICRF" if (cfg.prop_inertial_frame == "GCRF") else cfg.prop_inertial_frame
+        frame = Frame.ICRF if (cfg.prop_inertial_frame == Frame.GCRF) else cfg.prop_inertial_frame
         obstype = "ANGLE_TYPE = RADEC\nREFERENCE_FRAME = {}".format(frame)
         obspath = "1,2"
     if (MeasurementType.AZIMUTH in miter and MeasurementType.ELEVATION in miter):

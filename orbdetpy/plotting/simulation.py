@@ -18,7 +18,6 @@ import matplotlib.pyplot as plt
 from math import acos, pi
 from numpy import array, cross, dot
 from numpy.linalg import norm
-from orbdetpy.plotting import maximize_plot
 
 def plot(sim_data, interactive = False, output_file_path = None):
     mu = 398600.4418
@@ -64,7 +63,6 @@ def plot(sim_data, interactive = False, output_file_path = None):
 
     outfiles = []
     plt.figure(0)
-    maximize_plot()
     plt.subplot(611)
     plt.scatter(tim, sma, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
@@ -95,7 +93,6 @@ def plot(sim_data, interactive = False, output_file_path = None):
         plt.savefig(outfiles[-1], format = "png")
 
     plt.figure(1)
-    maximize_plot()
     plt.subplot(211)
     plt.scatter(tim, hmag, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
@@ -110,7 +107,6 @@ def plot(sim_data, interactive = False, output_file_path = None):
         plt.savefig(outfiles[-1], format = "png")
 
     plt.figure(2)
-    maximize_plot()
     plt.subplot(311)
     plt.scatter(tim, hvec[:,0], marker = "o", s = 7)
     plt.xlabel("Time [hr]")

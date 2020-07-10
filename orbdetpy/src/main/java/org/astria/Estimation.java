@@ -119,25 +119,15 @@ public final class Estimation
 
 	epoch = odCfg.propStart;
 	propEnd = odCfg.propEnd;
-
-	if (odCfg.propStepHandlerStartTime != null)
-	    stepHandlerStart = odCfg.propStepHandlerStartTime;
-	else
+	if (odCfg.propStep >= 0.0)
 	{
-	    if (odCfg.propStep >= 0.0)
-		stepHandlerStart = epoch;
-	    else
-		stepHandlerStart = propEnd;
+	    stepHandlerStart = epoch;
+	    stepHandlerEnd = propEnd;
 	}
-
-	if (odCfg.propStepHandlerEndTime != null)
-	    stepHandlerEnd = odCfg.propStepHandlerEndTime;
 	else
 	{
-	    if (odCfg.propStep >= 0.0)
-		stepHandlerEnd = propEnd;
-	    else
-		stepHandlerEnd = epoch;
+	    stepHandlerStart = propEnd;
+	    stepHandlerEnd = epoch;
 	}
     }
 
@@ -391,7 +381,7 @@ public final class Estimation
 			for (int k = 0; k < odCfg.parameters.size(); k++)
 			{
 			    String bias = new StringBuilder(stations[i]).append(measNames[j]).toString();
-			    if (bias.equalsIgnoreCase(odCfg.parameters.get(k).name))
+			    if (bias.equals(odCfg.parameters.get(k).name))
 				biasPos.put(bias, k + 6);
 			}
 		    }

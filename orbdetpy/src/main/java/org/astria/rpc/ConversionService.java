@@ -24,8 +24,15 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Conversion;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 public final class ConversionService extends ConversionGrpc.ConversionImplBase
 {
@@ -76,6 +83,67 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < azEl.length; i++)
 		builder = builder.addArray(azEl[i]);
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void convertPosToLLA(Messages.TransformFrameInput req, StreamObserver<Messages.DoubleArray> resp)
+    {
+	try
+	{
+	    double[] lla = Conversion.convertPosToLLA(Predefined.valueOf(req.getSrcFrame()),
+						      AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime()), req.getPvaList());
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
+	    for (int i = 0; i < lla.length; i++)
+		builder = builder.addArray(lla[i]);
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void convertElemToPv(Messages.TransformFrameInput req, StreamObserver<Messages.DoubleArray> resp)
+    {
+	try
+	{
+	    KeplerianOrbit kep = new KeplerianOrbit(req.getPva(0), req.getPva(1), req.getPva(2), req.getPva(4), req.getPva(3), req.getPva(5),
+						    PositionAngle.MEAN, FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())),
+						    AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime()), Constants.EGM96_EARTH_MU);
+	    PVCoordinates pvc = kep.getPVCoordinates();
+	    Vector3D pos = pvc.getPosition();
+	    Vector3D vel = pvc.getVelocity();
+
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder().addArray(pos.getX()).addArray(pos.getY())
+		.addArray(pos.getZ()).addArray(vel.getX()).addArray(vel.getY()).addArray(vel.getZ());
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void convertPvToElem(Messages.TransformFrameInput req, StreamObserver<Messages.DoubleArray> resp)
+    {
+	try
+	{
+	    PVCoordinates pvc = new PVCoordinates(new Vector3D(req.getPva(0), req.getPva(1), req.getPva(2)),
+						  new Vector3D(req.getPva(3), req.getPva(4), req.getPva(5)));
+	    KeplerianOrbit orb = new KeplerianOrbit(pvc, FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())),
+						    AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime()), Constants.EGM96_EARTH_MU);
+
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder().addArray(orb.getA())
+		.addArray(orb.getE()).addArray(orb.getI()).addArray(orb.getRightAscensionOfAscendingNode())
+		.addArray(orb.getPerigeeArgument()).addArray(orb.getMeanAnomaly()).addArray(orb.getTrueAnomaly());
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

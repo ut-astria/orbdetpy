@@ -14,32 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import math
 import numpy
 from numpy.linalg import norm
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
+from orbdetpy import Constant
 from orbdetpy import EstimationType, MeasurementType
-from orbdetpy.plotting import maximize_plot
 
-def plot(cfg, measurements, orbit_fit, interactive=False,
-         output_file_path=None, estim_param=True):
+def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None, estim_param=True):
+    key = list(cfg.measurements.keys())
     inp = [m for m in measurements if (len(m.station) > 0 or len(m.values) >= 3)]
     out = [f for f in orbit_fit if (len(f.pre_fit)*len(f.post_fit) > 0)]
-
-    key = list(cfg.measurements.keys())
     dmcidx, dmcrun = 6, (cfg.estm_DMC_corr_time > 0.0 and cfg.estm_DMC_sigma_pert > 0.0)
 
-    cd = cfg.drag_coefficient.estimation
-    cr = cfg.rp_coeff_reflection.estimation
+    cd, cr = cfg.drag_coefficient.estimation, cfg.rp_coeff_reflection.estimation
     if (cd == EstimationType.ESTIMATE):
         dmcidx += 1
     if (cr == EstimationType.ESTIMATE):
         dmcidx += 1
 
     parnames = []
-    if (cd == EstimationType.ESTIMATE or
-        (cd == EstimationType.CONSIDER and cr == EstimationType.CONSIDER)):
+    if (cd == EstimationType.ESTIMATE or (cd == EstimationType.CONSIDER and cr == EstimationType.CONSIDER)):
         parnames.extend([r"$C_D$", r"$C_R$"])
     else:
         parnames.extend([r"$C_R$", r"$C_D$"])
@@ -100,12 +95,11 @@ def plot(cfg, measurements, orbit_fit, interactive=False,
     else:
         tim = []
 
-    angles = [MeasurementType.AZIMUTH, MeasurementType.ELEVATION,
-              MeasurementType.RIGHT_ASCENSION, MeasurementType.DECLINATION]
+    angles = [MeasurementType.AZIMUTH, MeasurementType.ELEVATION, MeasurementType.RIGHT_ASCENSION, MeasurementType.DECLINATION]
     if (key[0] in angles and key[1] in angles):
-        pre *= 648000.0/math.pi
-        pos *= 648000.0/math.pi
-        cov *= 648000.0/math.pi
+        pre /= Constant.ARC_SECOND_TO_RAD
+        pos /= Constant.ARC_SECOND_TO_RAD
+        cov /= Constant.ARC_SECOND_TO_RAD
         units = ["arcsec", "arcsec"]
     else:
         if (MeasurementType.POSITION in key):
@@ -116,19 +110,16 @@ def plot(cfg, measurements, orbit_fit, interactive=False,
             units = ["m", "m/s"]
 
     if (MeasurementType.POSITION in key):
-        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$"]
         order = [1, 2, 3]
+        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$"]
     elif (MeasurementType.POSITION_VELOCITY in key):
-        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$",
-                 r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$"]
         order = [1, 3, 5, 2, 4, 6]
+        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$", r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$"]
     else:
-        ylabs = [{0:"Azimuth", 1:"Elevation", 2:"Range", 3:"Range rate",
-                  4:"Right ascension", 5:"Declination"}[k] for k in key]
+        ylabs = [{0:"Azimuth", 1:"Elevation", 2:"Range", 3:"Range rate", 4:"Right ascension", 5:"Declination"}[k] for k in key]
 
     outfiles = []
     plt.figure(0)
-    maximize_plot()
     plt.suptitle("Pre-fit residuals")
     for i in range(pre.shape[-1]):
         if (MeasurementType.POSITION in key):
@@ -141,14 +132,14 @@ def plot(cfg, measurements, orbit_fit, interactive=False,
         plt.legend(handles=patches, loc="best")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        plt.grid(True)
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     if (output_file_path):
         outfiles.append(output_file_path + "_prefit.png")
         plt.savefig(outfiles[-1], format="png")
 
-    plt.figure(1) 
-    maximize_plot()
+    plt.figure(1)
     plt.suptitle("Post-fit residuals")
     for i in range(pre.shape[-1]):
         if (MeasurementType.POSITION in key):
@@ -163,6 +154,7 @@ def plot(cfg, measurements, orbit_fit, interactive=False,
         plt.plot(tim,  cov[:,i], "-r")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        plt.grid(True)
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (output_file_path):
@@ -173,12 +165,12 @@ def plot(cfg, measurements, orbit_fit, interactive=False,
         for i in range(par.shape[-1]):
             if (i == 0):
                 plt.figure(2)
-                maximize_plot()
                 plt.suptitle("Estimated parameters")
             plt.subplot(par.shape[1], 1, i + 1)
             plt.scatter(tim, par[:,i], marker = "o", s = 7)
             plt.xlabel("Time [hr]")
             plt.ylabel(parnames[i])
+            plt.grid(True)
 
         plt.tight_layout(rect = [0, 0.03, 1, 0.95])
         if (output_file_path):
@@ -186,10 +178,8 @@ def plot(cfg, measurements, orbit_fit, interactive=False,
             plt.savefig(outfiles[-1], format="png")
 
         if (dmcrun):
-            lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]",
-                   r"Cross track [$\frac{m}{s^2}$]"]
+            lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]", r"Cross track [$\frac{m}{s^2}$]"]
             plt.figure(3)
-            maximize_plot()
             plt.suptitle("DMC estimated accelerations")
             for i in range(3):
                 plt.subplot(3, 1, i+1)
@@ -197,6 +187,7 @@ def plot(cfg, measurements, orbit_fit, interactive=False,
                     plt.plot(tim, estmacc[:,i])
                 plt.xlabel("Time [hr]")
                 plt.ylabel(lab[i])
+                plt.grid(True)
 
             plt.tight_layout(rect=[0, 0.03, 1, 0.95])
             if (output_file_path):
