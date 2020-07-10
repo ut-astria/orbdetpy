@@ -19,7 +19,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\022PropagationRequestP\000',
-  serialized_pb=b'\n\x11propagation.proto\x1a\x0emessages.proto2E\n\x0bPropagation\x12\x36\n\tpropagate\x12\x0e.SettingsArray\x1a\x17.PropagationOutputArray\"\x00\x42&\n\x0eorg.astria.rpcB\x12PropagationRequestP\x00\x62\x06proto3'
+  create_key=_descriptor._internal_create_key,
+  serialized_pb=b'\n\x11propagation.proto\x1a\x0emessages.proto2A\n\x0bPropagation\x12\x32\n\tpropagate\x12\x0e.SettingsArray\x1a\x13.Measurement2DArray\"\x00\x42&\n\x0eorg.astria.rpcB\x12PropagationRequestP\x00\x62\x06proto3'
   ,
   dependencies=[messages__pb2.DESCRIPTOR,])
 
@@ -36,8 +37,9 @@ _PROPAGATION = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
+  create_key=_descriptor._internal_create_key,
   serialized_start=37,
-  serialized_end=106,
+  serialized_end=102,
   methods=[
   _descriptor.MethodDescriptor(
     name='propagate',
@@ -45,8 +47,9 @@ _PROPAGATION = _descriptor.ServiceDescriptor(
     index=0,
     containing_service=None,
     input_type=messages__pb2._SETTINGSARRAY,
-    output_type=messages__pb2._PROPAGATIONOUTPUTARRAY,
+    output_type=messages__pb2._MEASUREMENT2DARRAY,
     serialized_options=None,
+    create_key=_descriptor._internal_create_key,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_PROPAGATION)

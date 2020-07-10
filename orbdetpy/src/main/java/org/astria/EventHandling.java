@@ -1,6 +1,6 @@
 /*
  * EventHandling.java - Functions to handle orbit events.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Predefined;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -37,24 +39,49 @@ import org.orekit.utils.PVCoordinates;
 
 public final class EventHandling<T extends EventDetector> implements EventHandler<T>
 {
-    private final String trigEvent;
-    private final String mnvrType;
-    private final double target;
-    private int steps;
+    public final static String GEO_ZONE_NAME = "Geographic Region";
 
-    public EventHandling(String trigEvent, String mnvrType, double target, int steps)
+    public final Settings.ManeuverType maneuverType;
+    public final double delta;
+    public final String stationName;
+    public Boolean isVisible;
+
+    public EventHandling(Settings.ManeuverType maneuverType, double delta, String stationName, Boolean isVisible)
     {
-	this.trigEvent = trigEvent;
-	this.mnvrType = mnvrType;
-	this.target = target;
-	this.steps = steps;
+	this.maneuverType = maneuverType;
+	this.delta = delta;
+	this.stationName = stationName;
+	this.isVisible = isVisible;
     }
 
-    @Override public Action eventOccurred(SpacecraftState state, T det, boolean incr)
+    @Override public Action eventOccurred(SpacecraftState state, T detector, boolean increasing)
     {
-	if (trigEvent.equalsIgnoreCase("LongitudeCrossing") && mnvrType.equalsIgnoreCase("StopPropagation"))
-	    return(Action.STOP);
-	return(Action.RESET_STATE);
+	if (maneuverType == Settings.ManeuverType.UNDEFINED && stationName != null)
+	{
+	    String name = detector.getClass().getSimpleName();
+	    if (name.equals("ElevationDetector"))
+	    {
+		isVisible = increasing;
+		if (increasing)
+		    return(Action.STOP);
+	    }
+	    else if (name.equals("GroundFieldOfViewDetector") || name.equals("GeographicZoneDetector"))
+	    {
+		isVisible = !increasing;
+		if (!increasing)
+		    return(Action.STOP);
+	    }
+	}
+
+	if (maneuverType != Settings.ManeuverType.UNDEFINED)
+	{
+	    if (maneuverType == Settings.ManeuverType.STOP_PROPAGATION)
+		return(Action.STOP);
+	    if (delta != 0.0)
+		return(Action.RESET_STATE);
+	}
+
+	return(Action.CONTINUE);
     }
 
     @Override public SpacecraftState resetState(T det, SpacecraftState old)
@@ -68,19 +95,17 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	double theta = kep.getTrueAnomaly();
 
 	Orbit neworb = null;
-	if (mnvrType.equalsIgnoreCase("NorthSouthStationing") || mnvrType.equalsIgnoreCase("EastWestStationing"))
+	if (maneuverType == Settings.ManeuverType.NORTH_SOUTH_STATIONING || maneuverType == Settings.ManeuverType.EAST_WEST_STATIONING)
 	{
 	    PVCoordinates pvc = old.getOrbit().getPVCoordinates();
-	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-							  Constants.WGS84_EARTH_FLATTENING, DataManager.getFrame("ITRF"));
+	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	    GeodeticPoint geo = earth.transform(pvc.getPosition(), old.getFrame(), old.getDate());
 
-	    if (mnvrType.equalsIgnoreCase("NorthSouthStationing"))
-		geo = new GeodeticPoint(geo.getLatitude() + (target - geo.getLatitude())/steps,
-					geo.getLongitude(), geo.getAltitude());
+	    if (maneuverType == Settings.ManeuverType.NORTH_SOUTH_STATIONING)
+		geo = new GeodeticPoint(geo.getLatitude() + delta, geo.getLongitude(), geo.getAltitude());
 	    else
-		geo = new GeodeticPoint(geo.getLatitude(), geo.getLongitude() +
-					(target - geo.getLongitude())/steps, geo.getAltitude());
+		geo = new GeodeticPoint(geo.getLatitude(), geo.getLongitude() + delta, geo.getAltitude());
 
 	    Transform xfm = earth.getFrame().getTransformTo(old.getFrame(), old.getDate());
 	    Vector3D newpos = xfm.transformPosition(earth.transform(geo));
@@ -90,24 +115,34 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	}
 	else
 	{
-	    if (mnvrType.equalsIgnoreCase("SemiMajorAxisChange"))
-		a += (target - a)/steps;
-	    if (mnvrType.equalsIgnoreCase("PerigeeChange"))
-		a += (target - a/(1 - e))/steps;
-	    if (mnvrType.equalsIgnoreCase("EccentricityChange"))
-		e += (target - e)/steps;
-	    if (mnvrType.equalsIgnoreCase("InclinationChange"))
-		i += (target - i)/steps;
-	    if (mnvrType.equalsIgnoreCase("RAANChange"))
-		O += (target - O)/steps;
-	    if (mnvrType.equalsIgnoreCase("ArgPerigeeChange"))
-		w += (target - w)/steps;
-	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
+	    switch (maneuverType)
+	    {
+	    case SEMI_MAJOR_AXIS_CHANGE:
+		a += delta;
+		break;
+	    case PERIGEE_CHANGE:
+		a += delta/(1 - e);
+		break;
+	    case ECCENTRICITY_CHANGE:
+		e += delta;
+		break;
+	    case INCLINATION_CHANGE:
+		i += delta;
+		break;
+	    case RAAN_CHANGE:
+		O += delta;
+		break;
+	    case ARG_PERIGEE_CHANGE:
+		w += delta;
+		break;
+	    default:
+		throw(new RuntimeException("Invalid maneuver type"));
+	    }
+
+	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(),
+					old.getDate(), old.getMu());
 	}
 
-	steps--;
-	if (neworb == null)
-	    return(old);
 	return(new SpacecraftState(neworb, old.getAttitude(), old.getMass(), old.getAdditionalStates()));
     }
 }

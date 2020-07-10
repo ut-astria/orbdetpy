@@ -57,13 +57,11 @@ public final class PropagatorBuilder extends NumericalPropagatorBuilder
 	{
 	    prop.addAdditionalEquations(dmcEqns);
 	    ParameterDriversList plst = getPropagationParametersDrivers();
-	    prop.setInitialState(prop.getInitialState().addAdditionalState(Estimation.DMC_ACC_PROP,
-									   plst.findByName(Estimation.DMC_ACC_ESTM[0]).getValue(),
+	    prop.setInitialState(prop.getInitialState().addAdditionalState(Estimation.DMC_ACC_PROP, plst.findByName(Estimation.DMC_ACC_ESTM[0]).getValue(),
 									   plst.findByName(Estimation.DMC_ACC_ESTM[1]).getValue(),
 									   plst.findByName(Estimation.DMC_ACC_ESTM[2]).getValue()));
 	}
 
-	odCfg.addEventHandlers(prop, prop.getInitialState());
 	return(prop);
     }
 

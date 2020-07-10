@@ -1,6 +1,6 @@
 /*
  * conversion.proto - Conversion service protocol definitions.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,24 @@ option java_multiple_files = false;
 option java_package = "org.astria.rpc";
 option java_outer_classname = "ConversionRequest";
 
+import "google/protobuf/wrappers.proto";
 import "messages.proto";
 
 service Conversion
 {
     rpc transformFrame(TransformFrameInput) returns (DoubleArray) {}
-}
 
+    rpc convertAzElToRaDec(AnglesInput) returns (DoubleArray) {}
+
+    rpc convertRaDecToAzEl(AnglesInput) returns (DoubleArray) {}
+
+    rpc convertPosToLLA(TransformFrameInput) returns (DoubleArray) {}
+
+    rpc convertElemToPv(TransformFrameInput) returns (DoubleArray) {}
+
+    rpc convertPvToElem(TransformFrameInput) returns (DoubleArray) {}
+
+    rpc getUTCString(google.protobuf.DoubleValue) returns (google.protobuf.StringValue) {}
+
+    rpc getJ2000EpochOffset(google.protobuf.StringValue) returns (google.protobuf.DoubleValue) {}
+}

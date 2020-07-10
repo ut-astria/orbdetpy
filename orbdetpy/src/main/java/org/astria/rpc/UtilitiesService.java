@@ -1,6 +1,6 @@
 /*
  * UtilitiesService.java - Utilities service handler.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Measurements;
 import org.astria.Utilities;
+import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
+import org.orekit.frames.Predefined;
+import org.orekit.time.AbsoluteDate;
 
 public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 {
@@ -31,11 +34,10 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
     {
 	try
 	{
-	    ArrayList<ArrayList<Measurements.SimulatedMeasurement>> mlist =
-		Utilities.importTDM(req.getFileName(), req.getFileFormat());
+	    ArrayList<ArrayList<Measurements.Measurement>> mlist = Utilities.importTDM(req.getFileName(), TDMFileFormat.values()[req.getFileFormat()]);
 
 	    Messages.Measurement2DArray.Builder outer = Messages.Measurement2DArray.newBuilder();
-	    for (ArrayList<Measurements.SimulatedMeasurement> m : mlist)
+	    for (ArrayList<Measurements.Measurement> m: mlist)
 	    {
 		Messages.MeasurementArray.Builder inner = Messages.MeasurementArray.newBuilder()
 		    .addAllArray(Tools.buildResponseFromMeasurements(m));
@@ -50,27 +52,26 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 	}
     }
 
-    @Override public void interpolateEphemeris(Messages.InterpolateEphemerisInput req, StreamObserver<Messages.InterpolationOutputArray> resp)
+    @Override public void interpolateEphemeris(Messages.InterpolateEphemerisInput req, StreamObserver<Messages.MeasurementArray> resp)
     {
 	try
 	{
 	    ArrayList<Double[]> ephem = new ArrayList<Double[]>(req.getEphemCount());
-	    for (int i = 0; i < req.getTimeCount(); i++)
+	    for (int i = 0; i < req.getEphemCount(); i++)
 		ephem.add(req.getEphem(i).getArrayList().toArray(new Double[0]));
 
-	    ArrayList<Utilities.InterpolationOutput> interp = Utilities.interpolateEphemeris(req.getSourceFrame(), req.getTimeList(), ephem, req.getNumPoints(),
-											     req.getDestFrame(), req.getInterpStart(),
-											     req.getInterpEnd(), req.getStepSize());
+	    ArrayList<AbsoluteDate> times = new ArrayList<AbsoluteDate>(req.getTimeCount());
+	    for (int i = 0; i < req.getTimeCount(); i++)
+		times.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i)));
 
-	    Messages.InterpolationOutputArray.Builder outer = Messages.InterpolationOutputArray.newBuilder();
-	    for (Utilities.InterpolationOutput i: interp)
-	    {
-		Messages.InterpolationOutput.Builder inner = Messages.InterpolationOutput.newBuilder().setTime(i.time);
-		for (int j = 0; j < 6; j++)
-		    inner = inner.addState(i.state[j]);
-		outer = outer.addArray(inner);
-	    }
-	    resp.onNext(outer.build());
+	    ArrayList<Measurements.Measurement> interp = Utilities.interpolateEphemeris(
+		Predefined.valueOf(req.getSourceFrame()), times, ephem, req.getNumPoints(), Predefined.valueOf(req.getDestFrame()),
+		AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpStart()),
+		AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpEnd()), req.getStepSize());
+
+	    Messages.MeasurementArray.Builder builder = Messages.MeasurementArray.newBuilder()
+		.addAllArray(Tools.buildResponseFromMeasurements(interp));
+	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}
 	catch (Throwable exc)

@@ -27,15 +27,14 @@ Installation
 ------------
 
 1. Install the Java Development Kit 8 (1.8) from
-   <http://openjdk.java.net/install/index.html>. Set the JAVA_HOME
+   <http://openjdk.java.net/install/index.html>. Set the `JAVA_HOME`
    environment variable to point to your JDK installation. The `java`
    executable must also be in your system path.
 
-2. Install Python 3.6+ and run `pip install orbdetpy` to install orbdetpy 
-   and other package dependencies from the Python Package Index (PyPI).
-   If you wish to use the `develop` or other experimental branches from
-   GitHub, `git clone` them and run `pip install -e .` from the top level
-   `orbdetpy` folder.
+2. Install Python 3.7.0 or higher and run `pip install orbdetpy` to install
+   orbdetpy and other package dependencies. If you wish to use the `develop`
+   or other experimental branches from GitHub, `git clone` them and run
+   `pip install -e .` from the top level `orbdetpy` folder.
 
 3. Source code, example programs and data files can be downloaded from 
    <https://github.com/ut-astria/orbdetpy>.
@@ -43,7 +42,7 @@ Installation
 4. Update the astrodynamics data in `orbdetpy/data` periodically by running
    the following. You might need to do so as root on Unix-like systems.
 
-   `python -c "from orbdetpy.astrodata import update_data; update_data();"`
+   `python -c "from orbdetpy.astro_data import update_data; update_data();"`
 
 5. Apache Maven 3+ is needed if you hack the Java code and need to
    rebuild the JAR files. Switch to the `orbdetpy/` folder and run the
@@ -60,58 +59,18 @@ Installation
 Examples
 --------
 
-orbdetpy uses JSON files to store settings, measurements and estimation
-results. The files in `examples/data` show how to configure measurement
-simulation and orbit determination using radar or telescope data. The
-file `docs/file_formats.md` documents the structure of the JSON files.
+1. `predict_passes.py` : Predict satellite passes for ground stations or
+   geographic regions using TLEs. Current elements may be obtained from
+   sites such as <http://www.celestrak.com>.
 
-1. `run_tests.py` : Run all the use cases under `examples/data`. Simulated
-   measurements, orbit fits, differences between simulated truth versus
-   estimates, and 3-sigma of estimated covariances will be written to
-   `output/` sub-folders.
+2. `propagate_tle.py` : Propagate TLEs given by command-line arguments.
 
-   orbdetpy supports asynchronous calls to CPU intensive functions
-   enabling parallelization in multi-processor environments. This
-   program demonstrates asynchronous operations.
+3. `test_conversion.py` : Test reference frame and other conversion functions.
 
-2. Simulate state vectors and radar measurements:
+4. `test_estimation.py` : Demonstrates measurement simulation and orbit
+   determination functions.
 
-   `from orbdetpy.simulation import simulate_measurements`
-
-   `simulate_measurements("radar_sim_cfg.json", output_file = "sim_data.json")`
-
-   This will run the simulation configured in `radar_sim_cfg.json` and
-   write simulated output to `sim_data.json`.
-
-3. Plot simulation results:
-
-   `from orbdetpy.plotting.simulation import plot as sim_plot`
-
-   `sim_plot("radar_sim_cfg.json", "sim_data.json", interactive = True)`
-
-   This will plot the simulated data generated in (2).
-
-4. Run OD on simulated radar data:
-
-   `from orbdetpy.estimation import determine_orbit`
-
-   `determine_orbit("radar_od_cfg.json", "sim_data.json", output_file = "od_output.json")`
-
-   This will run OD on the simulated radar data generated in (2)
-   using the OD configuration in `radar_od_cfg.json` and write OD
-   output to `od_output.json`.
-
-5. Plot OD results:
-
-   `from orbdetpy.plotting.estimation import plot as od_plot`
-
-   `od_plot("radar_od_cfg.json", "sim_data.json", "od_output.json", interactive = True)`
-
-   This will plot the OD results from (4).
-
-6. `propagate_TLE.py` : Propagate TLEs given by command-line arguments.
-
-7. `interpolation.py` : Interpolate state vectors.
+5. `test_interpolation.py` : Interpolate state vectors.
 
 Known Issues
 ------------

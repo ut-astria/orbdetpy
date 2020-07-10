@@ -13,15 +13,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import matplotlib.pyplot as plt
-from matplotlib import get_backend
-
-def maximize_plot():
-    try:
-        bend = get_backend().casefold()
-        figman = plt.get_current_fig_manager()
-        if (bend == "gtk3agg"):
-            figman.window.maximize()
-    except Exception as exc:
-        pass

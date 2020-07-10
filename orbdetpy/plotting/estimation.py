@@ -14,211 +14,185 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import math
-import json
 import numpy
-import dateutil.parser
 from numpy.linalg import norm
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
-from orbdetpy import read_param
-from orbdetpy.plotting import maximize_plot
+from orbdetpy import Constant
+from orbdetpy import EstimationType, MeasurementType
 
-def plot(config, measurements, orbit_fit, interactive = False, output_file_path = None):
-    cfg = read_param(config)
-    inp = [x for x in read_param(measurements) if (
-        "Station" in x or "Position" in x or "PositionVelocity" in x)]
-    out = [x for x in read_param(orbit_fit)
-           if ("PreFit" in x and "PostFit" in x)]
+def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None, estim_param=True):
+    key = list(cfg.measurements.keys())
+    inp = [m for m in measurements if (len(m.station) > 0 or len(m.values) >= 3)]
+    out = [f for f in orbit_fit if (len(f.pre_fit)*len(f.post_fit) > 0)]
+    dmcidx, dmcrun = 6, (cfg.estm_DMC_corr_time > 0.0 and cfg.estm_DMC_sigma_pert > 0.0)
 
-    key = list(cfg["Measurements"].keys())
-    dmcrun = (cfg["Estimation"].get("DMCCorrTime", 0.0) > 0.0 and
-              cfg["Estimation"].get("DMCSigmaPert", 0.0) > 0.0)
-    dmcidx = 6
-
-    cd = cfg.get("Drag", {}).get("Coefficient", {}).get("Estimation", "")
-    cr = cfg.get("RadiationPressure", {}).get("Creflection", {}).get("Estimation", "")
-    if (cd == "Estimate"):
+    cd, cr = cfg.drag_coefficient.estimation, cfg.rp_coeff_reflection.estimation
+    if (cd == EstimationType.ESTIMATE):
         dmcidx += 1
-    if (cr == "Estimate"):
+    if (cr == EstimationType.ESTIMATE):
         dmcidx += 1
 
     parnames = []
-    if (cd == "Estimate" or (cd == "Consider" and cr == "Consider")):
+    if (cd == EstimationType.ESTIMATE or (cd == EstimationType.CONSIDER and cr == EstimationType.CONSIDER)):
         parnames.extend([r"$C_D$", r"$C_R$"])
     else:
         parnames.extend([r"$C_R$", r"$C_D$"])
 
-    idx = 0
-    patches = []
     cycle = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    cmap = {None : cycle[0]}
-    for sk, sv in cfg.get("Stations", {}).items():
+    idx, patches, cmap = 0, [], {None: cycle[0]}
+    for sk, sv in cfg.stations.items():
         if (sk not in cmap):
             cmap[sk] = cycle[idx]
-            patches.append(patch.Patch(color = cycle[idx], label = sk))
-            idx = (idx + 1) % len(cycle)
-
-        if (sv.get("BiasEstimation", "") in ["Estimate", "Consider"]):
-            for m in cfg.get("Measurements", {}).keys():
-                parnames.append(sk + m)
+            patches.append(patch.Patch(color=cycle[idx], label=sk))
+            idx = (idx+1)%len(cycle)
+        if (sv.bias_estimation in [EstimationType.ESTIMATE, EstimationType.CONSIDER]):
+            for m in cfg.measurements.keys():
+                parnames.append(sk+m)
 
     tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors = [],[],[],[],[],[],[],[]
     for i, o in zip(inp, out):
-        colors.append(cmap[o.get("Station")])
-        tstamp.append(dateutil.parser.isoparse(i["Time"]))
-
-        if (key[0] == "Position" or key[0] == "PositionVelocity"):
-            prefit.append([ix-ox for ix, ox
-                           in zip(i[key[0]], o["PreFit"][key[0]])])
-            posfit.append([ix-ox for ix, ox
-                           in zip(i[key[0]], o["PostFit"][key[0]])])
-        else:
-            if (len(key) == 2):
-                prefit.append([i[key[0]]-o["PreFit"][key[0]][-1],
-                               i[key[1]]-o["PreFit"][key[1]][-1]])
-                posfit.append([i[key[0]]-o["PostFit"][key[0]][-1],
-                               i[key[1]]-o["PostFit"][key[1]][-1]])
-            else:
-                prefit.append([i[key[0]]-o["PreFit"][key[0]][-1]])
-                posfit.append([i[key[0]]-o["PostFit"][key[0]][-1]])
+        tstamp.append(i.time)
+        colors.append(cmap[o.station])
+        prefit.append([ix-ox for ix, ox in zip(i.values, o.pre_fit)])
+        posfit.append([ix-ox for ix, ox in zip(i.values, o.post_fit)])
 
         p = []
-        for m in range(len(o.get("InnovationCovariance", []))):
-            p.append(3.0*numpy.sqrt(o["InnovationCovariance"][m][m]))
+        for m in range(len(o.innovation_covariance)):
+            if (m in [0, 2, 5, 9, 14, 20]):
+                p.append(3.0*numpy.sqrt(o.innovation_covariance[m]))
         if (len(p) > 0):
             inocov.append(p)
         else:
             inocov.append([0.0]*len(prefit[0]))
 
-        if (len(o["EstimatedState"]) > 6):
+        if (estim_param and len(o.estimated_state) > 6):
             if (dmcrun):
-                params.append(o["EstimatedState"][6:dmcidx] +
-                              o["EstimatedState"][dmcidx+3:])
+                params.append(o.estimated_state[6:dmcidx]+o.estimated_state[dmcidx+3:])
             else:
-                params.append(o["EstimatedState"][6:])
+                params.append(o.estimated_state[6:])
 
-        if (dmcrun):
-            r = numpy.array(o["EstimatedState"][:3])
+        if (estim_param and dmcrun):
+            r = numpy.array(o.estimated_state[:3])
             r /= norm(r)
-            v = numpy.array(o["EstimatedState"][3:6])
+            v = numpy.array(o.estimated_state[3:6])
             v /= norm(v)
             h = numpy.cross(r, v)
             h /= norm(h)
             rot = numpy.vstack((r, numpy.cross(h, r), h))
-            estmacc.append(rot.dot(o["EstimatedState"][dmcidx:dmcidx+3]))
+            estmacc.append(rot.dot(o.estimated_state[dmcidx:dmcidx+3]))
 
     pre = numpy.array(prefit)
     pos = numpy.array(posfit)
     cov = numpy.array(inocov)
-    par = numpy.array(params)
-    estmacc = numpy.array(estmacc)
+    if (estim_param):
+        par = numpy.array(params)
+        estmacc = numpy.array(estmacc)
 
     if (len(tstamp) > 0):
         start = tstamp[0] if (tstamp[0] < tstamp[-1]) else tstamp[-1]
-        tim = [(t - start).total_seconds()/3600 for t in tstamp]
+        tim = [(t - start)/3600 for t in tstamp]
     else:
         tim = []
 
-    angles = ["Azimuth", "Elevation", "RightAscension", "Declination"]
+    angles = [MeasurementType.AZIMUTH, MeasurementType.ELEVATION, MeasurementType.RIGHT_ASCENSION, MeasurementType.DECLINATION]
     if (key[0] in angles and key[1] in angles):
-        pre *= 648000.0/math.pi
-        pos *= 648000.0/math.pi
-        cov *= 648000.0/math.pi
+        pre /= Constant.ARC_SECOND_TO_RAD
+        pos /= Constant.ARC_SECOND_TO_RAD
+        cov /= Constant.ARC_SECOND_TO_RAD
         units = ["arcsec", "arcsec"]
     else:
-        if ("Position" in key):
+        if (MeasurementType.POSITION in key):
             units = ["m", "m", "m"]
-        elif ("PositionVelocity" in key):
+        elif (MeasurementType.POSITION_VELOCITY in key):
             units = ["m", "m", "m", "m/s", "m/s", "m/s"]
         else:
             units = ["m", "m/s"]
 
-    if ("Position" in key):
-        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$"]
+    if (MeasurementType.POSITION in key):
         order = [1, 2, 3]
-    elif ("PositionVelocity" in key):
-        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$",
-                 r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$"]
+        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$"]
+    elif (MeasurementType.POSITION_VELOCITY in key):
         order = [1, 3, 5, 2, 4, 6]
+        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$", r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$"]
     else:
-        ylabs = key
+        ylabs = [{0:"Azimuth", 1:"Elevation", 2:"Range", 3:"Range rate", 4:"Right ascension", 5:"Declination"}[k] for k in key]
 
     outfiles = []
     plt.figure(0)
-    maximize_plot()
     plt.suptitle("Pre-fit residuals")
     for i in range(pre.shape[-1]):
-        if ("Position" in key):
+        if (MeasurementType.POSITION in key):
             plt.subplot(3, 1, order[i])
-        elif ("PositionVelocity" in key):
+        elif (MeasurementType.POSITION_VELOCITY in key):
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(pre.shape[-1], 1, i + 1)
-        plt.scatter(tim, pre[:,i], color = colors, marker = "o", s = 7)
-        plt.legend(handles = patches, loc = "best")
+        plt.scatter(tim, pre[:,i], color=colors, marker="o", s=7)
+        plt.legend(handles=patches, loc="best")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        plt.grid(True)
 
-    plt.tight_layout(rect = [0, 0.03, 1, 0.95])
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     if (output_file_path):
         outfiles.append(output_file_path + "_prefit.png")
-        plt.savefig(outfiles[-1], format = "png")
+        plt.savefig(outfiles[-1], format="png")
 
-    plt.figure(1) 
-    maximize_plot()
+    plt.figure(1)
     plt.suptitle("Post-fit residuals")
     for i in range(pre.shape[-1]):
-        if ("Position" in key):
+        if (MeasurementType.POSITION in key):
             plt.subplot(3, 1, order[i])
-        elif ("PositionVelocity" in key):
+        elif (MeasurementType.POSITION_VELOCITY in key):
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(pre.shape[-1], 1, i + 1)
-        plt.scatter(tim, pos[:,i], color = colors, marker = "o", s = 7)
-        plt.legend(handles = patches, loc = "best")
+        plt.scatter(tim, pos[:,i], color=colors, marker="o", s=7)
+        plt.legend(handles=patches, loc="best")
         plt.plot(tim, -cov[:,i], "-r")
         plt.plot(tim,  cov[:,i], "-r")
         plt.xlabel("Time [hr]")
         plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        plt.grid(True)
 
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (output_file_path):
         outfiles.append(output_file_path + "_postfit.png")
-        plt.savefig(outfiles[-1], format = "png")
+        plt.savefig(outfiles[-1], format="png")
 
-    for i in range(par.shape[-1]):
-        if (i == 0):
-            plt.figure(2)
-            maximize_plot()
-            plt.suptitle("Estimated parameters")
-        plt.subplot(par.shape[1], 1, i + 1)
-        plt.scatter(tim, par[:,i], marker = "o", s = 7)
-        plt.xlabel("Time [hr]")
-        plt.ylabel(parnames[i])
-
-    plt.tight_layout(rect = [0, 0.03, 1, 0.95])
-    if (output_file_path):
-        outfiles.append(output_file_path + "_estpar.png")
-        plt.savefig(outfiles[-1], format = "png")
-
-    if (dmcrun):
-        lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]",
-               r"Cross track [$\frac{m}{s^2}$]"]
-        plt.figure(3)
-        maximize_plot()
-        plt.suptitle("DMC estimated accelerations")
-        for i in range(3):
-            plt.subplot(3, 1, i+1)
-            if (len(estmacc) > 0):
-                plt.plot(tim, estmacc[:,i])
+    if (estim_param):
+        for i in range(par.shape[-1]):
+            if (i == 0):
+                plt.figure(2)
+                plt.suptitle("Estimated parameters")
+            plt.subplot(par.shape[1], 1, i + 1)
+            plt.scatter(tim, par[:,i], marker = "o", s = 7)
             plt.xlabel("Time [hr]")
-            plt.ylabel(lab[i])
+            plt.ylabel(parnames[i])
+            plt.grid(True)
 
         plt.tight_layout(rect = [0, 0.03, 1, 0.95])
         if (output_file_path):
-            outfiles.append(output_file_path + "_estacc.png")
-            plt.savefig(outfiles[-1], format = "png")
+            outfiles.append(output_file_path + "_estpar.png")
+            plt.savefig(outfiles[-1], format="png")
+
+        if (dmcrun):
+            lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]", r"Cross track [$\frac{m}{s^2}$]"]
+            plt.figure(3)
+            plt.suptitle("DMC estimated accelerations")
+            for i in range(3):
+                plt.subplot(3, 1, i+1)
+                if (len(estmacc) > 0):
+                    plt.plot(tim, estmacc[:,i])
+                plt.xlabel("Time [hr]")
+                plt.ylabel(lab[i])
+                plt.grid(True)
+
+            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+            if (output_file_path):
+                outfiles.append(output_file_path + "_estacc.png")
+                plt.savefig(outfiles[-1], format="png")
 
     if (interactive):
         plt.show()

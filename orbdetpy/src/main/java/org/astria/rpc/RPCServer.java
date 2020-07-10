@@ -1,6 +1,6 @@
 /*
  * RPCServer.java - RPC server entry point.
- * Copyright (C) 2019 University of Texas
+ * Copyright (C) 2019-2020 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,6 @@ public final class RPCServer
 	    .addService(new ConversionService())
 	    .addService(new EstimationService())
 	    .addService(new PropagationService())
-	    .addService(new SimulationService())
 	    .addService(new UtilitiesService())
 	    .build().start();
 
