@@ -53,7 +53,7 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
     tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors = [],[],[],[],[],[],[],[]
     for i, o in zip(inp, out):
         tstamp.append(i.time)
-        colors.append(cmap[o.station])
+        colors.append(cmap[o.station if len(o.station) else None])
         prefit.append([ix-ox for ix, ox in zip(i.values, o.pre_fit)])
         posfit.append([ix-ox for ix, ox in zip(i.values, o.post_fit)])
 
