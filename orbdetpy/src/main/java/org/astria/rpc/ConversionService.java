@@ -115,7 +115,7 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	try
 	{
 	    KeplerianOrbit kep = new KeplerianOrbit(req.getPva(0), req.getPva(1), req.getPva(2), req.getPva(4), req.getPva(3), req.getPva(5),
-						    PositionAngle.MEAN, FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())),
+						    PositionAngle.values()[(int)req.getPva(6)], FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())),
 						    AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime()), Constants.EGM96_EARTH_MU);
 	    PVCoordinates pvc = kep.getPVCoordinates();
 	    Vector3D pos = pvc.getPosition();
@@ -141,9 +141,9 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	    KeplerianOrbit orb = new KeplerianOrbit(pvc, FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())),
 						    AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime()), Constants.EGM96_EARTH_MU);
 
-	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder().addArray(orb.getA())
-		.addArray(orb.getE()).addArray(orb.getI()).addArray(orb.getRightAscensionOfAscendingNode())
-		.addArray(orb.getPerigeeArgument()).addArray(orb.getMeanAnomaly()).addArray(orb.getTrueAnomaly());
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder().addArray(orb.getA()).addArray(orb.getE())
+		.addArray(orb.getI()).addArray(orb.getRightAscensionOfAscendingNode()).addArray(orb.getPerigeeArgument())
+		.addArray(orb.getMeanAnomaly()).addArray(orb.getTrueAnomaly()).addArray(orb.getEccentricAnomaly());
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

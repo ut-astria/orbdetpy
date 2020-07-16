@@ -110,7 +110,7 @@ def pos_to_lla(frame: int, time: float, pos: List[float])->List[float]:
     return(resp.array)
 
 def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
-               raan: float, argp: float, mean_anom: float)->List[float]:
+               raan: float, argp: float, anom: float, anom_type: int)->List[float]:
     """Convert osculating orbital elements to Cartesian state vector.
 
     Parameters
@@ -122,7 +122,8 @@ def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
     inc : Inclination [rad].
     raan : RA of ascending node [rad].
     argp : Argument of perigee [rad].
-    mean_anom : Mean anomaly [rad].
+    anom : Anomaly angle [rad].
+    anom_type : Anomaly angle type; a constant from PositionAngle.
 
     Returns
     -------
@@ -131,7 +132,7 @@ def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
 
     with RemoteServer.channel() as chan:
         resp = ConversionStub(chan).convertElemToPv(TransformFrameInput(
-            src_frame=frame, time=time, pva=[sma,ecc,inc,raan,argp,mean_anom]))
+            src_frame=frame, time=time, pva=[sma,ecc,inc,raan,argp,anom,anom_type]))
     return(resp.array)
 
 def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
@@ -145,7 +146,8 @@ def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
 
     Returns
     -------
-    SMA,eccentricity,inclination,RAAN,perigee argument,mean anomaly,true anomaly
+    SMA, eccentricity, inclination, RAAN, perigee argument, 
+    mean anomaly, true anomaly, eccentric anomaly
     """
 
     with RemoteServer.channel() as chan:

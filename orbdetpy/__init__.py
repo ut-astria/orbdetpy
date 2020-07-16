@@ -240,6 +240,14 @@ class MeasurementType():
     POSITION = 6
     POSITION_VELOCITY = 7
 
+class PositionAngle():
+    """Orekit position angles.
+    """
+
+    MEAN = 0
+    ECCENTRIC = 1
+    TRUE = 2
+
 class TDMFileFormat():
     """CCSDS TDM file formats.
     """
