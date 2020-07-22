@@ -20,6 +20,8 @@ from orbdetpy.rpc.conversion_pb2_grpc import ConversionStub
 from orbdetpy.rpc.messages_pb2 import AnglesInput, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
 
+_conversion_stub = ConversionStub(RemoteServer.channel())
+
 def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: int)->List[float]:
     """Transform a state vector from one frame to another.
 
@@ -35,9 +37,8 @@ def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: i
     State vector transformed to the destination frame.
     """
 
-    with RemoteServer.channel() as chan:
-        resp = ConversionStub(chan).transformFrame(TransformFrameInput(
-            src_frame=src_frame, time=time, pva=pva, dest_frame=dest_frame))
+    resp = _conversion_stub.transformFrame(TransformFrameInput(
+        src_frame=src_frame, time=time, pva=pva, dest_frame=dest_frame))
     return(resp.array)
 
 def azel_to_radec(time: float, az: float, el: float, lat: float,
@@ -59,10 +60,8 @@ def azel_to_radec(time: float, az: float, el: float, lat: float,
     Right Ascension and Declination.
     """
 
-    with RemoteServer.channel() as chan:
-        resp = ConversionStub(chan).convertAzElToRaDec(AnglesInput(
-            time=[time], angle1=[az], angle2=[el], latitude=lat,
-            longitude=lon, altitude=alt, frame=frame))
+    resp = _conversion_stub.convertAzElToRaDec(AnglesInput(time=[time], angle1=[az], angle2=[el],
+                                                           latitude=lat, longitude=lon, altitude=alt, frame=frame))
     return(resp.array)
 
 def radec_to_azel(frame: int, time: float, ra: float, dec: float,
@@ -84,10 +83,8 @@ def radec_to_azel(frame: int, time: float, ra: float, dec: float,
     Azimuth and Elevation.
     """
 
-    with RemoteServer.channel() as chan:
-        resp = ConversionStub(chan).convertRaDecToAzEl(AnglesInput(
-            time=[time], angle1=[ra], angle2=[dec], latitude=lat,
-            longitude=lon, altitude=alt, frame=frame))
+    resp = _conversion_stub.convertRaDecToAzEl(AnglesInput(time=[time], angle1=[ra], angle2=[dec],
+                                                           latitude=lat, longitude=lon, altitude=alt, frame=frame))
     return(resp.array)
 
 def pos_to_lla(frame: int, time: float, pos: List[float])->List[float]:
@@ -104,9 +101,7 @@ def pos_to_lla(frame: int, time: float, pos: List[float])->List[float]:
     WGS-84 latitude [rad], longitude [rad], altitude [m].
     """
 
-    with RemoteServer.channel() as chan:
-        resp = ConversionStub(chan).convertPosToLLA(TransformFrameInput(
-            src_frame=frame, time=time, pva=pos))
+    resp = _conversion_stub.convertPosToLLA(TransformFrameInput(src_frame=frame, time=time, pva=pos))
     return(resp.array)
 
 def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
@@ -130,9 +125,8 @@ def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
     Cartesian state vector.
     """
 
-    with RemoteServer.channel() as chan:
-        resp = ConversionStub(chan).convertElemToPv(TransformFrameInput(
-            src_frame=frame, time=time, pva=[sma,ecc,inc,raan,argp,anom,anom_type]))
+    resp = _conversion_stub.convertElemToPv(TransformFrameInput(src_frame=frame, time=time,
+                                                                pva=[sma,ecc,inc,raan,argp,anom,anom_type]))
     return(resp.array)
 
 def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
@@ -150,9 +144,7 @@ def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
     mean anomaly, true anomaly, eccentric anomaly
     """
 
-    with RemoteServer.channel() as chan:
-        resp = ConversionStub(chan).convertPvToElem(TransformFrameInput(
-            src_frame=frame, time=time, pva=pv))
+    resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, time=time, pva=pv))
     return(resp.array)
 
 def get_UTC_string(j2000_offset: float)->str:
@@ -167,8 +159,7 @@ def get_UTC_string(j2000_offset: float)->str:
     ISO-8601 formatted UTC string.
     """
 
-    with RemoteServer.channel() as chan:
-        resp = ConversionStub(chan).getUTCString(DoubleValue(value=j2000_offset))
+    resp = _conversion_stub.getUTCString(DoubleValue(value=j2000_offset))
     return(resp.value)
 
 def get_J2000_epoch_offset(utc_time: str)->float:
@@ -183,6 +174,5 @@ def get_J2000_epoch_offset(utc_time: str)->float:
     Offset in TT from J2000 epoch [s].
     """
 
-    with RemoteServer.channel() as chan:
-        resp = ConversionStub(chan).getJ2000EpochOffset(StringValue(value=utc_time))
+    resp = _conversion_stub.getJ2000EpochOffset(StringValue(value=utc_time))
     return(resp.value)

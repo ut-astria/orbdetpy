@@ -86,4 +86,4 @@ plot(cfg, meas, fit, interactive=True, estim_param=False)
 
 # Uncomment to export ephemeris to a CCSDS OEM file
 #with open("orbdetpy_fit.oem", "w") as fp:
-#    fp.write(export_OEM(cfg, fit, "2020", "COVID-19"))
+#    fp.write(export_OEM(cfg, fit, "2020-001A", "COVID-19"))

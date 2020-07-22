@@ -20,6 +20,8 @@ from orbdetpy.rpc.estimation_pb2_grpc import EstimationStub
 from orbdetpy.rpc.messages_pb2 import AnglesInput, DetermineOrbitInput, Settings
 from orbdetpy.rpc.server import RemoteServer
 
+_estimation_stub = EstimationStub(RemoteServer.channel())
+
 def determine_orbit(config: List[Settings], meas):
     """Run orbit determination for the given objects and measurements.
 
@@ -33,19 +35,18 @@ def determine_orbit(config: List[Settings], meas):
     Orbit determination results.
     """
 
-    with RemoteServer.channel() as channel:
-        od_output, requests, stub = [], [], EstimationStub(channel)
-        for c, m in zip(config, meas):
-            inp = DetermineOrbitInput(config = c)
-            inp.measurements.extend(m)
-            requests.append(stub.determineOrbit.future(inp))
+    od_output, requests = [], []
+    for c, m in zip(config, meas):
+        inp = DetermineOrbitInput(config=c)
+        inp.measurements.extend(m)
+        requests.append(_estimation_stub.determineOrbit.future(inp))
 
-        for req in requests:
-            try:
-                fit_data = req.result().array
-            except Exception as exc:
-                fit_data = format_exc()
-            od_output.append(fit_data)
+    for req in requests:
+        try:
+            fit_data = req.result().array
+        except Exception as exc:
+            fit_data = format_exc()
+        od_output.append(fit_data)
     return(od_output)
 
 def iod_laplace(frame: int, lat: float, lon: float, alt: float, time: Tuple[float, float, float],
@@ -67,8 +68,6 @@ def iod_laplace(frame: int, lat: float, lon: float, alt: float, time: Tuple[floa
     Position and velocity estimate at time t2.
     """
 
-    with RemoteServer.channel() as channel:
-        resp = EstimationStub(channel).iodLaplace(AnglesInput(
-            time=time, angle1=ra, angle2=dec, latitude=lat,
-            longitude=lon, altitude=alt, frame=frame))
+    resp = _estimation_stub.iodLaplace(AnglesInput(time=time, angle1=ra, angle2=dec, latitude=lat,
+                                                   longitude=lon, altitude=alt, frame=frame))
     return(resp.array)
