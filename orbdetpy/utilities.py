@@ -19,6 +19,8 @@ from orbdetpy.rpc.messages_pb2 import DoubleArray, InterpolateEphemerisInput
 from orbdetpy.rpc.server import RemoteServer
 from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
 
+_utilities_stub = UtilitiesStub(RemoteServer.channel())
+
 def interpolate_ephemeris(source_frame: int, times: List[float], states, num_points: int,
                           dest_frame: int, interp_start: float, interp_end: float, step_size: float):
     """Interpolates the given state vectors.
@@ -39,10 +41,8 @@ def interpolate_ephemeris(source_frame: int, times: List[float], states, num_poi
     Interpolated times and state vectors.
     """
 
-    with RemoteServer.channel() as chan:
-        state_list = [DoubleArray(array = s) for s in states]
-        resp = UtilitiesStub(chan).interpolateEphemeris(InterpolateEphemerisInput(
-            source_frame=source_frame, time=times, ephem=state_list,
-            num_points=num_points, dest_frame=dest_frame, interp_start=interp_start,
-            interp_end=interp_end, step_size=step_size))
+    state_list = [DoubleArray(array = s) for s in states]
+    resp = _utilities_stub.interpolateEphemeris(InterpolateEphemerisInput(
+        source_frame=source_frame, time=times, ephem=state_list, num_points=num_points, dest_frame=dest_frame,
+        interp_start=interp_start, interp_end=interp_end, step_size=step_size))
     return(resp.array)

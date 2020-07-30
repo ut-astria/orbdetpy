@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from orbdetpy import Constant, Frame
+from orbdetpy import Constant, Frame, PositionAngle
 from orbdetpy.conversion import (azel_to_radec, elem_to_pv, get_J2000_epoch_offset, get_UTC_string,
                                  pos_to_lla, pv_to_elem, radec_to_azel, transform_frame)
 
@@ -36,21 +36,21 @@ print("ITRF->GCRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s\n"
 
 # Position => Lat/Lon/Alt
 lla = pos_to_lla(Frame.GCRF, time, gcrf_pv[:3])
-print("pos_to_lla: Lat={:.2f}deg, Lon={:.2f}deg, Alt={:.2f}m".format(
+print("pos_to_lla: Lat={:.2f}d, Lon={:.2f}d, Alt={:.2f}m\n".format(
     lla[0]/Constant.DEGREE_TO_RAD, lla[1]/Constant.DEGREE_TO_RAD, lla[2]))
 
 # State vector <=> orbital elements
 elem = pv_to_elem(Frame.GCRF, time, gcrf_pv)
-print("pv_to_elem: a={:.2f}m, e={:.4f}, i={:.2f}deg, O={:.2f}deg, w={:.2f}deg, M={:.2f}deg, theta={:.2f}deg".format(
+print("pv_to_elem: a={:.2f}m, e={:.4f}, i={:.2f}d, O={:.2f}d, w={:.2f}d, M={:.2f}d, theta={:.2f}d, E={:.2f}d".format(
     elem[0], elem[1], *[e/Constant.DEGREE_TO_RAD for e in elem[2:]]))
 print("elem_to_pv: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s\n".format(
-    *elem_to_pv(Frame.GCRF, 0.0, *elem[:-1])))
+    *elem_to_pv(Frame.GCRF, 0.0, *elem[:-2], PositionAngle.MEAN)))
 
 # RA/Dec <=> Az/El
 lat, lon, alt = 52.5*Constant.DEGREE_TO_RAD, -1.917*Constant.DEGREE_TO_RAD, 0.0
 ra, dec = 250.425*Constant.DEGREE_TO_RAD, 36.467*Constant.DEGREE_TO_RAD
 az, el = radec_to_azel(Frame.GCRF, time, ra, dec, lat, lon, alt)
-print("radec_to_azel: Azimuth={:.3f}deg, Elevation={:.3f}deg".format(az/Constant.DEGREE_TO_RAD, el/Constant.DEGREE_TO_RAD))
+print("radec_to_azel: Azimuth={:.3f}d, Elevation={:.3f}d".format(az/Constant.DEGREE_TO_RAD, el/Constant.DEGREE_TO_RAD))
 
 r, d = azel_to_radec(time, az, el, lat, lon, alt, Frame.GCRF)
-print("azel_to_radec: RA={:.3f}deg, Dec={:.3f}deg\n".format(r/Constant.DEGREE_TO_RAD, d/Constant.DEGREE_TO_RAD))
+print("azel_to_radec: RA={:.3f}d, Dec={:.3f}d\n".format(r/Constant.DEGREE_TO_RAD, d/Constant.DEGREE_TO_RAD))

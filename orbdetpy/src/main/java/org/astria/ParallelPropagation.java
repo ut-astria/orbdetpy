@@ -245,17 +245,17 @@ public final class ParallelPropagation
 			obs.addModifier(new Bias<Range>(biasRange, new double[]{rand.nextGaussian()*val.error[0]+bias[0]},
 							oneOnes, oneNegInf, onePosInf));
 			if (clone.values == null)
-			    clone.values = new double[2];
+			    clone.values = new double[simCfg.cfgMeasurements.size()];
 			clone.values[0] = obs.estimate(0, 0, ssStates).getEstimatedValue()[0];
 		    }
 		    else if (name == Settings.MeasurementType.RANGE_RATE)
 		    {
 			RangeRate obs = new RangeRate(gst, pvc.getDate(), 0.0, 0.0, 1.0, val.twoWay, obsSat);
-			obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{rand.nextGaussian()*val.error[0]+bias[1]},
+			obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{rand.nextGaussian()*val.error[0]+bias[bias.length-1]},
 							    oneOnes, oneNegInf, onePosInf));
 			if (clone.values == null)
-			    clone.values = new double[2];
-			clone.values[1] = obs.estimate(0, 0, ssStates).getEstimatedValue()[0];
+			    clone.values = new double[simCfg.cfgMeasurements.size()];
+			clone.values[clone.values.length-1] = obs.estimate(0, 0, ssStates).getEstimatedValue()[0];
 		    }
 		    else if (name == Settings.MeasurementType.RIGHT_ASCENSION || name == Settings.MeasurementType.DECLINATION)
 		    {
@@ -275,6 +275,19 @@ public final class ParallelPropagation
 				twoOnes, twoNegInf, twoPosInf));
 			clone.values = obs.estimate(0, 0, ssStates).getEstimatedValue();
 			break;
+		    }
+		    else if (name == Settings.MeasurementType.POSITION || name == Settings.MeasurementType.POSITION_VELOCITY)
+		    {
+			Vector3D pos = pvc.getPosition();
+			if (name == Settings.MeasurementType.POSITION)
+			    clone.values = pos.toArray();
+			else
+			{
+			    Vector3D vel = pvc.getVelocity();
+			    clone.values = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ()};
+			}
+			for (int i = 0; i < clone.values.length && i < val.error.length; i++)
+			    clone.values[i] += rand.nextGaussian()*val.error[i];
 		    }
 		}
 	    }

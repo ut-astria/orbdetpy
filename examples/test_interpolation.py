@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from orbdetpy import configure, Frame
-from orbdetpy.conversion import get_J2000_epoch_offset
+from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string
 from orbdetpy.propagation import propagate_orbits
 from orbdetpy.utilities import interpolate_ephemeris
 
@@ -32,4 +32,4 @@ for o in propagate_orbits([cfg])[0].array:
 # Interpolate over the same period at 1 minute intervals
 for i in interpolate_ephemeris(Frame.GCRF, times, states, len(times),
                                Frame.GCRF, cfg.prop_start, cfg.prop_end, 60.0):
-    print(i.time, i.true_state)
+    print(get_UTC_string(i.time), i.true_state)

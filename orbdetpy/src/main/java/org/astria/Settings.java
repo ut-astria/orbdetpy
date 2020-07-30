@@ -19,6 +19,7 @@
 package org.astria;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -453,15 +454,13 @@ public final class Settings
 		}
 	    }
 
-	    atmModel = new NRLMSISE00(new MSISEInputs(DataManager.msiseData.minDate, DataManager.msiseData.maxDate,
-						      DataManager.msiseData.data, apflag),
-				      CelestialBodyFactory.getSun(), new OneAxisEllipsoid(
-					  Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+	    atmModel = new NRLMSISE00(new MSISEInputs(DataManager.msiseData.minDate, DataManager.msiseData.maxDate, DataManager.msiseData.data, apflag),
+				      CelestialBodyFactory.getSun(), new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 					  Constants.WGS84_EARTH_FLATTENING, FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP)));
 	    if (dragMSISEFlags != null)
 	    {
 		for (int i = 0; i < dragMSISEFlags.length; i++)
-		    atmModel = ((NRLMSISE00) atmModel).withSwitch(dragMSISEFlags[i][0], dragMSISEFlags[i][1]);
+		    atmModel = ((NRLMSISE00)atmModel).withSwitch(dragMSISEFlags[i][0], dragMSISEFlags[i][1]);
 	    }
 	}
 
@@ -514,18 +513,20 @@ public final class Settings
 	    if (cfgStations == null || cfgMeasurements == null || estmFilter != Filter.UNSCENTED_KALMAN)
 		continue;
 
+	    MeasurementType[] measNames = cfgMeasurements.keySet().toArray(new Settings.MeasurementType[0]);
+	    Arrays.sort(measNames);
 	    for (Map.Entry<String, Station> skv: cfgStations.entrySet())
 	    {
 		final Station sv = skv.getValue();
 		if (sv.biasEstimation == ops[i] && sv.bias != null && sv.bias.length > 0)
 		{
 		    final String sk = skv.getKey();
-		    for (MeasurementType mk: cfgMeasurements.keySet())
+		    for (MeasurementType mk: measNames)
 		    {
 			if (mk == MeasurementType.AZIMUTH || mk == MeasurementType.RANGE || mk == MeasurementType.RIGHT_ASCENSION)
 			    bias = sv.bias[0];
 			else
-			    bias = sv.bias[1];
+			    bias = sv.bias[sv.bias.length - 1];
 			counts[i]++;
 			final String name = new StringBuilder(sk).append(mk).toString();
 			parameters.add(new Parameter(name, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, bias, ops[i]));
@@ -534,7 +535,7 @@ public final class Settings
 	    }
 	}
 
-	parameterMatrix = MatrixUtils.createRealIdentityMatrix(counts[0] + counts[1] + 6);
+	parameterMatrix = MatrixUtils.createRealIdentityMatrix(parameters.size() + 6);
 	if (counts[1] > 0)
 	{
 	    final RealMatrix zeros = MatrixUtils.createRealMatrix(counts[1], counts[1]);
@@ -576,8 +577,32 @@ public final class Settings
 	    else
 		X0[i] = parameters.get(i - 6).value;
 	}
-
 	return(X0);
+    }
+
+    public RealMatrix getInitialCovariance()
+    {
+	int states = parameters.size() + 6;
+	RealMatrix cov = MatrixUtils.createRealIdentityMatrix(states);
+	for (int i = 0, k = 0; i < states; i++)
+	{
+	    if (2*estmCovariance.length == states*(states + 1))
+	    {
+		// Initialize with the given lower triangular entries
+		for (int j = 0; j <= i; j++, k++)
+		{
+		    cov.setEntry(i, j, estmCovariance[k]); 
+		    cov.setEntry(j, i, estmCovariance[k]); 
+		}
+	    }
+	    else
+	    {
+		// Initialize with the given diagonal entries
+		if (i < estmCovariance.length)
+		    cov.setEntry(i, i, estmCovariance[i]); 
+	    }
+	}
+	return(cov);
     }
 
     public AttitudeProvider getAttitudeProvider()
@@ -604,7 +629,6 @@ public final class Settings
 								     new Vector3D(rsoSpinVelocity[0], rsoSpinVelocity[1], rsoSpinVelocity[2]),
 								     new Vector3D(rsoSpinAcceleration[0], rsoSpinAcceleration[1], rsoSpinAcceleration[2])));
 	}
-
 	return(attpro);
     }
 
@@ -631,7 +655,6 @@ public final class Settings
 		Q[i][i] = t2*P[i];
 		Q[i][i-3] = 0.5*t3*P[i];
 	    }
-
 	    return(new Array2DRowRealMatrix(Q));
 	}
 
@@ -674,7 +697,6 @@ public final class Settings
 	    Q[i][i-N-6] = Q02;
 	    Q[i][i-N-3] = Q12;
 	}
-
 	return(new Array2DRowRealMatrix(Q));
     }
 
@@ -752,7 +774,6 @@ public final class Settings
 		throw(new RuntimeException("Invalid maneuver trigger event"));
 	    handles.add(handler);
 	}
-
 	return(handles);
     }
 }
