@@ -18,101 +18,8 @@ import math
 from os import path
 from typing import List, Optional, Tuple
 from .version import __version__
-from orbdetpy.rpc.messages_pb2 import Facet, Maneuver, Parameter, Settings, Station
+from orbdetpy.rpc.messages_pb2 import Facet, Maneuver, Measurement, Parameter, Settings, Station
 from orbdetpy.rpc.server import RemoteServer
-
-def configure(**kwargs)->Settings:
-    """Create Settings object with default values.
-
-    Parameters
-    ----------
-    **kwargs : Keyword arguments for non-default parameters.
-
-    Returns
-    -------
-    Settings object initialized with defaults and given values.
-    """
-
-    return(Settings(rso_mass=5.0, rso_area=0.1, rso_attitude_provider=AttitudeType.UNDEFINED,
-                    gravity_degree=20, gravity_order=20, ocean_tides_degree=20, ocean_tides_order=20,
-                    third_body_sun=True, third_body_moon=True, solid_tides_sun=True, solid_tides_moon=True,
-                    drag_model=DragModel.MSISE2000,
-                    drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.ESTIMATE),
-                    drag_exp_rho0=3.614E-13, drag_exp_H0=700000.0, drag_exp_Hscale=88667.0, rp_sun=True,
-                    rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.ESTIMATE),
-                    prop_inertial_frame=Frame.GCRF, integ_min_time_step=1E-3, integ_max_time_step=300.0,
-                    integ_abs_tolerance=1E-14, integ_rel_tolerance=1E-12, estm_filter=Filter.UNSCENTED_KALMAN,
-                    estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
-                    estm_DMC_acceleration=Parameter(value=0.0, min=-1E-3, max=1E-3, estimation=EstimationType.ESTIMATE),
-                    estm_smoother_iterations=10, estm_enable_PDAF=False, estm_detection_probability=0.99,
-                    estm_gating_probability=0.99, estm_gating_threshold=5.0, **kwargs))
-
-def add_facet(cfg: Settings, normal: Tuple[float, float, float], area: float)->Facet:
-    """Add a facet to a box-wing spacecraft model.
-
-    Parameters
-    ----------
-    cfg : Settings object.
-    normal : Facet unit outward normal vector in the spacecraft's co-moving LVLH frame.
-    area : Facet area [m^2].
-
-    Returns
-    -------
-    Added Facet object
-    """
-
-    cfg.rso_facets.append(Facet(normal=normal, area=area))
-    return(cfg.rso_facets[-1])
-
-def add_maneuver(cfg: Settings, time: float, trigger_event: int, trigger_params: Optional[List[float]],
-                 maneuver_type: int, maneuver_params: Optional[List[float]])->Maneuver:
-    """Add maneuver to propagation force models.
-
-    Parameters
-    ----------
-    cfg : Settings object.
-    time : TT offset from J2000 epoch [s].
-    trigger_event : Constant from ManeuverTrigger.
-    trigger_params : Additional data for trigger event.
-    maneuver_type : Constant from ManeuverType.
-    maneuver_params : Additional maneuver specific data.
-
-    Returns
-    -------
-    Added Maneuver object.
-    """
-
-    cfg.maneuvers.append(Maneuver(time=time, trigger_event=trigger_event, trigger_params=trigger_params,
-                                  maneuver_type=maneuver_type, maneuver_params=maneuver_params))
-    return(cfg.maneuvers[-1])
-
-def add_station(cfg: Settings, name: str, latitude: float, longitude: float, altitude: float,
-                fov_azimuth: float=0.0, fov_elevation: float=0.0, fov_aperture: float=0.0)->Station:
-    """Add a ground station.
-
-    Parameters
-    ----------
-    cfg : Settings object.
-    name : Station name.
-    latitude : Station WGS-84 latitude [rad].
-    longitude : Station WGS-84 longitude [rad].
-    altitude : Station height above WGS-84 reference geoid [m].
-    fov_azimuth : FOV center azimuth [rad].
-    fov_elevation : FOV center elevation [rad].
-    fov_aperture : FOV aperture angle [rad].
-
-    Returns
-    -------
-    Added Station object.
-    """
-
-    cfg.stations[name].latitude = latitude
-    cfg.stations[name].longitude = longitude
-    cfg.stations[name].altitude = altitude
-    cfg.stations[name].fov_azimuth = fov_azimuth
-    cfg.stations[name].fov_elevation = fov_elevation
-    cfg.stations[name].fov_aperture = fov_aperture
-    return(cfg.stations[name])
 
 class AttitudeType():
     """Orekit attitude providers.
@@ -269,6 +176,121 @@ class Constant():
     MINUS_J = (0, -1, 0)
     MINUS_K = (0, 0, -1)
     ZERO_VECTOR = (0, 0, 0)
+
+def configure(**kwargs)->Settings:
+    """Create Settings object with default values.
+
+    Parameters
+    ----------
+    **kwargs : Keyword arguments for non-default parameters.
+
+    Returns
+    -------
+    Settings object initialized with defaults and given values.
+    """
+
+    return(Settings(rso_mass=5.0, rso_area=0.1, gravity_degree=20, gravity_order=20, ocean_tides_degree=20, ocean_tides_order=20,
+                    third_body_sun=True, third_body_moon=True, solid_tides_sun=True, solid_tides_moon=True, drag_model=DragModel.MSISE2000,
+                    drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.ESTIMATE),
+                    drag_exp_rho0=3.614E-13, drag_exp_H0=700000.0, drag_exp_Hscale=88667.0, rp_sun=True,
+                    rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.ESTIMATE),
+                    prop_inertial_frame=Frame.GCRF, integ_min_time_step=1E-3, integ_max_time_step=300.0,
+                    integ_abs_tolerance=1E-14, integ_rel_tolerance=1E-12, estm_filter=Filter.UNSCENTED_KALMAN,
+                    estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
+                    estm_DMC_acceleration=Parameter(value=0.0, min=-1E-3, max=1E-3, estimation=EstimationType.ESTIMATE),
+                    estm_smoother_iterations=10, estm_enable_PDAF=False, estm_detection_probability=0.99,
+                    estm_gating_probability=0.99, estm_gating_threshold=5.0, **kwargs))
+
+def add_facet(cfg: Settings, normal: Tuple[float, float, float], area: float)->Facet:
+    """Add a facet to a box-wing spacecraft model.
+
+    Parameters
+    ----------
+    cfg : Settings object.
+    normal : Facet unit outward normal vector in the spacecraft's co-moving LVLH frame.
+    area : Facet area [m^2].
+
+    Returns
+    -------
+    Added Facet object
+    """
+
+    cfg.rso_facets.append(Facet(normal=normal, area=area))
+    return(cfg.rso_facets[-1])
+
+def add_maneuver(cfg: Settings, time: float, trigger_event: int, trigger_params: Optional[List[float]],
+                 maneuver_type: int, maneuver_params: Optional[List[float]])->Maneuver:
+    """Add maneuver to propagation force models.
+
+    Parameters
+    ----------
+    cfg : Settings object.
+    time : TT offset from J2000 epoch [s].
+    trigger_event : Constant from ManeuverTrigger.
+    trigger_params : Additional data for trigger event.
+    maneuver_type : Constant from ManeuverType.
+    maneuver_params : Additional maneuver specific data.
+
+    Returns
+    -------
+    Added Maneuver object.
+    """
+
+    cfg.maneuvers.append(Maneuver(time=time, trigger_event=trigger_event, trigger_params=trigger_params,
+                                  maneuver_type=maneuver_type, maneuver_params=maneuver_params))
+    return(cfg.maneuvers[-1])
+
+def add_station(cfg: Settings, name: str, latitude: float, longitude: float, altitude: float,
+                fov_azimuth: float=None, fov_elevation: float=None, fov_aperture: float=None,
+                bias: Optional[List[float]]=None, bias_estimation: int=None)->Station:
+    """Add a ground station.
+
+    Parameters
+    ----------
+    cfg : Settings object.
+    name : Station name.
+    latitude : Station WGS-84 latitude [rad].
+    longitude : Station WGS-84 longitude [rad].
+    altitude : Station height above WGS-84 reference geoid [m].
+    fov_azimuth : FOV center azimuth [rad].
+    fov_elevation : FOV center elevation [rad].
+    fov_aperture : FOV aperture angle [rad].
+    bias : Measurement biases.
+    bias_estimation : Constant from EstimationType.
+
+    Returns
+    -------
+    Added Station object.
+    """
+
+    cfg.stations[name].latitude = latitude
+    cfg.stations[name].longitude = longitude
+    cfg.stations[name].altitude = altitude
+    if (fov_azimuth is not None and fov_elevation is not None and fov_aperture is not None):
+        cfg.stations[name].fov_azimuth = fov_azimuth
+        cfg.stations[name].fov_elevation = fov_elevation
+        cfg.stations[name].fov_aperture = fov_aperture
+    if (bias is not None):
+        cfg.stations[name].bias[:] = bias
+    if (bias_estimation is not None):
+        cfg.stations[name].bias_estimation = bias_estimation
+    return(cfg.stations[name])
+
+def build_measurement(time: float, station_name: str, values: List[float])->Measurement:
+    """Build Measurement object from observed or simulated data.
+
+    Parameters
+    ----------
+    time : Measurement time; TT offset from J2000 epoch [s].
+    station_name : Station name.
+    values : Measurement data corresponding to types configured in Settings object.
+
+    Returns
+    -------
+    Measurement object.
+    """
+
+    return(Measurement(time=time, station=station_name, values=values))
 
 if (__name__ != '__main__'):
     _root_dir = path.dirname(path.abspath(path.realpath(__file__)))

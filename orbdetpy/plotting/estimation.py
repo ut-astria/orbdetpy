@@ -18,11 +18,12 @@ import numpy
 from numpy.linalg import norm
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
-from orbdetpy import Constant
-from orbdetpy import EstimationType, MeasurementType
+from orbdetpy import Constant, EstimationType, MeasurementType
 
 def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None, estim_param=True):
     key = list(cfg.measurements.keys())
+    key.sort()
+    meas_names = {0: "Azimuth", 1: "Elevation", 2: "Range", 3: "Range Rate", 4: "Right Ascension", 5: "Declination"}
     inp = [m for m in measurements if (len(m.station) > 0 or len(m.values) >= 3)]
     out = [f for f in orbit_fit if (len(f.pre_fit)*len(f.post_fit) > 0)]
     dmcidx, dmcrun = 6, (cfg.estm_DMC_corr_time > 0.0 and cfg.estm_DMC_sigma_pert > 0.0)
@@ -47,8 +48,8 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
             patches.append(patch.Patch(color=cycle[idx], label=sk))
             idx = (idx+1)%len(cycle)
         if (sv.bias_estimation in [EstimationType.ESTIMATE, EstimationType.CONSIDER]):
-            for m in cfg.measurements.keys():
-                parnames.append(sk+m)
+            for m in key:
+                parnames.append(f"{sk}-{meas_names[m]}")
 
     tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors = [],[],[],[],[],[],[],[]
     for i, o in zip(inp, out):
@@ -96,31 +97,27 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         tim = []
 
     angles = [MeasurementType.AZIMUTH, MeasurementType.ELEVATION, MeasurementType.RIGHT_ASCENSION, MeasurementType.DECLINATION]
-    if (key[0] in angles and key[1] in angles):
-        pre /= Constant.ARC_SECOND_TO_RAD
-        pos /= Constant.ARC_SECOND_TO_RAD
-        cov /= Constant.ARC_SECOND_TO_RAD
-        units = ["arcsec", "arcsec"]
-    else:
-        if (MeasurementType.POSITION in key):
-            units = ["m", "m", "m"]
-        elif (MeasurementType.POSITION_VELOCITY in key):
-            units = ["m", "m", "m", "m/s", "m/s", "m/s"]
-        else:
-            units = ["m", "m/s"]
-
     if (MeasurementType.POSITION in key):
         order = [1, 2, 3]
+        units = ["m", "m", "m"]
         ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$"]
     elif (MeasurementType.POSITION_VELOCITY in key):
         order = [1, 3, 5, 2, 4, 6]
+        units = ["m", "m", "m", "m/s", "m/s", "m/s"]
         ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$", r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$"]
     else:
-        ylabs = [{0:"Azimuth", 1:"Elevation", 2:"Range", 3:"Range rate", 4:"Right ascension", 5:"Declination"}[k] for k in key]
+        ylabs = [meas_names[k] for k in key]
+        if (key[0] in angles and key[1] in angles):
+            pre /= Constant.ARC_SECOND_TO_RAD
+            pos /= Constant.ARC_SECOND_TO_RAD
+            cov /= Constant.ARC_SECOND_TO_RAD
+            units = ["arcsec", "arcsec"]
+        else:
+            units = ["m", "m/s"] if (key[0] == MeasurementType.RANGE) else ["m/s"]
 
     outfiles = []
     plt.figure(0)
-    plt.suptitle("Pre-fit residuals")
+    plt.suptitle("Pre-Fit Residuals")
     for i in range(pre.shape[-1]):
         if (MeasurementType.POSITION in key):
             plt.subplot(3, 1, order[i])
@@ -140,7 +137,7 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         plt.savefig(outfiles[-1], format="png")
 
     plt.figure(1)
-    plt.suptitle("Post-fit residuals")
+    plt.suptitle("Post-Fit Residuals")
     for i in range(pre.shape[-1]):
         if (MeasurementType.POSITION in key):
             plt.subplot(3, 1, order[i])
@@ -165,7 +162,7 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         for i in range(par.shape[-1]):
             if (i == 0):
                 plt.figure(2)
-                plt.suptitle("Estimated parameters")
+                plt.suptitle("Estimated Parameters")
             plt.subplot(par.shape[1], 1, i + 1)
             plt.scatter(tim, par[:,i], marker = "o", s = 7)
             plt.xlabel("Time [hr]")
@@ -178,9 +175,9 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
             plt.savefig(outfiles[-1], format="png")
 
         if (dmcrun):
-            lab = [r"Radial [$\frac{m}{s^2}$]", r"In track [$\frac{m}{s^2}$]", r"Cross track [$\frac{m}{s^2}$]"]
+            lab = [r"Radial [$\frac{m}{s^2}$]", r"In-Track [$\frac{m}{s^2}$]", r"Cross-Track [$\frac{m}{s^2}$]"]
             plt.figure(3)
-            plt.suptitle("DMC estimated accelerations")
+            plt.suptitle("Estimated DMC Accelerations")
             for i in range(3):
                 plt.subplot(3, 1, i+1)
                 if (len(estmacc) > 0):

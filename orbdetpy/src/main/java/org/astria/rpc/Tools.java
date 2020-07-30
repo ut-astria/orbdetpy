@@ -173,8 +173,7 @@ public final class Tools
 	    Messages.Measurement min = req.get(i);
 	    output.rawMeas[i] = new Measurements.Measurement();
 	    output.rawMeas[i].time = AbsoluteDate.J2000_EPOCH.shiftedBy(min.getTime());
-	    if (min.getStation().length() > 0)
-		output.rawMeas[i].station = min.getStation();
+	    output.rawMeas[i].station = min.getStation();
 	    if (min.getValuesCount() > 0)
 		output.rawMeas[i].values = min.getValuesList().stream().mapToDouble(Double::doubleValue).toArray();
 	    if (min.getAngleRatesCount() > 0)

@@ -89,7 +89,7 @@ public final class Measurements
 	ArrayList<Measurement> tempRaw = new ArrayList<Measurement>(rawMeas.length);
 	for (Measurement m: rawMeas)
 	{
-	    if (m.station != null || m.values.length >= 3)
+	    if (m.station.length() > 0 || m.values.length >= 3)
 		tempRaw.add(m);
 	}
 	rawMeas = tempRaw.toArray(new Measurement[0]);
@@ -122,7 +122,7 @@ public final class Measurements
 	{
 	    GroundStation gs = null;
 	    Settings.Station jsn = null;
-	    if (m.station != null)
+	    if (m.station.length() > 0)
 	    {
 		gs = odCfg.stations.get(m.station);
 		jsn = odCfg.cfgStations.get(m.station);
@@ -163,11 +163,11 @@ public final class Measurements
 
 	    if (crrat != null)
 	    {
-		RangeRate obs = new RangeRate(gs, m.time, m.values[1], crrat.error[0], 1.0, crrat.twoWay, satellite);
+		RangeRate obs = new RangeRate(gs, m.time, m.values[m.values.length-1], crrat.error[0], 1.0, crrat.twoWay, satellite);
 		if (addOutlier)
 		    obs.addModifier(outlier);
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
-		    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{jsn.bias[1]}, oneOnes, oneNegInf, onePosInf));
+		    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{jsn.bias[jsn.bias.length-1]}, oneOnes, oneNegInf, onePosInf));
 		measObjs.add(obs);
 	    }
 

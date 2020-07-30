@@ -19,7 +19,7 @@ from math import acos, pi
 from numpy import array, cross, dot
 from numpy.linalg import norm
 
-def plot(sim_data, interactive = False, output_file_path = None):
+def plot(sim_data, interactive=False, output_file_path=None):
     mu = 398600.4418
     tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
     for o in sim_data:
@@ -46,7 +46,6 @@ def plot(sim_data, interactive = False, output_file_path = None):
         theta = acos(dot(rv[:3], e)/(rn*en))*180.0/pi
         if (dot(rv[:3], rv[3:]) < 0):
             theta = 360.0 - theta
-
         tstamp.append(o.time)
         hvec.append(h)
         hmag.append(hn)
@@ -58,10 +57,10 @@ def plot(sim_data, interactive = False, output_file_path = None):
         argp.append(w)
         tran.append(theta)
 
+    outfiles = []
     hvec = array(hvec)
     tim = [(t - tstamp[0])/3600 for t in tstamp]
 
-    outfiles = []
     plt.figure(0)
     plt.subplot(611)
     plt.scatter(tim, sma, marker = "o", s = 7)
@@ -87,7 +86,7 @@ def plot(sim_data, interactive = False, output_file_path = None):
     plt.scatter(tim, tran, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel(r"$\theta$ [deg]")
-    plt.suptitle("Orbital elements")
+    plt.suptitle("Orbital Elements")
     if (output_file_path is not None):
         outfiles.append(output_file_path + "_elements.png")
         plt.savefig(outfiles[-1], format = "png")
@@ -96,11 +95,11 @@ def plot(sim_data, interactive = False, output_file_path = None):
     plt.subplot(211)
     plt.scatter(tim, hmag, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
-    plt.ylabel("Angular momentum")
+    plt.ylabel("Angular Momentum")
     plt.subplot(212)
     plt.scatter(tim, ener, marker = "o", s = 7)
     plt.xlabel("Time [hr]")
-    plt.ylabel("Specific energy")
+    plt.ylabel("Specific Energy")
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (output_file_path is not None):
         outfiles.append(output_file_path + "_momentum_energy.png")
@@ -119,7 +118,7 @@ def plot(sim_data, interactive = False, output_file_path = None):
     plt.scatter(tim, hvec[:,2], marker = "o", s = 7)
     plt.xlabel("Time [hr]")
     plt.ylabel("h(z)")
-    plt.suptitle("Angular momentum components")
+    plt.suptitle("Angular Momentum Components")
     plt.tight_layout(rect = [0, 0.03, 1, 0.95])
     if (output_file_path is not None):
         outfiles.append(output_file_path + "_momentum_components.png")

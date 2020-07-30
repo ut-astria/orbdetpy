@@ -17,6 +17,7 @@
 import sys
 import argparse
 from datetime import datetime, timedelta
+from orbdetpy.conversion import get_UTC_string
 
 day0 = datetime.today()
 day1 = day0 + timedelta(days=1)
@@ -53,6 +54,6 @@ try:
         print("\nObject {}:".format(elements[i][2:7]))
         i += 2
         for m in o.array:
-            print(m.time, m.true_state)
+            print(get_UTC_string(m.time), m.true_state)
 except Exception as exc:
     print(exc)
