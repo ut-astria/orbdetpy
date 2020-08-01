@@ -83,8 +83,8 @@ if (isinstance(fit, str)):
     print(fit)
     exit(1)
 
-# Plot OD results
-plot(config, meas_obj, fit, interactive=True, estim_param=False)
 for f in fit:
     # print(f) to dump pre-fits/post-fits/covariances
-    print(get_UTC_string(f.time), f.estimated_state)
+    print(get_UTC_string(f.time), f.station, f.estimated_state[:6])
+# Plot OD results
+plot(config, meas_obj, fit, interactive=True, estim_param=False)

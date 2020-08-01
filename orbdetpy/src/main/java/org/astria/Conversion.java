@@ -21,6 +21,7 @@ package org.astria;
 import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
@@ -81,7 +82,7 @@ public final class Conversion
 							  FastMath.cos(el)*FastMath.cos(az), FastMath.sin(el)));
 	double x = toVec.getX();
 	double y = toVec.getY();
-	return(new double[]{FastMath.atan2(y, x), FastMath.atan2(toVec.getZ(), FastMath.sqrt(x*x + y*y))});
+	return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(y, x), FastMath.PI), FastMath.atan2(toVec.getZ(), FastMath.sqrt(x*x+y*y))});
     }
 
     public static double[] convertRaDecToAzEl(Predefined frame, AbsoluteDate time, double ra, double dec,
@@ -96,7 +97,7 @@ public final class Conversion
 							  FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));
 	double x = toVec.getX();
 	double y = toVec.getY();
-	return(new double[]{FastMath.atan2(x, y), FastMath.atan2(toVec.getZ(), FastMath.sqrt(x*x + y*y))});
+	return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(x, y), FastMath.PI), FastMath.atan2(toVec.getZ(), FastMath.sqrt(x*x+y*y))});
     }
 
     public static double[] convertPosToLLA(Predefined frame, AbsoluteDate time, List<Double> pos)

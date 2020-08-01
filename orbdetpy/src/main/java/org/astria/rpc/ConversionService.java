@@ -25,6 +25,8 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Conversion;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.orbits.CartesianOrbit;
@@ -121,8 +123,13 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	    Vector3D pos = pvc.getPosition();
 	    Vector3D vel = pvc.getVelocity();
 
-	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder().addArray(pos.getX()).addArray(pos.getY())
-		.addArray(pos.getZ()).addArray(vel.getX()).addArray(vel.getY()).addArray(vel.getZ());
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder()
+		.addArray(pos.getX())
+		.addArray(pos.getY())
+		.addArray(pos.getZ())
+		.addArray(vel.getX())
+		.addArray(vel.getY())
+		.addArray(vel.getZ());
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}
@@ -141,9 +148,15 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	    KeplerianOrbit orb = new KeplerianOrbit(pvc, FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())),
 						    AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime()), Constants.EGM96_EARTH_MU);
 
-	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder().addArray(orb.getA()).addArray(orb.getE())
-		.addArray(orb.getI()).addArray(orb.getRightAscensionOfAscendingNode()).addArray(orb.getPerigeeArgument())
-		.addArray(orb.getMeanAnomaly()).addArray(orb.getTrueAnomaly()).addArray(orb.getEccentricAnomaly());
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder()
+		.addArray(orb.getA())
+		.addArray(orb.getE())
+		.addArray(orb.getI())
+		.addArray(MathUtils.normalizeAngle(orb.getRightAscensionOfAscendingNode(), FastMath.PI))
+		.addArray(MathUtils.normalizeAngle(orb.getPerigeeArgument(), FastMath.PI))
+		.addArray(MathUtils.normalizeAngle(orb.getMeanAnomaly(), FastMath.PI))
+		.addArray(MathUtils.normalizeAngle(orb.getTrueAnomaly(), FastMath.PI))
+		.addArray(MathUtils.normalizeAngle(orb.getEccentricAnomaly(), FastMath.PI));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

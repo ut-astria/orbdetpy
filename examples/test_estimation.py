@@ -19,7 +19,7 @@ from numpy.random import multivariate_normal
 from orbdetpy import (configure, add_facet, add_maneuver, add_station, AttitudeType,
                       Filter, ManeuverTrigger, ManeuverType, MeasurementType, Constant)
 from orbdetpy.ccsds import export_OEM, export_TDM
-from orbdetpy.conversion import get_J2000_epoch_offset
+from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string
 from orbdetpy.estimation import determine_orbit
 from orbdetpy.propagation import propagate_orbits
 from orbdetpy.plotting.estimation import plot as estimation_plot
@@ -96,6 +96,9 @@ if (isinstance(fit, str)):
     print(fit)
     exit(1)
 
+for f in fit:
+    # print(f) to dump pre-fits/post-fits/covariances
+    print(get_UTC_string(f.time), f.station, f.estimated_state[:6])
 # Plot OD results
 estimation_plot(cfg, meas, fit, interactive=True, estim_param=False)
 
