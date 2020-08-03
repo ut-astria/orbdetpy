@@ -17,7 +17,9 @@
 import sys
 import argparse
 from datetime import datetime, timedelta
-from orbdetpy.conversion import get_UTC_string
+from orbdetpy import configure
+from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string
+from orbdetpy.propagation import propagate_orbits
 
 day0 = datetime.today()
 day1 = day0 + timedelta(days=1)
@@ -30,16 +32,11 @@ parser.add_argument("--start-time", help="Propagation start time",
 parser.add_argument("--end-time", help="Propagation end time",
                     default = datetime(day1.year, day1.month, day1.day).strftime(timefmt))
 parser.add_argument("--step-size", help="Step size [sec.]", type=float, default=900.0)
-
 if (len(sys.argv) == 1):
     parser.print_help()
     exit(1)
+
 args = parser.parse_args()
-
-from orbdetpy import configure
-from orbdetpy.conversion import get_J2000_epoch_offset
-from orbdetpy.propagation import propagate_orbits
-
 start = get_J2000_epoch_offset(args.start_time)
 end = get_J2000_epoch_offset(args.end_time)
 config, elements = [], [l for l in getattr(args, "tle-file").read().splitlines()
