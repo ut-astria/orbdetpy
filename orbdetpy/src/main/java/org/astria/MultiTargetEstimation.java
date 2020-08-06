@@ -168,6 +168,8 @@ public final class MultiTargetEstimation
 	    }
 	    
 	    int totalObjNum = cfgList.size();
+	    boolean enableCAR = odCfg.estmEnableCARMHF;
+	    boolean activateCAR = false;
 	    final int numStates = odCfg.parameters.size() + 6;
 	    final int numSigmas = 2*numStates;
 	    final double weight = 0.5/numStates;
@@ -177,7 +179,7 @@ public final class MultiTargetEstimation
 	    final SpacecraftState[] ssta = new SpacecraftState[1];
 	    final ManualPropagation propagator = new ManualPropagation(odCfg);
 
-	    ArrayList<SingleObject> residentSpaceObjects = new ArrayList<SingleObject>();
+	    ArrayList<ArrayList<SingleObject>> residentSpaceObjects = new ArrayList<ArrayList<SingleObject>>();
 	    ArrayList<SingleObject> promotedTracks = new ArrayList<SingleObject>();
 
 	    rawMeasurements = new ArrayList<measurementObject>();
@@ -191,7 +193,10 @@ public final class MultiTargetEstimation
 	    }
 	    //Create object for each RSO
 	    for(int objNum = 0; objNum < totalObjNum; objNum++)
-		residentSpaceObjects.add(new SingleObject(cfgList.get(objNum), numStates, numSigmas, Rsize));
+	    {
+	    	residentSpaceObjects.add(new ArrayList<SingleObject>());
+	    	residentSpaceObjects.get(objNum).add(new SingleObject(cfgList.get(objNum), numStates, numSigmas, Rsize));
+	    }
 
 	    for(int smoothIter = 0; smoothIter < odCfg.estmSmootherIterations; smoothIter++)
 	    {
@@ -203,9 +208,8 @@ public final class MultiTargetEstimation
 		{
 			for(int objNum = 0; objNum < totalObjNum; objNum++)
 			{
-				
-				SingleObject currSC = residentSpaceObjects.get(objNum);
-				
+				SingleObject currSC = residentSpaceObjects.get(objNum).get(0);
+								
 				currSC.xhat = new ArrayRealVector(currSC.estOutput.get(0).estimatedState);
 				currSC.xhatPrev = new ArrayRealVector(currSC.estOutput.get(0).estimatedState);
 				currSC.P = new Array2DRowRealMatrix(currSC.estOutput.get(0).estimatedCovariance);
@@ -253,12 +257,40 @@ public final class MultiTargetEstimation
 		    ODfinished = true;
 		}
 
+		
+		//Create new objects with CAR
+		
+		if(activateCAR == true && residentSpaceObjects.size() == 0)
+		{
+			for(int measNum = 0; measNum <= additionalMeas; measNum++)
+			{
+				
+				ArrayList<SingleObject> tempHypotheses = new ArrayList<SingleObject>();
+				
+				ArrayList<Hypothesis> newHypotheses = GenerateHypotheses(rawMeasurements.get(measNum).rawmeas, Math.sqrt(R.getEntry(0,0)), 1e-5, Math.sqrt(R.getEntry(1,1)), 1e-5, numStates, numSigmas);
+				  
+				for(int hypNum = 0; hypNum < newHypotheses.size(); hypNum++)
+				{
+					Hypothesis temp = newHypotheses.get(hypNum);
+
+					SingleObject tempState = new SingleObject(temp.xhat.toArray(), temp.P, numStates, numSigmas, Rsize, temp.weight);
+					tempHypotheses.add(tempState);
+				 	
+				}
+				
+				residentSpaceObjects.add(tempHypotheses);
+				totalObjNum++;
+			}
+			continue;
+		}
+		
+		
 		for(int objNum = 0; objNum < residentSpaceObjects.size(); objNum++)
 		{
-			//for(int hypNum = 0; hypNum < states.get(objNum).size(); hypNum++)
-			//{
-				residentSpaceObjects.get(objNum).marginalEvents.clear();
-			//}
+			for(int hypNum = 0; hypNum < residentSpaceObjects.get(objNum).size(); hypNum++)
+			{
+				residentSpaceObjects.get(objNum).get(hypNum).marginalEvents.clear();
+			}
 		}
 		
 		ArrayList<ArrayList<JPDALikelihoods>> jointEvents = new ArrayList<ArrayList<JPDALikelihoods>>();
@@ -270,11 +302,12 @@ public final class MultiTargetEstimation
 
 		for(int objNum = 0; objNum < totalObjNum; objNum++)
 		{
-
+		for(int hypNum = 0; hypNum < residentSpaceObjects.get(objNum).size(); hypNum++)
+		{
 			double stepStart = t0.durationFrom(epoch), stepSum = 0.0;
 			final double stepFinal = tm.durationFrom(epoch);
 
-			SingleObject currSC = residentSpaceObjects.get(objNum);
+			SingleObject currSC = residentSpaceObjects.get(objNum).get(hypNum);
 
 			final RealMatrix Ptemp = currSC.P.scalarMultiply(numStates);
 			final RealMatrix sqrtP = new CholeskyDecomposition(
@@ -352,7 +385,7 @@ public final class MultiTargetEstimation
 				if(!ODfinished)
 				{
 					JPDALikelihoods JPDAtemp = new JPDALikelihoods();
-					JPDAtemp.psi = (1 - odCfg.estmDetectionProbability);
+					JPDAtemp.psi = (1 - odCfg.estmDetectionProbability) * currSC.hypothesisWeight;
 					JPDAtemp.object = objNum;
 					JPDAtemp.measurement = 0;
 
@@ -380,7 +413,7 @@ public final class MultiTargetEstimation
 							JPDAtemp = new JPDALikelihoods();
 
 							//JPDAtemp2.psi =  Math.exp(-JPDATemp.getEntry(0,0)/2) / (Math.sqrt(new LUDecomposition(currentObj.Pyy).getDeterminant() * Math.pow(2 * Math.PI, currentObj.Rsize)));
-							JPDAtemp.psi = (1 - new ChiSquaredDistribution(Rsize).cumulativeProbability(Mahalanobis.getEntry(0,0)));
+							JPDAtemp.psi = (1 - new ChiSquaredDistribution(Rsize).cumulativeProbability(Mahalanobis.getEntry(0,0))) * currSC.hypothesisWeight;
 							JPDAtemp.object = objNum;
 							JPDAtemp.measurement = measNum+1;
 							currSC.marginalEvents.add(JPDAtemp);
@@ -394,6 +427,7 @@ public final class MultiTargetEstimation
 		    }
 		}
 		}
+		}
 
 		if (ODfinished)
 		    break EstimationLoop;
@@ -404,16 +438,19 @@ public final class MultiTargetEstimation
 
 		for(int objNum = 0; objNum < totalObjNum; objNum++)
 		{
-		    SingleObject currSC = residentSpaceObjects.get(objNum);
+		for(int hypNum = 0; hypNum < residentSpaceObjects.get(objNum).size(); hypNum++)
+		{
+		    SingleObject currSC = residentSpaceObjects.get(objNum).get(hypNum);
 		    for(int eventCounter = 0; eventCounter < currSC.marginalEvents.size(); eventCounter++)
 		    {
 		    	sumJPDALikelihoods[objNum][currSC.marginalEvents.get(eventCounter).measurement] += currSC.marginalEvents.get(eventCounter).psi;
 		    }
 		}
+		}
 
 		jointEvents = JPDAJointEvents(jointEvents, sumJPDALikelihoods, singleJointEvent, 0);
 
-
+		
 		double[] JPDAProbability = new double[jointEvents.size()];
 		Arrays.fill(JPDAProbability, 1);
 
@@ -465,10 +502,10 @@ public final class MultiTargetEstimation
 			    unassociatedMeasurements.remove(rawMeasurements.get(measIndex + jointEvents.get(maxProbIndex).get(i).measurement - 1));
 
 			    //Save Index
-			    residentSpaceObjects.get(objNum).associatedObsIndex.add(measNum);
+			    residentSpaceObjects.get(objNum).get(0).associatedObsIndex.add(measNum);
 
-			    //for(int j = 0; j < states.get(JointEvents.get(maxProbIndex).get(i).object).size(); j++)
-			    residentSpaceObjects.get(jointEvents.get(maxProbIndex).get(i).object).dataAssociated = true;
+			    for(int j = 0; j < residentSpaceObjects.get(objNum).size(); j++)
+			    residentSpaceObjects.get(objNum).get(j).dataAssociated = true;
 		    	//indicate all hypotheses for a given object have been associated.
 			}
 		}
@@ -492,8 +529,10 @@ public final class MultiTargetEstimation
 		//////////////////////////////////////////////////////////////////////////////////////
 		for(int objNum = 0; objNum < totalObjNum; objNum++)
 		{
-
-			SingleObject currSC = residentSpaceObjects.get(objNum);
+		for(int hypNum = 0; hypNum < residentSpaceObjects.get(objNum).size(); hypNum++)
+		{
+			
+			SingleObject currSC = residentSpaceObjects.get(objNum).get(hypNum);
 
 
 			double Beta = 0;
@@ -501,21 +540,20 @@ public final class MultiTargetEstimation
 			RealMatrix Betavvt = new Array2DRowRealMatrix(Rsize, Rsize);
 
 			//update hypothesis weight
-			/*
-			if(states.get(objNum).size() > 1)
+			if(residentSpaceObjects.get(objNum).size() > 1)
 			{
 				double hypWeight = 0;			
 
-				for(int eventCounter = 0; eventCounter < currentObj.MarginalEvents.size(); eventCounter++)
+				for(int counter = 0; counter < currSC.marginalEvents.size(); counter++)
 				{
+					int measNum = currSC.marginalEvents.get(counter).measurement;
 
-					int measNum = currentObj.MarginalEvents.get(eventCounter).measurement;
-
-					hypWeight += beta_sat_meas[objNum][measNum] / SumJPDALikelihoods[objNum][measNum] * currentObj.MarginalEvents.get(eventCounter).Psi;
+					hypWeight += beta_sat_meas[objNum][measNum] / sumJPDALikelihoods[objNum][measNum] * currSC.marginalEvents.get(counter).psi;
 				}
 
-				states.get(objNum).get(hypNum).hypothesisWeight = hypWeight;
-			*/
+				currSC.hypothesisWeight = hypWeight;
+
+			}
 
 			for(int i = 0; i < currSC.marginalEvents.size(); i++)
 			{
@@ -536,7 +574,7 @@ public final class MultiTargetEstimation
 			    if(currSC.marginalEvents.get(i).psi != 0)
 			    {
 				    BetaTemp = beta_sat_meas[objNum][currSC.marginalEvents.get(i).measurement] / sumJPDALikelihoods[objNum][currSC.marginalEvents.get(i).measurement] 
-							* currSC.marginalEvents.get(i).psi;/// currentObj.hypothesisWeight;
+							* currSC.marginalEvents.get(i).psi / currSC.hypothesisWeight;
 			    }
 				Beta = Beta + BetaTemp;
 				Betav= Betav.add(Innov.mapMultiply(BetaTemp));
@@ -560,8 +598,7 @@ public final class MultiTargetEstimation
 
 		    currSC.xhat = new ArrayRealVector(currSC.xhatPrev.add(odCfg.parameterMatrix.multiply(K).operate(Betav)));
 		    currSC.P = currSC.Pprop.subtract(odCfg.parameterMatrix.multiply(K.multiply(Pyy.multiply(K.transpose()))).subtract(Ptilda)); //Ptilda is subtracted due to need to include with parameter matrix.
-
-
+		    
 		    //For Estimated Parameters, return xhat values to max/min bounds. If far outside the bounds, can result in
 		    //Singular Matrix when taking the inverse for smoothing.
 
@@ -670,12 +707,45 @@ public final class MultiTargetEstimation
 
 		}
 	    }
-
-
-		//Smooth Data
+		
+		// Merge/Prune hypotheses
 		for(int objNum = 0; objNum < totalObjNum; objNum++)
 		{
-		    SingleObject currSC = residentSpaceObjects.get(objNum);
+			PruneHypotheses(residentSpaceObjects.get(objNum));
+		}
+		
+		for(int objNum = 0; objNum < totalObjNum; objNum++)
+		{
+			MergeHypotheses(residentSpaceObjects.get(objNum));
+		}
+		
+		// Normalize Weights
+		for(int objNum = 0; objNum < totalObjNum; objNum++)
+		{
+			double sumWeights = 0;
+			
+			for(int hypNum = 0; hypNum < residentSpaceObjects.get(objNum).size(); hypNum++)
+			{	
+				sumWeights += residentSpaceObjects.get(objNum).get(hypNum).hypothesisWeight;
+			}
+			
+			for(int hypNum = 0; hypNum < residentSpaceObjects.get(objNum).size(); hypNum++)
+			{
+				residentSpaceObjects.get(objNum).get(hypNum).hypothesisWeight /= sumWeights;
+				
+			}
+		}
+		
+		
+	    }
+
+
+		//Smooth Data		
+		for(int objNum = 0; objNum < totalObjNum; objNum++)
+		{
+		for(int hypNum = 0; hypNum < residentSpaceObjects.get(objNum).size(); hypNum++)
+		{
+		    SingleObject currSC = residentSpaceObjects.get(objNum).get(hypNum);
 		    currSC.McReynoldsConsistencyPass = true;
 
 		    int smSize = currSC.smootherData.size()-1;	
@@ -702,7 +772,8 @@ public final class MultiTargetEstimation
 		    }
 
 		// compute McReynolds Consistency or merge all hypotheses into one hypothesis
-		    
+	    if(residentSpaceObjects.get(objNum).size() == 1)
+	    {
 		double McReynoldsVal = -99999;
 
 	    for(int i = 0; i < currSC.smootherData.size()-1;i++)
@@ -760,16 +831,30 @@ public final class MultiTargetEstimation
 		    //store
 		    currSC.estOutput.get(j).estimatedState = currSC.smootherData.get(j).xstar.getColumn(0);
 		    currSC.estOutput.get(j).estimatedCovariance = currSC.smootherData.get(j).Pstar.getData();
+		    
 
 	    }
 		}
+	    else
+	    {
+	    	currSC.McReynoldsConsistencyPass = false;
+	    	System.out.println("asdf");
+	    }
+	    
+	    
+	    
+	    
+		}
+	    }
 		
 	    //Check McReynolds and potentially break out
 		boolean promotedTrackReset = false;
+		ArrayList<Integer> removeObs = new ArrayList<Integer>();
 		int objNum = 0;
 		while(objNum < totalObjNum)
 		{
-		    SingleObject currSC = residentSpaceObjects.get(objNum);
+		    SingleObject currSC = residentSpaceObjects.get(objNum).get(0);
+
 		    if(smoothIter >= 0 && currSC.McReynoldsConsistencyPass == true)
 		    {
 				promotedTrackReset = true;
@@ -790,10 +875,16 @@ public final class MultiTargetEstimation
 					Pyy = Pyy.add(y.outerProduct(y).scalarMultiply(weight));
 				    }
 				    currSC.estOutput.get(measIndex).innovationCovariance = Pyy.getData();
+				    
+				    //Add each measurement to the list of associated measurements.
+			    	removeObs.add(currSC.associatedObsIndex.get(measIndex));
+			    				    				    	
+			    	currSC.associatedObsIndex.set(measIndex,odObs.measObjs.indexOf(rawMeasurements.get(currSC.associatedObsIndex.get(measIndex)).measObj));
+			    	
 				}
 				
 				promotedTracks.add(currSC);
-				residentSpaceObjects.remove(currSC);
+				residentSpaceObjects.remove(objNum);
 				
 				totalObjNum--;
 		    }
@@ -806,42 +897,44 @@ public final class MultiTargetEstimation
 		if (promotedTrackReset)
 		{	
 			//remove associated obs from raw measurement dataset
-			ArrayList<Integer> removeObs = new ArrayList<Integer>();
-			
-			for(objNum = 0; objNum < promotedTracks.size(); objNum++)
-		    {
-			    SingleObject currSC = promotedTracks.get(objNum);
-			    System.out.println(objNum + ", " + currSC.associatedObsIndex.size());
-			    for(int measNum = 0; measNum < currSC.associatedObsIndex.size(); measNum++)
-				{
-			    	removeObs.add(currSC.associatedObsIndex.get(measNum));
-				}
-		    }
 			Collections.sort(removeObs);
-			
+
 			for(int measNum = removeObs.size()-1; measNum >= 0; measNum--)
 			{
-				rawMeasurements.remove(removeObs.get(measNum));
+				rawMeasurements.remove((int)removeObs.get(measNum));
 			}
 		    
-			if(rawMeasurements.size() == 0 || residentSpaceObjects.size() == 0)
+			if(rawMeasurements.size() == 0)
 		    break;
+			
+			if(residentSpaceObjects.size() == 0)
+			{
+				if(enableCAR == true)
+				{
+					activateCAR = true;
+					smoothIter = -1;
+
+				}
+				else
+					break;
+			}
 		}
 		
 	    }
 
-
+	    //Save output
 
 	    multiOutput.estOutput = new ArrayList<ArrayList<Estimation.EstimationOutput>>(promotedTracks.size());
 	    multiOutput.associatedObs = new ArrayList<ArrayList<Integer>>(promotedTracks.size());
 	    for (SingleObject obj: promotedTracks)
 	    {
 		multiOutput.estOutput.add(obj.estOutput);
-		multiOutput.associatedObs.add(obj.associatedObsIndex);
+		multiOutput.associatedObs.add(obj.associatedObsIndex);		
 	    }
 	    
 	    multiOutput.unassociatedObs = new ArrayList<Integer>();
-	    for (measurementObject o: unassociatedMeasurements)
+	    
+	    for (measurementObject o: rawMeasurements)
 	    {
 		int idx = odObs.measObjs.indexOf(o.measObj);
 		if (idx != -1)
@@ -849,6 +942,172 @@ public final class MultiTargetEstimation
 	    }
 	}
 
+	void MergeHypotheses(ArrayList<SingleObject> hypotheses)
+	{
+		int hypNum1 = 0;
+		
+		while(hypNum1 < hypotheses.size())
+		{	
+			int hypNum2 = hypNum1+1;
+
+			while(hypNum2 < hypotheses.size())
+			{	
+								
+				SingleObject obj1 = hypotheses.get(hypNum1);
+				SingleObject obj2 = hypotheses.get(hypNum2);
+				//Combine distributions
+				RealMatrix MahalaTemp = MatrixUtils.createColumnRealMatrix(obj1.xhat.subtract(obj2.xhat).toArray());
+
+				RealMatrix Mahalanobis1 = MahalaTemp.transpose().multiply(MatrixUtils.inverse(obj1.P).multiply(MahalaTemp));
+				RealMatrix Mahalanobis2 = MahalaTemp.transpose().multiply(MatrixUtils.inverse(obj2.P).multiply(MahalaTemp));
+								
+				//If mahalanobis distance low, combine distributions.
+				if(Math.min(Mahalanobis1.getEntry(0,0),Mahalanobis2.getEntry(0,0)) < 1)
+				{
+					RealVector xhatTemp =  obj1.xhat.mapMultiply(obj1.hypothesisWeight).add(obj2.xhat.mapMultiply(obj2.hypothesisWeight));
+					
+					RealMatrix innovTemp = MatrixUtils.createColumnRealMatrix(obj1.xhat.subtract(xhatTemp).toArray());
+					
+					RealMatrix PTemp = (obj1.P.add(innovTemp.multiply(innovTemp.transpose()))).scalarMultiply(obj1.hypothesisWeight);
+					
+					innovTemp = MatrixUtils.createColumnRealMatrix(obj2.xhat.subtract(xhatTemp).toArray());
+
+					PTemp = PTemp.add((obj2.P.add(innovTemp.multiply(innovTemp.transpose()))).scalarMultiply(obj2.hypothesisWeight));
+
+					hypotheses.get(hypNum1).xhat = new ArrayRealVector(xhatTemp);
+					hypotheses.get(hypNum1).P = PTemp;
+					hypotheses.get(hypNum1).hypothesisWeight += hypotheses.get(hypNum2).hypothesisWeight;
+					
+					hypotheses.remove(hypNum2);
+
+				}
+				else
+				{
+					hypNum2++;
+				}
+			}
+			
+			hypNum1++;
+		}
+	}
+	
+	void PruneHypotheses(ArrayList<SingleObject> hypotheses)
+	{
+		double maxWeight = 0;
+		for(int hypNum = 0; hypNum < hypotheses.size(); hypNum++)
+		{
+			if(hypotheses.get(hypNum).hypothesisWeight > maxWeight)
+				maxWeight = hypotheses.get(hypNum).hypothesisWeight;
+		
+		}
+		
+		int hypNum = 0;
+				
+		while(hypNum < hypotheses.size())
+		{	
+
+			if(hypotheses.get(hypNum).hypothesisWeight < maxWeight * 1E-3)
+			{
+				hypotheses.remove(hypNum);
+			}
+			else
+			{
+				hypNum++;
+			}
+		}
+	}
+	
+	ArrayList<Hypothesis> GenerateHypotheses(Measurements.Measurement obs, double sigmaRA, double sigmaRAd, double sigmaDec, double sigmaDecd, int numStates, int numSigmas)
+	{
+		AbsoluteDate date = new AbsoluteDate(obs.time, DataManager.getTimeScale("UTC"));
+				
+		double RA = obs.rightAscension;
+		double RA_d = obs.angleRates[0];
+		
+		double Dec = obs.declination;
+		double Dec_d = obs.angleRates[1];
+		
+		TimeStampedPVCoordinates stationCoords = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(date, odCfg.propFrame);
+		
+		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, RA_d, Dec, Dec_d, stationCoords, 10000.0, 10.0, 10000.0 ,17000000, 37000000, 0.05).getCAR();
+
+		ArrayList<Hypothesis> objectHypotheses= new ArrayList<Hypothesis>();
+		
+		
+		for(int i = 0; i < CARGaussians.size(); i++)
+		{
+			Hypothesis singleHypothesis= new Hypothesis();
+			
+			RealVector meanTemp = new ArrayRealVector(new double[] {CARGaussians.get(i).rangeMean, RA, Dec, CARGaussians.get(i).rangeRateMean, RA_d, Dec_d, odCfg.getInitialState()[6], odCfg.getInitialState()[7]});
+			RealMatrix CovarTemp = new DiagonalMatrix(new double[] {CARGaussians.get(i).rangeStd, sigmaRA, sigmaDec, CARGaussians.get(i).rangeRateStd, sigmaRAd, sigmaDecd, odCfg.estmCovariance[6], odCfg.estmCovariance[7]});
+			
+			Array2DRowRealMatrix sigma = GenerateSigmaPoints(meanTemp, CovarTemp, numStates, numSigmas);
+			Array2DRowRealMatrix sigmaXYZ = new Array2DRowRealMatrix(numStates, numSigmas);
+
+			for (int j = 0; j < sigma.getColumnDimension(); j++)
+			{
+				sigma.setColumn(j, RangeRaDec2XYZ(sigma.getColumnVector(j), date, obs.station));
+			}
+			
+		    new ManualPropagation(odCfg).propagate(0, sigma, CARGaussians.get(i).rangeMean/Constants.SPEED_OF_LIGHT, sigmaXYZ, false);
+
+			RealMatrix Pxx = new Array2DRowRealMatrix(numStates, numStates);
+			RealVector xhat = addColumns(sigmaXYZ).mapMultiplyToSelf(0.5/numStates);
+			
+			for (int j = 0; j < sigmaXYZ.getColumnDimension(); j++)
+			{
+			    RealVector xhatdiff = sigmaXYZ.getColumnVector(j).subtract(xhat);
+			    Pxx = Pxx.add(xhatdiff.outerProduct(xhatdiff).scalarMultiply(0.5/numStates));
+			}
+			
+			
+			//return mean/covar structure
+			singleHypothesis.xhat = new ArrayRealVector(xhat.toArray());
+			singleHypothesis.P = Pxx;
+			singleHypothesis.weight = CARGaussians.get(i).weight;
+
+			
+			objectHypotheses.add(singleHypothesis);
+			
+			
+			
+		}
+		
+		return objectHypotheses;
+	}
+	
+	private	double[] RangeRaDec2XYZ(RealVector RangeRaDec, AbsoluteDate date, String stat)
+	{
+		
+		//CAR FrameTransfer Test
+		
+		double Range = RangeRaDec.getEntry(0);
+		double Range_d = RangeRaDec.getEntry(3);		
+		double RA = RangeRaDec.getEntry(1);
+		double RA_d = RangeRaDec.getEntry(4);		
+		double Dec = RangeRaDec.getEntry(2);
+		double Dec_d = RangeRaDec.getEntry(5);
+		
+		
+		//Compute Inertial pos/vel relative to station
+		Vector3D topoPos = new Vector3D(new double[] {Range*Math.cos(Dec)*Math.cos(RA), Range*Math.cos(Dec)*Math.sin(RA), Range*Math.sin(Dec)});
+		Vector3D topoVel = new Vector3D(new double[] {Range_d*Math.cos(Dec)*Math.cos(RA) - Range*Math.sin(Dec)*Math.cos(RA)*Dec_d - Range*Math.cos(Dec)*Math.sin(RA)*RA_d,
+															   Range_d*Math.cos(Dec)*Math.sin(RA) - Range*Math.sin(Dec)*Math.sin(RA)*Dec_d + Range*Math.cos(Dec)*Math.cos(RA)*RA_d,
+															   Range_d*Math.sin(Dec) + Range*Math.cos(Dec) * Dec_d});
+		
+
+		//get station coords
+		//add station coords to observation coords.
+		Vector3D Pos = new Vector3D(1, topoPos, 1, odCfg.stations.get(stat).getBaseFrame().getPVCoordinates(date, odCfg.propFrame).getPosition());
+		Vector3D Vel = new Vector3D(1, topoVel, 1, odCfg.stations.get(stat).getBaseFrame().getPVCoordinates(date, odCfg.propFrame).getVelocity());
+
+		
+		
+		return new double[] {Pos.getX(), Pos.getY(), Pos.getZ(), Vel.getX(), Vel.getY(), Vel.getZ(), RangeRaDec.getEntry(6), RangeRaDec.getEntry(7)};
+				
+		
+	}
+	
 	private ArrayRealVector addColumns(RealMatrix mat)
 	{
 	    double[][] arr = mat.getData();
@@ -867,7 +1126,7 @@ public final class MultiTargetEstimation
 	    return(out);
 	}
 	
-	RealVector quadCheck(RealVector measurement, RealVector state)
+	private RealVector quadCheck(RealVector measurement, RealVector state)
 	{
 	    //Innovations QuadCheck
 		RealVector Innov = measurement.subtract(state);
@@ -883,9 +1142,8 @@ public final class MultiTargetEstimation
 		
 		return Innov;
 	}
-	
-    
-	ArrayList<ArrayList<JPDALikelihoods>> JPDAJointEvents(ArrayList<ArrayList<JPDALikelihoods>> JointEvents,
+
+	private ArrayList<ArrayList<JPDALikelihoods>> JPDAJointEvents(ArrayList<ArrayList<JPDALikelihoods>> JointEvents,
 							      double[][] MarginalEvents, ArrayList<JPDALikelihoods> SingleJointEvent, int objNum)
 	{
 		for(int measNum = 0; measNum<MarginalEvents[objNum].length; measNum++)
@@ -920,7 +1178,7 @@ public final class MultiTargetEstimation
 		return JointEvents;
 	}
 	
-	Array2DRowRealMatrix GenerateSigmaPoints(RealVector mean, RealMatrix Cov, int numStates, int numSigmas)
+	private Array2DRowRealMatrix GenerateSigmaPoints(RealVector mean, RealMatrix Cov, int numStates, int numSigmas)
 	{
 		Array2DRowRealMatrix sigma = new Array2DRowRealMatrix(numStates, numSigmas);
 		
@@ -1037,7 +1295,8 @@ public final class MultiTargetEstimation
 	    RealMatrix Pprop;
 	    ArrayRealVector xhat;
 	    RealVector xhatPrev;
-
+	    double hypothesisWeight;
+	    
 	    ArrayList<smootherTimeStep> smootherData;
 	    ArrayList<JPDALikelihoods> marginalEvents;
 	    ArrayList<Integer> associatedObsIndex;
@@ -1063,7 +1322,42 @@ public final class MultiTargetEstimation
 		associatedObsIndex = new ArrayList<Integer>();
 		estOutput = new ArrayList<Estimation.EstimationOutput>();
 		dataAssociated = true;
+		hypothesisWeight = 1;
+	    }
+	    
+	    public SingleObject(double[] x, RealMatrix Covar, int numStates, int numSigmas, int Rsize, double hypWeight)
+	    {
+		xInitial = x;
+		PInitial = Covar;
+		P = PInitial;
+		psdCorr = MatrixUtils.createRealIdentityMatrix(P.getRowDimension()).scalarMultiply(1.0E-6);
+		sigma = new Array2DRowRealMatrix(numStates, numSigmas);
+		propSigma = new Array2DRowRealMatrix(numStates, numSigmas);
+		estimMeas = new Array2DRowRealMatrix(Rsize, numSigmas);
+		Pprop = null;
+		xhat = new ArrayRealVector(xInitial);
+		xhatPrev = new ArrayRealVector(xInitial);
+		smootherData = new ArrayList<smootherTimeStep>();
+		marginalEvents = new ArrayList<JPDALikelihoods>();
+		associatedObsIndex = new ArrayList<Integer>();
+		estOutput = new ArrayList<Estimation.EstimationOutput>();
+		dataAssociated = true;
+		hypothesisWeight = hypWeight;
+
 	    }
 	}
+	
+    class Hypothesis
+    {
+    	
+        ArrayRealVector xhat;
+ 	    RealMatrix P;    
+ 	    double weight;
+ 	    
     }
+
+	
+    }
+    
 }
+

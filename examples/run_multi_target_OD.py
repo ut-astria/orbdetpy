@@ -34,6 +34,9 @@ with open("data/output/MEO0_OD_Results.json", 'w') as json_file:
 with open("data/output/MEO1_OD_Results.json", 'w') as json_file:
     json.dump(fit_data["Estimation"][1], json_file, indent=4)
 
+with open("data/output/MEO2_OD_Results.json", 'w') as json_file:
+    json.dump(fit_data["Estimation"][2], json_file, indent=4)
+
 Unassociated = []
 with open("data/output/Unassociated.json", 'w') as json_file:
 	for measNum in fit_data["Unassociated"]:
@@ -52,6 +55,11 @@ with open("data/output/MEO1_Associations.json", 'w') as json_file:
 		MEO1_Associations.append(CombinedData[measNum])
 	json.dump(MEO1_Associations, json_file, indent=4)
 
+MEO2_Associations = []
+with open("data/output/MEO2_Associations.json", 'w') as json_file:
+	for measNum in fit_data["Associated"][2]:
+		MEO2_Associations.append(CombinedData[measNum])
+	json.dump(MEO2_Associations, json_file, indent=4)
 
 Unassociated = []
 with open("data/output/Unassociated.json", 'w') as json_file:
@@ -66,3 +74,7 @@ od_plot("data/input/MEO0_od.json",
 od_plot("data/input/MEO1_od.json",
         "data/output/MEO1_Associations.json",
         "data/output/MEO1_OD_Results.json", interactive = True)
+
+od_plot("data/input/MEO0_od.json",
+        "data/output/MEO2_Associations.json",
+        "data/output/MEO2_OD_Results.json", interactive = True)

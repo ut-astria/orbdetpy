@@ -32,12 +32,6 @@ import org.hipparchus.linear.DecompositionSolver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.Constants;
 
-//These are used for some validation, but aren't needed in main algorithm.
-import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.LUDecomposition;
-import java.io.FileWriter;
-
-
 public class CAR
 {
 	
@@ -70,7 +64,6 @@ public class CAR
 
 		RealMatrix q = new Array2DRowRealMatrix(stationCoords.getPosition().toArray());
 		RealMatrix q_d = new Array2DRowRealMatrix(stationCoords.getVelocity().toArray());	
-		
 		
 		RealMatrix u_p = new Array2DRowRealMatrix(new  double[] {Math.cos(ra) * Math.cos(dec) , Math.sin(ra) * Math.cos(dec) , Math.sin(dec)});
 		RealMatrix u_a = new Array2DRowRealMatrix(new  double[] {-1 * Math.sin(ra) * Math.cos(dec) , Math.cos(ra) * Math.cos(dec) , 0});
@@ -114,8 +107,8 @@ public class CAR
 		Double[] rhoRate_emax_u = new Double[rho.length];
 		
 		double[] GMSplitLibrary = new double[1000];
-
-		GMSplitLibrary = readFile("../../data/uniformSigVals.txt");
+		
+		GMSplitLibrary = readFile("data/input/uniformSigVals.txt");
 		
 		for(int i = 0; i < rho.length; i++)
 		{
@@ -304,26 +297,6 @@ public class CAR
 		
 		
 		
-		/*	
-		System.out.println("--------------------------main---------------------");
-		for(int x = 0; x < mainCAR.size(); x++)
-		{
-			System.out.println(mainCAR.get(x).rho + "      " + mainCAR.get(x).upperBound + "      " + mainCAR.get(x).lowerBound);
-		}*/
-		/*
-		System.out.println("--------------------------upper---------------------");
-		for(int x = 0; x < upperCAR.size(); x++)
-		{
-			System.out.println(upperCAR.get(x).rho + "      " + upperCAR.get(x).upperBound + "      " + upperCAR.get(x).lowerBound);
-		}
-		*/
-		/*
-		System.out.println("--------------------------lower---------------------");
-		
-		for(int x = 0; x < lowerCAR.size(); x++)
-		{
-			System.out.println(lowerCAR.get(x).rho + "      " + lowerCAR.get(x).upperBound + "      " + lowerCAR.get(x).lowerBound);
-		}*/
 		
 		int upperIndex = 0;
 		int lowerIndex = 0;
@@ -479,25 +452,8 @@ public class CAR
 			}
 		}
 		
-		/*
-		for(int i=0; i < gaussianContributions.length; i++)
-		{
-			for(int j=0; j < gaussianContributions[i].length; j++)
-			{
-					System.out.print(gaussianContributions[i][j] + "  ");
-			}
-			System.out.println();
-
-		}*/
-		
 		double[] weights = constrainedLeastSquares(new Array2DRowRealMatrix(gaussianContributions), new Array2DRowRealMatrix(binSizeRho), 1, 0);
-		/*
-		for(int i=0;i<binSizeRho.length;i++)
-		{
-			System.out.println(binSizeRho[i]);
-		}
-		*/
-		
+
 		double weightSum = 0;
 		
 		for(int i=0; i < weights.length; i++)
@@ -517,22 +473,6 @@ public class CAR
 			throw(new RuntimeException(String.format("Invalid Gaussian weight %f", weights[i])));
 
 		}
-
-		
-		
-		/*
-	   RealMatrix tempans = new Array2DRowRealMatrix(gaussianContributions).multiply(new Array2DRowRealMatrix(weights)).subtract(new Array2DRowRealMatrix(binSizeRho));
-	   
-		for(int i =0; i < tempans.getRowDimension(); i++)
-		{
-			for(int j =0; j < tempans.getColumnDimension(); j++)
-			{
-				System.out.print(tempans.getEntry(i,j) + "  ");
-			}		
-			System.out.println();
-		} 
-		*/
-		
 
 
 		// make arraylist for mean, std, weights? and CARGaussianElement Object?
@@ -641,59 +581,6 @@ public class CAR
 			gaussians.addAll(tempGaussians);
     	}
 		
-		
-		
-		//////////////////////////////////////////// This code used to check various points in the pdf. Inside pdf values should be constant, outside pdf values should be zero/////////////////////////////////////////
-		/*
-		RealMatrix muMat = new Array2DRowRealMatrix(2,1); 
-		RealMatrix sigmaMat = new Array2DRowRealMatrix(2,2); 
-		RealMatrix testMat = new Array2DRowRealMatrix(2,1); 
-
-		testMat.setEntry(0,0,36500000 );
-		testMat.setEntry(1,0, 400);
-
-		
-		double Val = 0;
-		
-		for(int i = 0; i < gaussians.size(); i++)
-		{
-			//System.out.println(gaussians.get(i).rangeMean + "    " + gaussians.get(i).rangeRateMean + " " + gaussians.get(i).rangeStd + "    " + gaussians.get(i).rangeRateStd);
-
-			muMat.setEntry(0,0, gaussians.get(i).rangeMean);
-			muMat.setEntry(1,0, gaussians.get(i).rangeRateMean);
-
-			sigmaMat.setEntry(0,0, gaussians.get(i).rangeStd*gaussians.get(i).rangeStd);
-			sigmaMat.setEntry(1,1, gaussians.get(i).rangeRateStd * gaussians.get(i).rangeRateStd);
-
-			RealMatrix MahalaTemp = testMat.subtract(muMat);
-			RealMatrix JPDATemp = MahalaTemp.transpose().multiply(MatrixUtils.inverse(sigmaMat).multiply(MahalaTemp));
-			
-			Val += gaussians.get(i).weight * Math.exp(-JPDATemp.getEntry(0,0)/2) / (Math.sqrt(new LUDecomposition(sigmaMat).getDeterminant() * Math.pow(2 * Math.PI, 2)));;
-
-			
-		}
-		
-		System.out.println(Val);*/
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		////////////////////////////Write Gaussians to text file/////////////////////////////////
-		
-		try {
-			
-		FileWriter writer = new FileWriter("../../../Matlab/outputGaussians.txt"); 
-		for(CARGaussianElement line: gaussians) {
-		  writer.write(line.rangeMean + "," + line.rangeRateMean + "," + line.rangeStd + "," + line.rangeRateStd + "," + line.weight + "," + System.lineSeparator());
-		  }
-		writer.close();
-	
-		} catch (IOException e) {
-	
-		e.printStackTrace();
-	
-		} 
-		
-		/////////////////////////////////////////////////////////////////////////////////////////
-
 
 
     }
