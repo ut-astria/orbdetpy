@@ -547,7 +547,6 @@ public final class Settings
     {
 	PVCoordinates topv;
 	double[] state0 = propInitialState;
-
 	if (state0 == null)
 	{
 	    AbsoluteDate epoch;
@@ -566,9 +565,9 @@ public final class Settings
 	else
 	    topv = new PVCoordinates(new Vector3D(state0[0], state0[1], state0[2]), new Vector3D(state0[3], state0[4], state0[5]));
 
-	final Vector3D p = topv.getPosition();
-	final Vector3D v = topv.getVelocity();
-	state0 = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
+	final double[] p = topv.getPosition().toArray();
+	final double[] v = topv.getVelocity().toArray();
+	state0 = new double[]{p[0], p[1], p[2], v[0], v[1], v[2]};
 	final double[] X0 = new double[parameters.size() + 6];
 	for (int i = 0; i < X0.length; i++)
 	{

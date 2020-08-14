@@ -41,32 +41,26 @@ public final class Conversion
 {
     public static double[] transformFrame(Predefined srcFrame, AbsoluteDate time, List<Double> pva, Predefined destFrame)
     {
-	Frame fromFrame = FramesFactory.getFrame(srcFrame);
-	Frame toFrame = FramesFactory.getFrame(destFrame);
-	Transform xfm = fromFrame.getTransformTo(toFrame, time);
-
+	Transform xfm = FramesFactory.getFrame(srcFrame).getTransformTo(FramesFactory.getFrame(destFrame), time);
 	if (pva.size() == 3)
-	{
-	    Vector3D p = xfm.transformPosition(new Vector3D(pva.get(0), pva.get(1), pva.get(2)));
-	    return(new double[]{p.getX(), p.getY(), p.getZ()});
-	}
+	    return(xfm.transformPosition(new Vector3D(pva.get(0), pva.get(1), pva.get(2))).toArray());
 	else if (pva.size() == 6)
 	{
 	    PVCoordinates toPv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
 									      new Vector3D(pva.get(3), pva.get(4), pva.get(5))));
-	    Vector3D p = toPv.getPosition();
-	    Vector3D v = toPv.getVelocity();
-	    return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()});
+	    double[] p = toPv.getPosition().toArray();
+	    double[] v = toPv.getVelocity().toArray();
+	    return(new double[]{p[0], p[1], p[2], v[0], v[1], v[2]});
 	}
 	else
 	{
 	    PVCoordinates toPv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
 									      new Vector3D(pva.get(3), pva.get(4), pva.get(5)),
 									      new Vector3D(pva.get(6), pva.get(7), pva.get(8))));
-	    Vector3D p = toPv.getPosition();
-	    Vector3D v = toPv.getVelocity();
-	    Vector3D a = toPv.getAcceleration();
-	    return(new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ(), a.getX(), a.getY(), a.getZ()});
+	    double[] p = toPv.getPosition().toArray();
+	    double[] v = toPv.getVelocity().toArray();
+	    double[] a = toPv.getAcceleration().toArray();
+	    return(new double[]{p[0], p[1], p[2], v[0], v[1], v[2], a[0], a[1], a[2]});
 	}
     }
 
@@ -80,9 +74,9 @@ public final class Conversion
 
 	Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(el)*FastMath.sin(az),
 							  FastMath.cos(el)*FastMath.cos(az), FastMath.sin(el)));
-	double x = toVec.getX();
-	double y = toVec.getY();
-	return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(y, x), FastMath.PI), FastMath.atan2(toVec.getZ(), FastMath.sqrt(x*x+y*y))});
+	double[] xyz = toVec.toArray();
+	return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[1], xyz[0]), FastMath.PI),
+			    FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))});
     }
 
     public static double[] convertRaDecToAzEl(Predefined frame, AbsoluteDate time, double ra, double dec,
@@ -95,9 +89,9 @@ public final class Conversion
 
 	Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra),
 							  FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));
-	double x = toVec.getX();
-	double y = toVec.getY();
-	return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(x, y), FastMath.PI), FastMath.atan2(toVec.getZ(), FastMath.sqrt(x*x+y*y))});
+	double[] xyz = toVec.toArray();
+	return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[0], xyz[1]), FastMath.PI),
+			    FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))});
     }
 
     public static double[] convertPosToLLA(Predefined frame, AbsoluteDate time, List<Double> pos)

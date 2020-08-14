@@ -69,9 +69,9 @@ public final class Measurements
 	public Measurement(TimeStampedPVCoordinates pv)
 	{
 	    this.time = pv.getDate();
-	    Vector3D p = pv.getPosition();
-	    Vector3D v = pv.getVelocity();
-	    this.trueState = new double[]{p.getX(), p.getY(), p.getZ(), v.getX(), v.getY(), v.getZ()};
+	    double[] p = pv.getPosition().toArray();
+	    double[] v = pv.getVelocity().toArray();
+	    this.trueState = new double[]{p[0], p[1], p[2], v[0], v[1], v[2]};
 	}
     }
 

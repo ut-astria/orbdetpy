@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -66,7 +65,6 @@ public final class ManualPropagation implements PVCoordinatesProvider
     {
 	this.odCfg = odCfg;
 	this.stateDim = odCfg.parameters.size() + 6;
-
 	this.tasks = new Task[2*stateDim];
 	for (int i = 0; i < tasks.length; i++)
 	    tasks[i] = new Task();
@@ -136,8 +134,7 @@ public final class ManualPropagation implements PVCoordinatesProvider
     public Attitude getAttitude(AbsoluteDate time, double[] X)
     {
 	savedTime = new AbsoluteDate(time, 0.0);
-	savedPos = new TimeStampedPVCoordinates(time, new Vector3D(X[0], X[1], X[2]),
-						new Vector3D(X[3], X[4], X[5]));
+	savedPos = new TimeStampedPVCoordinates(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]));
 	if (attProvider != null)
 	    return(attProvider.getAttitude(this, time, odCfg.propInertialFrame));
 	else
@@ -146,8 +143,7 @@ public final class ManualPropagation implements PVCoordinatesProvider
 
     @Override public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
     {
-	return(odCfg.propInertialFrame.getTransformTo(frame, date).
-	       transformPVCoordinates(savedPos.shiftedBy(date.durationFrom(savedTime))));
+	return(odCfg.propInertialFrame.getTransformTo(frame, date).transformPVCoordinates(savedPos.shiftedBy(date.durationFrom(savedTime))));
     }
 
     private final class Task implements Runnable, OrdinaryDifferentialEquation
@@ -159,8 +155,7 @@ public final class ManualPropagation implements PVCoordinatesProvider
 
 	public Task()
 	{
-	    odeInt = new DormandPrince853Integrator(odCfg.integMinTimeStep, odCfg.integMaxTimeStep,
-						    odCfg.integAbsTolerance, odCfg.integRelTolerance);
+	    odeInt = new DormandPrince853Integrator(odCfg.integMinTimeStep, odCfg.integMaxTimeStep, odCfg.integAbsTolerance, odCfg.integRelTolerance);
 	}
 
 	@Override public void run()
@@ -189,13 +184,10 @@ public final class ManualPropagation implements PVCoordinatesProvider
 	@Override public double[] computeDerivatives(double t, double[] X)
 	{
 	    final double[] xDot = new double[stateDim];
-	    Arrays.fill(xDot, 0.0);
-
 	    final AbsoluteDate tm = new AbsoluteDate(odCfg.propStart, t);
-	    final SpacecraftState ss = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[0], X[1], X[2]),
-												new Vector3D(X[3], X[4], X[5])),
+	    final SpacecraftState ss = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[0],X[1],X[2]), new Vector3D(X[3],X[4],X[5])),
 									      odCfg.propInertialFrame, tm, Constants.EGM96_EARTH_MU),
-							   getAttitude(tm, Arrays.copyOfRange(X, 0, 6)), odCfg.rsoMass);
+							   getAttitude(tm, X), odCfg.rsoMass);
 
 	    Vector3D acc = Vector3D.ZERO;
 	    for (int j = 0; j < odCfg.forces.size(); j++)
@@ -207,22 +199,22 @@ public final class ManualPropagation implements PVCoordinatesProvider
 		acc = acc.add(fmod.acceleration(ss, fpar));
 	    }
 
+	    double[] accArray = acc.toArray();
 	    xDot[0] = X[3];
 	    xDot[1] = X[4];
 	    xDot[2] = X[5];
-	    xDot[3] = acc.getX();
-	    xDot[4] = acc.getY();
-	    xDot[5] = acc.getZ();
+	    xDot[3] = accArray[0];
+	    xDot[4] = accArray[1];
+	    xDot[5] = accArray[2];
 	    if (enableDMC && odCfg.estmDMCCorrTime > 0.0 && odCfg.estmDMCSigmaPert > 0.0)
 	    {
-		xDot[3] += X[posParameters[posParameters.length - 3]];
-		xDot[4] += X[posParameters[posParameters.length - 2]];
-		xDot[5] += X[posParameters[posParameters.length - 1]];
-		xDot[posParameters[posParameters.length - 3]] = -X[posParameters[posParameters.length - 3]]/odCfg.estmDMCCorrTime;
-		xDot[posParameters[posParameters.length - 2]] = -X[posParameters[posParameters.length - 2]]/odCfg.estmDMCCorrTime;
-		xDot[posParameters[posParameters.length - 1]] = -X[posParameters[posParameters.length - 1]]/odCfg.estmDMCCorrTime;
+		xDot[3] += X[posParameters[posParameters.length-3]];
+		xDot[4] += X[posParameters[posParameters.length-2]];
+		xDot[5] += X[posParameters[posParameters.length-1]];
+		xDot[posParameters[posParameters.length-3]] = -X[posParameters[posParameters.length-3]]/odCfg.estmDMCCorrTime;
+		xDot[posParameters[posParameters.length-2]] = -X[posParameters[posParameters.length-2]]/odCfg.estmDMCCorrTime;
+		xDot[posParameters[posParameters.length-1]] = -X[posParameters[posParameters.length-1]]/odCfg.estmDMCCorrTime;
 	    }
-
 	    return(xDot);
 	}
     }

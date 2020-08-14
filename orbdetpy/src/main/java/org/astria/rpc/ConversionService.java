@@ -120,16 +120,11 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 						    PositionAngle.values()[(int)req.getPva(6)], FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())),
 						    AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime()), Constants.EGM96_EARTH_MU);
 	    PVCoordinates pvc = kep.getPVCoordinates();
-	    Vector3D pos = pvc.getPosition();
-	    Vector3D vel = pvc.getVelocity();
+	    double[] pos = pvc.getPosition().toArray();
+	    double[] vel = pvc.getVelocity().toArray();
 
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder()
-		.addArray(pos.getX())
-		.addArray(pos.getY())
-		.addArray(pos.getZ())
-		.addArray(vel.getX())
-		.addArray(vel.getY())
-		.addArray(vel.getZ());
+		.addArray(pos[0]).addArray(pos[1]).addArray(pos[2]).addArray(vel[0]).addArray(vel[1]).addArray(vel[2]);
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}
