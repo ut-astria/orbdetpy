@@ -135,10 +135,4 @@ public final class Conversion
 	sb.append(tc.getMinute()).append(":").append(sbSec).append("Z");
 	return(sb.toString());
     }
-
-    public static double getJ2000EpochOffset(String utcTime)
-    {
-	return(new AbsoluteDate(DateTimeComponents.parseDateTime(utcTime), TimeScalesFactory.getUTC())
-	       .durationFrom(AbsoluteDate.J2000_EPOCH));
-    }
 }
