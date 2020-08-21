@@ -184,7 +184,8 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
     {
 	try
 	{
-	    StringValue.Builder builder = StringValue.newBuilder().setValue(Conversion.getUTCString(req.getValue()));
+	    StringValue.Builder builder = StringValue.newBuilder().setValue(
+		AbsoluteDate.J2000_EPOCH.shiftedBy(req.getValue()).toStringRfc3339(TimeScalesFactory.getUTC()));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

@@ -24,16 +24,11 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
@@ -100,39 +95,5 @@ public final class Conversion
 						      FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	GeodeticPoint point = earth.transform(new Vector3D(pos.get(0), pos.get(1), pos.get(2)), FramesFactory.getFrame(frame), time);
 	return(new double[]{point.getLatitude(), point.getLongitude(), point.getAltitude()});
-    }
-
-    public static String getUTCString(double j2000Offset)
-    {
-	DateTimeComponents dtc = AbsoluteDate.J2000_EPOCH.shiftedBy(j2000Offset).getComponents(TimeScalesFactory.getUTC());
-	DateComponents dc = dtc.getDate();
-	TimeComponents tc = dtc.getTime();
-
-	StringBuilder sbSec = new StringBuilder(9);
-	if (tc.getSecond() < 10.0)
-	    sbSec.append("0");
-	sbSec.append(tc.getSecond());
-	if (sbSec.length() > 9)
-	    sbSec.setLength(9);
-	else
-	{
-	    while (sbSec.length() < 9)
-		sbSec.append("0");
-	}
-
-	StringBuilder sb = new StringBuilder(27).append(dc.getYear()).append("-");
-	if (dc.getMonth() < 10)
-	    sb.append("0");
-	sb.append(dc.getMonth()).append("-");
-	if (dc.getDay() < 10)
-	    sb.append("0");
-	sb.append(dc.getDay()).append("T");
-	if (tc.getHour() < 10)
-	    sb.append("0");
-	sb.append(tc.getHour()).append(":");
-	if (tc.getMinute() < 10)
-	    sb.append("0");
-	sb.append(tc.getMinute()).append(":").append(sbSec).append("Z");
-	return(sb.toString());
     }
 }
