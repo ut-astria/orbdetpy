@@ -167,6 +167,7 @@ class Conversion(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -175,7 +176,7 @@ class Conversion(object):
             messages__pb2.TransformFrameInput.SerializeToString,
             messages__pb2.DoubleArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def convertAzElToRaDec(request,
@@ -183,6 +184,7 @@ class Conversion(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -191,7 +193,7 @@ class Conversion(object):
             messages__pb2.AnglesInput.SerializeToString,
             messages__pb2.DoubleArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def convertRaDecToAzEl(request,
@@ -199,6 +201,7 @@ class Conversion(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -207,7 +210,7 @@ class Conversion(object):
             messages__pb2.AnglesInput.SerializeToString,
             messages__pb2.DoubleArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def convertPosToLLA(request,
@@ -215,6 +218,7 @@ class Conversion(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -223,7 +227,7 @@ class Conversion(object):
             messages__pb2.TransformFrameInput.SerializeToString,
             messages__pb2.DoubleArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def convertElemToPv(request,
@@ -231,6 +235,7 @@ class Conversion(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -239,7 +244,7 @@ class Conversion(object):
             messages__pb2.TransformFrameInput.SerializeToString,
             messages__pb2.DoubleArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def convertPvToElem(request,
@@ -247,6 +252,7 @@ class Conversion(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -255,7 +261,7 @@ class Conversion(object):
             messages__pb2.TransformFrameInput.SerializeToString,
             messages__pb2.DoubleArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def getUTCString(request,
@@ -263,6 +269,7 @@ class Conversion(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -271,7 +278,7 @@ class Conversion(object):
             google_dot_protobuf_dot_wrappers__pb2.DoubleValue.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def getJ2000EpochOffset(request,
@@ -279,6 +286,7 @@ class Conversion(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -287,4 +295,4 @@ class Conversion(object):
             google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.DoubleValue.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

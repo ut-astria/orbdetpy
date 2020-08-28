@@ -67,4 +67,5 @@ setup(name="orbdetpy",
                 "astrodynamics estimation satellite_tracking pass_prediction"],
       classifiers=CLASSIFIERS,
       package_data=PACKAGE_DATA,
-      install_requires=requirements)
+      install_requires=requirements,
+      license="GPLv3+")
