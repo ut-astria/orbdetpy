@@ -14,10 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from orbdetpy import configure, add_station, build_measurement, Filter, MeasurementType, Constant
+from orbdetpy import configure, add_station, build_measurement, Filter, Frame, MeasurementType, Constant
 from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string
-from orbdetpy.estimation import determine_orbit
+from orbdetpy.estimation import determine_orbit, iod_laplace
 from orbdetpy.plotting.estimation import plot
+
+# "UTA-ASTRIA-NMSkies" ground station WGS-84 coordinates
+lat, lon, alt = 0.5743, -1.8418, 2225.0
 
 # Real measurements: UTC, RA (rad), dec (rad)
 real_obs = [
@@ -56,13 +59,21 @@ real_obs = [
     ["2020-07-24T03:22:49.930Z", 5.673622, 0.376921]
 ]
 
+# Use Laplace IOD to estimate an initial state from 3 RA/dec
+times, ra, dec = [], [], []
+for i in range(3):
+    times.append(get_J2000_epoch_offset(real_obs[i][0]))
+    ra.append(real_obs[i][1])
+    dec.append(real_obs[i][2])
+initial_epoch = times[1]
+initial_state = iod_laplace(Frame.EME2000, lat, lon, alt, times, ra, dec)
+
 # Configure orbit determination
-config = configure(prop_start=get_J2000_epoch_offset("2020-07-24T03:15:01.526Z"),
-                   prop_initial_state=[-3150507.866, -3090624.805, 5330071.203, 3600.098, -6482.160, -1626.428],
+config = configure(prop_start=initial_epoch, prop_initial_state=initial_state,
                    prop_end=get_J2000_epoch_offset(real_obs[-1][0]))
 
 # Define ground station(s)
-add_station(config, "UTA-ASTRIA-NMSkies", 0.5743, -1.8418, 2225.0)
+add_station(config, "UTA-ASTRIA-NMSkies", lat, lon, alt)
 
 # Define measurement types; RA/dec used here
 config.measurements[MeasurementType.RIGHT_ASCENSION].error[:] = [2.0*Constant.ARC_SECOND_TO_RAD]
@@ -83,8 +94,8 @@ if (isinstance(fit, str)):
     print(fit)
     exit(1)
 
-# Plot OD results
-plot(config, meas_obj, fit, interactive=True, estim_param=False)
 for f in fit:
     # print(f) to dump pre-fits/post-fits/covariances
-    print(get_UTC_string(f.time), f.estimated_state)
+    print(get_UTC_string(f.time), f.station, f.estimated_state[:6])
+# Plot OD results
+plot(config, meas_obj, fit, interactive=True, estim_param=False)

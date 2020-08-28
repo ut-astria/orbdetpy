@@ -37,7 +37,8 @@ Installation
 Examples
 --------
 
-1. `fit_radec.py` : Run OD with real angles measurements.
+1. `fit_radec.py` : Run OD with real angles measurements. Also demonstrates
+   the Laplace IOD method for estimating an initial state vector.
 
 2. `predict_passes.py` : Predict satellite passes for ground stations or
    geographic regions using TLEs. Current elements may be obtained from
@@ -66,7 +67,7 @@ Development
 
    `mvn -e package`
 
-2. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.1/orekit-data.tar.gz>
+2. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.2/orekit-data.tar.gz>
    under the `orbdetpy/` sub-folder.
 
 Known Issues

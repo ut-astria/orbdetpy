@@ -37,8 +37,12 @@ def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: i
     State vector transformed to the destination frame.
     """
 
-    resp = _conversion_stub.transformFrame(TransformFrameInput(
-        src_frame=src_frame, time=time, pva=pva, dest_frame=dest_frame))
+    if (isinstance(time, float)):
+        resp = _conversion_stub.transformFrame(TransformFrameInput(
+            src_frame=src_frame, time=time, pva=pva, dest_frame=dest_frame))
+    else:
+        resp = _conversion_stub.transformFrame(TransformFrameInput(
+            src_frame=src_frame, UTC_time=time, pva=pva, dest_frame=dest_frame))
     return(resp.array)
 
 def azel_to_radec(time: float, az: float, el: float, lat: float,
@@ -101,7 +105,10 @@ def pos_to_lla(frame: int, time: float, pos: List[float])->List[float]:
     WGS-84 latitude [rad], longitude [rad], altitude [m].
     """
 
-    resp = _conversion_stub.convertPosToLLA(TransformFrameInput(src_frame=frame, time=time, pva=pos))
+    if (isinstance(time, float)):
+        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(src_frame=frame, time=time, pva=pos))
+    else:
+        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(src_frame=frame, UTC_time=time, pva=pos))
     return(resp.array)
 
 def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
@@ -125,8 +132,12 @@ def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
     Cartesian state vector.
     """
 
-    resp = _conversion_stub.convertElemToPv(TransformFrameInput(src_frame=frame, time=time,
-                                                                pva=[sma,ecc,inc,raan,argp,anom,anom_type]))
+    if (isinstance(time, float)):
+        resp = _conversion_stub.convertElemToPv(TransformFrameInput(src_frame=frame, time=time,
+                                                                    pva=[sma,ecc,inc,raan,argp,anom,anom_type]))
+    else:
+        resp = _conversion_stub.convertElemToPv(TransformFrameInput(src_frame=frame, UTC_time=time,
+                                                                    pva=[sma,ecc,inc,raan,argp,anom,anom_type]))
     return(resp.array)
 
 def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
@@ -144,7 +155,10 @@ def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
     mean anomaly, true anomaly, eccentric anomaly
     """
 
-    resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, time=time, pva=pv))
+    if (isinstance(time, float)):
+        resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, time=time, pva=pv))
+    else:
+        resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, UTC_time=time, pva=pv))
     return(resp.array)
 
 def get_UTC_string(j2000_offset: float)->str:

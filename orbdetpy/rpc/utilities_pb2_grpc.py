@@ -70,6 +70,7 @@ class Utilities(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -78,7 +79,7 @@ class Utilities(object):
             messages__pb2.ImportTDMInput.SerializeToString,
             messages__pb2.Measurement2DArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def interpolateEphemeris(request,
@@ -86,6 +87,7 @@ class Utilities(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -94,4 +96,4 @@ class Utilities(object):
             messages__pb2.InterpolateEphemerisInput.SerializeToString,
             messages__pb2.MeasurementArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

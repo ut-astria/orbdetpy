@@ -18,7 +18,6 @@
 
 package org.astria;
 
-import java.util.Arrays;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -37,8 +36,8 @@ public final class PropagatorBuilder extends NumericalPropagatorBuilder
     private final OrekitFixedStepHandler stepHandler;
     protected boolean enableDMC;
 
-    public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode,
-			     PositionAngle ang, double pos, OrekitFixedStepHandler handler, boolean enableDMC)
+    public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode, PositionAngle ang, double pos,
+			     OrekitFixedStepHandler handler, boolean enableDMC)
     {
 	super(orb, ode, ang, pos);
 	this.odCfg = cfg;
@@ -61,44 +60,33 @@ public final class PropagatorBuilder extends NumericalPropagatorBuilder
 									   plst.findByName(Estimation.DMC_ACC_ESTM[1]).getValue(),
 									   plst.findByName(Estimation.DMC_ACC_ESTM[2]).getValue()));
 	}
-
 	return(prop);
     }
 
     class DMCEquations implements AdditionalEquations
     {
-	private double[] accEci;
-
-	public DMCEquations()
-	{
-	    accEci = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-	}
-
-	public void init(SpacecraftState sta, AbsoluteDate tgt)
-	{
-	}
-
-	public String getName()
+	@Override public String getName()
 	{
 	    return(Estimation.DMC_ACC_PROP);
 	}
 
-	public double[] computeDerivatives(SpacecraftState sta, double[] pdot)
+	@Override public double[] computeDerivatives(SpacecraftState sta, double[] pdot)
 	{
-	    if (!enableDMC)
+	    double[] accEci = new double[6];
+	    if (enableDMC)
 	    {
-		Arrays.fill(pdot, 0.0);
-		Arrays.fill(accEci, 0.0);
-		return(accEci);
+		double[] acc = sta.getAdditionalState(Estimation.DMC_ACC_PROP);
+		for (int i = 0; i < 3; i++)
+		{
+		    accEci[i+3] = acc[i];
+		    pdot[i] = -acc[i]/odCfg.estmDMCCorrTime;
+		}
 	    }
-
-	    double[] acc = sta.getAdditionalState(Estimation.DMC_ACC_PROP);
-	    for (int i = 0; i < 3; i++)
+	    else
 	    {
-		accEci[i+3] = acc[i];
-		pdot[i] = -acc[i]/odCfg.estmDMCCorrTime;
+		for (int i = 0; i < 3; i++)
+		    pdot[i] = 0.0;
 	    }
-
 	    return(accEci);
 	}
     }

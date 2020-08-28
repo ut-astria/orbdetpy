@@ -70,6 +70,7 @@ class Estimation(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -78,7 +79,7 @@ class Estimation(object):
             messages__pb2.DetermineOrbitInput.SerializeToString,
             messages__pb2.EstimationOutputArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def iodLaplace(request,
@@ -86,6 +87,7 @@ class Estimation(object):
             options=(),
             channel_credentials=None,
             call_credentials=None,
+            insecure=False,
             compression=None,
             wait_for_ready=None,
             timeout=None,
@@ -94,4 +96,4 @@ class Estimation(object):
             messages__pb2.AnglesInput.SerializeToString,
             messages__pb2.DoubleArray.FromString,
             options, channel_credentials,
-            call_credentials, compression, wait_for_ready, timeout, metadata)
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

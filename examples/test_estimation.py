@@ -19,7 +19,7 @@ from numpy.random import multivariate_normal
 from orbdetpy import (configure, add_facet, add_maneuver, add_station, AttitudeType,
                       Filter, ManeuverTrigger, ManeuverType, MeasurementType, Constant)
 from orbdetpy.ccsds import export_OEM, export_TDM
-from orbdetpy.conversion import get_J2000_epoch_offset
+from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string
 from orbdetpy.estimation import determine_orbit
 from orbdetpy.propagation import propagate_orbits
 from orbdetpy.plotting.estimation import plot as estimation_plot
@@ -49,6 +49,11 @@ cfg = configure(prop_start=get_J2000_epoch_offset("2019-05-01T00:00:00Z"),
 #add_maneuver(cfg, get_J2000_epoch_offset("2019-05-01T00:10:00Z"), ManeuverTrigger.DATE_TIME,
 #             None, ManeuverType.CONSTANT_THRUST, [*Constant.MINUS_J, 30, 100, 250])
 
+# ManeuverType.*_CHANGE maneuvers take a single "delta" argument representing change in the
+# corresponding element; values are in meters for distances and radians for angles
+#add_maneuver(cfg, get_J2000_epoch_offset("2019-05-01T00:10:00Z"), ManeuverTrigger.DATE_TIME,
+#             None, ManeuverType.PERIGEE_CHANGE, [50000.0])
+
 # Define ground stations
 add_station(cfg, "Maui", 0.3614, -2.7272, 3059.0)
 add_station(cfg, "Millstone", 0.7438, -1.2652, 100.0, fov_azimuth=-2.75,
@@ -67,16 +72,16 @@ cfg.measurements[MeasurementType.ELEVATION].error[:] = [Constant.ARC_SECOND_TO_R
 #cfg.measurements[MeasurementType.RIGHT_ASCENSION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 #cfg.measurements[MeasurementType.DECLINATION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 
-# Inertial position as "measurements"
+# Inertial position as measurement
 #cfg.measurements[MeasurementType.POSITION].error[:] = [100.0, 200.0, 300.0]
 
-# Inertial position/velocity as "measurements"
+# Inertial position/velocity as measurement
 #cfg.measurements[MeasurementType.POSITION_VELOCITY].error[:] = [100.0, 200.0, 300.0, 3.0, 2.0, 1.0]
 
 # Propagate orbits and generate measurements
 meas = propagate_orbits([cfg])[0].array
 
-# Uncomment to plot orbital elements etc. from the simulation
+# Uncomment to plot orbital elements from the simulation
 #simulation_plot(meas, interactive=True)
 
 # Uncomment to export simulated measurements to a CCSDS TDM file
@@ -96,6 +101,9 @@ if (isinstance(fit, str)):
     print(fit)
     exit(1)
 
+for f in fit:
+    # print(f) to dump pre-fits/post-fits/covariances
+    print(get_UTC_string(f.time), f.station, f.estimated_state[:6])
 # Plot OD results
 estimation_plot(cfg, meas, fit, interactive=True, estim_param=False)
 

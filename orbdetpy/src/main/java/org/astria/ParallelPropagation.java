@@ -278,13 +278,13 @@ public final class ParallelPropagation
 		    }
 		    else if (name == Settings.MeasurementType.POSITION || name == Settings.MeasurementType.POSITION_VELOCITY)
 		    {
-			Vector3D pos = pvc.getPosition();
+			double[] pos = pvc.getPosition().toArray();
 			if (name == Settings.MeasurementType.POSITION)
-			    clone.values = pos.toArray();
+			    clone.values = pos;
 			else
 			{
-			    Vector3D vel = pvc.getVelocity();
-			    clone.values = new double[]{pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ()};
+			    double[] vel = pvc.getVelocity().toArray();
+			    clone.values = new double[]{pos[0], pos[1], pos[2], vel[0], vel[1], vel[2]};
 			}
 			for (int i = 0; i < clone.values.length && i < val.error.length; i++)
 			    clone.values[i] += rand.nextGaussian()*val.error[i];

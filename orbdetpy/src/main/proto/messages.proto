@@ -192,6 +192,7 @@ message TransformFrameInput
     double time = 2;
     repeated double pva = 3 [packed = true];
     string dest_frame = 4;
+    string UTC_time = 5;
 }
 
 message ImportTDMInput
