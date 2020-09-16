@@ -69,18 +69,16 @@ public final class Tools
 	cfg.solidTidesMoon = req.getSolidTidesMoon();
 
 	cfg.dragModel = Settings.DragModel.values()[req.getDragModel()];
-	if (req.getDragCoefficient().getValue() > 0.0)
-	    cfg.dragCoefficient = new Settings.Parameter("Cd", req.getDragCoefficient().getMin(), req.getDragCoefficient().getMax(),
-							 req.getDragCoefficient().getValue(), estmTypes[req.getDragCoefficient().getEstimation()]);
+	cfg.dragCoefficient = new Settings.Parameter("Cd", req.getDragCoefficient().getMin(), req.getDragCoefficient().getMax(),
+						     req.getDragCoefficient().getValue(), estmTypes[req.getDragCoefficient().getEstimation()]);
 	cfg.dragMSISEFlags = unpackInteger2DArray(req.getDragMSISEFlagsList());
 	cfg.dragExpRho0 = req.getDragExpRho0();
 	cfg.dragExpH0 = req.getDragExpH0();
 	cfg.dragExpHscale = req.getDragExpHscale();
 
 	cfg.rpSun = req.getRpSun();
-	if (req.getRpCoeffReflection().getValue() > 0.0)
-	    cfg.rpCoeffReflection = new Settings.Parameter("Cr", req.getRpCoeffReflection().getMin(), req.getRpCoeffReflection().getMax(),
-							   req.getRpCoeffReflection().getValue(), estmTypes[req.getRpCoeffReflection().getEstimation()]);
+	cfg.rpCoeffReflection = new Settings.Parameter("Cr", req.getRpCoeffReflection().getMin(), req.getRpCoeffReflection().getMax(),
+						       req.getRpCoeffReflection().getValue(), estmTypes[req.getRpCoeffReflection().getEstimation()]);
 	cfg.rpCoeffAbsorption = req.getRpCoeffAbsorption();
 
 	if (req.getManeuversCount() > 0)
@@ -96,10 +94,8 @@ public final class Tools
 							    req.getManeuvers(i).getManeuverParamsList().stream().mapToDouble(Double::doubleValue).toArray());
 	}
 
-	if (req.getPropStart() != 0.0)
-	    cfg.propStart = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropStart());
-	if (req.getPropEnd() != 0.0)
-	    cfg.propEnd = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropEnd());
+	cfg.propStart = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropStart());
+	cfg.propEnd = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropEnd());
 	cfg.propStep = req.getPropStep();
 	if (req.getPropInitialStateCount() > 0)
 	    cfg.propInitialState = req.getPropInitialStateList().stream().mapToDouble(Double::doubleValue).toArray();
@@ -147,13 +143,10 @@ public final class Tools
 	    cfg.estmCovariance = req.getEstmCovarianceList().stream().mapToDouble(Double::doubleValue).toArray();
 	if (req.getEstmProcessNoiseCount() > 0)
 	    cfg.estmProcessNoise = req.getEstmProcessNoiseList().stream().mapToDouble(Double::doubleValue).toArray();
-	if (req.getEstmDMCCorrTime() > 0.0)
-	    cfg.estmDMCCorrTime = req.getEstmDMCCorrTime();
-	if (req.getEstmDMCSigmaPert() > 0.0)
-	    cfg.estmDMCSigmaPert = req.getEstmDMCSigmaPert();
-	if (req.getEstmDMCAcceleration().getMin()*req.getEstmDMCAcceleration().getMax() != 0.0)
-	    cfg.estmDMCAcceleration = new Settings.Parameter("DMC", req.getEstmDMCAcceleration().getMin(), req.getEstmDMCAcceleration().getMax(),
-							     req.getEstmDMCAcceleration().getValue(), estmTypes[req.getEstmDMCAcceleration().getEstimation()]);
+	cfg.estmDMCCorrTime = req.getEstmDMCCorrTime();
+	cfg.estmDMCSigmaPert = req.getEstmDMCSigmaPert();
+	cfg.estmDMCAcceleration = new Settings.Parameter("DMC", req.getEstmDMCAcceleration().getMin(), req.getEstmDMCAcceleration().getMax(),
+							 req.getEstmDMCAcceleration().getValue(), estmTypes[req.getEstmDMCAcceleration().getEstimation()]);
 	cfg.estmOutlierSigma = req.getEstmOutlierSigma();
 	cfg.estmOutlierWarmup = req.getEstmOutlierWarmup();
 	cfg.estmSmootherIterations = req.getEstmSmootherIterations();
