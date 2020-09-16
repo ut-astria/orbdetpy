@@ -45,15 +45,18 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	try
 	{
 	    AbsoluteDate time;
-	    if (req.getUTCTime().length() == 0)
-		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime());
-	    else
+	    boolean stringTime = req.getUTCTime().length() > 0;
+	    if (stringTime)
 		time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime()), TimeScalesFactory.getUTC());
+	    else
+		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime());
 	    double[] pva = Conversion.transformFrame(Predefined.valueOf(req.getSrcFrame()), time, req.getPvaList(), Predefined.valueOf(req.getDestFrame()));
 
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < pva.length; i++)
 		builder = builder.addArray(pva[i]);
+	    if (stringTime)
+		builder = builder.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}
