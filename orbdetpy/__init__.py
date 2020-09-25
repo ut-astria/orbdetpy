@@ -199,7 +199,7 @@ def configure(**kwargs)->Settings:
                     estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
                     estm_DMC_acceleration=Parameter(value=0.0, min=-1E-3, max=1E-3, estimation=EstimationType.ESTIMATE),
                     estm_smoother_iterations=10, estm_enable_PDAF=False, estm_detection_probability=0.99,
-                    estm_gating_probability=0.99, estm_gating_threshold=5.0, **kwargs))
+                    estm_gating_probability=0.99, estm_gating_threshold=5.0, estm_verbose_output=True, **kwargs))
 
 def add_facet(cfg: Settings, normal: Tuple[float, float, float], area: float)->Facet:
     """Add a facet to a box-wing spacecraft model.

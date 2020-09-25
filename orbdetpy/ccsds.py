@@ -24,7 +24,7 @@ from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
 
 _ccsds_stub = UtilitiesStub(RemoteServer.channel())
 
-def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str)->str:
+def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, add_prop_cov: bool=False)->str:
     """Export ephemerides in CCSDS OEM format.
 
     Parameters
@@ -33,6 +33,7 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str)->str:
     obs : Measurements or estimation results to export.
     obj_id : Object identifier.
     obj_name : Object name.
+    add_prop_cov : Include propagated covariances if True; defaults to False.
 
     Returns
     -------
@@ -40,9 +41,9 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str)->str:
     """
 
     frame = Frame.ICRF if (cfg.prop_inertial_frame == Frame.GCRF) else cfg.prop_inertial_frame
-    oem_data = f"""CCSDS_OEM_VERS = 2.0
-CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")}
-ORIGINATOR = UTexas-Austin
+    oem_header = f"""CCSDS_OEM_VERS = 2.0
+CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")}
+ORIGINATOR = UT-Austin
 
 META_START
 OBJECT_NAME = {obj_name}
@@ -50,32 +51,39 @@ OBJECT_ID = {obj_id}
 CENTER_NAME = EARTH
 REF_FRAME = {frame}
 TIME_SYSTEM = UTC
-START_TIME = {get_UTC_string(obs[0].time)}
-STOP_TIME = {get_UTC_string(obs[-1].time)}
+START_TIME = {get_UTC_string(obs[0].time)[:-1]}
+STOP_TIME = {get_UTC_string(obs[-1].time)[:-1]}
 META_STOP
+
 """
 
-    cov_data, added  = "", set()
-    state_key = "estimated_state" if (hasattr(obs[0], "estimated_state")) else "true_state"
+    eph_data, estm_cov, prop_cov, added  = [], [], [], set()
+    is_estm = hasattr(obs[0], "estimated_state") and hasattr(obs[0], "estimated_covariance") and hasattr(obs[0], "propagated_covariance")
+    eph_key = "estimated_state" if (is_estm) else "true_state"
     for o in obs:
         if (o.time in added):
             continue
         added.add(o.time)
-        utc = get_UTC_string(o.time)
-        X=[x/1E3 for x in getattr(o, state_key)[:6]]
-        oem_data = f"{oem_data}\n{utc} {X[0]} {X[1]} {X[2]} {X[3]} {X[4]} {X[5]}"
+        utc = get_UTC_string(o.time)[:-1]
+        X = [x/1000.0 for x in getattr(o, eph_key)[:6]]
+        eph_data.append(f"{utc} {X[0]} {X[1]} {X[2]} {X[3]} {X[4]} {X[5]}")
 
-        cov = []
-        if (hasattr(o, "estimated_covariance")):
-            cov = o.estimated_covariance
-        elif (hasattr(o, "propagated_covariance")):
-            cov = o.propagated_covariance
-        if (len(cov) >= 21):
-            cov_data += f"EPOCH = {utc}\n"
-            cov_data += " ".join([str(c/1E6) for c in cov[:21]]) + "\n"
+        if (is_estm and len(o.estimated_covariance) >= 21):
+            estm_cov.append(f"\nEPOCH = {utc}")
+            for m in range(6):
+                n = (m**2 + m)//2
+                estm_cov.append(" ".join([str(x/1E6) for x in o.estimated_covariance[n:m+n+1]]))
+        if (is_estm and add_prop_cov and len(o.propagated_covariance) >= 21):
+            prop_cov.append(f"\nEPOCH = {utc}")
+            for m in range(6):
+                n = (m**2 + m)//2
+                prop_cov.append(" ".join([str(x/1E6) for x in o.propagated_covariance[n:m+n+1]]))
 
-    if (len(cov_data) > 0):
-        return(f"{oem_data}\n\nCOVARIANCE_START\n{cov_data}COVARIANCE_STOP")
+    oem_data = oem_header + "\n".join(eph_data)
+    if (len(estm_cov) > 0):
+        oem_data += "\n\nCOMMENT Updated covariance\nCOVARIANCE_START" + "\n".join(estm_cov) + "\nCOVARIANCE_STOP"
+    if (len(prop_cov) > 0):
+        oem_data += "\n\nCOMMENT Propagated covariance\nCOVARIANCE_START" + "\n".join(prop_cov) + "\nCOVARIANCE_STOP"
     return(oem_data)
 
 def export_TDM(cfg: Settings, obs, obj_id: str, station_list: Optional[List[str]]=None)->str:
@@ -101,49 +109,49 @@ def export_TDM(cfg: Settings, obs, obj_id: str, station_list: Optional[List[str]
     if (MeasurementType.AZIMUTH in miter and MeasurementType.ELEVATION in miter):
         obstype = "ANGLE_TYPE = AZEL"
         obspath = "1,2"
-    if (MeasurementType.RANGE in miter):
+    if (MeasurementType.RANGE in miter or MeasurementType.RANGE_RATE in miter):
         obspath = "2,1,2"
         if (MeasurementType.AZIMUTH in miter and MeasurementType.ELEVATION in miter):
             obstype = "RANGE_UNITS = km\nANGLE_TYPE = AZEL"
         else:
             obstype = "RANGE_UNITS = km"
 
-    tdm_data = f"""CCSDS_TDM_VERS = 1.0
-CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")}
-ORIGINATOR = UTexas-Austin
+    blocks = []
+    tdm_header = f"""CCSDS_TDM_VERS = 1.0
+CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")}
+ORIGINATOR = UT-Austin
+
 """
+
     for sname, sinfo in cfg.stations.items():
         if (station_list is not None and sname not in station_list):
             continue
-        sensor = f"{sname} (Lat:{sinfo.latitude/Constant.DEGREE_TO_RAD},Lon:{sinfo.longitude/Constant.DEGREE_TO_RAD},Alt:{sinfo.altitude/1E3}km)"
-        block_header = f"""
-META_START
+        lat, lon, alt = sinfo.latitude/Constant.DEGREE_TO_RAD, sinfo.longitude/Constant.DEGREE_TO_RAD, sinfo.altitude/1000.0
+        blocks.append(f"""META_START
 TIME_SYSTEM = UTC
 PARTICIPANT_1 = {obj_id}
-PARTICIPANT_2 = {sensor}
+PARTICIPANT_2 = {sname} (WGS-84 Latitude: {lat} deg, Longitude: {lon} deg, Altitude: {alt} km)
 MODE = SEQUENTIAL
 PATH = {obspath}
 {obstype}
 META_STOP
-
-"""
-        block_ent = "DATA_START\n"
+""")
+        blocks.append("DATA_START")
         for o in obs:
             if (o.station != sname):
                 continue
-            utc = get_UTC_string(o.time)
-            if (MeasurementType.RANGE in miter):
-                block_ent = f"{block_ent}RANGE = {utc} {o.values[0]/1E3}\n"
-                if ("rangeRate" in o):
-                    block_ent = f"{block_ent}DOPPLER_INSTANTANEOUS = {utc} {o.values[1]/1E3}\n"
+            utc = get_UTC_string(o.time)[:-1]
+            if (MeasurementType.RANGE in miter or MeasurementType.RANGE_RATE in miter):
+                if (MeasurementType.RANGE in miter):
+                    blocks.append(f"RANGE = {utc} {o.values[0]/1000.0}")
+                if (MeasurementType.RANGE_RATE in miter):
+                    blocks.append(f"DOPPLER_INSTANTANEOUS = {utc} {o.values[-1]/1000.0}")
             if ((MeasurementType.AZIMUTH in miter and MeasurementType.ELEVATION in miter) or
                 (MeasurementType.RIGHT_ASCENSION in miter and MeasurementType.DECLINATION in miter)):
-                block_ent = f"""{block_ent}ANGLE_1 = {utc} {o.values[0]/Constant.DEGREE_TO_RAD}
-ANGLE_2 = {utc} {o.values[1]/Constant.DEGREE_TO_RAD}
-"""
-        tdm_data = f"{tdm_data}{block_header}{block_ent}DATA_STOP\n"
+                blocks.append(f"""ANGLE_1 = {utc} {o.values[0]/Constant.DEGREE_TO_RAD}\nANGLE_2 = {utc} {o.values[1]/Constant.DEGREE_TO_RAD}""")
+        blocks.append(f"DATA_STOP\n")
 
-    return(tdm_data)
+    return(tdm_header + "\n".join(blocks))
 
 def import_TDM(file_name: str, file_format: int):
     """Import tracking data from CCSDS TDM file.

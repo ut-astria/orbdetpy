@@ -67,7 +67,7 @@ Development
 
    `mvn -e package`
 
-2. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.2/orekit-data.tar.gz>
+2. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.3/orekit-data.tar.gz>
    under the `orbdetpy/` sub-folder.
 
 Known Issues
@@ -79,3 +79,5 @@ Known Issues
 2. If you use the `multiprocessing` Python package, imports and calls into
    `orbdetpy` must not span `multiprocessing` function calls. That is, `orbdetpy`
    can be used in the parent process or the spawned child processes, but not both.
+   A workaround is to run the `orbdetpy` RPC server using `orbdetpy/start_rpc_server.sh`
+   in a separate terminal window before running your Python code.

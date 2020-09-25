@@ -45,15 +45,18 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	try
 	{
 	    AbsoluteDate time;
-	    if (req.getUTCTime().length() == 0)
-		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime());
-	    else
+	    boolean stringTime = req.getUTCTime().length() > 0;
+	    if (stringTime)
 		time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime()), TimeScalesFactory.getUTC());
+	    else
+		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime());
 	    double[] pva = Conversion.transformFrame(Predefined.valueOf(req.getSrcFrame()), time, req.getPvaList(), Predefined.valueOf(req.getDestFrame()));
 
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < pva.length; i++)
 		builder = builder.addArray(pva[i]);
+	    if (stringTime)
+		builder = builder.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}
@@ -180,12 +183,15 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	}
     }
 
-    @Override public void getUTCString(DoubleValue req, StreamObserver<StringValue> resp)
+    @Override public void getUTCString(Messages.BoolDouble req, StreamObserver<StringValue> resp)
     {
 	try
 	{
-	    StringValue.Builder builder = StringValue.newBuilder().setValue(
-		AbsoluteDate.J2000_EPOCH.shiftedBy(req.getValue()).toStringRfc3339(TimeScalesFactory.getUTC()));
+	    StringValue.Builder builder = StringValue.newBuilder();
+	    if (req.getBoolValue())
+		builder = builder.setValue(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getDoubleValue()).toString(TimeScalesFactory.getUTC()) + "Z");
+	    else
+		builder = builder.setValue(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getDoubleValue()).toStringRfc3339(TimeScalesFactory.getUTC()));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

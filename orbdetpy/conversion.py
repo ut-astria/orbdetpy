@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import List, Tuple
-from google.protobuf.wrappers_pb2 import DoubleValue, StringValue
+from google.protobuf.wrappers_pb2 import StringValue
 from orbdetpy.rpc.conversion_pb2_grpc import ConversionStub
-from orbdetpy.rpc.messages_pb2 import AnglesInput, TransformFrameInput
+from orbdetpy.rpc.messages_pb2 import AnglesInput, BoolDouble, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
 
 _conversion_stub = ConversionStub(RemoteServer.channel())
@@ -161,19 +161,20 @@ def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
         resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, UTC_time=time, pva=pv))
     return(resp.array)
 
-def get_UTC_string(j2000_offset: float)->str:
+def get_UTC_string(j2000_offset: float, truncate: bool=True)->str:
     """Get ISO-8601 formatted UTC string corresponding to TT offset.
 
     Parameters
     ----------
     j2000_offset : Offset in TT from J2000 epoch [s].
+    truncate: Truncate to milliseconds level accuracy if True (default).
 
     Returns
     -------
     ISO-8601 formatted UTC string.
     """
 
-    resp = _conversion_stub.getUTCString(DoubleValue(value=j2000_offset))
+    resp = _conversion_stub.getUTCString(BoolDouble(double_value=j2000_offset, bool_value=truncate))
     return(resp.value)
 
 def get_J2000_epoch_offset(utc_time: str)->float:
