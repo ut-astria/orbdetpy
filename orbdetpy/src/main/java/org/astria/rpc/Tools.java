@@ -154,6 +154,7 @@ public final class Tools
 	cfg.estmDetectionProbability = req.getEstmDetectionProbability();
 	cfg.estmGatingProbability = req.getEstmGatingProbability();
 	cfg.estmGatingThreshold = req.getEstmGatingThreshold();
+	cfg.estmVerboseOutput = req.getEstmVerboseOutput();
 	return(cfg.build());
     }
 

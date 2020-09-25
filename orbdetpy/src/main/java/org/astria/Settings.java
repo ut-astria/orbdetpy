@@ -350,6 +350,7 @@ public final class Settings
     public double estmDetectionProbability = 0.99;
     public double estmGatingProbability = 0.99;
     public double estmGatingThreshold = 5.0;
+    public boolean estmVerboseOutput = true;
 
     protected Atmosphere atmModel;
     protected HashMap<String, GroundStation> stations;

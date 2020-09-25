@@ -67,7 +67,7 @@ Development
 
    `mvn -e package`
 
-2. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.2/orekit-data.tar.gz>
+2. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.3/orekit-data.tar.gz>
    under the `orbdetpy/` sub-folder.
 
 Known Issues

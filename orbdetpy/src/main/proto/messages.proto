@@ -31,6 +31,12 @@ message DoubleArray
     repeated double array = 1 [packed = true];
 }
 
+message BoolDouble
+{
+    bool bool_value = 1;
+    double double_value = 2;
+}
+
 message Parameter
 {
     double value = 1;
@@ -136,6 +142,7 @@ message Settings
     double estm_detection_probability = 51;
     double estm_gating_probability = 52;
     double estm_gating_threshold = 53;
+    bool estm_verbose_output = 54;
 }
 
 message SettingsArray

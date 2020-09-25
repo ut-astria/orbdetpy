@@ -183,12 +183,15 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	}
     }
 
-    @Override public void getUTCString(DoubleValue req, StreamObserver<StringValue> resp)
+    @Override public void getUTCString(Messages.BoolDouble req, StreamObserver<StringValue> resp)
     {
 	try
 	{
-	    StringValue.Builder builder = StringValue.newBuilder().setValue(
-		AbsoluteDate.J2000_EPOCH.shiftedBy(req.getValue()).toStringRfc3339(TimeScalesFactory.getUTC()));
+	    StringValue.Builder builder = StringValue.newBuilder();
+	    if (req.getBoolValue())
+		builder = builder.setValue(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getDoubleValue()).toString(TimeScalesFactory.getUTC()) + "Z");
+	    else
+		builder = builder.setValue(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getDoubleValue()).toStringRfc3339(TimeScalesFactory.getUTC()));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}
