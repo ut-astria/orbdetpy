@@ -1,5 +1,5 @@
 #!/bin/bash
-# start_rpc_server.sh - Start the orbdetpy RPC server.
+# start_server.sh - Start the orbdetpy RPC server.
 # Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,4 +20,5 @@ BASE_DIR=$(dirname "$0")
 for jar_file in $BASE_DIR/target/orbdetpy-server*.jar
 do
     java -Xmx2G -XX:+UseG1GC -jar $jar_file 50051 $BASE_DIR/orekit-data/
+    break
 done
