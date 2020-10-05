@@ -31,6 +31,11 @@ message DoubleArray
     repeated double array = 1 [packed = true];
 }
 
+message Double2DArray
+{
+    repeated DoubleArray array = 1;
+}
+
 message BoolDouble
 {
     bool bool_value = 1;
@@ -196,10 +201,10 @@ message EstimationOutputArray
 message TransformFrameInput
 {
     string src_frame = 1;
-    double time = 2;
-    repeated double pva = 3 [packed = true];
+    repeated double time = 2 [packed = true];
+    repeated DoubleArray pva = 3;
     string dest_frame = 4;
-    string UTC_time = 5;
+    repeated string UTC_time = 5;
 }
 
 message ImportTDMInput

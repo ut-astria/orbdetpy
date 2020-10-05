@@ -23,6 +23,7 @@ import com.google.protobuf.StringValue;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import java.util.List;
 import org.astria.Conversion;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -40,24 +41,33 @@ import org.orekit.utils.PVCoordinates;
 
 public final class ConversionService extends ConversionGrpc.ConversionImplBase
 {
-    @Override public void transformFrame(Messages.TransformFrameInput req, StreamObserver<Messages.DoubleArray> resp)
+    @Override public void transformFrame(Messages.TransformFrameInput req, StreamObserver<Messages.Double2DArray> resp)
     {
 	try
 	{
 	    AbsoluteDate time;
-	    boolean stringTime = req.getUTCTime().length() > 0;
-	    if (stringTime)
-		time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime()), TimeScalesFactory.getUTC());
-	    else
-		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime());
-	    double[] pva = Conversion.transformFrame(Predefined.valueOf(req.getSrcFrame()), time, req.getPvaList(), Predefined.valueOf(req.getDestFrame()));
+	    boolean stringTime = req.getUTCTimeCount() > 0;
+	    Predefined srcFrame = Predefined.valueOf(req.getSrcFrame());
+	    Predefined destFrame = Predefined.valueOf(req.getDestFrame());
+	    Messages.Double2DArray.Builder outer = Messages.Double2DArray.newBuilder();
 
-	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
-	    for (int i = 0; i < pva.length; i++)
-		builder = builder.addArray(pva[i]);
-	    if (stringTime)
-		builder = builder.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
-	    resp.onNext(builder.build());
+	    for (int i = 0; i < req.getPvaCount(); i++)
+	    {
+		if (stringTime)
+		    time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
+		else
+		    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
+		double[] pva = Conversion.transformFrame(srcFrame, time, req.getPva(i).getArrayList(), destFrame);
+
+		Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder();
+		for (int j = 0; j < pva.length; j++)
+		    inner = inner.addArray(pva[j]);
+		if (stringTime)
+		    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
+		outer = outer.addArray(inner.build());
+	    }
+
+	    resp.onNext(outer.build());
 	    resp.onCompleted();
 	}
 	catch (Throwable exc)
@@ -109,11 +119,11 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	try
 	{
 	    AbsoluteDate time;
-	    if (req.getUTCTime().length() == 0)
-		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime());
+	    if (req.getUTCTimeCount() == 0)
+		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0));
 	    else
-		time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime()), TimeScalesFactory.getUTC());
-	    double[] lla = Conversion.convertPosToLLA(Predefined.valueOf(req.getSrcFrame()), time, req.getPvaList());
+		time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(0)), TimeScalesFactory.getUTC());
+	    double[] lla = Conversion.convertPosToLLA(Predefined.valueOf(req.getSrcFrame()), time, req.getPva(0).getArrayList());
 
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < lla.length; i++)
@@ -132,12 +142,14 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	try
 	{
 	    AbsoluteDate time;
-	    if (req.getUTCTime().length() == 0)
-		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime());
+	    if (req.getUTCTimeCount() == 0)
+		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0));
 	    else
-		time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime()), TimeScalesFactory.getUTC());
-	    KeplerianOrbit kep = new KeplerianOrbit(req.getPva(0), req.getPva(1), req.getPva(2), req.getPva(4), req.getPva(3), req.getPva(5),
-						    PositionAngle.values()[(int)req.getPva(6)], FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())),
+		time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(0)), TimeScalesFactory.getUTC());
+
+	    List<Double> pva = req.getPva(0).getArrayList();
+	    KeplerianOrbit kep = new KeplerianOrbit(pva.get(0), pva.get(1), pva.get(2), pva.get(4), pva.get(3), pva.get(5),
+						    PositionAngle.values()[pva.get(6).intValue()], FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())),
 						    time, Constants.EGM96_EARTH_MU);
 	    PVCoordinates pvc = kep.getPVCoordinates();
 	    double[] pos = pvc.getPosition().toArray();
@@ -159,12 +171,13 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	try
 	{
 	    AbsoluteDate time;
-	    if (req.getUTCTime().length() == 0)
-		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime());
+	    if (req.getUTCTimeCount() == 0)
+		time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0));
 	    else
-		time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime()), TimeScalesFactory.getUTC());
-	    PVCoordinates pvc = new PVCoordinates(new Vector3D(req.getPva(0), req.getPva(1), req.getPva(2)),
-						  new Vector3D(req.getPva(3), req.getPva(4), req.getPva(5)));
+		time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(0)), TimeScalesFactory.getUTC());
+
+	    List<Double> pva = req.getPva(0).getArrayList();
+	    PVCoordinates pvc = new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)), new Vector3D(pva.get(3), pva.get(4), pva.get(5)));
 	    KeplerianOrbit orb = new KeplerianOrbit(pvc, FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame())), time, Constants.EGM96_EARTH_MU);
 
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder()

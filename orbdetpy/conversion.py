@@ -17,7 +17,7 @@
 from typing import List, Tuple
 from google.protobuf.wrappers_pb2 import StringValue
 from orbdetpy.rpc.conversion_pb2_grpc import ConversionStub
-from orbdetpy.rpc.messages_pb2 import AnglesInput, BoolDouble, TransformFrameInput
+from orbdetpy.rpc.messages_pb2 import AnglesInput, BoolDouble, DoubleArray, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
 
 _conversion_stub = ConversionStub(RemoteServer.channel())
@@ -28,8 +28,9 @@ def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: i
     Parameters
     ----------
     src_frame : Source reference frame; a constant from Frame.
-    time : Offset in TT from J2000 epoch [s].
-    pva : State vector to transform, can be pos or pos+vel or pos+vel+acc.
+    time : Offset in TT from J2000 epoch [s]. Give a list of times for bulk transforms.
+    pva : State vector to transform, can be pos or pos+vel or pos+vel+acc. Provide a 
+          list of lists for bulk frame transforms.
     dest_frame : Destination reference frame; a constant from Frame.
 
     Returns
@@ -37,13 +38,19 @@ def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: i
     State vector transformed to the destination frame.
     """
 
-    if (isinstance(time, float)):
+    if (isinstance(time, float) or isinstance(time, str)):
+        single = True
+        time, pva = [time], [pva]
+    else:
+        single = False
+
+    if (isinstance(time[0], float)):
         resp = _conversion_stub.transformFrame(TransformFrameInput(
-            src_frame=src_frame, time=time, pva=pva, dest_frame=dest_frame))
+            src_frame=src_frame, time=time, pva=[DoubleArray(array=p) for p in pva], dest_frame=dest_frame))
     else:
         resp = _conversion_stub.transformFrame(TransformFrameInput(
-            src_frame=src_frame, UTC_time=time, pva=pva, dest_frame=dest_frame))
-    return(resp.array)
+            src_frame=src_frame, UTC_time=time, pva=[DoubleArray(array=p) for p in pva], dest_frame=dest_frame))
+    return(resp.array[0].array if (single and len(resp.array) == 1) else resp.array)
 
 def azel_to_radec(time: float, az: float, el: float, lat: float,
                   lon: float, alt: float, frame: int)->Tuple[float, float]:
@@ -106,9 +113,11 @@ def pos_to_lla(frame: int, time: float, pos: List[float])->List[float]:
     """
 
     if (isinstance(time, float)):
-        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(src_frame=frame, time=time, pva=pos))
+        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(
+            src_frame=frame, time=[time], pva=[DoubleArray(array=pos)]))
     else:
-        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(src_frame=frame, UTC_time=time, pva=pos))
+        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(
+            src_frame=frame, UTC_time=[time], pva=[DoubleArray(array=pos)]))
     return(resp.array)
 
 def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
@@ -133,11 +142,11 @@ def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
     """
 
     if (isinstance(time, float)):
-        resp = _conversion_stub.convertElemToPv(TransformFrameInput(src_frame=frame, time=time,
-                                                                    pva=[sma,ecc,inc,raan,argp,anom,anom_type]))
+        resp = _conversion_stub.convertElemToPv(TransformFrameInput(
+            src_frame=frame, time=[time], pva=[DoubleArray(array=[sma,ecc,inc,raan,argp,anom,anom_type])]))
     else:
-        resp = _conversion_stub.convertElemToPv(TransformFrameInput(src_frame=frame, UTC_time=time,
-                                                                    pva=[sma,ecc,inc,raan,argp,anom,anom_type]))
+        resp = _conversion_stub.convertElemToPv(TransformFrameInput(
+            src_frame=frame, UTC_time=[time], pva=[DoubleArray(array=[sma,ecc,inc,raan,argp,anom,anom_type])]))
     return(resp.array)
 
 def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
@@ -156,9 +165,11 @@ def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
     """
 
     if (isinstance(time, float)):
-        resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, time=time, pva=pv))
+        resp = _conversion_stub.convertPvToElem(TransformFrameInput(
+            src_frame=frame, time=[time], pva=[DoubleArray(array=pv)]))
     else:
-        resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, UTC_time=time, pva=pv))
+        resp = _conversion_stub.convertPvToElem(TransformFrameInput(
+            src_frame=frame, UTC_time=[time], pva=[DoubleArray(array=pv)]))
     return(resp.array)
 
 def get_UTC_string(j2000_offset: float, truncate: bool=True)->str:

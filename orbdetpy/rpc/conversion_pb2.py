@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\021ConversionRequestP\000',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x10\x63onversion.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x0emessages.proto2\xe9\x03\n\nConversion\x12\x36\n\x0etransformFrame\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x12\x32\n\x12\x63onvertAzElToRaDec\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x32\n\x12\x63onvertRaDecToAzEl\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x37\n\x0f\x63onvertPosToLLA\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x12\x37\n\x0f\x63onvertElemToPv\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x12\x37\n\x0f\x63onvertPvToElem\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x12;\n\x0cgetUTCString\x12\x0b.BoolDouble\x1a\x1c.google.protobuf.StringValue\"\x00\x12S\n\x13getJ2000EpochOffset\x12\x1c.google.protobuf.StringValue\x1a\x1c.google.protobuf.DoubleValue\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x43onversionRequestP\x00\x62\x06proto3'
+  serialized_pb=b'\n\x10\x63onversion.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x0emessages.proto2\xeb\x03\n\nConversion\x12\x38\n\x0etransformFrame\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x32\n\x12\x63onvertAzElToRaDec\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x32\n\x12\x63onvertRaDecToAzEl\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x37\n\x0f\x63onvertPosToLLA\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x12\x37\n\x0f\x63onvertElemToPv\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x12\x37\n\x0f\x63onvertPvToElem\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x12;\n\x0cgetUTCString\x12\x0b.BoolDouble\x1a\x1c.google.protobuf.StringValue\"\x00\x12S\n\x13getJ2000EpochOffset\x12\x1c.google.protobuf.StringValue\x1a\x1c.google.protobuf.DoubleValue\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x43onversionRequestP\x00\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,messages__pb2.DESCRIPTOR,])
 
@@ -40,7 +40,7 @@ _CONVERSION = _descriptor.ServiceDescriptor(
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
   serialized_start=69,
-  serialized_end=558,
+  serialized_end=560,
   methods=[
   _descriptor.MethodDescriptor(
     name='transformFrame',
@@ -48,7 +48,7 @@ _CONVERSION = _descriptor.ServiceDescriptor(
     index=0,
     containing_service=None,
     input_type=messages__pb2._TRANSFORMFRAMEINPUT,
-    output_type=messages__pb2._DOUBLEARRAY,
+    output_type=messages__pb2._DOUBLE2DARRAY,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

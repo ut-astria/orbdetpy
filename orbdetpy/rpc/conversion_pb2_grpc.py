@@ -18,7 +18,7 @@ class ConversionStub(object):
         self.transformFrame = channel.unary_unary(
                 '/Conversion/transformFrame',
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
-                response_deserializer=messages__pb2.DoubleArray.FromString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
         self.convertAzElToRaDec = channel.unary_unary(
                 '/Conversion/convertAzElToRaDec',
@@ -114,7 +114,7 @@ def add_ConversionServicer_to_server(servicer, server):
             'transformFrame': grpc.unary_unary_rpc_method_handler(
                     servicer.transformFrame,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
-                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
             'convertAzElToRaDec': grpc.unary_unary_rpc_method_handler(
                     servicer.convertAzElToRaDec,
@@ -174,7 +174,7 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/transformFrame',
             messages__pb2.TransformFrameInput.SerializeToString,
-            messages__pb2.DoubleArray.FromString,
+            messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
