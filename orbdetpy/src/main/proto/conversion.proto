@@ -32,11 +32,11 @@ service Conversion
 
     rpc convertRaDecToAzEl(AnglesInput) returns (DoubleArray) {}
 
-    rpc convertPosToLLA(TransformFrameInput) returns (DoubleArray) {}
+    rpc convertPosToLLA(TransformFrameInput) returns (Double2DArray) {}
 
-    rpc convertElemToPv(TransformFrameInput) returns (DoubleArray) {}
+    rpc convertElemToPv(TransformFrameInput) returns (Double2DArray) {}
 
-    rpc convertPvToElem(TransformFrameInput) returns (DoubleArray) {}
+    rpc convertPvToElem(TransformFrameInput) returns (Double2DArray) {}
 
     rpc getUTCString(BoolDouble) returns (google.protobuf.StringValue) {}
 

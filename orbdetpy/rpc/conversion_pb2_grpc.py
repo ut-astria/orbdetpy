@@ -33,17 +33,17 @@ class ConversionStub(object):
         self.convertPosToLLA = channel.unary_unary(
                 '/Conversion/convertPosToLLA',
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
-                response_deserializer=messages__pb2.DoubleArray.FromString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
         self.convertElemToPv = channel.unary_unary(
                 '/Conversion/convertElemToPv',
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
-                response_deserializer=messages__pb2.DoubleArray.FromString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
         self.convertPvToElem = channel.unary_unary(
                 '/Conversion/convertPvToElem',
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
-                response_deserializer=messages__pb2.DoubleArray.FromString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
         self.getUTCString = channel.unary_unary(
                 '/Conversion/getUTCString',
@@ -129,17 +129,17 @@ def add_ConversionServicer_to_server(servicer, server):
             'convertPosToLLA': grpc.unary_unary_rpc_method_handler(
                     servicer.convertPosToLLA,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
-                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
             'convertElemToPv': grpc.unary_unary_rpc_method_handler(
                     servicer.convertElemToPv,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
-                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
             'convertPvToElem': grpc.unary_unary_rpc_method_handler(
                     servicer.convertPvToElem,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
-                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
             'getUTCString': grpc.unary_unary_rpc_method_handler(
                     servicer.getUTCString,
@@ -225,7 +225,7 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/convertPosToLLA',
             messages__pb2.TransformFrameInput.SerializeToString,
-            messages__pb2.DoubleArray.FromString,
+            messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -242,7 +242,7 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/convertElemToPv',
             messages__pb2.TransformFrameInput.SerializeToString,
-            messages__pb2.DoubleArray.FromString,
+            messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -259,7 +259,7 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/convertPvToElem',
             messages__pb2.TransformFrameInput.SerializeToString,
-            messages__pb2.DoubleArray.FromString,
+            messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
