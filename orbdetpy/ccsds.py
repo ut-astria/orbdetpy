@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 from orbdetpy import Constant, Frame, MeasurementType
 from orbdetpy.conversion import get_UTC_string
 from orbdetpy.rpc.messages_pb2 import ImportTDMInput, Settings
@@ -24,7 +24,7 @@ from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
 
 _ccsds_stub = UtilitiesStub(RemoteServer.channel())
 
-def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, add_prop_cov: bool=False)->str:
+def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, time_list: List[str]=None, add_prop_cov: bool=False)->str:
     """Export ephemerides in CCSDS OEM format.
 
     Parameters
@@ -33,7 +33,8 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, add_prop_cov: boo
     obs : Measurements or estimation results to export.
     obj_id : Object identifier.
     obj_name : Object name.
-    add_prop_cov : Include propagated covariances if True; defaults to False.
+    time_list : Limit output to UTC times specified; default is to output everything. 
+    add_prop_cov : Include propagated covariances if True; default is False.
 
     Returns
     -------
@@ -51,20 +52,23 @@ OBJECT_ID = {obj_id}
 CENTER_NAME = EARTH
 REF_FRAME = {frame}
 TIME_SYSTEM = UTC
-START_TIME = {get_UTC_string(obs[0].time)[:-1]}
-STOP_TIME = {get_UTC_string(obs[-1].time)[:-1]}
+START_TIME = {time_list[0] if (time_list) else get_UTC_string(obs[0].time)[:-1]}
+STOP_TIME = {time_list[-1] if (time_list) else get_UTC_string(obs[-1].time)[:-1]}
 META_STOP
 
 """
 
     eph_data, estm_cov, prop_cov, added  = [], [], [], set()
-    is_estm = hasattr(obs[0], "estimated_state") and hasattr(obs[0], "estimated_covariance") and hasattr(obs[0], "propagated_covariance")
+    is_estm = (hasattr(obs[0], "estimated_state") and hasattr(obs[0], "estimated_covariance")
+               and hasattr(obs[0], "propagated_covariance"))
     eph_key = "estimated_state" if (is_estm) else "true_state"
     for o in obs:
         if (o.time in added):
             continue
         added.add(o.time)
         utc = get_UTC_string(o.time)[:-1]
+        if (time_list is not None and utc not in time_list):
+            continue
         X = [x/1000.0 for x in getattr(o, eph_key)[:6]]
         eph_data.append(f"{utc} {X[0]} {X[1]} {X[2]} {X[3]} {X[4]} {X[5]}")
 
@@ -86,7 +90,7 @@ META_STOP
         oem_data += "\n\nCOMMENT Propagated covariance\nCOVARIANCE_START" + "\n".join(prop_cov) + "\nCOVARIANCE_STOP"
     return(oem_data)
 
-def export_TDM(cfg: Settings, obs, obj_id: str, station_list: Optional[List[str]]=None)->str:
+def export_TDM(cfg: Settings, obs, obj_id: str, station_list: List[str]=None)->str:
     """Export tracking data in CCSDS TDM format.
 
     Parameters
