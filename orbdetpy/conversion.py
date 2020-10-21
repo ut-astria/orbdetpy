@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from numpy import array, cross, vstack
+from numpy.linalg import norm
 from typing import List, Tuple
 from google.protobuf.wrappers_pb2 import StringValue
 from orbdetpy.rpc.conversion_pb2_grpc import ConversionStub
@@ -52,8 +54,27 @@ def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: i
             src_frame=src_frame, UTC_time=time, pva=[DoubleArray(array=x) for x in pva], dest_frame=dest_frame))
     return(resp.array[0].array if (single) else resp.array)
 
-def azel_to_radec(time: float, az: float, el: float, lat: float,
-                  lon: float, alt: float, frame: int)->Tuple[float, float]:
+def get_lvlh_rotation(state: List[float])->array:
+    """Construct the inertial->LVLH rotation matrix.
+
+    Parameters
+    ----------
+    state : Inertial state vector.
+
+    Returns
+    -------
+    Inertial->LVLH frame rotation matrix.
+    """
+
+    r = array(state[:3])
+    r /= norm(r)
+    v = array(state[3:6])
+    v /= norm(v)
+    h = cross(r, v)
+    h /= norm(h)
+    return(vstack((r, cross(h, r), h)))
+
+def azel_to_radec(time: float, az: float, el: float, lat: float, lon: float, alt: float, frame: int)->Tuple[float, float]:
     """Convert Azimuth/Elevation to Right Ascension/Declination.
 
     Parameters
@@ -75,8 +96,7 @@ def azel_to_radec(time: float, az: float, el: float, lat: float,
                                                            latitude=lat, longitude=lon, altitude=alt, frame=frame))
     return(resp.array)
 
-def radec_to_azel(frame: int, time: float, ra: float, dec: float,
-                  lat: float, lon: float, alt: float)->Tuple[float, float]:
+def radec_to_azel(frame: int, time: float, ra: float, dec: float, lat: float, lon: float, alt: float)->Tuple[float, float]:
     """Convert Right Ascension/Declination to Azimuth/Elevation.
 
     Parameters

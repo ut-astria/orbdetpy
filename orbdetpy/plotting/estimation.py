@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy
-from numpy.linalg import norm
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
 from orbdetpy import Constant, EstimationType, MeasurementType
+from orbdetpy.conversion import get_lvlh_rotation
 
 def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None, estim_param=True):
     key = list(cfg.measurements.keys())
@@ -46,17 +46,17 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         if (sk not in cmap):
             cmap[sk] = cycle[idx]
             patches.append(patch.Patch(color=cycle[idx], label=sk))
-            idx = (idx+1)%len(cycle)
+            idx = (idx + 1)%len(cycle)
         if (sv.bias_estimation in [EstimationType.ESTIMATE, EstimationType.CONSIDER]):
             for m in key:
                 parnames.append(f"{sk}-{meas_names[m]}")
 
-    tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors = [],[],[],[],[],[],[],[]
+    tstamp, prefit, posfit, inocov, params, estmacc, estmcov, colors = [], [], [], [], [], [], [], []
     for i, o in zip(inp, out):
         tstamp.append(i.time)
         colors.append(cmap[o.station if len(o.station) else None])
-        prefit.append([ix-ox for ix, ox in zip(i.values, o.pre_fit)])
-        posfit.append([ix-ox for ix, ox in zip(i.values, o.post_fit)])
+        prefit.append([ix - ox for ix, ox in zip(i.values, o.pre_fit)])
+        posfit.append([ix - ox for ix, ox in zip(i.values, o.post_fit)])
 
         p = []
         for m in range(len(o.innovation_covariance)):
@@ -69,19 +69,10 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
 
         if (estim_param and len(o.estimated_state) > 6):
             if (dmcrun):
-                params.append(o.estimated_state[6:dmcidx]+o.estimated_state[dmcidx+3:])
+                params.append(o.estimated_state[6:dmcidx] + o.estimated_state[dmcidx+3:])
+                estmacc.append(get_lvlh_rotation(o.estimated_state).dot(o.estimated_state[dmcidx:dmcidx+3]))
             else:
                 params.append(o.estimated_state[6:])
-
-        if (estim_param and dmcrun):
-            r = numpy.array(o.estimated_state[:3])
-            r /= norm(r)
-            v = numpy.array(o.estimated_state[3:6])
-            v /= norm(v)
-            h = numpy.cross(r, v)
-            h /= norm(h)
-            rot = numpy.vstack((r, numpy.cross(h, r), h))
-            estmacc.append(rot.dot(o.estimated_state[dmcidx:dmcidx+3]))
 
     pre = numpy.array(prefit)
     pos = numpy.array(posfit)
@@ -128,7 +119,7 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         plt.scatter(tim, pre[:,i], color=colors, marker="o", s=7)
         plt.legend(handles=patches, loc="best")
         plt.xlabel("Time [hr]")
-        plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        plt.ylabel(f"{ylabs[i]} [{units[i]}]")
         plt.grid(True)
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -150,10 +141,10 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         plt.plot(tim, -cov[:,i], "-r")
         plt.plot(tim,  cov[:,i], "-r")
         plt.xlabel("Time [hr]")
-        plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        plt.ylabel(f"{ylabs[i]} [{units[i]}]")
         plt.grid(True)
 
-    plt.tight_layout(rect = [0, 0.03, 1, 0.95])
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     if (output_file_path):
         outfiles.append(output_file_path + "_postfit.png")
         plt.savefig(outfiles[-1], format="png")
@@ -164,7 +155,7 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
                 plt.figure(2)
                 plt.suptitle("Estimated Parameters")
             plt.subplot(par.shape[1], 1, i + 1)
-            plt.scatter(tim, par[:,i], marker = "o", s = 7)
+            plt.scatter(tim, par[:,i], marker="o", s=7)
             plt.xlabel("Time [hr]")
             plt.ylabel(parnames[i])
             plt.grid(True)
