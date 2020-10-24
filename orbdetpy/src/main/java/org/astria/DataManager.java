@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
-import org.hipparchus.util.FastMath;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.time.AbsoluteDate;
@@ -46,11 +45,11 @@ public final class DataManager
     {
     }
 
-    public static void initialize(String path) throws Exception
+    public static void initialize(String path, int poolSize) throws Exception
     {
 	DataManager.dataPath = path;
 	DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File(path)));
-	threadPool = Executors.newFixedThreadPool(FastMath.min(Runtime.getRuntime().availableProcessors(), 1024));
+	threadPool = Executors.newFixedThreadPool(poolSize);
 	loadMSISEData();
     }
 

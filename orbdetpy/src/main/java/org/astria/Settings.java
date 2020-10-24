@@ -371,7 +371,6 @@ public final class Settings
 	stations = new HashMap<String, GroundStation>();
 	if (cfgStations == null)
 	    return;
-
 	for (Map.Entry<String, Station> kv: cfgStations.entrySet())
 	{
 	    String k = kv.getKey();
@@ -400,15 +399,13 @@ public final class Settings
 	    forces.add(new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
 	if (oceanTidesDegree >= 0 && oceanTidesOrder >= 0)
-	    forces.add(new OceanTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP),
-				      Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
-				      oceanTidesDegree,	oceanTidesOrder, IERSConventions.IERS_2010,
+	    forces.add(new OceanTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+				      Constants.EGM96_EARTH_MU, oceanTidesDegree, oceanTidesOrder, IERSConventions.IERS_2010,
 				      TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false)));
 
 	if ((solidTidesSun || solidTidesMoon) && grav != null)
-	    forces.add(new SolidTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP),
-				      Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
-				      grav.getTideSystem(), IERSConventions.IERS_2010,
+	    forces.add(new SolidTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+				      Constants.EGM96_EARTH_MU, grav.getTideSystem(), IERSConventions.IERS_2010,
 				      TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false),
 				      CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon()));
 
@@ -424,7 +421,6 @@ public final class Settings
 	    BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[rsoFacets.length];
 	    for (int i = 0; i < rsoFacets.length; i++)
 		facets[i] = new BoxAndSolarArraySpacecraft.Facet(new Vector3D(rsoFacets[i].normal), rsoFacets[i].area);
-
 	    dragsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), rsoSolarArrayArea, new Vector3D(rsoSolarArrayAxis),
 						    dragCoefficient.value, rpCoeffAbsorption, rpCoeffReflection.value);
 	    radnsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), rsoSolarArrayArea, new Vector3D(rsoSolarArrayAxis),
@@ -438,10 +434,9 @@ public final class Settings
 
 	if (dragModel == DragModel.EXPONENTIAL)
 	{
-	    atmModel = new SimpleExponentialAtmosphere(
-		new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-				     FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP)),
-		dragExpRho0, dragExpH0, dragExpHscale);
+	    atmModel = new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+									    FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP)),
+						       dragExpRho0, dragExpH0, dragExpHscale);
 	}
 	else if (dragModel == DragModel.MSISE2000)
 	{
@@ -467,7 +462,6 @@ public final class Settings
 
 	if (atmModel != null)
 	    forces.add(new DragForce(atmModel, dragsc));
-
 	if (rpSun)
 	    forces.add(new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS, radnsc));
 
@@ -493,8 +487,7 @@ public final class Settings
 	    if (dragCoefficient.estimation == ops[i])
 	    {
 		counts[i]++;
-		parameters.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min,
-					     dragCoefficient.max, dragCoefficient.value, ops[i]));
+		parameters.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min, dragCoefficient.max, dragCoefficient.value, ops[i]));
 	    }
 
 	    if (rpCoeffReflection.estimation == ops[i])
@@ -553,7 +546,6 @@ public final class Settings
 	    AbsoluteDate epoch;
 	    final TLE parser = new TLE(propInitialTLE[0], propInitialTLE[1]);
 	    final TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
-
 	    if (propStart != null)
 		epoch = propStart;
 	    else
@@ -609,11 +601,9 @@ public final class Settings
     {
 	if (rsoAttitudeProvider == AttitudeType.UNDEFINED)
 	    return(null);
-
 	AttitudeProvider attpro = null;
 	OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
 						      FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-
 	if (rsoAttitudeProvider == AttitudeType.NADIR_POINTING)
 	    attpro = new NadirPointing(propInertialFrame, shape);
 	if (rsoAttitudeProvider == AttitudeType.BODY_CENTER_POINTING)
@@ -710,7 +700,6 @@ public final class Settings
 	    S2Point[] vertices = new S2Point[(int)(geoZoneLatLon.length/2)];
 	    for (int i = 0; i <= geoZoneLatLon.length-2; i += 2)
 		vertices[(int)(i/2)] = new S2Point(geoZoneLatLon[i+1], 0.5*FastMath.PI-geoZoneLatLon[i]);
-
 	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
 							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	    SphericalPolygonsSet set = new SphericalPolygonsSet(1E-10, vertices);
@@ -729,8 +718,7 @@ public final class Settings
 		if (stn.fovAperture <= 1E-6)
 		{
 		    detector = new ElevationDetector(stations.get(kv.getKey()).getBaseFrame())
-			.withRefraction(new EarthITU453AtmosphereRefraction(stn.altitude))
-			.withConstantElevation(FastMath.toRadians(5.0));
+			.withRefraction(new EarthITU453AtmosphereRefraction(stn.altitude)).withConstantElevation(FastMath.toRadians(5.0));
 		    handler = new EventHandling<ElevationDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) > 0.0);
 		}
 		else
@@ -741,7 +729,6 @@ public final class Settings
 		    detector = new GroundFieldOfViewDetector(stations.get(kv.getKey()).getBaseFrame(), fov);
 		    handler = new EventHandling<GroundFieldOfViewDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) < 0.0);
 		}
-
 		prop.addEventDetector(detector.withHandler(handler));
 		handles.add(handler);
 	    }

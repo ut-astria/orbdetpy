@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import math
 from os import path
+from math import pi, sqrt
 from typing import List, Optional, Tuple
 from .version import __version__
 from orbdetpy.rpc.messages_pb2 import Facet, Maneuver, Measurement, Parameter, Settings, Station
@@ -167,8 +167,8 @@ class Constant():
     """Miscellaneous constants.
     """
 
-    DEGREE_TO_RAD = (math.pi/180)
-    ARC_SECOND_TO_RAD = (math.pi/648000)
+    DEGREE_TO_RAD = pi/180
+    ARC_SECOND_TO_RAD = pi/648000
     PLUS_I = (1, 0, 0)
     PLUS_J = (0, 1, 0)
     PLUS_K = (0, 0, 1)
@@ -291,6 +291,29 @@ def build_measurement(time: float, station_name: str, values: List[float])->Meas
     """
 
     return(Measurement(time=time, station=station_name, values=values))
+
+def ltr_to_matrix(lower_triangle: List[float])->List[List[float]]:
+    """Construct a symmetric matrix from its lower triangle.
+
+    Parameters
+    ----------
+    lower_triangle : Lower triangle of a symmetric matrix in row-major order.
+
+    Returns
+    -------
+    Symmetric matrix as a list of lists or None on error.
+    """
+
+    m = (sqrt(8*len(lower_triangle) + 1) - 1)/2
+    n = int(m)
+    if (m == n):
+        k, matrix = 0, [[0]*n for _ in range(n)]
+        for i in range(n):
+            for j in range(i+1):
+                matrix[i][j], matrix[j][i] = lower_triangle[k], lower_triangle[k]
+                k += 1
+        return(matrix)
+    return(None)
 
 if (__name__ != '__main__'):
     _root_dir = path.dirname(path.abspath(path.realpath(__file__)))
