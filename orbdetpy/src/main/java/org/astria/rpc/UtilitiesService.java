@@ -19,14 +19,24 @@
 package org.astria.rpc;
 
 import java.util.ArrayList;
+import java.util.List;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Measurements;
 import org.astria.Utilities;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 {
@@ -35,7 +45,6 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 	try
 	{
 	    ArrayList<ArrayList<Measurements.Measurement>> mlist = Utilities.importTDM(req.getFileName(), TDMFileFormat.values()[req.getFileFormat()]);
-
 	    Messages.Measurement2DArray.Builder outer = Messages.Measurement2DArray.newBuilder();
 	    for (ArrayList<Measurements.Measurement> m: mlist)
 	    {
@@ -56,21 +65,32 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
     {
 	try
 	{
-	    ArrayList<Double[]> ephem = new ArrayList<Double[]>(req.getEphemCount());
-	    for (int i = 0; i < req.getEphemCount(); i++)
-		ephem.add(req.getEphem(i).getArrayList().toArray(new Double[0]));
-
-	    ArrayList<AbsoluteDate> times = new ArrayList<AbsoluteDate>(req.getTimeCount());
+	    Frame fromFrame = FramesFactory.getFrame(Predefined.valueOf(req.getSourceFrame()));
+	    Frame toFrame = FramesFactory.getFrame(Predefined.valueOf(req.getDestFrame()));
+	    ArrayList<SpacecraftState> states = new ArrayList<SpacecraftState>(req.getTimeCount());
 	    for (int i = 0; i < req.getTimeCount(); i++)
-		times.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i)));
+	    {
+		List<Double> pv = req.getEphem(i).getArrayList();
+		TimeStampedPVCoordinates tspv = new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i)),
+									     new Vector3D(pv.get(0), pv.get(1), pv.get(2)),
+									     new Vector3D(pv.get(3), pv.get(4), pv.get(5)));
+		states.add(new SpacecraftState(new CartesianOrbit(tspv, fromFrame, Constants.EGM96_EARTH_MU)));
+	    }
 
-	    ArrayList<Measurements.Measurement> interp = Utilities.interpolateEphemeris(
-		Predefined.valueOf(req.getSourceFrame()), times, ephem, req.getNumPoints(), Predefined.valueOf(req.getDestFrame()),
-		AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpStart()),
-		AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpEnd()), req.getStepSize());
+	    AbsoluteDate tm = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpStart());
+	    AbsoluteDate interpEnd = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpEnd());
+	    ArrayList<Measurements.Measurement> output = new ArrayList<Measurements.Measurement>(2*req.getTimeCount());
+	    Ephemeris interpolator = new Ephemeris(states, req.getNumPoints());
+	    while (true)
+	    {
+		output.add(new Measurements.Measurement(interpolator.getPVCoordinates(tm, toFrame)));
+		double deltat = interpEnd.durationFrom(tm);
+		if (deltat <= 0.0)
+		    break;
+		tm = new AbsoluteDate(tm, FastMath.min(deltat, req.getStepSize()));
+	    }
 
-	    Messages.MeasurementArray.Builder builder = Messages.MeasurementArray.newBuilder()
-		.addAllArray(Tools.buildResponseFromMeasurements(interp));
+	    Messages.MeasurementArray.Builder builder = Messages.MeasurementArray.newBuilder().addAllArray(Tools.buildResponseFromMeasurements(output));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

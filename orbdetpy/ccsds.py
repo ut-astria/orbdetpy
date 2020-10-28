@@ -41,7 +41,6 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, time_list: List[s
     Ephemerides in OEM format.
     """
 
-    frame = Frame.ICRF if (cfg.prop_inertial_frame == Frame.GCRF) else cfg.prop_inertial_frame
     oem_header = f"""CCSDS_OEM_VERS = 2.0
 CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")}
 ORIGINATOR = UT-Austin
@@ -50,7 +49,7 @@ META_START
 OBJECT_NAME = {obj_name}
 OBJECT_ID = {obj_id}
 CENTER_NAME = EARTH
-REF_FRAME = {frame}
+REF_FRAME = {cfg.prop_inertial_frame}
 TIME_SYSTEM = UTC
 START_TIME = {time_list[0] if (time_list) else get_UTC_string(obs[0].time)[:-1]}
 STOP_TIME = {time_list[-1] if (time_list) else get_UTC_string(obs[-1].time)[:-1]}
@@ -107,8 +106,7 @@ def export_TDM(cfg: Settings, obs, obj_id: str, station_list: List[str]=None)->s
 
     miter = cfg.measurements.keys()
     if (MeasurementType.RIGHT_ASCENSION in miter and MeasurementType.DECLINATION in miter):
-        frame = Frame.ICRF if (cfg.prop_inertial_frame == Frame.GCRF) else cfg.prop_inertial_frame
-        obstype = f"ANGLE_TYPE = RADEC\nREFERENCE_FRAME = {frame}"
+        obstype = f"ANGLE_TYPE = RADEC\nREFERENCE_FRAME = {cfg.prop_inertial_frame}"
         obspath = "1,2"
     if (MeasurementType.AZIMUTH in miter and MeasurementType.ELEVATION in miter):
         obstype = "ANGLE_TYPE = AZEL"

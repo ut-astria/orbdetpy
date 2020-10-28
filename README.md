@@ -40,18 +40,22 @@ Examples
 1. `fit_radec.py` : Run OD with real angles measurements. Also demonstrates
    the Laplace IOD method for estimating an initial state vector.
 
-2. `predict_passes.py` : Predict satellite passes for ground stations or
+2. `interpolate_oem.py` : Command-line tool for interpolating state vectors
+   from CCSDS OEM ephemeris files. OEM files are available for download at
+   <http://astria.tacc.utexas.edu/AstriaGraph>.
+
+3. `predict_passes.py` : Predict satellite passes for ground stations or
    geographic regions using TLEs. Current elements may be obtained from
    sites such as <http://www.celestrak.com>.
 
-3. `propagate_tle.py` : Propagate TLEs given by command-line arguments.
+4. `propagate_tle.py` : Propagate TLEs given by command-line arguments.
 
-4. `test_conversion.py` : Test reference frame and other conversion functions.
+5. `test_conversion.py` : Test reference frame and other conversion functions.
 
-5. `test_estimation.py` : Demonstrates measurement simulation and orbit
+6. `test_estimation.py` : Demonstrates measurement simulation and orbit
    determination functions.
 
-6. `test_interpolation.py` : Interpolate state vectors.
+7. `test_interpolation.py` : Interpolate state vectors.
 
 Development
 -----------

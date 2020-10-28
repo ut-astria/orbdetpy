@@ -19,7 +19,6 @@
 package org.astria;
 
 import java.util.ArrayList;
-import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
@@ -28,17 +27,12 @@ import org.orekit.estimation.iod.IodGooding;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.files.ccsds.TDMFile;
 import org.orekit.files.ccsds.TDMParser;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 public final class Utilities
 {
@@ -120,36 +114,6 @@ public final class Utilities
 		}
 	    }
 	    output.add(mall);
-	}
-
-	return(output);
-    }
-
-    public static ArrayList<Measurements.Measurement> interpolateEphemeris(Predefined sourceFrame, List<AbsoluteDate> time, List<Double[]> ephem,
-									   int numPoints, Predefined destFrame, AbsoluteDate interpStart,
-									   AbsoluteDate interpEnd, double stepSize)
-    {
-	Frame fromFrame = FramesFactory.getFrame(sourceFrame);
-	ArrayList<SpacecraftState> states = new ArrayList<SpacecraftState>(time.size());
-	for (int i = 0; i < time.size(); i++)
-	{
-	    Double[] pv = ephem.get(i);
-	    states.add(new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(time.get(i), new Vector3D(pv[0], pv[1], pv[2]),
-								  new Vector3D(pv[3], pv[4], pv[5])), fromFrame, Constants.EGM96_EARTH_MU)));
-	}
-
-	AbsoluteDate tm = interpStart;
-	Frame toFrame = FramesFactory.getFrame(destFrame);
-	ArrayList<Measurements.Measurement> output = new ArrayList<Measurements.Measurement>();
-	Ephemeris interpolator = new Ephemeris(states, numPoints);
-
-	while (true)
-	{
-	    output.add(new Measurements.Measurement(interpolator.getPVCoordinates(tm, toFrame)));
-	    double deltat = interpEnd.durationFrom(tm);
-	    if (deltat <= 0.0)
-		break;
-	    tm = new AbsoluteDate(tm, FastMath.min(deltat, stepSize));
 	}
 
 	return(output);
