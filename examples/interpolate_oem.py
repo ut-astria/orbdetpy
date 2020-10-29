@@ -31,15 +31,19 @@ if (len(sys.argv) == 1):
 args = parser.parse_args()
 step = getattr(args, "step-size")
 degree = getattr(args, "degree")
+
+# Read OEM file, skipping over blank lines and comments
 lines = [l for l in getattr(args, "oem-file").read().splitlines() if (len(l) > 0 and not l.startswith("COMMENT"))]
 
-body, times, states = False, [], []
-ref_frame, time_system, start_utc, final_utc = [None]*4
+# *Rough* mapping of CCSDS reference frames to their Orekit counterparts 
 frame_map = {"EME2000": Frame.EME2000, "GCRF": Frame.GCRF, "ICRF": Frame.ICRF, "ITRF2000": Frame.ITRF_CIO_CONV_2003_ACCURATE_EOP,
              "ITRF-93": Frame.ITRF_CIO_CONV_1996_ACCURATE_EOP, "ITRF-97": Frame.ITRF_CIO_CONV_1996_ACCURATE_EOP,
              "TEME": Frame.TEME, "TOD": Frame.TOD_CONVENTIONS_2010_ACCURATE_EOP}
 
+body, utc, states = False, [], []
+ref_frame, time_system, start_utc, final_utc = [None]*4
 for l in lines:
+    # Read and parse OEM header block entries
     if (l.startswith("REF_FRAME")):
         ref_frame = frame_map.get(l.split("=")[-1].strip())
         continue
@@ -59,12 +63,17 @@ for l in lines:
         body = True
         continue
 
+    # Read and parse ephemeris entries
     if (body):
         toks = l.split()
-        times.append(get_J2000_epoch_offset(toks[0]))
+        utc.append(toks[0])
         states.append([float(t)*1000.0 for t in toks[1:]])
         if (toks[0] == final_utc):
             break
 
-for i in interpolate_ephemeris(ref_frame, times, states, degree, ref_frame, times[0], times[-1], step):
+# Bulk convert UTC timestamps to TT offsets 
+tt = get_J2000_epoch_offset(utc)
+
+# Interpolate ephemeris
+for i in interpolate_ephemeris(ref_frame, tt, states, degree, ref_frame, tt[0], tt[-1], step):
     print(get_UTC_string(i.time), [x/1000.0 for x in i.true_state])

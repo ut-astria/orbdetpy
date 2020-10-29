@@ -23,6 +23,7 @@ import com.google.protobuf.StringValue;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import java.util.ArrayList;
 import java.util.List;
 import org.astria.Conversion;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -67,7 +68,6 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 		    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
 		outer = outer.addArray(inner.build());
 	    }
-
 	    resp.onNext(outer.build());
 	    resp.onCompleted();
 	}
@@ -83,7 +83,6 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	{
 	    double[] raDec = Conversion.convertAzElToRaDec(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0)), req.getAngle1(0), req.getAngle2(0),
 							   req.getLatitude(), req.getLongitude(), req.getAltitude(), Predefined.valueOf(req.getFrame()));
-
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < raDec.length; i++)
 		builder = builder.addArray(raDec[i]);
@@ -102,7 +101,6 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	{
 	    double[] azEl = Conversion.convertRaDecToAzEl(Predefined.valueOf(req.getFrame()), AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0)),
 							  req.getAngle1(0), req.getAngle2(0), req.getLatitude(), req.getLongitude(), req.getAltitude());
-
 	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 	    for (int i = 0; i < azEl.length; i++)
 		builder = builder.addArray(azEl[i]);
@@ -138,7 +136,6 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 		    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
 		outer = outer.addArray(inner.build());
 	    }
-
 	    resp.onNext(outer.build());
 	    resp.onCompleted();
 	}
@@ -176,7 +173,6 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 		    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
 		outer = outer.addArray(inner.build());
 	    }
-
 	    resp.onNext(outer.build());
 	    resp.onCompleted();
 	}
@@ -216,7 +212,6 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 		    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
 		outer = outer.addArray(inner.build());
 	    }
-
 	    resp.onNext(outer.build());
 	    resp.onCompleted();
 	}
@@ -226,15 +221,21 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	}
     }
 
-    @Override public void getUTCString(Messages.BoolDouble req, StreamObserver<StringValue> resp)
+    @Override public void getUTCString(Messages.DoubleArray req, StreamObserver<StringValue> resp)
     {
 	try
 	{
-	    StringValue.Builder builder = StringValue.newBuilder();
-	    if (req.getBoolValue())
-		builder = builder.setValue(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getDoubleValue()).toString(TimeScalesFactory.getUTC()) + "Z");
-	    else
-		builder = builder.setValue(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getDoubleValue()).toStringRfc3339(TimeScalesFactory.getUTC()));
+	    boolean truncate = req.getArray(0) != 0.0;
+	    ArrayList<String> utc = new ArrayList<String>(req.getArrayCount() - 1);
+	    for (int i = 1; i < req.getArrayCount(); i++)
+	    {
+		if (truncate)
+		    utc.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).toString(TimeScalesFactory.getUTC()) + "Z");
+		else
+		    utc.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).toStringRfc3339(TimeScalesFactory.getUTC()));
+	    }
+
+	    StringValue.Builder builder = StringValue.newBuilder().setValue(String.join(" ", utc));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}
@@ -244,12 +245,14 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	}
     }
 
-    @Override public void getJ2000EpochOffset(StringValue req, StreamObserver<DoubleValue> resp)
+    @Override public void getJ2000EpochOffset(StringValue req, StreamObserver<Messages.DoubleArray> resp)
     {
 	try
 	{
-	    DoubleValue.Builder builder = DoubleValue.newBuilder().setValue(
-		new AbsoluteDate(DateTimeComponents.parseDateTime(req.getValue()), TimeScalesFactory.getUTC()).durationFrom(AbsoluteDate.J2000_EPOCH));
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
+	    for (String time: req.getValue().split(" ", 0))
+		builder = builder.addArray(new AbsoluteDate(DateTimeComponents.parseDateTime(time),
+							    TimeScalesFactory.getUTC()).durationFrom(AbsoluteDate.J2000_EPOCH));
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

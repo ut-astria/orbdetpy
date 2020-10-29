@@ -41,8 +41,7 @@ def interpolate_ephemeris(source_frame: int, times: List[float], states, num_poi
     Interpolated times and state vectors.
     """
 
-    state_list = [DoubleArray(array = s) for s in states]
     resp = _utilities_stub.interpolateEphemeris(InterpolateEphemerisInput(
-        source_frame=source_frame, time=times, ephem=state_list, num_points=num_points, dest_frame=dest_frame,
-        interp_start=interp_start, interp_end=interp_end, step_size=step_size))
+        source_frame=source_frame, time=times, ephem=[DoubleArray(array=s) for s in states], num_points=num_points,
+        dest_frame=dest_frame, interp_start=interp_start, interp_end=interp_end, step_size=step_size))
     return(resp.array)

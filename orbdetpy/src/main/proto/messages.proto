@@ -36,12 +36,6 @@ message Double2DArray
     repeated DoubleArray array = 1;
 }
 
-message BoolDouble
-{
-    bool bool_value = 1;
-    double double_value = 2;
-}
-
 message Parameter
 {
     double value = 1;

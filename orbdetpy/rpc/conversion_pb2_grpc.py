@@ -47,13 +47,13 @@ class ConversionStub(object):
                 )
         self.getUTCString = channel.unary_unary(
                 '/Conversion/getUTCString',
-                request_serializer=messages__pb2.BoolDouble.SerializeToString,
+                request_serializer=messages__pb2.DoubleArray.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
                 )
         self.getJ2000EpochOffset = channel.unary_unary(
                 '/Conversion/getJ2000EpochOffset',
                 request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.DoubleValue.FromString,
+                response_deserializer=messages__pb2.DoubleArray.FromString,
                 )
 
 
@@ -143,13 +143,13 @@ def add_ConversionServicer_to_server(servicer, server):
             ),
             'getUTCString': grpc.unary_unary_rpc_method_handler(
                     servicer.getUTCString,
-                    request_deserializer=messages__pb2.BoolDouble.FromString,
+                    request_deserializer=messages__pb2.DoubleArray.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             ),
             'getJ2000EpochOffset': grpc.unary_unary_rpc_method_handler(
                     servicer.getJ2000EpochOffset,
                     request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
-                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.DoubleValue.SerializeToString,
+                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -275,7 +275,7 @@ class Conversion(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/getUTCString',
-            messages__pb2.BoolDouble.SerializeToString,
+            messages__pb2.DoubleArray.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -293,6 +293,6 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/getJ2000EpochOffset',
             google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
-            google_dot_protobuf_dot_wrappers__pb2.DoubleValue.FromString,
+            messages__pb2.DoubleArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

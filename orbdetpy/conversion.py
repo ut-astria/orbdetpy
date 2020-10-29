@@ -19,7 +19,7 @@ from numpy.linalg import norm
 from typing import List, Tuple
 from google.protobuf.wrappers_pb2 import StringValue
 from orbdetpy.rpc.conversion_pb2_grpc import ConversionStub
-from orbdetpy.rpc.messages_pb2 import AnglesInput, BoolDouble, DoubleArray, TransformFrameInput
+from orbdetpy.rpc.messages_pb2 import AnglesInput, DoubleArray, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
 
 _conversion_stub = ConversionStub(RemoteServer.channel())
@@ -216,28 +216,29 @@ def get_UTC_string(j2000_offset: float, truncate: bool=True)->str:
 
     Parameters
     ----------
-    j2000_offset : Offset in TT from J2000 epoch [s].
-    truncate: Truncate to milliseconds level accuracy if True (default).
+    j2000_offset : Offset in TT from J2000 epoch [s] or list of offsets.
+    truncate : Truncate to milliseconds level accuracy if True (default).
 
     Returns
     -------
-    ISO-8601 formatted UTC string.
+    ISO-8601 formatted UTC string or list of strings.
     """
 
-    resp = _conversion_stub.getUTCString(BoolDouble(double_value=j2000_offset, bool_value=truncate))
-    return(resp.value)
+    if (isinstance(j2000_offset, float)):
+        return(_conversion_stub.getUTCString(DoubleArray(array=[float(truncate), j2000_offset])).value)
+    return(_conversion_stub.getUTCString(DoubleArray(array=[float(truncate), *j2000_offset])).value.split(" "))
 
-def get_J2000_epoch_offset(utc_time: str)->float:
+def get_J2000_epoch_offset(utc: str)->float:
     """Get TT offset corresponding to ISO-8601 formatted UTC string.
 
     Parameters
     ----------
-    utc_time : ISO-8601 formatted UTC string.
+    utc : ISO-8601 formatted UTC string or list of strings.
 
     Returns
     -------
-    Offset in TT from J2000 epoch [s].
+    Offset in TT from J2000 epoch [s] or list of offsets.
     """
 
-    resp = _conversion_stub.getJ2000EpochOffset(StringValue(value=utc_time))
-    return(resp.value)
+    resp = _conversion_stub.getJ2000EpochOffset(StringValue(value=utc if isinstance(utc, str) else " ".join(utc)))
+    return(resp.array[0] if (len(resp.array) == 1) else resp.array)
