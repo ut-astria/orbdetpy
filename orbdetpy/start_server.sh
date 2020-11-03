@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # start_server.sh - Start the orbdetpy RPC server.
 # Copyright (C) 2019-2020 University of Texas
 #
@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BASE_DIR=$(dirname "$0")
+orbd_path=$(dirname "$0")
+orbd_jars=( `ls $orbd_path/target/orbdetpy-server*.jar` )
+orbd_port=$(python -c "import socket;s=socket.socket();s.bind(('localhost', 0));print(s.getsockname()[1]);s.close();")
 
-for jar_file in $BASE_DIR/target/orbdetpy-server*.jar
-do
-    java -Xmx2G -XX:+UseG1GC -jar $jar_file 50051 $BASE_DIR/orekit-data/
-    break
-done
+java -Xmx2G -XX:+UseG1GC -jar ${orbd_jars[0]} $orbd_port $orbd_path/orekit-data/

@@ -72,7 +72,7 @@ public final class RPCServer
     public static void main(String[] args) throws Exception
     {
 	String dataPath = Paths.get(".").toAbsolutePath().toString();
-	int port = 50051, poolSize = FastMath.min(Runtime.getRuntime().availableProcessors(), 1024);
+	int port = 50051, poolSize = FastMath.min(Runtime.getRuntime().availableProcessors(), 64);
 	if (args.length > 0)
 	    port = Integer.parseInt(args[0]);
 	if (args.length > 1)

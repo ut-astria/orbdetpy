@@ -45,46 +45,41 @@ public final class DataManager
     {
     }
 
-    public static void initialize(String path, int poolSize) throws Exception
+    public static void initialize(String dataPath, int poolSize) throws Exception
     {
-	DataManager.dataPath = path;
-	DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File(path)));
-	threadPool = Executors.newFixedThreadPool(poolSize);
+	DataManager.dataPath = dataPath;
+	DataManager.threadPool = Executors.newFixedThreadPool(poolSize);
+	DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File(dataPath)));
 	loadMSISEData();
     }
 
     private static void loadMSISEData() throws Exception
     {
-	msiseData = new MSISEData();
-	msiseData.data = new HashMap<String, double[]>();
-
 	String[] toks = null;
+	DataManager.msiseData = new MSISEData();
+	DataManager.msiseData.data = new HashMap<String, double[]>();
 	Scanner scan = new Scanner(new File(dataPath, "SpaceWeather.dat"));
 	while (scan.hasNextLine())
 	{
 	    toks = scan.nextLine().split(",");
+	    double[] vals = new double[toks.length];
 	    for (int i = 0; i < toks.length; i++)
 		toks[i] = toks[i].trim();
 
-	    if (msiseData.minDate == null)
-		msiseData.minDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-						     Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
-
-	    double[] vals = new double[toks.length];
+	    if (DataManager.msiseData.minDate == null)
+		DataManager.msiseData.minDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
+								 Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
 	    for (int i = 0; i < toks.length; i++)
 	    {
 		if (toks[i].length() > 0)
 		    vals[i] = Double.parseDouble(toks[i]);
-		else
-		    vals[i] = 0.0;
 	    }
-
-	    msiseData.data.put(String.format("%s%s%s", toks[0], toks[1], toks[2]), vals);
+	    DataManager.msiseData.data.put(String.format("%s%s%s", toks[0], toks[1], toks[2]), vals);
 	}
 
 	scan.close();
 	if (toks != null)
-	    msiseData.maxDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-						 Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
+	    DataManager.msiseData.maxDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
+							     Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
     }
 }
