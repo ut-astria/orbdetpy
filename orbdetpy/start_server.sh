@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 orbd_path=$(dirname "$0")
-orbd_jars=( `ls $orbd_path/target/orbdetpy-server*.jar` )
-orbd_port=$(python -c "import socket;s=socket.socket();s.bind(('localhost', 0));print(s.getsockname()[1]);s.close();")
+orbd_jars=( $(ls $orbd_path/target/orbdetpy-server*.jar) )
+orbd_port=$(python -c "import socket;s=socket.socket();s.bind(('127.0.0.1', 0));print(s.getsockname()[1]);s.close();")
 
 java -Xmx2G -XX:+UseG1GC -jar ${orbd_jars[0]} $orbd_port $orbd_path/orekit-data/

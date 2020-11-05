@@ -27,7 +27,7 @@ class RemoteServer:
     @classmethod
     def connect(cls, data_dir, jar_file):
         register(RemoteServer.disconnect)
-        rpc_host, rpc_port = "localhost", "50051"
+        rpc_host, rpc_port = "127.0.0.1", "50051"
         running, jar = False, path.split(jar_file)[-1]
         for p in process_iter(attrs=["cmdline"]):
             index = next((i for i, x in enumerate(p.info["cmdline"]) if x.endswith(jar)), -1)
