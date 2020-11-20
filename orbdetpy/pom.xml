@@ -10,7 +10,7 @@
     <os.detected.classifier>linux-x86_64</os.detected.classifier>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <grpc.version>1.33.0</grpc.version>
+    <grpc.version>1.33.1</grpc.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.javadoc.version>3.2.0</maven.javadoc.version>
@@ -23,7 +23,7 @@
   <dependencies>
     <dependency>
       <groupId>io.grpc</groupId>
-      <artifactId>grpc-netty</artifactId>
+      <artifactId>grpc-netty-shaded</artifactId>
       <version>${grpc.version}</version>
     </dependency>
     <dependency>

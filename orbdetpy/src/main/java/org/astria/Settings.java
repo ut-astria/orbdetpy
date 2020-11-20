@@ -288,6 +288,12 @@ public final class Settings
 	}
     }
 
+    public static final int OUTPUT_ESTM_COV = 1;
+    public static final int OUTPUT_PROP_COV = 2;
+    public static final int OUTPUT_INNO_COV = 4;
+    public static final int OUTPUT_RESIDUALS = 8;
+    public static final int OUTPUT_DENSITY = 16;
+
     public double rsoMass = 5.0;
     public double rsoArea = 0.1;
     public Facet[] rsoFacets;
@@ -350,7 +356,7 @@ public final class Settings
     public double estmDetectionProbability = 0.99;
     public double estmGatingProbability = 0.99;
     public double estmGatingThreshold = 5.0;
-    public boolean estmVerboseOutput = true;
+    public int outputFlags = OUTPUT_ESTM_COV | OUTPUT_PROP_COV | OUTPUT_INNO_COV | OUTPUT_RESIDUALS;
 
     protected Atmosphere atmModel;
     protected HashMap<String, GroundStation> stations;

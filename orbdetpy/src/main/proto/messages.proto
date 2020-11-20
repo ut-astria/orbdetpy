@@ -141,7 +141,7 @@ message Settings
     double estm_detection_probability = 51;
     double estm_gating_probability = 52;
     double estm_gating_threshold = 53;
-    bool estm_verbose_output = 54;
+    int32 output_flags = 54;
 }
 
 message SettingsArray

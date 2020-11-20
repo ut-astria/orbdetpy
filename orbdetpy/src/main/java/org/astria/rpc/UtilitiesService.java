@@ -83,7 +83,7 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 	    Ephemeris interpolator = new Ephemeris(states, req.getNumPoints());
 	    while (true)
 	    {
-		output.add(new Measurements.Measurement(interpolator.getPVCoordinates(tm, toFrame)));
+		output.add(new Measurements.Measurement(interpolator.getPVCoordinates(tm, toFrame), null));
 		double deltat = interpEnd.durationFrom(tm);
 		if (deltat <= 0.0)
 		    break;

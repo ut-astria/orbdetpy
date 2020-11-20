@@ -271,36 +271,40 @@ public final class Estimation
 		res.estimatedState[i+6] = est.getEstimatedPropagationParameters().findByName(ep.name).getValue();
 	    }
 
-	    if (est.getPhysicalEstimatedCovarianceMatrix() != null)
+	    if (est.getPhysicalEstimatedCovarianceMatrix() != null && (odCfg.outputFlags & Settings.OUTPUT_ESTM_COV) != 0)
 		res.estimatedCovariance = getLowerTriangle(est.getPhysicalEstimatedCovarianceMatrix());
-	    if (!odCfg.estmVerboseOutput)
-		return;
 
 	    final double[] prev = est.getPredictedMeasurement().getEstimatedValue();
 	    final double[] post = est.getCorrectedMeasurement().getEstimatedValue();
 	    if (measNames[0] != Settings.MeasurementType.RANGE && measNames[0] != Settings.MeasurementType.RANGE_RATE)
 	    {
-		res.preFit = prev;
-		res.postFit = post;
-		if (est.getPhysicalInnovationCovarianceMatrix() != null)
+		if ((odCfg.outputFlags & Settings.OUTPUT_RESIDUALS) != 0)
+		{
+		    res.preFit = prev;
+		    res.postFit = post;
+		}
+		if (est.getPhysicalInnovationCovarianceMatrix() != null && (odCfg.outputFlags & Settings.OUTPUT_INNO_COV) != 0)
 		    res.innovationCovariance = getLowerTriangle(est.getPhysicalInnovationCovarianceMatrix());
 	    }
 	    else
 	    {
-		if (res.preFit == null || res.postFit == null)
+		if ((odCfg.outputFlags & Settings.OUTPUT_RESIDUALS) != 0)
 		{
-		    res.preFit = new double[measSize];
-		    res.postFit = new double[measSize];
-		    res.preFit[0] = prev[0];
-		    res.postFit[0] = post[0];
-		}
-		else
-		{
-		    res.preFit[1] = prev[0];
-		    res.postFit[1] = post[0];
+		    if (res.preFit == null || res.postFit == null)
+		    {
+			res.preFit = new double[measSize];
+			res.postFit = new double[measSize];
+			res.preFit[0] = prev[0];
+			res.postFit[0] = post[0];
+		    }
+		    else
+		    {
+			res.preFit[1] = prev[0];
+			res.postFit[1] = post[0];
+		    }
 		}
 
-		if (est.getPhysicalInnovationCovarianceMatrix() != null)
+		if (est.getPhysicalInnovationCovarianceMatrix() != null && (odCfg.outputFlags & Settings.OUTPUT_INNO_COV) != 0)
 		{
 		    if (res.innovationCovariance == null)
 		    {
@@ -313,7 +317,7 @@ public final class Estimation
 	    }
 
 	    RealMatrix phi = est.getPhysicalStateTransitionMatrix();
-	    if (prevCovariance != null && phi != null)
+	    if (prevCovariance != null && phi != null && (odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
 	    {
 		res.propagatedCovariance = getLowerTriangle(
 		    phi.multiply(prevCovariance).multiply(phi.transpose()).add(odCfg.getProcessNoiseMatrix(measDeltaT)));
@@ -342,7 +346,7 @@ public final class Estimation
 	    if (odCfg.parameters.size() > 0 && estOutput.size() > 0)
 		System.arraycopy(estOutput.get(estOutput.size()-1).estimatedState, 6, odout.estimatedState, 6, odCfg.parameters.size());
 
-	    if (odCfg.estmVerboseOutput && prevCovariance != null)
+	    if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0 && prevCovariance != null)
 	    {
 		Rotation phi1 = new Rotation(prevPosition, pvc.getPosition());
 		Rotation phi2 = new Rotation(prevVelocity, pvc.getVelocity());
@@ -484,7 +488,7 @@ public final class Estimation
 			EstimationOutput odout = new EstimationOutput();
 			odout.time = new AbsoluteDate(epoch, stepStart + step);
 			odout.estimatedState = xhatPrev.toArray();
-			if (odCfg.estmVerboseOutput)
+			if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
 			    odout.propagatedCovariance = getLowerTriangle(Pprop);
 			estOutput.add(odout);
 		    }
@@ -582,7 +586,7 @@ public final class Estimation
 								     odCfg.propInertialFrame, tm, Constants.EGM96_EARTH_MU),
 						  propagator.getAttitude(tm, pv), odCfg.rsoMass);
 
-		    if (odCfg.estmVerboseOutput)
+		    if ((odCfg.outputFlags & Settings.OUTPUT_RESIDUALS) != 0)
 		    {
 			odout.preFit = yhatpre.toArray();
 			if (measNames[0] != Settings.MeasurementType.RANGE && measNames[0] != Settings.MeasurementType.RANGE_RATE ||
@@ -623,12 +627,12 @@ public final class Estimation
 		    odout.time = odObs.rawMeas[measIndex].time;
 		    odout.station = odObs.rawMeas[measIndex].station;
 		    odout.estimatedState = pv;
-		    odout.estimatedCovariance = getLowerTriangle(P);
-		    if (odCfg.estmVerboseOutput)
-		    {
+		    if ((odCfg.outputFlags & Settings.OUTPUT_ESTM_COV) != 0)
+			odout.estimatedCovariance = getLowerTriangle(P);
+		    if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
 			odout.propagatedCovariance = getLowerTriangle(Pprop);
+		    if ((odCfg.outputFlags & Settings.OUTPUT_INNO_COV) != 0)
 			odout.innovationCovariance = getLowerTriangle(Pyy);
-		    }
 		    break;
 		}
 	    }

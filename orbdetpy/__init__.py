@@ -163,6 +163,16 @@ class TDMFileFormat():
     XML = 1
     UNKNOWN = 2
 
+class OutputFlag():
+    """Bit flags that control propagation and estimation output.
+    """
+
+    OUTPUT_ESTM_COV = 1
+    OUTPUT_PROP_COV = 2
+    OUTPUT_INNO_COV = 4
+    OUTPUT_RESIDUALS = 8
+    OUTPUT_DENSITY = 16
+
 class Constant():
     """Miscellaneous constants.
     """
@@ -194,12 +204,12 @@ def configure(**kwargs)->Settings:
                     drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.ESTIMATE),
                     drag_exp_rho0=3.614E-13, drag_exp_H0=700000.0, drag_exp_Hscale=88667.0, rp_sun=True,
                     rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.ESTIMATE),
-                    prop_inertial_frame=Frame.GCRF, integ_min_time_step=1E-3, integ_max_time_step=300.0,
-                    integ_abs_tolerance=1E-14, integ_rel_tolerance=1E-12, estm_filter=Filter.UNSCENTED_KALMAN,
-                    estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
+                    prop_inertial_frame=Frame.GCRF, integ_min_time_step=1E-3, integ_max_time_step=300.0, integ_abs_tolerance=1E-14,
+                    integ_rel_tolerance=1E-12, output_flags=OutputFlag.OUTPUT_ESTM_COV|OutputFlag.OUTPUT_PROP_COV|OutputFlag.OUTPUT_INNO_COV|
+                    OutputFlag.OUTPUT_RESIDUALS, estm_filter=Filter.UNSCENTED_KALMAN, estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
                     estm_DMC_acceleration=Parameter(value=0.0, min=-1E-3, max=1E-3, estimation=EstimationType.ESTIMATE),
                     estm_smoother_iterations=10, estm_enable_PDAF=False, estm_detection_probability=0.99,
-                    estm_gating_probability=0.99, estm_gating_threshold=5.0, estm_verbose_output=True, **kwargs))
+                    estm_gating_probability=0.99, estm_gating_threshold=5.0, **kwargs))
 
 def add_facet(cfg: Settings, normal: Tuple[float, float, float], area: float)->Facet:
     """Add a facet to a box-wing spacecraft model.

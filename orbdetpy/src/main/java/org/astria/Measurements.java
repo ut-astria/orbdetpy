@@ -66,12 +66,24 @@ public final class Measurements
 	    this.trueState = src.trueState;
 	}
 
-	public Measurement(TimeStampedPVCoordinates pv)
+	public Measurement(TimeStampedPVCoordinates pv, double[] extras)
 	{
 	    this.time = pv.getDate();
 	    double[] p = pv.getPosition().toArray();
 	    double[] v = pv.getVelocity().toArray();
-	    this.trueState = new double[]{p[0], p[1], p[2], v[0], v[1], v[2]};
+	    if (extras != null && extras.length > 0)
+		this.trueState = new double[6 + extras.length];
+	    else
+		this.trueState = new double[6];
+	    for (int i = 0; i < this.trueState.length; i++)
+	    {
+		if (i < 3)
+		    this.trueState[i] = p[i];
+		else if (i < 6)
+		    this.trueState[i] = v[i - 3];
+		else
+		    this.trueState[i] = extras[i - 6];
+	    }
 	}
     }
 

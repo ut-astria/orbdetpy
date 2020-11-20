@@ -45,12 +45,18 @@ public final class DataManager
     {
     }
 
-    public static void initialize(String dataPath, int poolSize) throws Exception
+    public static void initialize(String dataPath) throws Exception
     {
 	DataManager.dataPath = dataPath;
-	DataManager.threadPool = Executors.newFixedThreadPool(poolSize);
+	DataManager.threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File(dataPath)));
 	loadMSISEData();
+    }
+
+    public static void shutdown()
+    {
+	if (threadPool != null)
+	    threadPool.shutdown();
     }
 
     private static void loadMSISEData() throws Exception

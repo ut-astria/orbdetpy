@@ -20,38 +20,36 @@ package org.astria.rpc;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import org.astria.DataManager;
-import org.hipparchus.util.FastMath;
 import java.nio.file.Paths;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import org.astria.DataManager;
 
 public final class RPCServer
 {
     private int port;
-    private int poolSize;
     private String dataPath;
     private Server server;
+    private ExecutorService threadPool;
 
-    private RPCServer(int port, String dataPath, int poolSize)
+    private RPCServer(int port, String dataPath, int poolSize) throws Exception
     {
 	this.port = port;
 	this.dataPath = dataPath;
-	this.poolSize = poolSize;
+	this.threadPool = Executors.newFixedThreadPool(poolSize);
+	this.server = ServerBuilder.forPort(port).executor(threadPool).maxInboundMessageSize(Integer.MAX_VALUE)
+	    .addService(new ConversionService()).addService(new EstimationService()).addService(new PropagationService())
+	    .addService(new UtilitiesService()).build();
+	DataManager.initialize(dataPath);
     }
 
     private void start() throws Exception
     {
-	Package pack = Package.getPackage("org.astria.rpc");
-	if (pack != null && pack.getImplementationTitle() != null && pack.getImplementationVersion() != null)
-	    System.out.println(String.format("%s version %s", pack.getImplementationTitle(), pack.getImplementationVersion()));
-
-	DataManager.initialize(dataPath, poolSize);
-	server = ServerBuilder.forPort(port).maxInboundMessageSize(Integer.MAX_VALUE).addService(new ConversionService())
-	    .addService(new EstimationService()).addService(new PropagationService()).addService(new UtilitiesService()).build().start();
+	server.start();
 	Runtime.getRuntime().addShutdownHook(new Thread()
 	{
 	    @Override public void run()
 	    {
-		System.out.println("Shutting down server...");
 		RPCServer.this.stop();
 	    }
 	});
@@ -65,14 +63,17 @@ public final class RPCServer
 
     private void stop()
     {
+	DataManager.shutdown();
 	if (server != null)
 	    server.shutdown();
+	if (threadPool != null)
+	    threadPool.shutdown();
     }
 
     public static void main(String[] args) throws Exception
     {
+	int port = 50051, poolSize = 256;
 	String dataPath = Paths.get(".").toAbsolutePath().toString();
-	int port = 50051, poolSize = FastMath.min(Runtime.getRuntime().availableProcessors(), 64);
 	if (args.length > 0)
 	    port = Integer.parseInt(args[0]);
 	if (args.length > 1)
