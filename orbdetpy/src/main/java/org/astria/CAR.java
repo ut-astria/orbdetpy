@@ -32,6 +32,10 @@ import org.hipparchus.linear.DecompositionSolver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.Constants;
 
+import java.io.FileWriter;   // Import the FileWriter class
+import java.io.File;  // Import the File class
+import java.io.IOException;  // Import the IOException class to handle errors
+
 public class CAR
 {
 	
@@ -578,10 +582,25 @@ public class CAR
 				tempGaussians.get(k).weight = weights[i] / tempGaussians.size();
 			}
 			
+			
+			
 			gaussians.addAll(tempGaussians);
     	}
 		
-
+		/*
+		//write gaussians to file
+		try {
+		      FileWriter myWriter = new FileWriter("Gaussians.txt");
+		      System.out.println(gaussians.size());
+		      for(int i = 0; i < gaussians.size(); i++)
+		      {
+		          myWriter.write(gaussians.get(i).rangeMean + "," + gaussians.get(i).rangeRateMean + "," + gaussians.get(i).rangeStd + "," + gaussians.get(i).rangeRateStd+ "," + gaussians.get(i).weight+"\n");
+		      }
+		      myWriter.close();
+		    } catch (IOException e) {
+		      e.printStackTrace();
+		    }
+		    */
 
     }
 	
