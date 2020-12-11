@@ -5,7 +5,7 @@ import json
 
 
 fit_data = determine_orbit(["data/input/ASTRIA_od.json"],
-                           ["data/input/CombinedASTRIAData"],
+                           ["data/input/CombinedASTRIAData.json"],
                            output_file = "data/output/ASTRIA_output.json")
 
 

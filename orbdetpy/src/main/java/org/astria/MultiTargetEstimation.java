@@ -407,7 +407,7 @@ public final class MultiTargetEstimation
 
 						RealMatrix MahalaTemp = MatrixUtils.createColumnRealMatrix(Innov.toArray());
 						RealMatrix Mahalanobis = MahalaTemp.transpose().multiply(MatrixUtils.inverse(Pyy).multiply(MahalaTemp));
-						
+						System.out.println(Math.sqrt(Mahalanobis.getEntry(0,0)));
 						if(odCfg.estmGatingThreshold > Math.sqrt(Mahalanobis.getEntry(0,0)))
 						{
 							JPDAtemp = new JPDALikelihoods();
@@ -1029,7 +1029,7 @@ public final class MultiTargetEstimation
 		
 		TimeStampedPVCoordinates stationCoords = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(date, odCfg.propFrame);
 		
-		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, RA_d, Dec, Dec_d, stationCoords, 10000.0, 10.0, 10000.0 ,17000000, 37000000, 0.05).getCAR();
+		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, RA_d, Dec, Dec_d, stationCoords, 1000.0, 1.0, 1000.0 ,2.656e7, 2.657e7, 0.001).getCAR();
 
 		ArrayList<Hypothesis> objectHypotheses= new ArrayList<Hypothesis>();
 		
