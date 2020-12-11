@@ -1,0 +1,109 @@
+{
+    "Gravity" :
+    {
+	"Degree" : 20,
+	"Order" : 20
+    },
+
+    "OceanTides" :
+    {
+	"Degree" : -1,
+	"Order" : -1
+    },
+
+    "Drag" :
+    {
+	"Model" : "Exponential",
+	"ExpRho0" : 3.614E-13,
+	"ExpH0": 700000.0,
+	"ExpHScale" : 88667.0,
+	"Coefficient" :
+	{
+	    "Value" : 2.0,
+	    "Min" : 0.01,
+	    "Max" : 3.00,
+	    "Estimation" : "Estimate"
+	}
+    },
+
+    "SolidTides" :
+    {
+	"Sun" : false,
+	"Moon" : false
+    },
+
+    "ThirdBodies" :
+    {
+	"Sun" : true,
+	"Moon" : true
+    },
+
+    "RadiationPressure" :
+    {
+	"Sun" : true,
+	"Creflection" :
+	{
+            "Value" : 1.5,
+            "Min" : 1.0,
+            "Max" : 2.0,
+	    "Estimation" : "Estimate"
+	}
+    },
+
+    "SpaceObject" :
+    {
+	"Name" : "MEO 0",
+	"NoradID" : 26624,
+	"Mass" : 2000.0,
+	"Area" : 20.0
+    },
+
+    "Propagation" :
+    {
+	"Start" : "2020-09-17T07:04:06Z",
+	"End" : "2020-09-18T04:41:35Z",
+	"InitialState" :
+	[
+	1.690895847437054E7,
+	-2998392.1761330394,
+	1.9910149493112724E7,
+	-891.7323553681349,
+	3572.205100364785,
+	1324.9665668989044
+	]
+    },
+
+    "Stations" :
+    {
+	"UTA" :
+	{
+	    "Latitude" : 0.57426665348,
+	    "Longitude" : -1.84183820339,
+	    "Altitude" : 2225.04
+	}
+    },
+
+    "Measurements" :
+    {
+	"RightAscension" :
+	{
+	    "Error" : [5E-6]
+	},
+	"Declination" :
+	{
+	    "Error" : [5E-6]
+	}
+    },
+
+    "Estimation" :
+    {
+	"Filter" : "UKF",
+	"Covariance" : [25E6, 25E6, 25E6, 1E-2, 1E-2, 1E-2, 1.00, 0.25],
+	"ProcessNoise" : [1E-8, 1E-8, 1E-8, 1E-8, 1E-8, 1E-8],
+	"NoiseTimeDelta" : 30.0,
+	"SmootherIterations" : 10,
+	"EnableCARMHF" : true,
+	"DetectionProbability" : 0.99,
+	"GatingThreshold" : 4
+    }
+}
