@@ -32,11 +32,11 @@ public final class RPCServer
     private Server server;
     private ExecutorService threadPool;
 
-    private RPCServer(int port, String dataPath, int poolSize) throws Exception
+    private RPCServer(int port, String dataPath) throws Exception
     {
 	this.port = port;
 	this.dataPath = dataPath;
-	this.threadPool = Executors.newFixedThreadPool(poolSize);
+	this.threadPool = Executors.newFixedThreadPool(256);
 	this.server = ServerBuilder.forPort(port).executor(threadPool).maxInboundMessageSize(Integer.MAX_VALUE)
 	    .addService(new ConversionService()).addService(new EstimationService()).addService(new PropagationService())
 	    .addService(new UtilitiesService()).build();
@@ -72,16 +72,14 @@ public final class RPCServer
 
     public static void main(String[] args) throws Exception
     {
-	int port = 50051, poolSize = 256;
+	int port = 50051;
 	String dataPath = Paths.get(".").toAbsolutePath().toString();
 	if (args.length > 0)
 	    port = Integer.parseInt(args[0]);
 	if (args.length > 1)
 	    dataPath = args[1];
-	if (args.length > 2)
-	    poolSize = Integer.parseInt(args[2]);
 
-	RPCServer server = new RPCServer(port, dataPath, poolSize);
+	RPCServer server = new RPCServer(port, dataPath);
 	server.start();
 	server.block();
     }

@@ -19,10 +19,8 @@ from numpy.linalg import norm
 from typing import List, Tuple
 from google.protobuf.wrappers_pb2 import StringValue
 from orbdetpy.rpc.conversion_pb2_grpc import ConversionStub
-from orbdetpy.rpc.messages_pb2 import AnglesInput, DoubleArray, TransformFrameInput
+from orbdetpy.rpc.messages_pb2 import AnglesInput, DoubleArray, IntegerArray, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
-
-_conversion_stub = ConversionStub(RemoteServer.channel())
 
 def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: int)->List[float]:
     """Transform a state vector from one frame to another.
@@ -193,8 +191,7 @@ def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
 
     Returns
     -------
-    SMA, eccentricity, inclination, RAAN, perigee argument, mean anomaly, 
-    true anomaly, eccentric anomaly
+    SMA, eccentricity, inclination, RAAN, perigee argument, mean anomaly, true anomaly, eccentric anomaly
     """
 
     if (isinstance(time, float) or isinstance(time, str)):
@@ -242,3 +239,22 @@ def get_J2000_epoch_offset(utc: str)->float:
 
     resp = _conversion_stub.getJ2000EpochOffset(StringValue(value=utc if isinstance(utc, str) else " ".join(utc)))
     return(resp.array[0] if (len(resp.array) == 1) else resp.array)
+
+def get_epoch_difference(from_epoch: int, to_epoch: int)->str:
+    """Get the constant time difference between two epochs.
+
+    Parameters
+    ----------
+    from_epoch : From epoch; a value from the Epoch enumeration.
+    to_epoch : To epoch; a value from the Epoch enumeration.
+
+    Returns
+    -------
+    to_epoch - from_epoch in seconds.
+    """
+
+    return(_conversion_stub.getEpochDifference(IntegerArray(array=[from_epoch, to_epoch])).value)
+
+if (__name__ != '__main__'):
+    __pdoc__ = {m: False for m in ("AnglesInput", "DoubleArray", "IntegerArray", "TransformFrameInput")}
+    _conversion_stub = ConversionStub(RemoteServer.channel())

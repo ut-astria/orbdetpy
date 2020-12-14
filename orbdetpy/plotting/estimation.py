@@ -15,12 +15,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy
+from typing import List
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
 from orbdetpy import Constant, EstimationType, MeasurementType
 from orbdetpy.conversion import get_lvlh_rotation
+from orbdetpy.rpc.messages_pb2 import Settings
 
-def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None, estim_param=True):
+def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
+         output_file_path: str=None, estim_param: bool=True)->List[str]:
+    """Plot orbit determination residuals, covariances, and estimated parameters.
+
+    Parameters
+    ----------
+    cfg : Settings object.
+    measurements : List of measurements.
+    orbit_fit : Return value from determine_orbit().
+    interactive : Show interactive plots if True.
+    output_file_path : File path and name prefixes if plots are to be saved.
+    estim_param : Plot estimated parameters if True.
+
+    Returns
+    -------
+    List of plot files if they were saved to disk.
+    """
+
     key = list(cfg.measurements.keys())
     key.sort()
     meas_names = {0: "Azimuth", 1: "Elevation", 2: "Range", 3: "Range Rate", 4: "Right Ascension", 5: "Declination"}
@@ -186,3 +205,6 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         plt.show()
     plt.close("all")
     return(outfiles)
+
+if (__name__ != '__main__'):
+    __pdoc__ = {m: False for m in ("Settings", )}

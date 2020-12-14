@@ -41,4 +41,6 @@ service Conversion
     rpc getUTCString(DoubleArray) returns (google.protobuf.StringValue) {}
 
     rpc getJ2000EpochOffset(google.protobuf.StringValue) returns (DoubleArray) {}
+
+    rpc getEpochDifference(IntegerArray) returns (google.protobuf.DoubleValue) {}
 }

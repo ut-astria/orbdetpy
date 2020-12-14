@@ -20,8 +20,6 @@ from orbdetpy.rpc.estimation_pb2_grpc import EstimationStub
 from orbdetpy.rpc.messages_pb2 import AnglesInput, DetermineOrbitInput, Settings
 from orbdetpy.rpc.server import RemoteServer
 
-_estimation_stub = EstimationStub(RemoteServer.channel())
-
 def determine_orbit(config: List[Settings], meas):
     """Run orbit determination for the given objects and measurements.
 
@@ -71,3 +69,7 @@ def iod_laplace(frame: int, lat: float, lon: float, alt: float, time: Tuple[floa
     resp = _estimation_stub.iodLaplace(AnglesInput(time=time, angle1=ra, angle2=dec, latitude=lat,
                                                    longitude=lon, altitude=alt, frame=frame))
     return(resp.array)
+
+if (__name__ != '__main__'):
+    __pdoc__ = {m: False for m in ("AnglesInput", "DetermineOrbitInput", "Settings")}
+    _estimation_stub = EstimationStub(RemoteServer.channel())

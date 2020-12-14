@@ -22,9 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Predefined;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -33,13 +30,11 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 public final class EventHandling<T extends EventDetector> implements EventHandler<T>
 {
     public final static String GEO_ZONE_NAME = "Geographic Region";
-
     public final Settings.ManeuverType maneuverType;
     public final double delta;
     public final String stationName;
@@ -97,17 +92,14 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	if (maneuverType == Settings.ManeuverType.NORTH_SOUTH_STATIONING || maneuverType == Settings.ManeuverType.EAST_WEST_STATIONING)
 	{
 	    PVCoordinates pvc = old.getOrbit().getPVCoordinates();
-	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-	    GeodeticPoint geo = earth.transform(pvc.getPosition(), old.getFrame(), old.getDate());
-
+	    GeodeticPoint geo = DataManager.earthShape.transform(pvc.getPosition(), old.getFrame(), old.getDate());
 	    if (maneuverType == Settings.ManeuverType.NORTH_SOUTH_STATIONING)
 		geo = new GeodeticPoint(geo.getLatitude() + delta, geo.getLongitude(), geo.getAltitude());
 	    else
 		geo = new GeodeticPoint(geo.getLatitude(), geo.getLongitude() + delta, geo.getAltitude());
 
-	    Transform xfm = earth.getFrame().getTransformTo(old.getFrame(), old.getDate());
-	    Vector3D newpos = xfm.transformPosition(earth.transform(geo));
+	    Transform xfm = DataManager.earthShape.getFrame().getTransformTo(old.getFrame(), old.getDate());
+	    Vector3D newpos = xfm.transformPosition(DataManager.earthShape.transform(geo));
 	    Rotation rot = new Rotation(pvc.getPosition(), newpos);
 	    neworb = new CartesianOrbit(new PVCoordinates(newpos, rot.applyTo(pvc.getVelocity())), old.getFrame(),
 					old.getDate(), old.getMu());

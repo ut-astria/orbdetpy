@@ -19,7 +19,20 @@ from math import acos, pi
 from numpy import array, cross, dot
 from numpy.linalg import norm
 
-def plot(sim_data, interactive=False, output_file_path=None):
+def plot(sim_data, interactive: bool=False, output_file_path: str=None):
+    """Plot simulated orbital elements, angular momenta, and specific energy.
+
+    Parameters
+    ----------
+    sim_data : Return value from propagate_orbits().
+    interactive : Show interactive plots if True.
+    output_file_path : File path and name prefixes if plots are to be saved.
+
+    Returns
+    -------
+    List of plot files if they were saved to disk.
+    """
+
     mu = 398600.4418
     tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
     for o in sim_data:

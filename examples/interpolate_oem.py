@@ -16,21 +16,24 @@
 
 import sys
 import argparse
-from orbdetpy import Frame
+from orbdetpy import configure, Frame
+from orbdetpy.ccsds import export_OEM
 from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string
 from orbdetpy.utilities import interpolate_ephemeris
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("oem-file", help="CCSDS OEM file", type=argparse.FileType("r"))
 parser.add_argument("step-size", help="step size [sec]", type=float)
-parser.add_argument("degree", help="interpolating polynomial degree", type=int, nargs="?", default=5)
+parser.add_argument("--start-time", help="interpolation start time", default="file-start")
+parser.add_argument("--end-time", help="interpolation end time", default="file-end")
+parser.add_argument("--polynomial-degree", help="interpolating polynomial degree", type=int, default=5)
 if (len(sys.argv) == 1):
     parser.print_help()
     exit(1)
 
 args = parser.parse_args()
 step = getattr(args, "step-size")
-degree = getattr(args, "degree")
+degree = args.polynomial_degree
 
 # Read OEM file, skipping over blank lines and comments
 lines = [l for l in getattr(args, "oem-file").read().splitlines() if (len(l) > 0 and not l.startswith("COMMENT"))]
@@ -40,10 +43,16 @@ frame_map = {"EME2000": Frame.EME2000, "GCRF": Frame.GCRF, "ICRF": Frame.ICRF, "
              "ITRF-93": Frame.ITRF_CIO_CONV_1996_ACCURATE_EOP, "ITRF-97": Frame.ITRF_CIO_CONV_1996_ACCURATE_EOP,
              "TEME": Frame.TEME, "TOD": Frame.TOD_CONVENTIONS_2010_ACCURATE_EOP}
 
-body, utc, states = False, [], []
+body, utc, states, obj_id, obj_name = False, [], [], "", ""
 ref_frame, time_system, start_utc, final_utc = [None]*4
 for l in lines:
     # Read and parse OEM header block entries
+    if (l.startswith("OBJECT_ID")):
+        obj_id = l.split("=")[-1].strip()
+        continue
+    if (l.startswith("OBJECT_NAME")):
+        obj_name = l.split("=")[-1].strip()
+        continue
     if (l.startswith("REF_FRAME")):
         ref_frame = frame_map.get(l.split("=")[-1].strip())
         continue
@@ -61,19 +70,24 @@ for l in lines:
             print("Error: unsupported OEM file format")
             exit(1)
         body = True
+        start_time = start_utc if (args.start_time == "file-start") else args.start_time
+        final_time = final_utc if (args.end_time == "file-end") else args.end_time
         continue
 
     # Read and parse ephemeris entries
     if (body):
         toks = l.split()
-        utc.append(toks[0])
-        states.append([float(t)*1000.0 for t in toks[1:]])
-        if (toks[0] == final_utc):
+        if (toks[0] >= start_time):
+            utc.append(toks[0])
+            states.append([float(t)*1000.0 for t in toks[1:]])
+        if (toks[0] >= final_time):
             break
 
 # Bulk convert UTC timestamps to TT offsets 
 tt = get_J2000_epoch_offset(utc)
 
 # Interpolate ephemeris
-for i in interpolate_ephemeris(ref_frame, tt, states, degree, ref_frame, tt[0], tt[-1], step):
-    print(get_UTC_string(i.time), [x/1000.0 for x in i.true_state])
+interpolation = interpolate_ephemeris(ref_frame, tt, states, degree, ref_frame, tt[0], tt[-1], step)
+
+# Export to OEM format and print to stdout
+print(export_OEM(configure(prop_inertial_frame=ref_frame), interpolation, obj_id, obj_name))

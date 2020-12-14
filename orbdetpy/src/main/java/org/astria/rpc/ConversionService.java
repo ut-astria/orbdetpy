@@ -26,6 +26,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.List;
 import org.astria.Conversion;
+import org.astria.DataManager;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -254,6 +255,21 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 		builder = builder.addArray(new AbsoluteDate(DateTimeComponents.parseDateTime(time),
 							    TimeScalesFactory.getUTC()).durationFrom(AbsoluteDate.J2000_EPOCH));
 	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void getEpochDifference(Messages.IntegerArray req, StreamObserver<DoubleValue> resp)
+    {
+	try
+	{
+	    AbsoluteDate from = DataManager.getEpoch(req.getArray(0));
+	    AbsoluteDate to = DataManager.getEpoch(req.getArray(1));
+	    resp.onNext(DoubleValue.newBuilder().setValue(to.durationFrom(from)).build());
 	    resp.onCompleted();
 	}
 	catch (Throwable exc)

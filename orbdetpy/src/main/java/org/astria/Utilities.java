@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.iod.IodGooding;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.files.ccsds.TDMFile;
@@ -36,29 +35,27 @@ import org.orekit.utils.Constants;
 
 public final class Utilities
 {
+    private Utilities()
+    {
+    }
+
     public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, Predefined frame, double[] tm,
 					    double[] ra, double[] dec, double rho1init, double rho3init)
     {
 	Vector3D[] los = new Vector3D[3];
 	Vector3D[] gspos = new Vector3D[3];
 	AbsoluteDate[] time = new AbsoluteDate[3];
-	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-						    FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-
 	for (int i = 0; i < 3; i++)
 	{
-	    los[i] = new Vector3D(FastMath.cos(dec[i])*FastMath.cos(ra[i]),
-				  FastMath.cos(dec[i])*FastMath.sin(ra[i]), FastMath.sin(dec[i]));
+	    los[i] = new Vector3D(FastMath.cos(dec[i])*FastMath.cos(ra[i]), FastMath.cos(dec[i])*FastMath.sin(ra[i]), FastMath.sin(dec[i]));
 	    time[i] = AbsoluteDate.J2000_EPOCH.shiftedBy(tm[i]);
-
 	    GroundStation sta = new GroundStation(
-		new TopocentricFrame(oae, new GeodeticPoint(gslat[i], gslon[i], gsalt[i]), Integer.toString(i)));
+		new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(gslat[i], gslon[i], gsalt[i]), Integer.toString(i)));
 	    gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], FramesFactory.getFrame(frame)).getPosition();
 	}
 
 	IodGooding good = new IodGooding(FramesFactory.getFrame(frame), Constants.EGM96_EARTH_MU);
-	KeplerianOrbit orb = good.estimate(gspos[0], gspos[1], gspos[2], los[0], time[0], los[1],
-					   time[1], los[2], time[2], rho1init, rho3init);
+	KeplerianOrbit orb = good.estimate(gspos[0], gspos[1], gspos[2], los[0], time[0], los[1], time[1], los[2], time[2], rho1init, rho3init);
 	return(orb);
     }
 
@@ -66,7 +63,6 @@ public final class Utilities
     {
 	Measurements.Measurement obj = null;
 	ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>();
-
 	TDMFile tdm = new TDMParser().withFileFormat(fileFormat).parse(fileName);
 	for (TDMFile.ObservationsBlock blk: tdm.getObservationsBlocks())
 	{

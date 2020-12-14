@@ -38,14 +38,15 @@ def update_data()->None:
     """Download and re-format astrodynamics data from multiple sources.
     """
 
-    updates = [["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(_data_dir, "SpaceWeather.dat"), format_weather],
-               ["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
+    updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
                 path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
                ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
                 path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
-               ["http://maia.usno.navy.mil/ser7/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None]]
+               ["http://astria.tacc.utexas.edu/AstriaGraph/SP_ephemeris/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None],
+               ["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(_data_dir, "SpaceWeather.dat"), format_weather]]
+    # http://maia.usno.navy.mil/ser7
     for u in updates:
-        print(f"Updating {path.split(u[1])[-1]}")
+        print(f"Updating {u[1]}")
         try:
             resp = requests.get(u[0], timeout=10.0)
             if (resp.status_code == requests.codes.ok):

@@ -22,8 +22,6 @@ from orbdetpy.rpc.messages_pb2 import ImportTDMInput, Settings
 from orbdetpy.rpc.server import RemoteServer
 from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
 
-_ccsds_stub = UtilitiesStub(RemoteServer.channel())
-
 def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, time_list: List[str]=None, add_prop_cov: bool=False)->str:
     """Export ephemerides in CCSDS OEM format.
 
@@ -33,7 +31,7 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, time_list: List[s
     obs : Measurements or estimation results to export.
     obj_id : Object identifier.
     obj_name : Object name.
-    time_list : Limit output to UTC times specified; default is to output everything. 
+    time_list : Limit output to UTC times specified; default is to output everything.
     add_prop_cov : Include propagated covariances if True; default is False.
 
     Returns
@@ -170,3 +168,7 @@ def import_TDM(file_name: str, file_format: int):
 
     resp = _ccsds_stub.importTDM(ImportTDMInput(file_name=file_name, file_format=file_format))
     return(resp.array)
+
+if (__name__ != '__main__'):
+    __pdoc__ = {m: False for m in ("ImportTDMInput", "Settings")}
+    _ccsds_stub = UtilitiesStub(RemoteServer.channel())

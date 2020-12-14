@@ -81,8 +81,8 @@ cfg.measurements[MeasurementType.ELEVATION].error[:] = [Constant.ARC_SECOND_TO_R
 # Propagate orbits and generate measurements
 meas = propagate_orbits([cfg])[0].array
 
-# Uncomment to plot orbital elements from the simulation
-#simulation_plot(meas, interactive=True)
+# Plot orbital elements from the simulation
+simulation_plot(meas, interactive=True)
 
 # Uncomment to export simulated measurements to a CCSDS TDM file
 #with open("orbdetpy_sim.tdm", "w") as fp:
@@ -104,8 +104,9 @@ if (isinstance(fit, str)):
 for f in fit:
     # print(f) to dump pre-fits/post-fits/covariances
     print(get_UTC_string(f.time), f.station, f.estimated_state[:6])
+
 # Plot OD results
-estimation_plot(cfg, meas, fit, interactive=True, estim_param=False)
+estimation_plot(cfg, meas, fit, interactive=True, estim_param=True)
 
 # Uncomment to export ephemeris to a CCSDS OEM file
 #with open("orbdetpy_fit.oem", "w") as fp:

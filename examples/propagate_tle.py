@@ -26,12 +26,12 @@ day1 = day0 + timedelta(days=1)
 timefmt = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 parser = argparse.ArgumentParser(formatter_class = argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("tle-file", help="Input TLE file", type=argparse.FileType("r"))
-parser.add_argument("--start-time", help="Propagation start time",
+parser.add_argument("tle-file", help="file with TLEs", type=argparse.FileType("r"))
+parser.add_argument("--start-time", help="propagation start time",
                     default=datetime(day0.year, day0.month, day0.day).strftime(timefmt))
-parser.add_argument("--end-time", help="Propagation end time",
-                    default = datetime(day1.year, day1.month, day1.day).strftime(timefmt))
-parser.add_argument("--step-size", help="Step size [sec.]", type=float, default=900.0)
+parser.add_argument("--end-time", help="propagation end time",
+                    default=datetime(day1.year, day1.month, day1.day).strftime(timefmt))
+parser.add_argument("--step-size", help="step size [sec]", type=float, default=900.0)
 if (len(sys.argv) == 1):
     parser.print_help()
     exit(1)
