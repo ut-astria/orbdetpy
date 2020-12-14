@@ -59,6 +59,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import java.lang.RuntimeException;
 
 public final class MultiTargetEstimation
 {
@@ -259,15 +260,15 @@ public final class MultiTargetEstimation
 
 		
 		//Create new objects with CAR
-		
 		if(activateCAR == true && residentSpaceObjects.size() == 0)
 		{
+
 			for(int measNum = 0; measNum <= additionalMeas; measNum++)
 			{
 				
 				ArrayList<SingleObject> tempHypotheses = new ArrayList<SingleObject>();
 				
-				ArrayList<Hypothesis> newHypotheses = GenerateHypotheses(rawMeasurements.get(measNum).rawmeas, Math.sqrt(R.getEntry(0,0)), 1e-5, Math.sqrt(R.getEntry(1,1)), 1e-5, numStates, numSigmas);
+				ArrayList<Hypothesis> newHypotheses = GenerateHypotheses(rawMeasurements.get(measNum).rawmeas, R.getEntry(0,0), Math.pow(1e-5,2), R.getEntry(1,1), Math.pow(1e-5,2), numStates, numSigmas);
 				  
 				for(int hypNum = 0; hypNum < newHypotheses.size(); hypNum++)
 				{
@@ -295,7 +296,7 @@ public final class MultiTargetEstimation
 		
 		ArrayList<ArrayList<JPDALikelihoods>> jointEvents = new ArrayList<ArrayList<JPDALikelihoods>>();
 		ArrayList<JPDALikelihoods> singleJointEvent = new ArrayList<JPDALikelihoods>();
-
+		ArrayList<Integer> removeHypothesis = new ArrayList<Integer>();
 		////////////////////////////////////////propagate loop////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////////////////////////
 		System.out.println(tm);
@@ -353,7 +354,15 @@ public final class MultiTargetEstimation
 		    stepSum += step;
 
 		    if (FastMath.abs(step) > 1.0E-6)
-			propagator.propagate(stepStart, currSC.sigma, stepStart + step, currSC.propSigma, false);
+		    	try {
+		    			propagator.propagate(stepStart, currSC.sigma, stepStart + step, currSC.propSigma, false);
+		    	}
+		    	catch(RuntimeException e)
+		    	{
+		    		System.out.println(e.toString());
+		    		removeHypothesis.add(hypNum);
+		    		continue;
+		    	}
 		    else
 	    	currSC.propSigma.setSubMatrix(currSC.sigma.getData(), 0, 0);
 
@@ -427,6 +436,13 @@ public final class MultiTargetEstimation
 		    }
 		}
 		}
+		
+		//Remove objects that fail to propagate
+		for(int hypNum = 0; hypNum < removeHypothesis.size(); hypNum++)
+		{
+			residentSpaceObjects.get(objNum).remove(removeHypothesis.get(hypNum));
+		}
+		
 		}
 
 		if (ODfinished)
@@ -502,8 +518,11 @@ public final class MultiTargetEstimation
 			    unassociatedMeasurements.remove(rawMeasurements.get(measIndex + jointEvents.get(maxProbIndex).get(i).measurement - 1));
 
 			    //Save Index
-			    residentSpaceObjects.get(objNum).get(0).associatedObsIndex.add(measNum);
+			    for(int j = 0; j < residentSpaceObjects.get(objNum).size(); j++)
+			    residentSpaceObjects.get(objNum).get(j).associatedObsIndex.add(measNum);
+		    	//associate measurements to hypotheses.
 
+			    
 			    for(int j = 0; j < residentSpaceObjects.get(objNum).size(); j++)
 			    residentSpaceObjects.get(objNum).get(j).dataAssociated = true;
 		    	//indicate all hypotheses for a given object have been associated.
@@ -814,8 +833,9 @@ public final class MultiTargetEstimation
 		    if (combinedMeas || measNames.length == 1)
 		    {
 			for (int i = 0; i < measNames.length; i++)
-			{
+			{		
 			    double[] fitv = currSC.smootherData.get(j).measObjsSmoother.estimate(0, 0, smSsta).getEstimatedValue();
+			    
 			    if (measNames.length == 1)
 				currSC.estOutput.get(j).postFit.put(measNames[i], fitv);
 			    else
@@ -828,6 +848,10 @@ public final class MultiTargetEstimation
 				currSC.estOutput.get(j).postFit.put(measNames[0], fitv);
 		    }
 
+		    System.out.println("smootherData: " + j);
+		    System.out.println(new Array2DRowRealMatrix(currSC.estOutput.get(j).estimatedCovariance).toString());
+		    System.out.println(currSC.smootherData.get(j).Pstar.toString());
+		    
 		    //store
 		    currSC.estOutput.get(j).estimatedState = currSC.smootherData.get(j).xstar.getColumn(0);
 		    currSC.estOutput.get(j).estimatedCovariance = currSC.smootherData.get(j).Pstar.getData();
@@ -838,7 +862,6 @@ public final class MultiTargetEstimation
 	    else
 	    {
 	    	currSC.McReynoldsConsistencyPass = false;
-	    	System.out.println("asdf");
 	    }
 	    
 	    
@@ -862,8 +885,11 @@ public final class MultiTargetEstimation
 
 				for (measIndex = 0; measIndex < currSC.associatedObsIndex.size(); measIndex++)
 				{
+					System.out.println(measIndex);
 				    RealMatrix Ptemp = new Array2DRowRealMatrix(currSC.estOutput.get(measIndex).estimatedCovariance);
 				    currSC.xhatPrev = new ArrayRealVector(currSC.estOutput.get(measIndex).estimatedState);
+				    
+				    System.out.println("Ptemp:" + Ptemp.toString());
 				    currSC.propSigma = GenerateSigmaPoints(currSC.xhatPrev, Ptemp, numStates, numSigmas);
 
 				    RealVector rawMeas = updatePrep(currSC, tm, currSC.associatedObsIndex.get(measIndex), numSigmas, propagator, biasPos);
@@ -1029,19 +1055,26 @@ public final class MultiTargetEstimation
 		
 		TimeStampedPVCoordinates stationCoords = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(date, odCfg.propFrame);
 		
-		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, RA_d, Dec, Dec_d, stationCoords, 1000.0, 1.0, 1000.0 ,2.656e7, 2.657e7, 0.001).getCAR();
-
+		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, RA_d, Dec, Dec_d, stationCoords, 1000.0, 1, 1000.0 ,26450000, 26650000, 0.001).getCAR();
+		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, RA_d, Dec, Dec_d, stationCoords, 100.0, 1, 100.0 ,2.645e7, 2.665e7, 0.001).getCAR();
+		
+		System.out.println(CARGaussians.size());
 		ArrayList<Hypothesis> objectHypotheses= new ArrayList<Hypothesis>();
 		
 		
 		for(int i = 0; i < CARGaussians.size(); i++)
 		{
+			if(CARGaussians.get(i).rangeRateStd<0)  //FIX LATER, These hypotheses should not occur in the first place.
+				continue;
+			
 			Hypothesis singleHypothesis= new Hypothesis();
 			
 			RealVector meanTemp = new ArrayRealVector(new double[] {CARGaussians.get(i).rangeMean, RA, Dec, CARGaussians.get(i).rangeRateMean, RA_d, Dec_d, odCfg.getInitialState()[6], odCfg.getInitialState()[7]});
-			RealMatrix CovarTemp = new DiagonalMatrix(new double[] {CARGaussians.get(i).rangeStd, sigmaRA, sigmaDec, CARGaussians.get(i).rangeRateStd, sigmaRAd, sigmaDecd, odCfg.estmCovariance[6], odCfg.estmCovariance[7]});
-			
+			RealMatrix CovarTemp = new DiagonalMatrix(new double[] {Math.pow(CARGaussians.get(i).rangeStd,2), sigmaRA, sigmaDec, Math.pow(CARGaussians.get(i).rangeRateStd,2), 
+																	sigmaRAd, sigmaDecd, Math.pow(odCfg.estmCovariance[6],2), Math.pow(odCfg.estmCovariance[7],2)});
+									
 			Array2DRowRealMatrix sigma = GenerateSigmaPoints(meanTemp, CovarTemp, numStates, numSigmas);
+
 			Array2DRowRealMatrix sigmaXYZ = new Array2DRowRealMatrix(numStates, numSigmas);
 
 			for (int j = 0; j < sigma.getColumnDimension(); j++)
@@ -1052,15 +1085,14 @@ public final class MultiTargetEstimation
 		    new ManualPropagation(odCfg).propagate(0, sigma, CARGaussians.get(i).rangeMean/Constants.SPEED_OF_LIGHT, sigmaXYZ, false);
 
 			RealMatrix Pxx = new Array2DRowRealMatrix(numStates, numStates);
-			RealVector xhat = addColumns(sigmaXYZ).mapMultiplyToSelf(0.5/numStates);
+			RealVector xhat = addColumns(sigma).mapMultiplyToSelf(0.5/numStates);
 			
-			for (int j = 0; j < sigmaXYZ.getColumnDimension(); j++)
+			for (int j = 0; j < sigma.getColumnDimension(); j++)
 			{
-			    RealVector xhatdiff = sigmaXYZ.getColumnVector(j).subtract(xhat);
+			    RealVector xhatdiff = sigma.getColumnVector(j).subtract(xhat);
 			    Pxx = Pxx.add(xhatdiff.outerProduct(xhatdiff).scalarMultiply(0.5/numStates));
 			}
-			
-			
+
 			//return mean/covar structure
 			singleHypothesis.xhat = new ArrayRealVector(xhat.toArray());
 			singleHypothesis.P = Pxx;
@@ -1078,9 +1110,7 @@ public final class MultiTargetEstimation
 	
 	private	double[] RangeRaDec2XYZ(RealVector RangeRaDec, AbsoluteDate date, String stat)
 	{
-		
-		//CAR FrameTransfer Test
-		
+				
 		double Range = RangeRaDec.getEntry(0);
 		double Range_d = RangeRaDec.getEntry(3);		
 		double RA = RangeRaDec.getEntry(1);

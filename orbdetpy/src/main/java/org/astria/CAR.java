@@ -204,10 +204,9 @@ public class CAR
 			if(realRoots[0] != null)
 			{
 
-
-				
 				rhoRate_emax_l[i] = realRoots[1];
 				rhoRate_emax_u[i] = realRoots[0];
+
 			}
 
 		}		
@@ -257,14 +256,9 @@ public class CAR
 		for(int i = 0; i <= CARIndexEnd - CARIndexStart; i++)
 		{
 						
-
-			
-			
 			if(rhoRate_amax_u[CARIndexStart + i] != null && rhoRate_emax_u[CARIndexStart + i] != null && rhoRate_amin_l[CARIndexStart + i] != null)
 			{
 
-				//////////////////////////////////////////////////////////////////////////////////////////// THIS NEEDS TO BE VERIFIED. USED IMAGE ON JAH PAPER PG 3 TO GENERATE LOGIC
-				//////////////////////////////////////////////////////////////////////////////////////////// I think it works, checked by using matlab, changed emax to 0.2
 				if(rhoRate_emax_u[CARIndexStart + i] > rhoRate_amin_u[CARIndexStart + i])
 				{
 
@@ -295,6 +289,7 @@ public class CAR
 				boundaryTemp.lowerBound = Math.max(rhoRate_amax_l[CARIndexStart + i],rhoRate_emax_l[CARIndexStart + i]);
 				boundaryTemp.upperBound = Math.min(rhoRate_amax_u[CARIndexStart + i],rhoRate_emax_u[CARIndexStart + i]);
 
+				
 				mainCAR.add(boundaryTemp);
 			}
 		}
@@ -367,6 +362,8 @@ public class CAR
 		upperIndex = 0;
 		lowerIndex = 0;
 		mainIndex = 0;
+		
+
 		double[] binLocRho = new double[CARIndexEnd - CARIndexStart];
 		double[] binSizeRho = new double[CARIndexEnd - CARIndexStart];
 		
@@ -452,12 +449,13 @@ public class CAR
 		{
 			for(int j=0; j < gaussianContributions[i].length; j++)
 			{
-				gaussianContributions[i][j] = Math.exp(-Math.pow(binLocRho[i]-rangeMean[j], 2) / (2 * rangeSigma * rangeSigma)) / (Math.sqrt(2*  rangeSigma * rangeSigma *  Math.PI)); // SOME OF THESE VALUES SLIGHTLY OFF FROM MATLAB, NOT SURE THE REASON FOR DIFFERENCE.
+				gaussianContributions[i][j] = Math.exp(-Math.pow(binLocRho[i]-rangeMean[j], 2) / (2 * rangeSigma * rangeSigma)) / (Math.sqrt(2*  rangeSigma * rangeSigma *  Math.PI)); 
 			}
 		}
 		
 		double[] weights = constrainedLeastSquares(new Array2DRowRealMatrix(gaussianContributions), new Array2DRowRealMatrix(binSizeRho), 1, 0);
 
+		
 		double weightSum = 0;
 		
 		for(int i=0; i < weights.length; i++)
@@ -470,18 +468,27 @@ public class CAR
 			weights[i] /= weightSum;
 		}
 		
-		
+		ArrayList <Integer> zeroWeights = new ArrayList<Integer>();
+
 		for(int i =0; i < weights.length; i++)
 		{
 			if(weights[i] > 1 || weights[i] < 0)
-			throw(new RuntimeException(String.format("Invalid Gaussian weight %f", weights[i])));
+			zeroWeights.add(i);
+			//throw(new RuntimeException(String.format("Invalid Gaussian weight %f", weights[i])));
 
+			if(weights[i] == 0)
+			zeroWeights.add(i);
 		}
 
 
 		// make arraylist for mean, std, weights? and CARGaussianElement Object?
 		for(int i = 0; i < rangeMean.length; i++)
 		{
+			//skip weights that are <= 0 or >1
+			if(zeroWeights.contains(i))
+			{
+				continue;
+			}
 			ArrayList <CARGaussianElement> tempGaussians = new ArrayList<CARGaussianElement>();
 
 			double currentRho = -1;
@@ -587,7 +594,7 @@ public class CAR
 			gaussians.addAll(tempGaussians);
     	}
 		
-		/*
+		
 		//write gaussians to file
 		try {
 		      FileWriter myWriter = new FileWriter("Gaussians.txt");
@@ -600,7 +607,7 @@ public class CAR
 		    } catch (IOException e) {
 		      e.printStackTrace();
 		    }
-		    */
+	    
 
     }
 	
@@ -665,6 +672,7 @@ public class CAR
 		//generate mean points
 		double rangeRateSigma = (max_rr - min_rr) * GMSplitLibrary[Jp_rr-1];
 		
+
 		for(int w=0; w < Jp_rr; w++)
 		{
 			CARGaussianElement temp = new CARGaussianElement();
