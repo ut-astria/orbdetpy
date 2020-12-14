@@ -47,11 +47,11 @@ CLASSIFIERS = ["Development Status :: 5 - Production/Stable",
                "Topic :: Scientific/Engineering",
                "Topic :: Scientific/Engineering :: Astronomy",
                "Topic :: Utilities"]
-PROJECT_URLS = {"Documentation": "https://github.com/ut-astria/orbdetpy",
+PROJECT_URLS = {"Documentation": "https://ut-astria.github.io/orbdetpy",
                 "Source": "https://github.com/ut-astria/orbdetpy",
                 "Tracker": "https://github.com/ut-astria/orbdetpy/issues"}
-PACKAGE_DATA = {"orbdetpy": ["*.py", "orekit-data/*", "orekit-data/**/*", "orekit-data/**/**/*",
-                             "plotting/*.py", "rpc/*.py", "target/orbdetpy-server*.jar"]}
+PACKAGE_DATA = {"orbdetpy": ["*.py", "orekit-data/*", "orekit-data/DE-430-ephemerides/*", "orekit-data/Earth-Orientation-Parameters/**/*",
+                             "orekit-data/Potential/*", "plotting/*.py", "rpc/*.py", "target/orbdetpy-server*.jar"]}
 
 setup(name="orbdetpy",
       packages=["orbdetpy"],

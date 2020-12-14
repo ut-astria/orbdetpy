@@ -66,12 +66,24 @@ public final class Measurements
 	    this.trueState = src.trueState;
 	}
 
-	public Measurement(TimeStampedPVCoordinates pv)
+	public Measurement(TimeStampedPVCoordinates pv, double[] extras)
 	{
 	    this.time = pv.getDate();
 	    double[] p = pv.getPosition().toArray();
 	    double[] v = pv.getVelocity().toArray();
-	    this.trueState = new double[]{p[0], p[1], p[2], v[0], v[1], v[2]};
+	    if (extras != null && extras.length > 0)
+		this.trueState = new double[6 + extras.length];
+	    else
+		this.trueState = new double[6];
+	    for (int i = 0; i < this.trueState.length; i++)
+	    {
+		if (i < 3)
+		    this.trueState[i] = p[i];
+		else if (i < 6)
+		    this.trueState[i] = v[i - 3];
+		else
+		    this.trueState[i] = extras[i - 6];
+	    }
 	}
     }
 
@@ -103,7 +115,6 @@ public final class Measurements
 	final Settings.Measurement crrat = odCfg.cfgMeasurements.get(Settings.MeasurementType.RANGE_RATE);
 	final Settings.Measurement cpos = odCfg.cfgMeasurements.get(Settings.MeasurementType.POSITION);
 	final Settings.Measurement cposvel = odCfg.cfgMeasurements.get(Settings.MeasurementType.POSITION_VELOCITY);
-	final OutlierFilter outlier = new OutlierFilter(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma);
 	final boolean addBias = odCfg.estmFilter == Settings.Filter.EXTENDED_KALMAN;
 	final boolean addOutlier = addBias && odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0;
 	final ObservableSatellite satellite = new ObservableSatellite(0);
@@ -134,7 +145,7 @@ public final class Measurements
 						  new double[]{cazim.error[0], celev.error[0]}, twoOnes, satellite);
 		obs.addModifier(new AngularRadioRefractionModifier(new EarthITU453AtmosphereRefraction(jsn.altitude)));
 		if (addOutlier)
-		    obs.addModifier(outlier);
+		    obs.addModifier(new OutlierFilter<AngularAzEl>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{jsn.bias[0], jsn.bias[1]}, twoOnes, twoNegInf, twoPosInf));
 		measObjs.add(obs);
@@ -145,7 +156,7 @@ public final class Measurements
 		AngularRaDec obs = new AngularRaDec(gs, odCfg.propInertialFrame, m.time, new double[]{m.values[0], m.values[1]},
 						    new double[]{crigh.error[0], cdecl.error[0]}, twoOnes, satellite);
 		if (addOutlier)
-		    obs.addModifier(outlier);
+		    obs.addModifier(new OutlierFilter<AngularRaDec>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[]{jsn.bias[0], jsn.bias[1]}, twoOnes, twoNegInf, twoPosInf));
 		measObjs.add(obs);
@@ -155,7 +166,7 @@ public final class Measurements
 	    {
 		Range obs = new Range(gs, crang.twoWay, m.time, m.values[0], crang.error[0], 1.0, satellite);
 		if (addOutlier)
-		    obs.addModifier(outlier);
+		    obs.addModifier(new OutlierFilter<Range>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<Range>(biasRange, new double[]{jsn.bias[0]}, oneOnes, oneNegInf, onePosInf));
 		measObjs.add(obs);
@@ -165,7 +176,7 @@ public final class Measurements
 	    {
 		RangeRate obs = new RangeRate(gs, m.time, m.values[m.values.length-1], crrat.error[0], 1.0, crrat.twoWay, satellite);
 		if (addOutlier)
-		    obs.addModifier(outlier);
+		    obs.addModifier(new OutlierFilter<RangeRate>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{jsn.bias[jsn.bias.length-1]}, oneOnes, oneNegInf, onePosInf));
 		measObjs.add(obs);
@@ -175,7 +186,7 @@ public final class Measurements
 	    {
 		Position obs = new Position(m.time, new Vector3D(m.values[0], m.values[1], m.values[2]), cpos.error, 1.0, satellite);
 		if (addOutlier)
-		    obs.addModifier(outlier);
+		    obs.addModifier(new OutlierFilter<Position>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		measObjs.add(obs);
 	    }
 
@@ -184,7 +195,7 @@ public final class Measurements
 		PV obs = new PV(m.time, new Vector3D(m.values[0], m.values[1], m.values[2]),
 				new Vector3D(m.values[3], m.values[4], m.values[5]), cposvel.error, 1.0, satellite);
 		if (addOutlier)
-		    obs.addModifier(outlier);
+		    obs.addModifier(new OutlierFilter<PV>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		measObjs.add(obs);
 	    }
 	}

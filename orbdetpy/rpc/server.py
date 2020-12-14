@@ -14,32 +14,37 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import atexit
-import psutil
+from os import path
+from socket import socket
+from atexit import register
+from psutil import Popen, process_iter
 from grpc import channel_ready_future, insecure_channel
 
 class RemoteServer:
-    rpc_host = "localhost"
-    rpc_port = "50051"
-    rpc_uri = f"{rpc_host}:{rpc_port}"
     rpc_server = None
     rpc_channel = None
 
     @classmethod
     def connect(cls, data_dir, jar_file):
-        running = False
-        jar = os.path.split(jar_file)[-1]
-        for p in psutil.process_iter(attrs=["name", "cmdline"]):
-            running = p.info["name"] == "java" and any(x.endswith(jar) for x in p.info["cmdline"])
+        register(RemoteServer.disconnect)
+        rpc_host, rpc_port = "127.0.0.1", "50051"
+        running, jar = False, path.split(jar_file)[-1]
+        for p in process_iter(attrs=["cmdline"]):
+            index = next((i for i, x in enumerate(p.info["cmdline"]) if x.endswith(jar)), -1)
+            running = index > 0 and len(p.info["cmdline"]) > 0 and p.info["cmdline"][0].endswith("java")
             if (running):
+                rpc_port = p.info["cmdline"][index + 1]
                 break
 
         if (not running):
-            cls.rpc_server = psutil.Popen(["java", "-Xmx2G", "-XX:+UseG1GC", "-jar", jar_file, cls.rpc_port, data_dir])
-        atexit.register(RemoteServer.disconnect)
-        cls.rpc_channel = insecure_channel(cls.rpc_uri, options=[("grpc.max_send_message_length", 2147483647),
-                                                                 ("grpc.max_receive_message_length", 2147483647)])
+            sock = socket()
+            sock.bind((rpc_host, 0))
+            rpc_port = f"{sock.getsockname()[1]}"
+            sock.close()
+            cls.rpc_server = Popen(["java", "-Xmx2G", "-XX:+UseG1GC", "-jar", jar_file, rpc_port, data_dir])
+        rpc_uri = f"{rpc_host}:{rpc_port}"
+        cls.rpc_channel = insecure_channel(rpc_uri, options=[("grpc.max_send_message_length", 2147483647),
+                                                             ("grpc.max_receive_message_length", 2147483647)])
         channel_ready_future(cls.rpc_channel).result(timeout=30.0)
 
     @classmethod

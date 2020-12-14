@@ -18,7 +18,7 @@ class ConversionStub(object):
         self.transformFrame = channel.unary_unary(
                 '/Conversion/transformFrame',
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
-                response_deserializer=messages__pb2.DoubleArray.FromString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
         self.convertAzElToRaDec = channel.unary_unary(
                 '/Conversion/convertAzElToRaDec',
@@ -33,26 +33,31 @@ class ConversionStub(object):
         self.convertPosToLLA = channel.unary_unary(
                 '/Conversion/convertPosToLLA',
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
-                response_deserializer=messages__pb2.DoubleArray.FromString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
         self.convertElemToPv = channel.unary_unary(
                 '/Conversion/convertElemToPv',
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
-                response_deserializer=messages__pb2.DoubleArray.FromString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
         self.convertPvToElem = channel.unary_unary(
                 '/Conversion/convertPvToElem',
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
-                response_deserializer=messages__pb2.DoubleArray.FromString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
         self.getUTCString = channel.unary_unary(
                 '/Conversion/getUTCString',
-                request_serializer=messages__pb2.BoolDouble.SerializeToString,
+                request_serializer=messages__pb2.DoubleArray.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
                 )
         self.getJ2000EpochOffset = channel.unary_unary(
                 '/Conversion/getJ2000EpochOffset',
                 request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+                response_deserializer=messages__pb2.DoubleArray.FromString,
+                )
+        self.getEpochDifference = channel.unary_unary(
+                '/Conversion/getEpochDifference',
+                request_serializer=messages__pb2.IntegerArray.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.DoubleValue.FromString,
                 )
 
@@ -108,13 +113,19 @@ class ConversionServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def getEpochDifference(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ConversionServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'transformFrame': grpc.unary_unary_rpc_method_handler(
                     servicer.transformFrame,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
-                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
             'convertAzElToRaDec': grpc.unary_unary_rpc_method_handler(
                     servicer.convertAzElToRaDec,
@@ -129,26 +140,31 @@ def add_ConversionServicer_to_server(servicer, server):
             'convertPosToLLA': grpc.unary_unary_rpc_method_handler(
                     servicer.convertPosToLLA,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
-                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
             'convertElemToPv': grpc.unary_unary_rpc_method_handler(
                     servicer.convertElemToPv,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
-                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
             'convertPvToElem': grpc.unary_unary_rpc_method_handler(
                     servicer.convertPvToElem,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
-                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
             'getUTCString': grpc.unary_unary_rpc_method_handler(
                     servicer.getUTCString,
-                    request_deserializer=messages__pb2.BoolDouble.FromString,
+                    request_deserializer=messages__pb2.DoubleArray.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             ),
             'getJ2000EpochOffset': grpc.unary_unary_rpc_method_handler(
                     servicer.getJ2000EpochOffset,
                     request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+            ),
+            'getEpochDifference': grpc.unary_unary_rpc_method_handler(
+                    servicer.getEpochDifference,
+                    request_deserializer=messages__pb2.IntegerArray.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.DoubleValue.SerializeToString,
             ),
     }
@@ -174,7 +190,7 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/transformFrame',
             messages__pb2.TransformFrameInput.SerializeToString,
-            messages__pb2.DoubleArray.FromString,
+            messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -225,7 +241,7 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/convertPosToLLA',
             messages__pb2.TransformFrameInput.SerializeToString,
-            messages__pb2.DoubleArray.FromString,
+            messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -242,7 +258,7 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/convertElemToPv',
             messages__pb2.TransformFrameInput.SerializeToString,
-            messages__pb2.DoubleArray.FromString,
+            messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -259,7 +275,7 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/convertPvToElem',
             messages__pb2.TransformFrameInput.SerializeToString,
-            messages__pb2.DoubleArray.FromString,
+            messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -275,7 +291,7 @@ class Conversion(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/getUTCString',
-            messages__pb2.BoolDouble.SerializeToString,
+            messages__pb2.DoubleArray.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -293,6 +309,23 @@ class Conversion(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/getJ2000EpochOffset',
             google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+            messages__pb2.DoubleArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getEpochDifference(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Conversion/getEpochDifference',
+            messages__pb2.IntegerArray.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.DoubleValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -37,7 +37,6 @@ import org.orekit.attitudes.FixedRate;
 import org.orekit.attitudes.NadirPointing;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
@@ -74,13 +73,13 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.GeographicZoneDetector;
 import org.orekit.propagation.events.GroundFieldOfViewDetector;
 import org.orekit.propagation.events.LongitudeCrossingDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UT1Scale;
 import org.orekit.time.TimeScalesFactory;
@@ -195,7 +194,8 @@ public final class Settings
     {
 	UNDEFINED(0),
 	EXPONENTIAL(1),
-	MSISE2000(2);
+	MSISE2000(2),
+	WAM(3);
 
 	private final int value;
 
@@ -288,6 +288,12 @@ public final class Settings
 	}
     }
 
+    public static final int OUTPUT_ESTM_COV = 1;
+    public static final int OUTPUT_PROP_COV = 2;
+    public static final int OUTPUT_INNO_COV = 4;
+    public static final int OUTPUT_RESIDUALS = 8;
+    public static final int OUTPUT_DENSITY = 16;
+
     public double rsoMass = 5.0;
     public double rsoArea = 0.1;
     public Facet[] rsoFacets;
@@ -350,7 +356,7 @@ public final class Settings
     public double estmDetectionProbability = 0.99;
     public double estmGatingProbability = 0.99;
     public double estmGatingThreshold = 5.0;
-    public boolean estmVerboseOutput = true;
+    public int outputFlags = OUTPUT_ESTM_COV | OUTPUT_PROP_COV | OUTPUT_INNO_COV | OUTPUT_RESIDUALS;
 
     protected Atmosphere atmModel;
     protected HashMap<String, GroundStation> stations;
@@ -371,15 +377,12 @@ public final class Settings
 	stations = new HashMap<String, GroundStation>();
 	if (cfgStations == null)
 	    return;
-
 	for (Map.Entry<String, Station> kv: cfgStations.entrySet())
 	{
 	    String k = kv.getKey();
 	    Station v = kv.getValue();
 	    GroundStation sta = new GroundStation(
-		new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP)),
-				     new GeodeticPoint(v.latitude, v.longitude, v.altitude), k));
+		new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(v.latitude, v.longitude, v.altitude), k));
 	    sta.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
 	    sta.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
@@ -400,15 +403,13 @@ public final class Settings
 	    forces.add(new NewtonianAttraction(Constants.EGM96_EARTH_MU));
 
 	if (oceanTidesDegree >= 0 && oceanTidesOrder >= 0)
-	    forces.add(new OceanTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP),
-				      Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
-				      oceanTidesDegree,	oceanTidesOrder, IERSConventions.IERS_2010,
+	    forces.add(new OceanTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+				      Constants.EGM96_EARTH_MU, oceanTidesDegree, oceanTidesOrder, IERSConventions.IERS_2010,
 				      TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false)));
 
 	if ((solidTidesSun || solidTidesMoon) && grav != null)
-	    forces.add(new SolidTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP),
-				      Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
-				      grav.getTideSystem(), IERSConventions.IERS_2010,
+	    forces.add(new SolidTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+				      Constants.EGM96_EARTH_MU, grav.getTideSystem(), IERSConventions.IERS_2010,
 				      TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false),
 				      CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon()));
 
@@ -424,7 +425,6 @@ public final class Settings
 	    BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[rsoFacets.length];
 	    for (int i = 0; i < rsoFacets.length; i++)
 		facets[i] = new BoxAndSolarArraySpacecraft.Facet(new Vector3D(rsoFacets[i].normal), rsoFacets[i].area);
-
 	    dragsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), rsoSolarArrayArea, new Vector3D(rsoSolarArrayAxis),
 						    dragCoefficient.value, rpCoeffAbsorption, rpCoeffReflection.value);
 	    radnsc = new BoxAndSolarArraySpacecraft(facets, CelestialBodyFactory.getSun(), rsoSolarArrayArea, new Vector3D(rsoSolarArrayAxis),
@@ -437,37 +437,21 @@ public final class Settings
 	}
 
 	if (dragModel == DragModel.EXPONENTIAL)
-	{
-	    atmModel = new SimpleExponentialAtmosphere(
-		new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-				     FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP)),
-		dragExpRho0, dragExpH0, dragExpHscale);
-	}
+	    atmModel = new SimpleExponentialAtmosphere(DataManager.earthShape, dragExpRho0, dragExpH0, dragExpHscale);
 	else if (dragModel == DragModel.MSISE2000)
 	{
-	    int apflag = 1;
-	    if (dragMSISEFlags != null)
-	    {
-		for (int i = 0; i < dragMSISEFlags.length; i++)
-		{
-		    if (dragMSISEFlags[i][0] == 9)
-			apflag = dragMSISEFlags[i][1];
-		}
-	    }
-
-	    atmModel = new NRLMSISE00(new MSISEInputs(DataManager.msiseData.minDate, DataManager.msiseData.maxDate, DataManager.msiseData.data, apflag),
-				      CelestialBodyFactory.getSun(), new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-					  Constants.WGS84_EARTH_FLATTENING, FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP)));
+	    atmModel = new NRLMSISE00(MSISEInputs.getInstance(), CelestialBodyFactory.getSun(), DataManager.earthShape);
 	    if (dragMSISEFlags != null)
 	    {
 		for (int i = 0; i < dragMSISEFlags.length; i++)
 		    atmModel = ((NRLMSISE00)atmModel).withSwitch(dragMSISEFlags[i][0], dragMSISEFlags[i][1]);
 	    }
 	}
+	else if (dragModel == DragModel.WAM)
+	    atmModel = new WAM(DataManager.earthShape);
 
 	if (atmModel != null)
 	    forces.add(new DragForce(atmModel, dragsc));
-
 	if (rpSun)
 	    forces.add(new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS, radnsc));
 
@@ -493,8 +477,7 @@ public final class Settings
 	    if (dragCoefficient.estimation == ops[i])
 	    {
 		counts[i]++;
-		parameters.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min,
-					     dragCoefficient.max, dragCoefficient.value, ops[i]));
+		parameters.add(new Parameter(DragSensitive.DRAG_COEFFICIENT, dragCoefficient.min, dragCoefficient.max, dragCoefficient.value, ops[i]));
 	    }
 
 	    if (rpCoeffReflection.estimation == ops[i])
@@ -553,7 +536,6 @@ public final class Settings
 	    AbsoluteDate epoch;
 	    final TLE parser = new TLE(propInitialTLE[0], propInitialTLE[1]);
 	    final TLEPropagator prop = TLEPropagator.selectExtrapolator(parser);
-
 	    if (propStart != null)
 		epoch = propStart;
 	    else
@@ -609,15 +591,11 @@ public final class Settings
     {
 	if (rsoAttitudeProvider == AttitudeType.UNDEFINED)
 	    return(null);
-
 	AttitudeProvider attpro = null;
-	OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-						      FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-
 	if (rsoAttitudeProvider == AttitudeType.NADIR_POINTING)
-	    attpro = new NadirPointing(propInertialFrame, shape);
+	    attpro = new NadirPointing(propInertialFrame, DataManager.earthShape);
 	if (rsoAttitudeProvider == AttitudeType.BODY_CENTER_POINTING)
-	    attpro = new BodyCenterPointing(propInertialFrame, shape);
+	    attpro = new BodyCenterPointing(propInertialFrame, DataManager.earthShape);
 	if (rsoAttitudeProvider == AttitudeType.FIXED_RATE && rsoSpinVelocity != null && rsoSpinAcceleration != null)
 	{
 	    double[] X0 = propInitialState;
@@ -702,48 +680,45 @@ public final class Settings
 
     public ArrayList<EventHandling> addEventHandlers(Propagator prop, SpacecraftState initialState)
     {
-	EventHandling handler;
 	ArrayList<EventHandling> handles = new ArrayList<EventHandling>();
-
 	if (geoZoneLatLon != null && geoZoneLatLon.length >= 6)
 	{
 	    S2Point[] vertices = new S2Point[(int)(geoZoneLatLon.length/2)];
 	    for (int i = 0; i <= geoZoneLatLon.length-2; i += 2)
 		vertices[(int)(i/2)] = new S2Point(geoZoneLatLon[i+1], 0.5*FastMath.PI-geoZoneLatLon[i]);
-
-	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	    SphericalPolygonsSet set = new SphericalPolygonsSet(1E-10, vertices);
-	    GeographicZoneDetector detector = new GeographicZoneDetector(earth, set, FastMath.toRadians(0.5));
-	    handler = new EventHandling<GeographicZoneDetector>(ManeuverType.UNDEFINED, 0, EventHandling.GEO_ZONE_NAME, detector.g(initialState) < 0.0);
+	    GeographicZoneDetector detector = new GeographicZoneDetector(DataManager.earthShape, set, FastMath.toRadians(0.5));
+	    EventHandler<GeographicZoneDetector> handler = new EventHandling<GeographicZoneDetector>(
+		ManeuverType.UNDEFINED, 0, EventHandling.GEO_ZONE_NAME, detector.g(initialState) < 0.0);
 	    prop.addEventDetector(detector.withHandler(handler));
-	    handles.add(handler);
+	    handles.add((EventHandling)handler);
 	}
 
 	if (cfgStations != null)
 	{
-	    AbstractDetector detector;
 	    for (Map.Entry<String, Station> kv: cfgStations.entrySet())
 	    {
 		Station stn = kv.getValue();
 		if (stn.fovAperture <= 1E-6)
 		{
-		    detector = new ElevationDetector(stations.get(kv.getKey()).getBaseFrame())
-			.withRefraction(new EarthITU453AtmosphereRefraction(stn.altitude))
-			.withConstantElevation(FastMath.toRadians(5.0));
-		    handler = new EventHandling<ElevationDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) > 0.0);
+		    ElevationDetector detector = new ElevationDetector(stations.get(kv.getKey()).getBaseFrame())
+			.withRefraction(new EarthITU453AtmosphereRefraction(stn.altitude)).withConstantElevation(FastMath.toRadians(5.0));
+		    EventHandler<ElevationDetector> handler = new EventHandling<ElevationDetector>(
+			ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) > 0.0);
+		    prop.addEventDetector(detector.withHandler(handler));
+		    handles.add((EventHandling)handler);
 		}
 		else
 		{
 		    Vector3D center = new Vector3D(FastMath.cos(stn.fovElevation)*FastMath.sin(stn.fovAzimuth),
 						   FastMath.cos(stn.fovElevation)*FastMath.cos(stn.fovAzimuth), FastMath.sin(stn.fovElevation));
 		    CircularFieldOfView fov = new CircularFieldOfView(center, 0.5*stn.fovAperture, 1E-6);
-		    detector = new GroundFieldOfViewDetector(stations.get(kv.getKey()).getBaseFrame(), fov);
-		    handler = new EventHandling<GroundFieldOfViewDetector>(ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) < 0.0);
+		    GroundFieldOfViewDetector detector = new GroundFieldOfViewDetector(stations.get(kv.getKey()).getBaseFrame(), fov);
+		    EventHandler<GroundFieldOfViewDetector> handler = new EventHandling<GroundFieldOfViewDetector>(
+			ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) < 0.0);
+		    prop.addEventDetector(detector.withHandler(handler));
+		    handles.add((EventHandling)handler);
 		}
-
-		prop.addEventDetector(detector.withHandler(handler));
-		handles.add(handler);
 	    }
 	}
 
@@ -755,24 +730,25 @@ public final class Settings
 		continue;
 	    if (m.triggerEvent == ManeuverTrigger.DATE_TIME)
 	    {
-		handler = new EventHandling<DateDetector>(m.maneuverType, m.maneuverParams[0], null, null);
+		EventHandler<DateDetector> handler = new EventHandling<DateDetector>(m.maneuverType, m.maneuverParams[0], null, null);
 		prop.addEventDetector(new DateDetector(m.time).withHandler(handler));
+		handles.add((EventHandling)handler);
 	    }
 	    else if (m.triggerEvent == ManeuverTrigger.LONGITUDE_CROSSING)
 	    {
-		OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-							     FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-		handler = new EventHandling<LongitudeCrossingDetector>(m.maneuverType, m.maneuverParams[0], null, null);
-		prop.addEventDetector(new LongitudeCrossingDetector(body, m.triggerParams[0]).withHandler(handler));
+		EventHandler<LongitudeCrossingDetector> handler = new EventHandling<LongitudeCrossingDetector>(
+		    m.maneuverType, m.maneuverParams[0], null, null);
+		prop.addEventDetector(new LongitudeCrossingDetector(DataManager.earthShape, m.triggerParams[0]).withHandler(handler));
+		handles.add((EventHandling)handler);
 	    }
 	    else if (m.triggerEvent == ManeuverTrigger.APSIDE_CROSSING)
 	    {
-		handler = new EventHandling<ApsideDetector>(m.maneuverType, m.maneuverParams[0], null, null);
+		EventHandler<ApsideDetector> handler = new EventHandling<ApsideDetector>(m.maneuverType, m.maneuverParams[0], null, null);
 		prop.addEventDetector(new ApsideDetector(initialState.getOrbit()).withHandler(handler));
+		handles.add((EventHandling)handler);
 	    }
 	    else
 		throw(new RuntimeException("Invalid maneuver trigger event"));
-	    handles.add(handler);
 	}
 	return(handles);
     }

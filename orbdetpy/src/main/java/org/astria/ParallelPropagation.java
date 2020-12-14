@@ -186,8 +186,12 @@ public final class ParallelPropagation
 	public static boolean simulate(Settings simCfg, SpacecraftState state, ArrayList<EventHandling> handlers,
 				       ArrayList<Measurements.Measurement> measOut)
 	{
+	    double[] extraStates = null;
 	    TimeStampedPVCoordinates pvc = state.getPVCoordinates(simCfg.propInertialFrame);
-	    Measurements.Measurement meas = new Measurements.Measurement(pvc);
+	    if (simCfg.atmModel != null && (simCfg.outputFlags & Settings.OUTPUT_DENSITY) != 0)
+		extraStates = new double[]{simCfg.atmModel.getDensity(pvc.getDate(), pvc.getPosition(), simCfg.propInertialFrame)};
+
+	    Measurements.Measurement meas = new Measurements.Measurement(pvc, extraStates);
 	    if (!simCfg.simMeasurements)
 	    {
 		boolean isVisible = true;

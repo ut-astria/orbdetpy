@@ -98,4 +98,4 @@ for f in fit:
     # print(f) to dump pre-fits/post-fits/covariances
     print(get_UTC_string(f.time), f.station, f.estimated_state[:6])
 # Plot OD results
-plot(config, meas_obj, fit, interactive=True, estim_param=False)
+plot(config, meas_obj, fit, interactive=True, estim_param=True)

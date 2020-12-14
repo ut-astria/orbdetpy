@@ -1,6 +1,6 @@
-#!/bin/bash
-# gen_rpc_stubs.sh - Generate Python gRPC stubs.
-# Copyright (C) 2019 University of Texas
+#!/usr/bin/env bash
+# start_server.sh - Start the orbdetpy RPC server.
+# Copyright (C) 2019-2020 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,14 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BASE_DIR=$(dirname "$0")
-pushd $BASE_DIR > /dev/null
+orbd_path=$(dirname "$0")
+orbd_jars=( $(ls $orbd_path/target/orbdetpy-server*.jar) )
+orbd_port=$(python -c "import socket;s=socket.socket();s.bind(('127.0.0.1', 0));print(s.getsockname()[1]);s.close();")
 
-python -m grpc_tools.protoc -I src/main/proto/ --python_out=./rpc --grpc_python_out=./rpc src/main/proto/*.proto
-
-# Ugly fix for module import path issue in gRPC generated Python stub
-sed -i "s/^import /import orbdetpy.rpc./g" ./rpc/*_grpc.py
-sed -i "s/^import orbdetpy.rpc.grpc/import grpc/g" ./rpc/*_grpc.py
-sed -i "s/^import messages_pb2/import orbdetpy.rpc.messages_pb2/g" ./rpc/*_pb2.py
-
-popd > /dev/null
+java -Xmx2G -XX:+UseG1GC -jar ${orbd_jars[0]} $orbd_port $orbd_path/orekit-data/

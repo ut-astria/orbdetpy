@@ -19,8 +19,6 @@ from orbdetpy.rpc.messages_pb2 import Settings, SettingsArray
 from orbdetpy.rpc.propagation_pb2_grpc import PropagationStub
 from orbdetpy.rpc.server import RemoteServer
 
-_propagation_stub = PropagationStub(RemoteServer.channel())
-
 def propagate_orbits(cfg_list: List[Settings]):
     """Propagate orbits and optionally simulate measurements.
 
@@ -35,3 +33,7 @@ def propagate_orbits(cfg_list: List[Settings]):
 
     resp = _propagation_stub.propagate(SettingsArray(array=[p for p in cfg_list]))
     return(resp.array)
+
+if (__name__ != '__main__'):
+    __pdoc__ = {m: False for m in ("Settings", "SettingsArray")}
+    _propagation_stub = PropagationStub(RemoteServer.channel())

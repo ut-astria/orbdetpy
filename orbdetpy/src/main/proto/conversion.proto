@@ -26,19 +26,21 @@ import "messages.proto";
 
 service Conversion
 {
-    rpc transformFrame(TransformFrameInput) returns (DoubleArray) {}
+    rpc transformFrame(TransformFrameInput) returns (Double2DArray) {}
 
     rpc convertAzElToRaDec(AnglesInput) returns (DoubleArray) {}
 
     rpc convertRaDecToAzEl(AnglesInput) returns (DoubleArray) {}
 
-    rpc convertPosToLLA(TransformFrameInput) returns (DoubleArray) {}
+    rpc convertPosToLLA(TransformFrameInput) returns (Double2DArray) {}
 
-    rpc convertElemToPv(TransformFrameInput) returns (DoubleArray) {}
+    rpc convertElemToPv(TransformFrameInput) returns (Double2DArray) {}
 
-    rpc convertPvToElem(TransformFrameInput) returns (DoubleArray) {}
+    rpc convertPvToElem(TransformFrameInput) returns (Double2DArray) {}
 
-    rpc getUTCString(BoolDouble) returns (google.protobuf.StringValue) {}
+    rpc getUTCString(DoubleArray) returns (google.protobuf.StringValue) {}
 
-    rpc getJ2000EpochOffset(google.protobuf.StringValue) returns (google.protobuf.DoubleValue) {}
+    rpc getJ2000EpochOffset(google.protobuf.StringValue) returns (DoubleArray) {}
+
+    rpc getEpochDifference(IntegerArray) returns (google.protobuf.DoubleValue) {}
 }

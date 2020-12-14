@@ -31,10 +31,9 @@ message DoubleArray
     repeated double array = 1 [packed = true];
 }
 
-message BoolDouble
+message Double2DArray
 {
-    bool bool_value = 1;
-    double double_value = 2;
+    repeated DoubleArray array = 1;
 }
 
 message Parameter
@@ -142,7 +141,7 @@ message Settings
     double estm_detection_probability = 51;
     double estm_gating_probability = 52;
     double estm_gating_threshold = 53;
-    bool estm_verbose_output = 54;
+    int32 output_flags = 54;
 }
 
 message SettingsArray
@@ -196,10 +195,10 @@ message EstimationOutputArray
 message TransformFrameInput
 {
     string src_frame = 1;
-    double time = 2;
-    repeated double pva = 3 [packed = true];
+    repeated double time = 2 [packed = true];
+    repeated DoubleArray pva = 3;
     string dest_frame = 4;
-    string UTC_time = 5;
+    repeated string UTC_time = 5;
 }
 
 message ImportTDMInput

@@ -23,17 +23,19 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 public final class Conversion
 {
+    private Conversion()
+    {
+    }
+
     public static double[] transformFrame(Predefined srcFrame, AbsoluteDate time, List<Double> pva, Predefined destFrame)
     {
 	Transform xfm = FramesFactory.getFrame(srcFrame).getTransformTo(FramesFactory.getFrame(destFrame), time);
@@ -62,13 +64,9 @@ public final class Conversion
     public static double[] convertAzElToRaDec(AbsoluteDate time, double az, double el, double lat,
 					      double lon, double alt, Predefined frame)
     {
-	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-						    FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-	TopocentricFrame fromFrame = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
+	TopocentricFrame fromFrame = new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(lat, lon, alt), "gs");
 	Transform xfm = fromFrame.getTransformTo(FramesFactory.getFrame(frame), time);
-
-	Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(el)*FastMath.sin(az),
-							  FastMath.cos(el)*FastMath.cos(az), FastMath.sin(el)));
+	Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(el)*FastMath.sin(az), FastMath.cos(el)*FastMath.cos(az), FastMath.sin(el)));
 	double[] xyz = toVec.toArray();
 	return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[1], xyz[0]), FastMath.PI),
 			    FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))});
@@ -77,13 +75,9 @@ public final class Conversion
     public static double[] convertRaDecToAzEl(Predefined frame, AbsoluteDate time, double ra, double dec,
 					      double lat, double lon, double alt)
     {
-	OneAxisEllipsoid oae = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-						    FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-	TopocentricFrame toframe = new TopocentricFrame(oae, new GeodeticPoint(lat, lon, alt), "gs");
+	TopocentricFrame toframe = new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(lat, lon, alt), "gs");
 	Transform xfm = FramesFactory.getFrame(frame).getTransformTo(toframe, time);
-
-	Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra),
-							  FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));
+	Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra), FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));
 	double[] xyz = toVec.toArray();
 	return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[0], xyz[1]), FastMath.PI),
 			    FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))});
@@ -91,9 +85,7 @@ public final class Conversion
 
     public static double[] convertPosToLLA(Predefined frame, AbsoluteDate time, List<Double> pos)
     {
-	OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-						      FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-	GeodeticPoint point = earth.transform(new Vector3D(pos.get(0), pos.get(1), pos.get(2)), FramesFactory.getFrame(frame), time);
+	GeodeticPoint point = DataManager.earthShape.transform(new Vector3D(pos.get(0), pos.get(1), pos.get(2)), FramesFactory.getFrame(frame), time);
 	return(new double[]{point.getLatitude(), point.getLongitude(), point.getAltitude()});
     }
 }

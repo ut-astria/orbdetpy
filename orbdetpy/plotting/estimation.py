@@ -15,12 +15,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy
-from numpy.linalg import norm
+from typing import List
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
 from orbdetpy import Constant, EstimationType, MeasurementType
+from orbdetpy.conversion import get_lvlh_rotation
+from orbdetpy.rpc.messages_pb2 import Settings
 
-def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None, estim_param=True):
+def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
+         output_file_path: str=None, estim_param: bool=True)->List[str]:
+    """Plot orbit determination residuals, covariances, and estimated parameters.
+
+    Parameters
+    ----------
+    cfg : Settings object.
+    measurements : List of measurements.
+    orbit_fit : Return value from determine_orbit().
+    interactive : Show interactive plots if True.
+    output_file_path : File path and name prefixes if plots are to be saved.
+    estim_param : Plot estimated parameters if True.
+
+    Returns
+    -------
+    List of plot files if they were saved to disk.
+    """
+
     key = list(cfg.measurements.keys())
     key.sort()
     meas_names = {0: "Azimuth", 1: "Elevation", 2: "Range", 3: "Range Rate", 4: "Right Ascension", 5: "Declination"}
@@ -46,17 +65,17 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         if (sk not in cmap):
             cmap[sk] = cycle[idx]
             patches.append(patch.Patch(color=cycle[idx], label=sk))
-            idx = (idx+1)%len(cycle)
+            idx = (idx + 1)%len(cycle)
         if (sv.bias_estimation in [EstimationType.ESTIMATE, EstimationType.CONSIDER]):
             for m in key:
                 parnames.append(f"{sk}-{meas_names[m]}")
 
-    tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors = [],[],[],[],[],[],[],[]
+    tstamp, prefit, posfit, inocov, params, estmacc, estmcov, colors = [], [], [], [], [], [], [], []
     for i, o in zip(inp, out):
         tstamp.append(i.time)
         colors.append(cmap[o.station if len(o.station) else None])
-        prefit.append([ix-ox for ix, ox in zip(i.values, o.pre_fit)])
-        posfit.append([ix-ox for ix, ox in zip(i.values, o.post_fit)])
+        prefit.append([ix - ox for ix, ox in zip(i.values, o.pre_fit)])
+        posfit.append([ix - ox for ix, ox in zip(i.values, o.post_fit)])
 
         p = []
         for m in range(len(o.innovation_covariance)):
@@ -69,19 +88,10 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
 
         if (estim_param and len(o.estimated_state) > 6):
             if (dmcrun):
-                params.append(o.estimated_state[6:dmcidx]+o.estimated_state[dmcidx+3:])
+                params.append(o.estimated_state[6:dmcidx] + o.estimated_state[dmcidx+3:])
+                estmacc.append(get_lvlh_rotation(o.estimated_state).dot(o.estimated_state[dmcidx:dmcidx+3]))
             else:
                 params.append(o.estimated_state[6:])
-
-        if (estim_param and dmcrun):
-            r = numpy.array(o.estimated_state[:3])
-            r /= norm(r)
-            v = numpy.array(o.estimated_state[3:6])
-            v /= norm(v)
-            h = numpy.cross(r, v)
-            h /= norm(h)
-            rot = numpy.vstack((r, numpy.cross(h, r), h))
-            estmacc.append(rot.dot(o.estimated_state[dmcidx:dmcidx+3]))
 
     pre = numpy.array(prefit)
     pos = numpy.array(posfit)
@@ -128,7 +138,7 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         plt.scatter(tim, pre[:,i], color=colors, marker="o", s=7)
         plt.legend(handles=patches, loc="best")
         plt.xlabel("Time [hr]")
-        plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        plt.ylabel(f"{ylabs[i]} [{units[i]}]")
         plt.grid(True)
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
@@ -150,10 +160,10 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         plt.plot(tim, -cov[:,i], "-r")
         plt.plot(tim,  cov[:,i], "-r")
         plt.xlabel("Time [hr]")
-        plt.ylabel("%s [%s]" % (ylabs[i], units[i]))
+        plt.ylabel(f"{ylabs[i]} [{units[i]}]")
         plt.grid(True)
 
-    plt.tight_layout(rect = [0, 0.03, 1, 0.95])
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     if (output_file_path):
         outfiles.append(output_file_path + "_postfit.png")
         plt.savefig(outfiles[-1], format="png")
@@ -164,7 +174,7 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
                 plt.figure(2)
                 plt.suptitle("Estimated Parameters")
             plt.subplot(par.shape[1], 1, i + 1)
-            plt.scatter(tim, par[:,i], marker = "o", s = 7)
+            plt.scatter(tim, par[:,i], marker="o", s=7)
             plt.xlabel("Time [hr]")
             plt.ylabel(parnames[i])
             plt.grid(True)
@@ -195,3 +205,6 @@ def plot(cfg, measurements, orbit_fit, interactive=False, output_file_path=None,
         plt.show()
     plt.close("all")
     return(outfiles)
+
+if (__name__ != '__main__'):
+    __pdoc__ = {m: False for m in ("Settings", )}

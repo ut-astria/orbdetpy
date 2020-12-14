@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>orbdetpy API documentation</title>
+<meta name="description" content="orbdetpy is a Python library for orbit determination. It is a thin
+Python wrapper for our Java estimation tools and Orekit &lt;http://www.orekit.org/&gt; …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}p,pre{white-space:pre-wrap}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">p,pre{white-space:pre-wrap}@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Package <code>orbdetpy</code></h1>
+</header>
+<section id="section-intro">
+<p>orbdetpy is a Python library for orbit determination. It is a thin
+Python wrapper for our Java estimation tools and Orekit <a href="http://www.orekit.org/">http://www.orekit.org/</a>.</p>
+<h2 id="features">Features</h2>
+<p>Dynamics in orbdetpy can be configured with:</p>
+<ol>
+<li>EGM96 gravity field up to degree and order 360.</li>
+<li>Earth solid tides due to the influence of the Sun and Moon.</li>
+<li>FES 2004 ocean tide model up to degree and order 100.</li>
+<li>NRL MSISE-00 and exponential atmospheric drag models.</li>
+<li>Solar radiation pressure.</li>
+<li>Third body perturbations from the Sun and Moon.</li>
+<li>Satellite box-wing models and maneuvers.</li>
+</ol>
+<p>Range, range-rate, angles, and inertial state measurements are supported.
+Filtering can be done with our Unscented Kalman Filter or Orekit's Extended
+Kalman Filter. Dynamic Model Compensation (DMC) can be used with either
+filter to estimate unmodeled accelerations.</p>
+<h2 id="installation">Installation</h2>
+<ol>
+<li>
+<p>Install the Java Development Kit 8 (1.8) from <a href="http://openjdk.java.net/install/index.html">http://openjdk.java.net/install/index.html</a>.
+Set the <code>JAVA_HOME</code> environment variable to the JDK installation
+folder. The <code>java</code> executable must be added to the system path.</p>
+</li>
+<li>
+<p>Install Python 3.7.0 or higher and run <code>pip install <a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code> to install
+orbdetpy and other package dependencies.</p>
+</li>
+<li>
+<p>Update the astrodynamics data under <code>orbdetpy/orekit-data</code> periodically by
+running the following. You will need <code>root</code> privileges on some systems.</p>
+</li>
+</ol>
+<p><code>python -c "from orbdetpy.astro_data import update_data; update_data();"</code></p>
+<h2 id="development">Development</h2>
+<ol>
+<li>
+<p>Download and extract <a href="https://github.com/ut-astria/orbdetpy/releases/download/2.0.4/orekit-data.tar.gz">https://github.com/ut-astria/orbdetpy/releases/download/2.0.4/orekit-data.tar.gz</a>
+under the <code>orbdetpy/</code> sub-folder.</p>
+</li>
+<li>
+<p>Developers will need Apache Maven 3+ to build the Java library. Build
+using the following from the <code>orbdetpy/</code> sub-folder, where <code>os_cpu_type</code> is
+<code>linux-x86_64</code>, <code>linux-x86_32</code>, <code>windows-x86_64</code>, <code>windows-x86_32</code>,
+<code>osx-x86_64</code>, or <code>osx-x86_32</code> depending on your CPU and OS:</p>
+</li>
+</ol>
+<p><code>mvn -e -Dos.detected.classifier=os_cpu_type package</code></p>
+<p>The command-line is simpler on Intel/AMD 64-bit Linux:</p>
+<p><code>mvn -e package</code></p>
+<h2 id="examples">Examples</h2>
+<ol>
+<li>
+<p><code>fit_radec.py</code> : Run OD with real angles measurements. Also demonstrates
+the Laplace IOD method for estimating an initial state vector.</p>
+</li>
+<li>
+<p><code>interpolate_oem.py</code> : Command-line tool for interpolating state vectors
+from CCSDS OEM ephemeris files. OEM files are available for download at
+<a href="http://astria.tacc.utexas.edu/AstriaGraph">http://astria.tacc.utexas.edu/AstriaGraph</a>.</p>
+</li>
+<li>
+<p><code>predict_passes.py</code> : Predict satellite passes for ground stations or
+geographic regions using TLEs. Current elements may be obtained from
+sites such as <a href="http://www.celestrak.com">http://www.celestrak.com</a>.</p>
+</li>
+<li>
+<p><code>propagate_tle.py</code> : Propagate TLEs given by command-line arguments.</p>
+</li>
+<li>
+<p><code>test_conversion.py</code> : Test reference frame and other conversion functions.</p>
+</li>
+<li>
+<p><code>test_estimation.py</code> : Demonstrates measurement simulation and orbit
+determination functions.</p>
+</li>
+<li>
+<p><code>test_interpolation.py</code> : Interpolate state vectors.</p>
+</li>
+</ol>
+<h2 id="known-issues">Known Issues</h2>
+<ol>
+<li>
+<p>You might receive warnings from the Windows Defender Firewall on Microsoft
+Windows. Grant <code><a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code> network access permissions.</p>
+</li>
+<li>
+<p>If you use the <code>multiprocessing</code> Python package, imports and calls into
+<code><a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code> must not span <code>multiprocessing</code> function calls. That is, <code><a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code>
+can be used in the parent process or the spawned child processes, but not both.
+A workaround is to run the <code><a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code> RPC server using <code>orbdetpy/start_server.sh</code>
+in a separate terminal window before running your Python code.</p>
+</li>
+</ol>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="orbdetpy.astro_data" href="astro_data.html">orbdetpy.astro_data</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="orbdetpy.ccsds" href="ccsds.html">orbdetpy.ccsds</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="orbdetpy.conversion" href="conversion.html">orbdetpy.conversion</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="orbdetpy.estimation" href="estimation.html">orbdetpy.estimation</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="orbdetpy.plotting" href="plotting/index.html">orbdetpy.plotting</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="orbdetpy.propagation" href="propagation.html">orbdetpy.propagation</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="orbdetpy.utilities" href="utilities.html">orbdetpy.utilities</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="orbdetpy.add_facet"><code class="name flex">
+<span>def <span class="ident">add_facet</span></span>(<span>cfg: messages_pb2.Settings, normal: Tuple[float, float, float], area: float) ‑> messages_pb2.Facet</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add a facet to a box-wing spacecraft model.</p>
+<h2 id="parameters">Parameters</h2>
+<p>cfg : Settings object.
+normal : Facet unit outward normal vector in the spacecraft's co-moving LVLH frame.
+area : Facet area [m^2].</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Added Facet object</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+</dd>
+<dt id="orbdetpy.add_maneuver"><code class="name flex">
+<span>def <span class="ident">add_maneuver</span></span>(<span>cfg: messages_pb2.Settings, time: float, trigger_event: int, trigger_params: Optional[List[float]], maneuver_type: int, maneuver_params: Optional[List[float]]) ‑> messages_pb2.Maneuver</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add maneuver to propagation force models.</p>
+<h2 id="parameters">Parameters</h2>
+<p>cfg : Settings object.
+time : TT offset from J2000 epoch [s].
+trigger_event : Constant from ManeuverTrigger.
+trigger_params : Additional data for trigger event.
+maneuver_type : Constant from ManeuverType.
+maneuver_params : Additional maneuver specific data.</p>
+<h2 id="returns">Returns</h2>
+<p>Added Maneuver object.</p></div>
+</dd>
+<dt id="orbdetpy.add_station"><code class="name flex">
+<span>def <span class="ident">add_station</span></span>(<span>cfg: messages_pb2.Settings, name: str, latitude: float, longitude: float, altitude: float, fov_azimuth: float = None, fov_elevation: float = None, fov_aperture: float = None, bias: Optional[List[float]] = None, bias_estimation: int = None) ‑> messages_pb2.Station</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add a ground station.</p>
+<h2 id="parameters">Parameters</h2>
+<p>cfg : Settings object.
+name : Station name.
+latitude : Station WGS-84 latitude [rad].
+longitude : Station WGS-84 longitude [rad].
+altitude : Station height above WGS-84 reference geoid [m].
+fov_azimuth : FOV center azimuth [rad].
+fov_elevation : FOV center elevation [rad].
+fov_aperture : FOV aperture angle [rad].
+bias : Measurement biases.
+bias_estimation : Constant from EstimationType.</p>
+<h2 id="returns">Returns</h2>
+<p>Added Station object.</p></div>
+</dd>
+<dt id="orbdetpy.build_measurement"><code class="name flex">
+<span>def <span class="ident">build_measurement</span></span>(<span>time: float, station_name: str, values: List[float]) ‑> messages_pb2.Measurement</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Build Measurement object from observed or simulated data.</p>
+<h2 id="parameters">Parameters</h2>
+<p>time : Measurement time; TT offset from J2000 epoch [s].
+station_name : Station name.
+values : Measurement data corresponding to types configured in Settings object.</p>
+<h2 id="returns">Returns</h2>
+<p>Measurement object.</p></div>
+</dd>
+<dt id="orbdetpy.configure"><code class="name flex">
+<span>def <span class="ident">configure</span></span>(<span>**kwargs) ‑> messages_pb2.Settings</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create Settings object with default values.</p>
+<h2 id="parameters">Parameters</h2>
+<p>**kwargs : Keyword arguments for non-default parameters.</p>
+<h2 id="returns">Returns</h2>
+<p>Settings object initialized with defaults and given values.</p></div>
+</dd>
+<dt id="orbdetpy.ltr_to_matrix"><code class="name flex">
+<span>def <span class="ident">ltr_to_matrix</span></span>(<span>lower_triangle: List[float]) ‑> List[List[float]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Construct a symmetric matrix from its lower triangle.</p>
+<h2 id="parameters">Parameters</h2>
+<p>lower_triangle : Lower triangle of a symmetric matrix in row-major order.</p>
+<h2 id="returns">Returns</h2>
+<p>Symmetric matrix as a list of lists or None on error.</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="orbdetpy.AttitudeType"><code class="flex name class">
+<span>class <span class="ident">AttitudeType</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Orekit attitude providers.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.AttitudeType.BODY_CENTER_POINTING"><code class="name">var <span class="ident">BODY_CENTER_POINTING</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.AttitudeType.FIXED_RATE"><code class="name">var <span class="ident">FIXED_RATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.AttitudeType.NADIR_POINTING"><code class="name">var <span class="ident">NADIR_POINTING</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.AttitudeType.UNDEFINED"><code class="name">var <span class="ident">UNDEFINED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.Constant"><code class="flex name class">
+<span>class <span class="ident">Constant</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Miscellaneous constants.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Constant.ARC_SECOND_TO_RAD"><code class="name">var <span class="ident">ARC_SECOND_TO_RAD</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Constant.DEGREE_TO_RAD"><code class="name">var <span class="ident">DEGREE_TO_RAD</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Constant.MINUS_I"><code class="name">var <span class="ident">MINUS_I</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Constant.MINUS_J"><code class="name">var <span class="ident">MINUS_J</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Constant.MINUS_K"><code class="name">var <span class="ident">MINUS_K</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Constant.PLUS_I"><code class="name">var <span class="ident">PLUS_I</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Constant.PLUS_J"><code class="name">var <span class="ident">PLUS_J</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Constant.PLUS_K"><code class="name">var <span class="ident">PLUS_K</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Constant.ZERO_VECTOR"><code class="name">var <span class="ident">ZERO_VECTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.DragModel"><code class="flex name class">
+<span>class <span class="ident">DragModel</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Atmospheric drag density models.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.DragModel.EXPONENTIAL"><code class="name">var <span class="ident">EXPONENTIAL</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.DragModel.MSISE2000"><code class="name">var <span class="ident">MSISE2000</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.DragModel.UNDEFINED"><code class="name">var <span class="ident">UNDEFINED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.DragModel.WAM"><code class="name">var <span class="ident">WAM</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.Epoch"><code class="flex name class">
+<span>class <span class="ident">Epoch</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Orekit AbsoluteDate epochs.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Epoch.BEIDOU_EPOCH"><code class="name">var <span class="ident">BEIDOU_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.CCSDS_EPOCH"><code class="name">var <span class="ident">CCSDS_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.FIFTIES_EPOCH"><code class="name">var <span class="ident">FIFTIES_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.GALILEO_EPOCH"><code class="name">var <span class="ident">GALILEO_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.GLONASS_EPOCH"><code class="name">var <span class="ident">GLONASS_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.GPS_EPOCH"><code class="name">var <span class="ident">GPS_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.IRNSS_EPOCH"><code class="name">var <span class="ident">IRNSS_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.J2000_EPOCH"><code class="name">var <span class="ident">J2000_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.JULIAN_EPOCH"><code class="name">var <span class="ident">JULIAN_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.MODIFIED_JULIAN_EPOCH"><code class="name">var <span class="ident">MODIFIED_JULIAN_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.QZSS_EPOCH"><code class="name">var <span class="ident">QZSS_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Epoch.UNIX_EPOCH"><code class="name">var <span class="ident">UNIX_EPOCH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.EstimationType"><code class="flex name class">
+<span>class <span class="ident">EstimationType</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Parameter estimation types.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.EstimationType.CONSIDER"><code class="name">var <span class="ident">CONSIDER</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.EstimationType.ESTIMATE"><code class="name">var <span class="ident">ESTIMATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.EstimationType.UNDEFINED"><code class="name">var <span class="ident">UNDEFINED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.Filter"><code class="flex name class">
+<span>class <span class="ident">Filter</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Estimation filters.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Filter.EXTENDED_KALMAN"><code class="name">var <span class="ident">EXTENDED_KALMAN</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Filter.UNSCENTED_KALMAN"><code class="name">var <span class="ident">UNSCENTED_KALMAN</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.Frame"><code class="flex name class">
+<span>class <span class="ident">Frame</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Orekit reference frames.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Frame.CIRF_CONVENTIONS_1996_ACCURATE_EOP"><code class="name">var <span class="ident">CIRF_CONVENTIONS_1996_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.CIRF_CONVENTIONS_1996_SIMPLE_EOP"><code class="name">var <span class="ident">CIRF_CONVENTIONS_1996_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.CIRF_CONVENTIONS_2003_ACCURATE_EOP"><code class="name">var <span class="ident">CIRF_CONVENTIONS_2003_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.CIRF_CONVENTIONS_2003_SIMPLE_EOP"><code class="name">var <span class="ident">CIRF_CONVENTIONS_2003_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.CIRF_CONVENTIONS_2010_ACCURATE_EOP"><code class="name">var <span class="ident">CIRF_CONVENTIONS_2010_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.CIRF_CONVENTIONS_2010_SIMPLE_EOP"><code class="name">var <span class="ident">CIRF_CONVENTIONS_2010_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ECLIPTIC_CONVENTIONS_1996"><code class="name">var <span class="ident">ECLIPTIC_CONVENTIONS_1996</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ECLIPTIC_CONVENTIONS_2003"><code class="name">var <span class="ident">ECLIPTIC_CONVENTIONS_2003</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ECLIPTIC_CONVENTIONS_2010"><code class="name">var <span class="ident">ECLIPTIC_CONVENTIONS_2010</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.EME2000"><code class="name">var <span class="ident">EME2000</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.GCRF"><code class="name">var <span class="ident">GCRF</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.GTOD_CONVENTIONS_1996_ACCURATE_EOP"><code class="name">var <span class="ident">GTOD_CONVENTIONS_1996_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.GTOD_CONVENTIONS_1996_SIMPLE_EOP"><code class="name">var <span class="ident">GTOD_CONVENTIONS_1996_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.GTOD_CONVENTIONS_2003_ACCURATE_EOP"><code class="name">var <span class="ident">GTOD_CONVENTIONS_2003_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.GTOD_CONVENTIONS_2003_SIMPLE_EOP"><code class="name">var <span class="ident">GTOD_CONVENTIONS_2003_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.GTOD_CONVENTIONS_2010_ACCURATE_EOP"><code class="name">var <span class="ident">GTOD_CONVENTIONS_2010_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.GTOD_CONVENTIONS_2010_SIMPLE_EOP"><code class="name">var <span class="ident">GTOD_CONVENTIONS_2010_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.GTOD_WITHOUT_EOP_CORRECTIONS"><code class="name">var <span class="ident">GTOD_WITHOUT_EOP_CORRECTIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ICRF"><code class="name">var <span class="ident">ICRF</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_CIO_CONV_1996_ACCURATE_EOP"><code class="name">var <span class="ident">ITRF_CIO_CONV_1996_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_CIO_CONV_1996_SIMPLE_EOP"><code class="name">var <span class="ident">ITRF_CIO_CONV_1996_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_CIO_CONV_2003_ACCURATE_EOP"><code class="name">var <span class="ident">ITRF_CIO_CONV_2003_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_CIO_CONV_2003_SIMPLE_EOP"><code class="name">var <span class="ident">ITRF_CIO_CONV_2003_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_CIO_CONV_2010_ACCURATE_EOP"><code class="name">var <span class="ident">ITRF_CIO_CONV_2010_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_CIO_CONV_2010_SIMPLE_EOP"><code class="name">var <span class="ident">ITRF_CIO_CONV_2010_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_EQUINOX_CONV_1996_ACCURATE_EOP"><code class="name">var <span class="ident">ITRF_EQUINOX_CONV_1996_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_EQUINOX_CONV_1996_SIMPLE_EOP"><code class="name">var <span class="ident">ITRF_EQUINOX_CONV_1996_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_EQUINOX_CONV_2003_ACCURATE_EOP"><code class="name">var <span class="ident">ITRF_EQUINOX_CONV_2003_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_EQUINOX_CONV_2003_SIMPLE_EOP"><code class="name">var <span class="ident">ITRF_EQUINOX_CONV_2003_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_EQUINOX_CONV_2010_ACCURATE_EOP"><code class="name">var <span class="ident">ITRF_EQUINOX_CONV_2010_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.ITRF_EQUINOX_CONV_2010_SIMPLE_EOP"><code class="name">var <span class="ident">ITRF_EQUINOX_CONV_2010_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.MOD_CONVENTIONS_1996"><code class="name">var <span class="ident">MOD_CONVENTIONS_1996</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.MOD_CONVENTIONS_2003"><code class="name">var <span class="ident">MOD_CONVENTIONS_2003</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.MOD_CONVENTIONS_2010"><code class="name">var <span class="ident">MOD_CONVENTIONS_2010</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.MOD_WITHOUT_EOP_CORRECTIONS"><code class="name">var <span class="ident">MOD_WITHOUT_EOP_CORRECTIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.PZ90_11"><code class="name">var <span class="ident">PZ90_11</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TEME"><code class="name">var <span class="ident">TEME</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TIRF_CONVENTIONS_1996_ACCURATE_EOP"><code class="name">var <span class="ident">TIRF_CONVENTIONS_1996_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TIRF_CONVENTIONS_1996_SIMPLE_EOP"><code class="name">var <span class="ident">TIRF_CONVENTIONS_1996_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TIRF_CONVENTIONS_2003_ACCURATE_EOP"><code class="name">var <span class="ident">TIRF_CONVENTIONS_2003_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TIRF_CONVENTIONS_2003_SIMPLE_EOP"><code class="name">var <span class="ident">TIRF_CONVENTIONS_2003_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TIRF_CONVENTIONS_2010_ACCURATE_EOP"><code class="name">var <span class="ident">TIRF_CONVENTIONS_2010_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TIRF_CONVENTIONS_2010_SIMPLE_EOP"><code class="name">var <span class="ident">TIRF_CONVENTIONS_2010_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TOD_CONVENTIONS_1996_ACCURATE_EOP"><code class="name">var <span class="ident">TOD_CONVENTIONS_1996_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TOD_CONVENTIONS_1996_SIMPLE_EOP"><code class="name">var <span class="ident">TOD_CONVENTIONS_1996_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TOD_CONVENTIONS_2003_ACCURATE_EOP"><code class="name">var <span class="ident">TOD_CONVENTIONS_2003_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TOD_CONVENTIONS_2003_SIMPLE_EOP"><code class="name">var <span class="ident">TOD_CONVENTIONS_2003_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TOD_CONVENTIONS_2010_ACCURATE_EOP"><code class="name">var <span class="ident">TOD_CONVENTIONS_2010_ACCURATE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TOD_CONVENTIONS_2010_SIMPLE_EOP"><code class="name">var <span class="ident">TOD_CONVENTIONS_2010_SIMPLE_EOP</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.TOD_WITHOUT_EOP_CORRECTIONS"><code class="name">var <span class="ident">TOD_WITHOUT_EOP_CORRECTIONS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Frame.VEIS_1950"><code class="name">var <span class="ident">VEIS_1950</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.ManeuverTrigger"><code class="flex name class">
+<span>class <span class="ident">ManeuverTrigger</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Maneuver trigger events.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.ManeuverTrigger.APSIDE_CROSSING"><code class="name">var <span class="ident">APSIDE_CROSSING</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverTrigger.DATE_TIME"><code class="name">var <span class="ident">DATE_TIME</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverTrigger.LONGITUDE_CROSSING"><code class="name">var <span class="ident">LONGITUDE_CROSSING</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverTrigger.UNDEFINED"><code class="name">var <span class="ident">UNDEFINED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.ManeuverType"><code class="flex name class">
+<span>class <span class="ident">ManeuverType</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Maneuver types.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.ManeuverType.ARG_PERIGEE_CHANGE"><code class="name">var <span class="ident">ARG_PERIGEE_CHANGE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.CONSTANT_THRUST"><code class="name">var <span class="ident">CONSTANT_THRUST</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.EAST_WEST_STATIONING"><code class="name">var <span class="ident">EAST_WEST_STATIONING</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.ECCENTRICITY_CHANGE"><code class="name">var <span class="ident">ECCENTRICITY_CHANGE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.INCLINATION_CHANGE"><code class="name">var <span class="ident">INCLINATION_CHANGE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.NORTH_SOUTH_STATIONING"><code class="name">var <span class="ident">NORTH_SOUTH_STATIONING</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.PERIGEE_CHANGE"><code class="name">var <span class="ident">PERIGEE_CHANGE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.RAAN_CHANGE"><code class="name">var <span class="ident">RAAN_CHANGE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.SEMI_MAJOR_AXIS_CHANGE"><code class="name">var <span class="ident">SEMI_MAJOR_AXIS_CHANGE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.STOP_PROPAGATION"><code class="name">var <span class="ident">STOP_PROPAGATION</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverType.UNDEFINED"><code class="name">var <span class="ident">UNDEFINED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.MeasurementType"><code class="flex name class">
+<span>class <span class="ident">MeasurementType</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Measurement types.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.MeasurementType.AZIMUTH"><code class="name">var <span class="ident">AZIMUTH</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.MeasurementType.DECLINATION"><code class="name">var <span class="ident">DECLINATION</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.MeasurementType.ELEVATION"><code class="name">var <span class="ident">ELEVATION</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.MeasurementType.POSITION"><code class="name">var <span class="ident">POSITION</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.MeasurementType.POSITION_VELOCITY"><code class="name">var <span class="ident">POSITION_VELOCITY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.MeasurementType.RANGE"><code class="name">var <span class="ident">RANGE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.MeasurementType.RANGE_RATE"><code class="name">var <span class="ident">RANGE_RATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.MeasurementType.RIGHT_ASCENSION"><code class="name">var <span class="ident">RIGHT_ASCENSION</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.OutputFlag"><code class="flex name class">
+<span>class <span class="ident">OutputFlag</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Bit flags that control propagation and estimation output.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.OutputFlag.OUTPUT_DENSITY"><code class="name">var <span class="ident">OUTPUT_DENSITY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.OutputFlag.OUTPUT_ESTM_COV"><code class="name">var <span class="ident">OUTPUT_ESTM_COV</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.OutputFlag.OUTPUT_INNO_COV"><code class="name">var <span class="ident">OUTPUT_INNO_COV</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.OutputFlag.OUTPUT_PROP_COV"><code class="name">var <span class="ident">OUTPUT_PROP_COV</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.OutputFlag.OUTPUT_RESIDUALS"><code class="name">var <span class="ident">OUTPUT_RESIDUALS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.PositionAngle"><code class="flex name class">
+<span>class <span class="ident">PositionAngle</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Orekit position angles.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.PositionAngle.ECCENTRIC"><code class="name">var <span class="ident">ECCENTRIC</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.PositionAngle.MEAN"><code class="name">var <span class="ident">MEAN</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.PositionAngle.TRUE"><code class="name">var <span class="ident">TRUE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#features">Features</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#development">Development</a></li>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#known-issues">Known Issues</a></li>
+</ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="orbdetpy.astro_data" href="astro_data.html">orbdetpy.astro_data</a></code></li>
+<li><code><a title="orbdetpy.ccsds" href="ccsds.html">orbdetpy.ccsds</a></code></li>
+<li><code><a title="orbdetpy.conversion" href="conversion.html">orbdetpy.conversion</a></code></li>
+<li><code><a title="orbdetpy.estimation" href="estimation.html">orbdetpy.estimation</a></code></li>
+<li><code><a title="orbdetpy.plotting" href="plotting/index.html">orbdetpy.plotting</a></code></li>
+<li><code><a title="orbdetpy.propagation" href="propagation.html">orbdetpy.propagation</a></code></li>
+<li><code><a title="orbdetpy.utilities" href="utilities.html">orbdetpy.utilities</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="orbdetpy.add_facet" href="#orbdetpy.add_facet">add_facet</a></code></li>
+<li><code><a title="orbdetpy.add_maneuver" href="#orbdetpy.add_maneuver">add_maneuver</a></code></li>
+<li><code><a title="orbdetpy.add_station" href="#orbdetpy.add_station">add_station</a></code></li>
+<li><code><a title="orbdetpy.build_measurement" href="#orbdetpy.build_measurement">build_measurement</a></code></li>
+<li><code><a title="orbdetpy.configure" href="#orbdetpy.configure">configure</a></code></li>
+<li><code><a title="orbdetpy.ltr_to_matrix" href="#orbdetpy.ltr_to_matrix">ltr_to_matrix</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="orbdetpy.AttitudeType" href="#orbdetpy.AttitudeType">AttitudeType</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.Constant" href="#orbdetpy.Constant">Constant</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.DragModel" href="#orbdetpy.DragModel">DragModel</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.Epoch" href="#orbdetpy.Epoch">Epoch</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.EstimationType" href="#orbdetpy.EstimationType">EstimationType</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.Filter" href="#orbdetpy.Filter">Filter</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.Frame" href="#orbdetpy.Frame">Frame</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.ManeuverTrigger" href="#orbdetpy.ManeuverTrigger">ManeuverTrigger</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.ManeuverType" href="#orbdetpy.ManeuverType">ManeuverType</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.MeasurementType" href="#orbdetpy.MeasurementType">MeasurementType</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.OutputFlag" href="#orbdetpy.OutputFlag">OutputFlag</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.PositionAngle" href="#orbdetpy.PositionAngle">PositionAngle</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

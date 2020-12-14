@@ -14,8 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import math
+"""
+.. include:: ../README.md
+"""
+
 from os import path
+from math import pi, sqrt
 from typing import List, Optional, Tuple
 from .version import __version__
 from orbdetpy.rpc.messages_pb2 import Facet, Maneuver, Measurement, Parameter, Settings, Station
@@ -37,6 +41,24 @@ class DragModel():
     UNDEFINED = 0
     EXPONENTIAL = 1
     MSISE2000 = 2
+    WAM = 3
+
+class Epoch():
+    """Orekit AbsoluteDate epochs.
+    """
+
+    BEIDOU_EPOCH = 0
+    CCSDS_EPOCH = 1
+    FIFTIES_EPOCH = 2
+    GALILEO_EPOCH = 3
+    GLONASS_EPOCH = 4
+    GPS_EPOCH = 5
+    IRNSS_EPOCH = 6
+    J2000_EPOCH = 7
+    UNIX_EPOCH = 8
+    JULIAN_EPOCH = 9
+    MODIFIED_JULIAN_EPOCH = 10
+    QZSS_EPOCH = 11
 
 class EstimationType():
     """Parameter estimation types.
@@ -163,12 +185,22 @@ class TDMFileFormat():
     XML = 1
     UNKNOWN = 2
 
+class OutputFlag():
+    """Bit flags that control propagation and estimation output.
+    """
+
+    OUTPUT_ESTM_COV = 1
+    OUTPUT_PROP_COV = 2
+    OUTPUT_INNO_COV = 4
+    OUTPUT_RESIDUALS = 8
+    OUTPUT_DENSITY = 16
+
 class Constant():
     """Miscellaneous constants.
     """
 
-    DEGREE_TO_RAD = (math.pi/180)
-    ARC_SECOND_TO_RAD = (math.pi/648000)
+    DEGREE_TO_RAD = pi/180
+    ARC_SECOND_TO_RAD = pi/648000
     PLUS_I = (1, 0, 0)
     PLUS_J = (0, 1, 0)
     PLUS_K = (0, 0, 1)
@@ -189,17 +221,26 @@ def configure(**kwargs)->Settings:
     Settings object initialized with defaults and given values.
     """
 
-    return(Settings(rso_mass=5.0, rso_area=0.1, gravity_degree=20, gravity_order=20, ocean_tides_degree=20, ocean_tides_order=20,
-                    third_body_sun=True, third_body_moon=True, solid_tides_sun=True, solid_tides_moon=True, drag_model=DragModel.MSISE2000,
-                    drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.ESTIMATE),
-                    drag_exp_rho0=3.614E-13, drag_exp_H0=700000.0, drag_exp_Hscale=88667.0, rp_sun=True,
-                    rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.ESTIMATE),
-                    prop_inertial_frame=Frame.GCRF, integ_min_time_step=1E-3, integ_max_time_step=300.0,
-                    integ_abs_tolerance=1E-14, integ_rel_tolerance=1E-12, estm_filter=Filter.UNSCENTED_KALMAN,
-                    estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
-                    estm_DMC_acceleration=Parameter(value=0.0, min=-1E-3, max=1E-3, estimation=EstimationType.ESTIMATE),
-                    estm_smoother_iterations=10, estm_enable_PDAF=False, estm_detection_probability=0.99,
-                    estm_gating_probability=0.99, estm_gating_threshold=5.0, estm_verbose_output=True, **kwargs))
+    cfg = Settings(rso_mass=5.0, rso_area=0.1, gravity_degree=20, gravity_order=20, ocean_tides_degree=20, ocean_tides_order=20,
+                   third_body_sun=True, third_body_moon=True, solid_tides_sun=True, solid_tides_moon=True, drag_model=DragModel.MSISE2000,
+                   drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.ESTIMATE),
+                   drag_exp_rho0=3.614E-13, drag_exp_H0=700000.0, drag_exp_Hscale=88667.0, rp_sun=True,
+                   rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.ESTIMATE),
+                   prop_inertial_frame=Frame.GCRF, integ_min_time_step=1E-3, integ_max_time_step=300.0, integ_abs_tolerance=1E-14,
+                   integ_rel_tolerance=1E-12, output_flags=OutputFlag.OUTPUT_ESTM_COV|OutputFlag.OUTPUT_PROP_COV|OutputFlag.OUTPUT_INNO_COV|
+                   OutputFlag.OUTPUT_RESIDUALS, estm_filter=Filter.UNSCENTED_KALMAN, estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
+                   estm_DMC_acceleration=Parameter(value=0.0, min=-1E-3, max=1E-3, estimation=EstimationType.ESTIMATE),
+                   estm_smoother_iterations=10, estm_enable_PDAF=False, estm_detection_probability=0.99,
+                   estm_gating_probability=0.99, estm_gating_threshold=5.0)
+    for key, value in kwargs.items():
+        attr = getattr(cfg, key)
+        if (hasattr(attr, "CopyFrom")):
+            attr.CopyFrom(value)
+        elif (hasattr(attr, "MergeFrom")):
+            attr[:] = value
+        else:
+            setattr(cfg, key, value)
+    return(cfg)
 
 def add_facet(cfg: Settings, normal: Tuple[float, float, float], area: float)->Facet:
     """Add a facet to a box-wing spacecraft model.
@@ -292,7 +333,32 @@ def build_measurement(time: float, station_name: str, values: List[float])->Meas
 
     return(Measurement(time=time, station=station_name, values=values))
 
+def ltr_to_matrix(lower_triangle: List[float])->List[List[float]]:
+    """Construct a symmetric matrix from its lower triangle.
+
+    Parameters
+    ----------
+    lower_triangle : Lower triangle of a symmetric matrix in row-major order.
+
+    Returns
+    -------
+    Symmetric matrix as a list of lists or None on error.
+    """
+
+    m = (sqrt(8*len(lower_triangle) + 1) - 1)/2
+    n = int(m)
+    if (m == n):
+        k, matrix = 0, [[0]*n for _ in range(n)]
+        for i in range(n):
+            for j in range(i+1):
+                matrix[i][j], matrix[j][i] = lower_triangle[k], lower_triangle[k]
+                k += 1
+        return(matrix)
+    return(None)
+
 if (__name__ != '__main__'):
+    __pdoc__ = {m: False for m in ("Facet", "Maneuver", "Measurement", "Parameter", "Settings",
+                                   "Station", "TDMFileFormat", "rpc", "version")}
     _root_dir = path.dirname(path.abspath(path.realpath(__file__)))
     _data_dir = path.join(_root_dir, "orekit-data")
     _libs_dir = path.join(_root_dir, "target")
