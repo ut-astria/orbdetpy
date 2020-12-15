@@ -4,6 +4,9 @@ from orbdetpy.plotting.estimation import plot as od_plot
 import json
 
 
+with open("data/input/CombinedASTRIAData.json") as json_file:
+    CombinedData = json.load(json_file)
+
 fit_data = determine_orbit(["data/input/ASTRIA_od.json"],
                            ["data/input/CombinedASTRIAData.json"],
                            output_file = "data/output/ASTRIA_output.json")
@@ -38,7 +41,7 @@ od_plot("data/input/ASTRIA_od.json",
         "data/output/00040A_Associations.json",
         "data/output/00040A_OD_Results.json", interactive = True)
 
-od_plot("data/input/MEO1_od.json",
+od_plot("data/input/ASTRIA_od.json",
         "data/output/18109A_Associations.json",
         "data/output/18109A_OD_Results.json", interactive = True)
 

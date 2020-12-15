@@ -363,7 +363,6 @@ public class CAR
 		lowerIndex = 0;
 		mainIndex = 0;
 		
-
 		double[] binLocRho = new double[CARIndexEnd - CARIndexStart];
 		double[] binSizeRho = new double[CARIndexEnd - CARIndexStart];
 		

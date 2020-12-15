@@ -847,10 +847,6 @@ public final class MultiTargetEstimation
 				double[] fitv = currSC.smootherData.get(j).measObjsSmoother.estimate(0, 0, smSsta).getEstimatedValue();
 				currSC.estOutput.get(j).postFit.put(measNames[0], fitv);
 		    }
-
-		    System.out.println("smootherData: " + j);
-		    System.out.println(new Array2DRowRealMatrix(currSC.estOutput.get(j).estimatedCovariance).toString());
-		    System.out.println(currSC.smootherData.get(j).Pstar.toString());
 		    
 		    //store
 		    currSC.estOutput.get(j).estimatedState = currSC.smootherData.get(j).xstar.getColumn(0);
@@ -885,11 +881,9 @@ public final class MultiTargetEstimation
 
 				for (measIndex = 0; measIndex < currSC.associatedObsIndex.size(); measIndex++)
 				{
-					System.out.println(measIndex);
 				    RealMatrix Ptemp = new Array2DRowRealMatrix(currSC.estOutput.get(measIndex).estimatedCovariance);
 				    currSC.xhatPrev = new ArrayRealVector(currSC.estOutput.get(measIndex).estimatedState);
 				    
-				    System.out.println("Ptemp:" + Ptemp.toString());
 				    currSC.propSigma = GenerateSigmaPoints(currSC.xhatPrev, Ptemp, numStates, numSigmas);
 
 				    RealVector rawMeas = updatePrep(currSC, tm, currSC.associatedObsIndex.get(measIndex), numSigmas, propagator, biasPos);
@@ -1055,7 +1049,7 @@ public final class MultiTargetEstimation
 		
 		TimeStampedPVCoordinates stationCoords = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(date, odCfg.propFrame);
 		
-		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, RA_d, Dec, Dec_d, stationCoords, 1000.0, 1, 1000.0 ,26450000, 26650000, 0.001).getCAR();
+		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, RA_d, Dec, Dec_d, stationCoords, 5000.0, 3, 500.0 ,26000000, 26500000, 0.01).getCAR();
 		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, RA_d, Dec, Dec_d, stationCoords, 100.0, 1, 100.0 ,2.645e7, 2.665e7, 0.001).getCAR();
 		
 		System.out.println(CARGaussians.size());
@@ -1081,18 +1075,16 @@ public final class MultiTargetEstimation
 			{
 				sigma.setColumn(j, RangeRaDec2XYZ(sigma.getColumnVector(j), date, obs.station));
 			}
-			
 		    new ManualPropagation(odCfg).propagate(0, sigma, CARGaussians.get(i).rangeMean/Constants.SPEED_OF_LIGHT, sigmaXYZ, false);
 
 			RealMatrix Pxx = new Array2DRowRealMatrix(numStates, numStates);
 			RealVector xhat = addColumns(sigma).mapMultiplyToSelf(0.5/numStates);
-			
+
 			for (int j = 0; j < sigma.getColumnDimension(); j++)
 			{
 			    RealVector xhatdiff = sigma.getColumnVector(j).subtract(xhat);
 			    Pxx = Pxx.add(xhatdiff.outerProduct(xhatdiff).scalarMultiply(0.5/numStates));
 			}
-
 			//return mean/covar structure
 			singleHypothesis.xhat = new ArrayRealVector(xhat.toArray());
 			singleHypothesis.P = Pxx;
@@ -1104,7 +1096,6 @@ public final class MultiTargetEstimation
 			
 			
 		}
-		
 		return objectHypotheses;
 	}
 	
