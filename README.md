@@ -26,7 +26,7 @@ Installation
    Set the `JAVA_HOME` environment variable to the JDK installation
    folder. The `java` executable must be added to the system path.
 
-2. Install Python 3.7.0 or higher and run `pip install orbdetpy` to install
+2. Install Python 3.8.0 or higher and run `pip install orbdetpy` to install
    orbdetpy and other package dependencies.
 
 3. Update the astrodynamics data under `orbdetpy/orekit-data` periodically by

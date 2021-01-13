@@ -39,7 +39,6 @@ public final class WAM implements Atmosphere
 {
     private BodyShape earth;
     private String currentFile = "";
-    private double lastDensity;
     private float[] wamLat, wamLon, altSlice;
     private float[][][] wamAlt, wamRho;
     private TricubicInterpolator interpolator = new TricubicInterpolator();
@@ -53,7 +52,7 @@ public final class WAM implements Atmosphere
     {
 	double tt = date.durationFrom(AbsoluteDate.J2000_EPOCH);
 	Map.Entry<Double, String> entry = DataManager.wamFileMap.floorEntry(tt);
-	if (entry == null || (tt - entry.getKey() >= 1800.0))
+	if (entry == null || (tt - entry.getKey() > 86400.0))
 	    throw(new RuntimeException("WAM data unavailable at " + date.toString()));
 
 	if (!currentFile.equals(entry.getValue()))
@@ -63,7 +62,7 @@ public final class WAM implements Atmosphere
 	    {
 		wamLat = (float[])wamData.findVariable("lat").read("1:89").copyTo1DJavaArray();
 		wamLon = (float[])wamData.findVariable("lon").read().copyTo1DJavaArray();
-		wamAlt = (float[][][])wamData.findVariable("wam_height_levels").read(":,1:89,:").copyToNDJavaArray();
+		wamAlt = (float[][][])wamData.findVariable("height").read(":,1:89,:").copyToNDJavaArray();
 		wamRho = (float[][][])wamData.findVariable("thermosphere_mass_density").read(":,1:89,:").copyToNDJavaArray();
 		altSlice = new float[wamAlt.length];
 	    }
@@ -94,15 +93,7 @@ public final class WAM implements Atmosphere
 	    for (int j = 0; j < 2; j++)
 		for (int k = 0; k < 2; k++)
 		    gridF[i][j][k] = wamRho[zb[k]][xb[i]][yb[j]];
-
-	try
-	{
-	    lastDensity = interpolator.interpolate(gridX, gridY, gridZ, gridF).value(lat, lon, alt);
-	}
-	catch (Exception exc)
-	{
-	}
-	return(lastDensity);
+	return(interpolator.interpolate(gridX, gridY, gridZ, gridF).value(lat, lon, alt));
     }
 
     @Override public synchronized <T extends RealFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame)
