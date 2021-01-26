@@ -1,5 +1,5 @@
 # estimation.py - Plot orbit determination results.
-# Copyright (C) 2018-2020 University of Texas
+# Copyright (C) 2018-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -71,8 +71,8 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
                 parnames.append(f"{sk}-{meas_names[m]}")
 
     diag_pos = [0, 2, 5, 9, 14, 20]
-    has_truth, state_err, state_cov = len(inp) > 0 and hasattr(inp[0], "true_state"), [], []
-    tstamp, prefit, posfit, inocov, params, estmacc, estmcov, colors = [], [], [], [], [], [], [], []
+    has_truth = len(inp) > 0 and hasattr(inp[0], "true_state") and len(inp[0].true_state) >= 6
+    tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors,state_err,state_cov = [],[],[],[],[],[],[],[],[],[]
     for i, o in zip(inp, out):
         tstamp.append(i.time)
         colors.append(cmap[o.station if len(o.station) else None])

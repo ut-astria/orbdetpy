@@ -1,6 +1,6 @@
 /*
  * WAM.java - Implementation of NOAA's WAM-IPE atmospheric model.
- * Copyright (C) 2020 University of Texas
+ * Copyright (C) 2020-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package org.astria;
 import java.util.Arrays;
 import java.util.Map;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.interpolation.TricubicInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.TricubicInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -93,7 +94,9 @@ public final class WAM implements Atmosphere
 	    for (int j = 0; j < 2; j++)
 		for (int k = 0; k < 2; k++)
 		    gridF[i][j][k] = wamRho[zb[k]][xb[i]][yb[j]];
-	return(interpolator.interpolate(gridX, gridY, gridZ, gridF).value(lat, lon, alt));
+
+	TricubicInterpolatingFunction function = interpolator.interpolate(gridX, gridY, gridZ, gridF);
+	return(function.value(lat, lon, alt));
     }
 
     @Override public synchronized <T extends RealFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame)
@@ -106,21 +109,21 @@ public final class WAM implements Atmosphere
         return(earth.getBodyFrame());
     }
 
-    private int[] getBounds(float[] array, float key, boolean cyclic)
+    private int[] getBounds(float[] array, float key, boolean periodic)
     {
 	int[] bounds = {0, Arrays.binarySearch(array, key)};
 	if (bounds[1] < 0)
 	    bounds[1] = -1 - bounds[1];
 	if (bounds[1] == 0)
 	{
-	    if (cyclic)
+	    if (periodic)
 		bounds[0] = array.length - 1;
 	    else
 		bounds[1] = 1;
 	}
 	else if (bounds[1] == array.length)
 	{
-	    if (cyclic)
+	    if (periodic)
 	    {
 		bounds[0] = array.length - 1;
 		bounds[1] = 0;
