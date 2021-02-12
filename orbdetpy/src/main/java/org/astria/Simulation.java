@@ -181,6 +181,16 @@ public final class Simulation
 			    obs.addModifier(new Bias<Range>(biasRange, new double[] {rand.nextGaussian()*val.error[0] + jsn.rangeBias},
 							    oneOnes, oneNegInf, onePosInf));
 			    clone.range = obs.estimate(0, 0, sta).getEstimatedValue()[0];
+			    
+			    
+			    if (simCfg.simIncludeAngleRates)
+			    {
+				    AngularRaDec opticalObs = new AngularRaDec(gst, simCfg.propFrame, proptm, twoZeros, twoZeros, twoOnes, obsSat);
+				    double[] obsVal = opticalObs.estimate(0, 0, sta).getEstimatedValue();			    	
+				    clone.angleRates = new double[] {obsVal[0],obsVal[1]};
+
+			    }
+			    
 			}
 			else if (name.equalsIgnoreCase("RangeRate"))
 			{

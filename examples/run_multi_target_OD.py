@@ -61,11 +61,6 @@ with open("data/output/MEO2_Associations.json", 'w') as json_file:
 		MEO2_Associations.append(CombinedData[measNum])
 	json.dump(MEO2_Associations, json_file, indent=4)
 
-Unassociated = []
-with open("data/output/Unassociated.json", 'w') as json_file:
-	for measNum in fit_data["Unassociated"]:
-		Unassociated.append(CombinedData[measNum])
-	json.dump(Unassociated, json_file, indent=4)
 
 od_plot("data/input/MEO0_od.json",
         "data/output/MEO0_Associations.json",
