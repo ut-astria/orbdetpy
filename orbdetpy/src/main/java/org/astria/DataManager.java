@@ -27,6 +27,7 @@ import java.util.Scanner;
 import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DirectoryCrawler;
@@ -133,11 +134,17 @@ public final class DataManager
 	    return;
 	Files.find(wamPath, Integer.MAX_VALUE, (p, a) -> a.isRegularFile() && p.toString().endsWith(".nc"))
 	    .forEach(cdf -> {
-		    String s = cdf.getFileName().toString().substring(4, 19).replace("_", "");
-		    String utc = String.format("%s-%s-%sT%s:%s:%sZ", s.substring(0, 4), s.substring(4, 6), s.substring(6, 8),
-					       s.substring(8, 10), s.substring(10, 12), s.substring(12, 14));
-		    DataManager.wamFileMap.put(new AbsoluteDate(DateTimeComponents.parseDateTime(utc), TimeScalesFactory.getUTC())
-					       .durationFrom(AbsoluteDate.J2000_EPOCH), cdf.toString());
+		    for (String s: cdf.getFileName().toString().split(Pattern.quote(".")))
+		    {
+			if (!s.startsWith("20") || s.length() != 15)
+			    continue;
+			s = s.replace("_", "");
+			String utc = String.format("%s-%s-%sT%s:%s:%sZ", s.substring(0, 4), s.substring(4, 6), s.substring(6, 8),
+						   s.substring(8, 10), s.substring(10, 12), s.substring(12, 14));
+			DataManager.wamFileMap.put(new AbsoluteDate(DateTimeComponents.parseDateTime(utc), TimeScalesFactory.getUTC())
+						   .durationFrom(AbsoluteDate.J2000_EPOCH), cdf.toString());
+			break;
+		    }
 		});
     }
 

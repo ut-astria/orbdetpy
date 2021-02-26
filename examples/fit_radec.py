@@ -1,5 +1,5 @@
 # fit_radec.py - Run OD on real angles data.
-# Copyright (C) 2020 University of Texas
+# Copyright (C) 2020-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -97,5 +97,6 @@ if (isinstance(fit, str)):
 for f in fit:
     # print(f) to dump pre-fits/post-fits/covariances
     print(get_UTC_string(f.time), f.station, f.estimated_state[:6])
+
 # Plot OD results
-plot(config, meas_obj, fit, interactive=True, estim_param=True)
+plot(config, meas_obj, fit, interactive=True, estim_param=False)

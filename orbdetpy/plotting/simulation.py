@@ -1,5 +1,5 @@
 # simulation.py - Plot simulation results.
-# Copyright (C) 2018-2020 University of Texas
+# Copyright (C) 2018-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,6 +40,8 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
             rv = [x/1000.0 for x in o.true_state[:6]]
         else:
             rv = [x/1000.0 for x in o.estimated_state[:6]]
+        if (not rv):
+            continue
         rn = norm(rv[:3])
         vn = norm(rv[3:])
         h = cross(rv[:3], rv[3:])

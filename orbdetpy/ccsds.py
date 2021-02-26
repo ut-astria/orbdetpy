@@ -39,6 +39,7 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, time_list: List[s
     Ephemerides in OEM format.
     """
 
+    utc_list = get_UTC_string([o.time for o in obs])
     oem_header = f"""CCSDS_OEM_VERS = 2.0
 CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")}
 ORIGINATOR = UT-Austin
@@ -49,8 +50,8 @@ OBJECT_ID = {obj_id}
 CENTER_NAME = EARTH
 REF_FRAME = {cfg.prop_inertial_frame}
 TIME_SYSTEM = UTC
-START_TIME = {time_list[0] if (time_list) else get_UTC_string(obs[0].time)[:-1]}
-STOP_TIME = {time_list[-1] if (time_list) else get_UTC_string(obs[-1].time)[:-1]}
+START_TIME = {time_list[0] if (time_list) else utc_list[0][:-1]}
+STOP_TIME = {time_list[-1] if (time_list) else utc_list[-1][:-1]}
 META_STOP
 
 """
@@ -59,11 +60,11 @@ META_STOP
     is_estm = (hasattr(obs[0], "estimated_state") and hasattr(obs[0], "estimated_covariance")
                and hasattr(obs[0], "propagated_covariance"))
     eph_key = "estimated_state" if (is_estm) else "true_state"
-    for o in obs:
+    for utc, o in zip(utc_list, obs):
+        utc = utc[:-1]
         if (o.time in added):
             continue
         added.add(o.time)
-        utc = get_UTC_string(o.time)[:-1]
         if (time_list is not None and utc not in time_list):
             continue
         X = [x/1000.0 for x in getattr(o, eph_key)[:6]]
@@ -103,6 +104,7 @@ def export_TDM(cfg: Settings, obs, obj_id: str, station_list: List[str]=None)->s
     """
 
     miter = cfg.measurements.keys()
+    utc_list = get_UTC_string([o.time for o in obs])
     if (MeasurementType.RIGHT_ASCENSION in miter and MeasurementType.DECLINATION in miter):
         obstype = f"ANGLE_TYPE = RADEC\nREFERENCE_FRAME = {cfg.prop_inertial_frame}"
         obspath = "1,2"
@@ -137,10 +139,11 @@ PATH = {obspath}
 META_STOP
 """)
         blocks.append("DATA_START")
-        for o in obs:
+
+        for utc, o in zip(utc_list, obs):
+            utc = utc[:-1]
             if (o.station != sname):
                 continue
-            utc = get_UTC_string(o.time)[:-1]
             if (MeasurementType.RANGE in miter or MeasurementType.RANGE_RATE in miter):
                 if (MeasurementType.RANGE in miter):
                     blocks.append(f"RANGE = {utc} {o.values[0]/1000.0}")
@@ -148,7 +151,8 @@ META_STOP
                     blocks.append(f"DOPPLER_INSTANTANEOUS = {utc} {o.values[-1]/1000.0}")
             if ((MeasurementType.AZIMUTH in miter and MeasurementType.ELEVATION in miter) or
                 (MeasurementType.RIGHT_ASCENSION in miter and MeasurementType.DECLINATION in miter)):
-                blocks.append(f"""ANGLE_1 = {utc} {o.values[0]/Constant.DEGREE_TO_RAD}\nANGLE_2 = {utc} {o.values[1]/Constant.DEGREE_TO_RAD}""")
+                blocks.append((f"""ANGLE_1 = {utc} {o.values[0]/Constant.DEGREE_TO_RAD}\n"""
+                               f"""ANGLE_2 = {utc} {o.values[1]/Constant.DEGREE_TO_RAD}"""))
         blocks.append(f"DATA_STOP\n")
 
     return(tdm_header + "\n".join(blocks))

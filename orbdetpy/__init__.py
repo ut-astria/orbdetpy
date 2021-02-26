@@ -1,5 +1,5 @@
 # __init__.py - orbdetpy package initialization.
-# Copyright (C) 2018-2020 University of Texas
+# Copyright (C) 2018-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 .. include:: ../README.md
 """
 
-from os import path
+from os import path, stat
 from math import pi, sqrt
 from typing import List, Optional, Tuple
 from .version import __version__
@@ -360,7 +360,9 @@ if (__name__ != '__main__'):
     __pdoc__ = {m: False for m in ("Facet", "Maneuver", "Measurement", "Parameter", "Settings",
                                    "Station", "TDMFileFormat", "rpc", "version")}
     _root_dir = path.dirname(path.abspath(path.realpath(__file__)))
-    _data_dir = path.join(_root_dir, "orekit-data")
     _libs_dir = path.join(_root_dir, "target")
     _jar_file = path.join(_libs_dir, "orbdetpy-server-{}.jar".format(__version__))
+    _data_dir = path.join(_root_dir, "orekit-data")
+    stat(_jar_file)
+    stat(_data_dir)
     RemoteServer.connect(_data_dir, _jar_file)

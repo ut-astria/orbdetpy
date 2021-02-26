@@ -1,6 +1,6 @@
 /*
  * Measurements.java - Functions to parse OD measurement files.
- * Copyright (C) 2018-2020 University of Texas
+ * Copyright (C) 2018-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -139,6 +139,16 @@ public final class Measurements
 		jsn = odCfg.cfgStations.get(m.station);
 	    }
 
+	    boolean useObs = false;
+	    for (double v: m.values)
+	    {
+		if (v != 0.0)
+		{
+		    useObs = true;
+		    break;
+		}
+	    }
+
 	    if (cazim != null && celev != null)
 	    {
 		AngularAzEl obs = new AngularAzEl(gs, m.time, new double[]{m.values[0], m.values[1]},
@@ -148,6 +158,7 @@ public final class Measurements
 		    obs.addModifier(new OutlierFilter<AngularAzEl>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{jsn.bias[0], jsn.bias[1]}, twoOnes, twoNegInf, twoPosInf));
+		obs.setEnabled(useObs);
 		measObjs.add(obs);
 	    }
 
@@ -159,6 +170,7 @@ public final class Measurements
 		    obs.addModifier(new OutlierFilter<AngularRaDec>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[]{jsn.bias[0], jsn.bias[1]}, twoOnes, twoNegInf, twoPosInf));
+		obs.setEnabled(useObs);
 		measObjs.add(obs);
 	    }
 
@@ -169,6 +181,7 @@ public final class Measurements
 		    obs.addModifier(new OutlierFilter<Range>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<Range>(biasRange, new double[]{jsn.bias[0]}, oneOnes, oneNegInf, onePosInf));
+		obs.setEnabled(useObs);
 		measObjs.add(obs);
 	    }
 
@@ -179,6 +192,7 @@ public final class Measurements
 		    obs.addModifier(new OutlierFilter<RangeRate>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
 		if (addBias && jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{jsn.bias[jsn.bias.length-1]}, oneOnes, oneNegInf, onePosInf));
+		obs.setEnabled(useObs);
 		measObjs.add(obs);
 	    }
 
@@ -187,6 +201,7 @@ public final class Measurements
 		Position obs = new Position(m.time, new Vector3D(m.values[0], m.values[1], m.values[2]), cpos.error, 1.0, satellite);
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<Position>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
+		obs.setEnabled(useObs);
 		measObjs.add(obs);
 	    }
 
@@ -196,6 +211,7 @@ public final class Measurements
 				new Vector3D(m.values[3], m.values[4], m.values[5]), cposvel.error, 1.0, satellite);
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<PV>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
+		obs.setEnabled(useObs);
 		measObjs.add(obs);
 	    }
 	}

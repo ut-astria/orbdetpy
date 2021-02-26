@@ -1,5 +1,5 @@
 # estimation.py - Plot orbit determination results.
-# Copyright (C) 2018-2020 University of Texas
+# Copyright (C) 2018-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
     key = list(cfg.measurements.keys())
     key.sort()
     meas_names = {0: "Azimuth", 1: "Elevation", 2: "Range", 3: "Range Rate", 4: "Right Ascension", 5: "Declination"}
-    inp = [m for m in measurements if (len(m.station) > 0 or len(m.values) >= 3)]
+    inp = [m for m in measurements if (any(x != 0.0 for x in m.values) and (len(m.station) > 0 or len(m.values) >= 3))]
     out = [f for f in orbit_fit if (len(f.pre_fit)*len(f.post_fit) > 0)]
     dmcidx, dmcrun = 6, (cfg.estm_DMC_corr_time > 0.0 and cfg.estm_DMC_sigma_pert > 0.0)
 
@@ -70,21 +70,22 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
             for m in key:
                 parnames.append(f"{sk}-{meas_names[m]}")
 
-    tstamp, prefit, posfit, inocov, params, estmacc, estmcov, colors = [], [], [], [], [], [], [], []
+    diag_pos = [0, 2, 5, 9, 14, 20]
+    has_truth = len(inp) > 0 and hasattr(inp[0], "true_state") and len(inp[0].true_state) >= 6
+    tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors,state_err,state_cov = [],[],[],[],[],[],[],[],[],[]
     for i, o in zip(inp, out):
         tstamp.append(i.time)
         colors.append(cmap[o.station if len(o.station) else None])
         prefit.append([ix - ox for ix, ox in zip(i.values, o.pre_fit)])
         posfit.append([ix - ox for ix, ox in zip(i.values, o.post_fit)])
-
-        p = []
-        for m in range(len(o.innovation_covariance)):
-            if (m in [0, 2, 5, 9, 14, 20]):
-                p.append(3.0*numpy.sqrt(o.innovation_covariance[m]))
-        if (len(p) > 0):
-            inocov.append(p)
+        if (len(o.innovation_covariance) > 0):
+            inocov.append([3.0*numpy.sqrt(o.innovation_covariance[m]) for m in diag_pos if (m < len(o.innovation_covariance))])
         else:
             inocov.append([0.0]*len(prefit[0]))
+
+        if (has_truth):
+            state_err.append([ix - ox for ix, ox in zip(i.true_state, o.estimated_state)])
+            state_cov.append([3.0*numpy.sqrt(o.estimated_covariance[m]) for m in diag_pos if (m < len(o.estimated_covariance))])
 
         if (estim_param and len(o.estimated_state) > 6):
             if (dmcrun):
@@ -148,13 +149,13 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
 
     plt.figure(1)
     plt.suptitle("Post-Fit Residuals")
-    for i in range(pre.shape[-1]):
+    for i in range(pos.shape[-1]):
         if (MeasurementType.POSITION in key):
             plt.subplot(3, 1, order[i])
         elif (MeasurementType.POSITION_VELOCITY in key):
             plt.subplot(3, 2, order[i])
         else:
-            plt.subplot(pre.shape[-1], 1, i + 1)
+            plt.subplot(pos.shape[-1], 1, i + 1)
         plt.scatter(tim, pos[:,i], color=colors, marker="o", s=7)
         plt.legend(handles=patches, loc="best")
         plt.plot(tim, -cov[:,i], "-r")
@@ -200,6 +201,28 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
             if (output_file_path):
                 outfiles.append(output_file_path + "_estacc.png")
                 plt.savefig(outfiles[-1], format="png")
+
+    if (has_truth):
+        state_err = numpy.array(state_err)
+        state_cov = numpy.array(state_cov)
+        order = [1, 3, 5, 2, 4, 6]
+        units = ["m", "m", "m", "m/s", "m/s", "m/s"]
+        ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$", r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$"]
+        plt.figure(4)
+        plt.suptitle("Position and Velocity Errors")
+        for i in range(6):
+            plt.subplot(3, 2, order[i])
+            plt.scatter(tim, state_err[:,i], color=colors, marker="o", s=7)
+            plt.plot(tim, -state_cov[:,i], "-r")
+            plt.plot(tim,  state_cov[:,i], "-r")
+            plt.xlabel("Time [hr]")
+            plt.ylabel(f"{ylabs[i]} [{units[i]}]")
+            plt.grid(True)
+
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        if (output_file_path):
+            outfiles.append(output_file_path + "_posvel_error.png")
+            plt.savefig(outfiles[-1], format="png")
 
     if (interactive):
         plt.show()
