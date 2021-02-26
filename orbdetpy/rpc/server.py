@@ -1,5 +1,5 @@
 # server.py - RPC server connection management.
-# Copyright (C) 2019-2020 University of Texas
+# Copyright (C) 2019-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,16 +27,16 @@ class RemoteServer:
     @classmethod
     def connect(cls, data_dir, jar_file):
         register(RemoteServer.disconnect)
+        jar = path.split(jar_file)[-1]
         rpc_host, rpc_port = "127.0.0.1", "50051"
-        running, jar = False, path.split(jar_file)[-1]
         for p in process_iter(attrs=["cmdline"]):
-            index = next((i for i, x in enumerate(p.info["cmdline"]) if x.endswith(jar)), -1)
-            running = index > 0 and len(p.info["cmdline"]) > 0 and p.info["cmdline"][0].endswith("java")
-            if (running):
-                rpc_port = p.info["cmdline"][index + 1]
-                break
-
-        if (not running):
+            cmdline = p.info.get("cmdline")
+            if (cmdline and cmdline[0].endswith("java")):
+                index = next((i for i, x in enumerate(cmdline) if x.endswith(jar)), -1)
+                if (index > 0):
+                    rpc_port = cmdline[index + 1]
+                    break
+        else:
             sock = socket()
             sock.bind((rpc_host, 0))
             rpc_port = f"{sock.getsockname()[1]}"
@@ -54,9 +54,9 @@ class RemoteServer:
     @classmethod
     def disconnect(cls):
         try:
-            if (cls.rpc_channel is not None):
+            if (cls.rpc_channel):
                 cls.rpc_channel.close()
-            if (cls.rpc_server is not None):
+            if (cls.rpc_server):
                 cls.rpc_server.terminate()
         except Exception as exc:
             pass

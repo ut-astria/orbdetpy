@@ -22,8 +22,8 @@ filter to estimate unmodeled accelerations.
 Installation
 ------------
 
-1. Install the Java Development Kit 8 (1.8) from <http://openjdk.java.net/install/index.html>.
-   Set the `JAVA_HOME` environment variable to the JDK installation
+1. Install Java SE 11 (11.0.10) from <https://www.oracle.com/javadownload>.
+   Set the `JAVA_HOME` environment variable to the Java installation
    folder. The `java` executable must be added to the system path.
 
 2. Install Python 3.8.0 or higher and run `pip install orbdetpy` to install
@@ -37,7 +37,7 @@ Installation
 Development
 -----------
 
-1. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.4/orekit-data.tar.gz>
+1. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.5/orekit-data.tar.gz>
    under the `orbdetpy/` sub-folder.
 
 2. Developers will need Apache Maven 3+ to build the Java library. Build

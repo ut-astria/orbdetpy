@@ -1,5 +1,5 @@
 # test_estimation.py - Run measurement simulation and OD tests.
-# Copyright (C) 2020 University of Texas
+# Copyright (C) 2020-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 
 from numpy import diag
 from numpy.random import multivariate_normal
-from orbdetpy import (configure, add_facet, add_maneuver, add_station, AttitudeType,
+from orbdetpy import (configure, add_facet, add_maneuver, add_station, build_measurement, AttitudeType,
                       Filter, ManeuverTrigger, ManeuverType, MeasurementType, Constant)
 from orbdetpy.ccsds import export_OEM, export_TDM
 from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string
@@ -79,10 +79,19 @@ cfg.measurements[MeasurementType.ELEVATION].error[:] = [Constant.ARC_SECOND_TO_R
 #cfg.measurements[MeasurementType.POSITION_VELOCITY].error[:] = [100.0, 200.0, 300.0, 3.0, 2.0, 1.0]
 
 # Propagate orbits and generate measurements
-meas = propagate_orbits([cfg])[0].array
+meas = list(m for m in propagate_orbits([cfg])[0].array)
+
+# Zero valued measurements are ignored but they force the filters to output
+# propagated states/covariances at arbitrary intermediate times
+t0 = get_J2000_epoch_offset("2019-05-01T00:26:02.853Z")
+for i in range(5):
+    meas.append(build_measurement(t0 + i*60.0, "Maui", [0.0, 0.0]))
+
+# Measurements must be sorted in ascending chronological order
+meas.sort(key=lambda m: m.time)
 
 # Plot orbital elements from the simulation
-simulation_plot(meas, interactive=True)
+#simulation_plot(meas, interactive=True)
 
 # Uncomment to export simulated measurements to a CCSDS TDM file
 #with open("orbdetpy_sim.tdm", "w") as fp:
@@ -106,7 +115,7 @@ for f in fit:
     print(get_UTC_string(f.time), f.station, f.estimated_state[:6])
 
 # Plot OD results
-estimation_plot(cfg, meas, fit, interactive=True, estim_param=True)
+estimation_plot(cfg, meas, fit, interactive=True, estim_param=False)
 
 # Uncomment to export ephemeris to a CCSDS OEM file
 #with open("orbdetpy_fit.oem", "w") as fp:

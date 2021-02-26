@@ -43,7 +43,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
     key = list(cfg.measurements.keys())
     key.sort()
     meas_names = {0: "Azimuth", 1: "Elevation", 2: "Range", 3: "Range Rate", 4: "Right Ascension", 5: "Declination"}
-    inp = [m for m in measurements if (len(m.station) > 0 or len(m.values) >= 3)]
+    inp = [m for m in measurements if (any(x != 0.0 for x in m.values) and (len(m.station) > 0 or len(m.values) >= 3))]
     out = [f for f in orbit_fit if (len(f.pre_fit)*len(f.post_fit) > 0)]
     dmcidx, dmcrun = 6, (cfg.estm_DMC_corr_time > 0.0 and cfg.estm_DMC_sigma_pert > 0.0)
 
