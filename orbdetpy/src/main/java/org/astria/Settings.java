@@ -1,6 +1,6 @@
 /*
  * Settings.java - Functions to parse OD configuration settings.
- * Copyright (C) 2018-2020 University of Texas
+ * Copyright (C) 2018-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -448,7 +448,7 @@ public final class Settings
 	    }
 	}
 	else if (dragModel == DragModel.WAM)
-	    atmModel = new WAM(DataManager.earthShape);
+	    atmModel = WAM.getInstance();
 
 	if (atmModel != null)
 	    forces.add(new DragForce(atmModel, dragsc));
