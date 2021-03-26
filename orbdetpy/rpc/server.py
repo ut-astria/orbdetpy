@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from os import path
 from socket import socket
 from atexit import register
+from os import environ, path
 from psutil import Popen, process_iter
 from grpc import channel_ready_future, insecure_channel
 
@@ -41,7 +41,15 @@ class RemoteServer:
             sock.bind((rpc_host, 0))
             rpc_port = f"{sock.getsockname()[1]}"
             sock.close()
-            cls.rpc_server = Popen(["java", "-Xmx2G", "-XX:+UseG1GC", "-jar", jar_file, rpc_port, data_dir])
+
+            java_home = environ.get("JAVA_HOME")
+            if (java_home and path.isdir(path.join(java_home, "bin"))):
+                java_exec = path.join(java_home, "bin", "java")
+            else:
+                java_exec = "java"
+
+            cls.rpc_server = Popen([java_exec, "-Xmx2G", "-XX:+UseG1GC", "-jar", jar_file, rpc_port, data_dir])
+
         rpc_uri = f"{rpc_host}:{rpc_port}"
         cls.rpc_channel = insecure_channel(rpc_uri, options=[("grpc.max_send_message_length", 2147483647),
                                                              ("grpc.max_receive_message_length", 2147483647)])

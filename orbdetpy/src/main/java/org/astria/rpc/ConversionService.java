@@ -1,6 +1,6 @@
 /*
  * ConversionService.java - Conversion service handler.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,6 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;

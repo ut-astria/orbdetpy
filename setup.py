@@ -1,5 +1,5 @@
 # setup.py - PyPI installation builder.
-# Copyright (C) 2019-2020 University of Texas
+# Copyright (C) 2019-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,8 +41,8 @@ CLASSIFIERS = ["Development Status :: 5 - Production/Stable",
                "Operating System :: OS Independent",
                "Programming Language :: Python",
                "Programming Language :: Python :: 3",
-               "Programming Language :: Python :: 3.7",
                "Programming Language :: Python :: 3.8",
+               "Programming Language :: Python :: 3.9",
                "Programming Language :: Java",
                "Topic :: Scientific/Engineering",
                "Topic :: Scientific/Engineering :: Astronomy",

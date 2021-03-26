@@ -60,6 +60,7 @@ public final class WAM implements Atmosphere
     }
 
     private static WAM singleton;
+    private boolean overrideTime;
     private TreeMap<Double, String> metaData;
     private final TricubicInterpolator interpolator = new TricubicInterpolator();
     private final CacheMap<String, CacheEntry> dataCache = new CacheMap<String, CacheEntry>();
@@ -71,6 +72,7 @@ public final class WAM implements Atmosphere
 	metaData = new TreeMap<Double, String>();
 	if (!wamPath.toFile().isDirectory())
 	    return;
+
 	Files.find(wamPath, Integer.MAX_VALUE, (p, a) -> a.isRegularFile() && p.toString().endsWith(".nc"))
 	    .forEach(cdf -> {
 		    for (String s: cdf.getFileName().toString().split(Pattern.quote(".")))
@@ -85,6 +87,11 @@ public final class WAM implements Atmosphere
 			break;
 		    }
 		});
+
+	String envVar = System.getenv("ORBDETPY_WAM_OVERRIDE");
+	overrideTime = envVar != null && (envVar.equals("1") || envVar.equalsIgnoreCase("true"));
+	if (overrideTime && metaData.size() > 0)
+	    metaData.put(0.0, metaData.firstEntry().getValue());
     }
 
     public static synchronized WAM getInstance()
@@ -107,7 +114,7 @@ public final class WAM implements Atmosphere
     {
 	double tt = date.durationFrom(AbsoluteDate.J2000_EPOCH);
 	Map.Entry<Double, String> finfo = metaData.floorEntry(tt);
-	if (finfo == null || tt - finfo.getKey() > 86400.0)
+	if (finfo == null || (!overrideTime && tt - finfo.getKey() > 86400.0))
 	    throw(new RuntimeException("WAM data not found for " + date.toString()));
 
 	GeodeticPoint gp = DataManager.earthShape.transform(position, frame, date);

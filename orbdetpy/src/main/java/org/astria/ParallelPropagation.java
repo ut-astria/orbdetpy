@@ -1,6 +1,6 @@
 /*
  * ParallelPropagation.java - Multiple object propagation functions.
- * Copyright (C) 2018-2020 University of Texas
+ * Copyright (C) 2018-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,13 +27,10 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.ForceModel;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Predefined;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
@@ -46,15 +43,13 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public final class ParallelPropagation
 {
-    private final ArrayList<Settings> configObjs;
-    private final int objectCount;
+    private ArrayList<Settings> configObjs;
     private ArrayList<Propagator> propagators;
     private ArrayList<ArrayList<EventHandling>> eventHandlers;
     private ArrayList<AbsoluteDate> stepEnd;
@@ -62,16 +57,15 @@ public final class ParallelPropagation
     public ParallelPropagation(ArrayList<Settings> configObjs)
     {
 	this.configObjs = configObjs;
-	this.objectCount = configObjs.size();
     }
 
     public ArrayList<ArrayList<Measurements.Measurement>> propagate() throws Exception
     {
-	propagators = new ArrayList<Propagator>(objectCount);
-	eventHandlers = new ArrayList<ArrayList<EventHandling>>(objectCount);
-	stepEnd = new ArrayList<AbsoluteDate>(objectCount);
-	ArrayList<Future<SpacecraftState>> futures = new ArrayList<Future<SpacecraftState>>(objectCount);
-	ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>(objectCount);
+	propagators = new ArrayList<Propagator>(configObjs.size());
+	eventHandlers = new ArrayList<ArrayList<EventHandling>>(configObjs.size());
+	stepEnd = new ArrayList<AbsoluteDate>(configObjs.size());
+	ArrayList<Future<SpacecraftState>> futures = new ArrayList<Future<SpacecraftState>>(configObjs.size());
+	ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>(configObjs.size());
 	for (Settings cfg: configObjs)
 	{
 	    buildPropagator(cfg);
@@ -83,7 +77,7 @@ public final class ParallelPropagation
 	while (!allDone)
 	{
 	    allDone = true;
-	    for (int i = 0; i < objectCount; i++)
+	    for (int i = 0; i < configObjs.size(); i++)
 	    {
 		AbsoluteDate end = stepEnd.get(i);
 		if (end != null)
@@ -96,7 +90,7 @@ public final class ParallelPropagation
 		    futures.set(i, null);
 	    }
 
-	    for (int i = 0; !allDone && i < objectCount; i++)
+	    for (int i = 0; !allDone && i < configObjs.size(); i++)
 	    {
 		Future<SpacecraftState> future = futures.get(i);
 		if (future == null)
@@ -167,21 +161,20 @@ public final class ParallelPropagation
 
     private static class Simulation
     {
-	private static final Random rand = new Random(1);
-	private static final double[] oneOnes = new double[]{1.0};
-	private static final double[] oneNegInf = new double[]{Double.NEGATIVE_INFINITY};
-	private static final double[] onePosInf = new double[]{Double.POSITIVE_INFINITY};
-	private static final double[] twoZeros = new double[]{0.0, 0.0};
-	private static final double[] twoOnes = new double[]{1.0, 1.0};
-	private static final double[] twoNegInf = new double[]{Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
-	private static final double[] twoPosInf = new double[]{Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
-	private static final String[] biasAzEl = new String[]{Settings.MeasurementType.AZIMUTH.name(), Settings.MeasurementType.ELEVATION.name()};
-	private static final String[] biasRaDec = new String[]{Settings.MeasurementType.RIGHT_ASCENSION.name(),
-							       Settings.MeasurementType.DECLINATION.name()};
-	private static final String[] biasRange = new String[]{Settings.MeasurementType.RANGE.name()};
-	private static final String[] biasRangeRate = new String[]{Settings.MeasurementType.RANGE_RATE.name()};
-	private static final ObservableSatellite obsSat = new ObservableSatellite(0);
-	private static final SpacecraftState[] ssStates = new SpacecraftState[1];
+	private static Random rand = new Random(1);
+	private static double[] oneOnes = {1.0};
+	private static double[] oneNegInf = {Double.NEGATIVE_INFINITY};
+	private static double[] onePosInf = {Double.POSITIVE_INFINITY};
+	private static double[] twoZeros = {0.0, 0.0};
+	private static double[] twoOnes = {1.0, 1.0};
+	private static double[] twoNegInf = {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
+	private static double[] twoPosInf = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
+	private static String[] biasAzEl = {Settings.MeasurementType.AZIMUTH.name(), Settings.MeasurementType.ELEVATION.name()};
+	private static String[] biasRaDec = {Settings.MeasurementType.RIGHT_ASCENSION.name(), Settings.MeasurementType.DECLINATION.name()};
+	private static String[] biasRange = {Settings.MeasurementType.RANGE.name()};
+	private static String[] biasRangeRate = {Settings.MeasurementType.RANGE_RATE.name()};
+	private static ObservableSatellite obsSat = new ObservableSatellite(0);
+	private static SpacecraftState[] ssStates = new SpacecraftState[1];
 
 	public static boolean simulate(Settings simCfg, SpacecraftState state, ArrayList<EventHandling> handlers,
 				       ArrayList<Measurements.Measurement> measOut)

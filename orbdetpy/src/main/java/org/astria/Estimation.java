@@ -18,25 +18,22 @@
 
 package org.astria;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.CholeskyDecomposition;
-import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.sequential.ConstantProcessNoise;
+import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.Position;
+import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.estimation.sequential.KalmanEstimation;
 import org.orekit.estimation.sequential.KalmanEstimator;
@@ -49,14 +46,12 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 public final class Estimation
 {
@@ -71,21 +66,24 @@ public final class Estimation
 	public double[] preFit;
 	public double[] postFit;
 	public Double clutterProbability;
+
+	public EstimationOutput(AbsoluteDate time, String station)
+	{
+	    this.time = time;
+	    this.station = station;
+	}
     }
 
     private final Settings odCfg;
     private final Measurements odObs;
 
-    private Settings.MeasurementType[] measNames;
     private final int measSize;
+    private final Settings.MeasurementType[] measNames;
+    private final boolean singleObject;
 
-    private final AbsoluteDate epoch;
-    private final AbsoluteDate propEnd;
-    private final AbsoluteDate stepHandlerStart;
-    private final AbsoluteDate stepHandlerEnd;
     private ArrayList<EstimationOutput> estOutput;
 
-    public final static String DMC_ACC_ESTM[] = {"zDMCx", "zDMCy", "zDMCz"};
+    public final static String[] DMC_ACC_ESTM = {"zDMCx", "zDMCy", "zDMCz"};
     public final static String DMC_ACC_PROP = "DMCEstProp";
 
     public Estimation(Settings odCfg, Measurements odObs)
@@ -114,28 +112,13 @@ public final class Estimation
 	default:
 	    throw(new RuntimeException("Invalid measurement type"));
 	}
-
-	epoch = odCfg.propStart;
-	propEnd = odCfg.propEnd;
-	if (odCfg.propStep >= 0.0)
-	{
-	    stepHandlerStart = epoch;
-	    stepHandlerEnd = propEnd;
-	}
-	else
-	{
-	    stepHandlerStart = propEnd;
-	    stepHandlerEnd = epoch;
-	}
+	singleObject = (measNames[0] != Settings.MeasurementType.RANGE && measNames[0] != Settings.MeasurementType.RANGE_RATE) ||
+	    measNames.length == 1;
     }
 
     public ArrayList<EstimationOutput> determineOrbit()
     {
-	int size = FastMath.max(odObs.rawMeas.length, 10);
-	if (odCfg.propStep != 0.0)
-	    size += (int)FastMath.abs(propEnd.durationFrom(epoch)/odCfg.propStep) + 2;
-	estOutput = new ArrayList<EstimationOutput>(size);
-
+	estOutput = new ArrayList<EstimationOutput>(odObs.array.length);
 	if (odCfg.estmFilter == Settings.Filter.UNSCENTED_KALMAN)
 	    new UnscentedKalmanFilter().determineOrbit();
 	else
@@ -157,36 +140,27 @@ public final class Estimation
 
     private class ExtendedKalmanFilter implements CovarianceMatrixProvider, KalmanObserver, OrekitFixedStepHandler
     {
-	private PropagatorBuilder propBuilder;
-	private AbsoluteDate prevDate;
-	private Vector3D prevPosition;
-	private Vector3D prevVelocity;
-	private RealMatrix prevCovariance;
-	private double measDeltaT;
 	private int measIndex;
+	private int stepIndex;
+	private AbsoluteDate estmTime;
+	private RealMatrix estmCovariance;
 
 	private void determineOrbit()
 	{
-	    final double[] Xi = odCfg.getInitialState();
-	    prevDate = epoch;
-	    prevPosition = new Vector3D(Xi[0],Xi[1],Xi[2]);
-	    prevVelocity = new Vector3D(Xi[3],Xi[4],Xi[5]);
-	    prevCovariance = odCfg.getInitialCovariance();
-	    final CartesianOrbit X0 = new CartesianOrbit(new PVCoordinates(prevPosition, prevVelocity),
-							 odCfg.propInertialFrame, epoch, Constants.EGM96_EARTH_MU);
+	    final double[] x0 = odCfg.getInitialState();
+	    estmTime = odCfg.propStart;
+	    estmCovariance = odCfg.getInitialCovariance();
+	    final CartesianOrbit X0 = new CartesianOrbit(new PVCoordinates(new Vector3D(x0[0], x0[1], x0[2]), new Vector3D(x0[3], x0[4], x0[5])),
+							 odCfg.propInertialFrame, odCfg.propStart, Constants.EGM96_EARTH_MU);
 
-	    OrekitFixedStepHandler handler = null;
-    	    if (odCfg.propStep != 0.0)
-		handler = this;
-
-	    propBuilder = new PropagatorBuilder(odCfg, X0, new DormandPrince853IntegratorBuilder(odCfg.integMinTimeStep, odCfg.integMaxTimeStep, 1.0),
-						PositionAngle.TRUE, 10.0, handler, false);
+	    final PropagatorBuilder propBuilder = new PropagatorBuilder(
+		odCfg, X0, new DormandPrince853IntegratorBuilder(odCfg.integMinTimeStep,odCfg.integMaxTimeStep,1.0),PositionAngle.TRUE,10.0,false);
 	    propBuilder.setMass(odCfg.rsoMass);
 	    for (ForceModel fm: odCfg.forces)
 		propBuilder.addForceModel(fm);
 
 	    final ParameterDriversList plst = propBuilder.getPropagationParametersDrivers();
-	    for (Settings.Parameter ep : odCfg.parameters)
+	    for (Settings.Parameter ep: odCfg.parameters)
 	    {
 		ParameterDriver pdrv = new ParameterDriver(ep.name, ep.value, 1.0, ep.min, ep.max);
 		pdrv.setSelected(true);
@@ -202,35 +176,58 @@ public final class Estimation
 	    final KalmanEstimator filter = builder.build();
 	    filter.setObserver(this);
 
-	    AbstractIntegratedPropagator estimator = propBuilder.buildPropagator(propBuilder.getSelectedNormalizedParameters());
-	    for (measIndex = 0; measIndex < odObs.rawMeas.length; measIndex++)
+	    AbstractIntegratedPropagator propagator = null;
+	    final Vector3D fakePosition = new Vector3D(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+	    final double[] fakeError = {100.0, 100.0, 100.0};
+	    final ObservableSatellite satellite = new ObservableSatellite(0);
+	    final OutlierFilter<Position> outlier = new OutlierFilter<Position>(1, 1.0);
+
+	    for (measIndex = 0; measIndex < odObs.array.length; measIndex++)
 	    {
-		ObservedMeasurement m0 = null, m1 = null;
-		if (measNames[0] != Settings.MeasurementType.RANGE && measNames[0] != Settings.MeasurementType.RANGE_RATE || measNames.length == 1)
+		final Measurements.Measurement thisObs = odObs.array[measIndex];
+		if (thisObs.values.length > 0)
 		{
-		    m0 = odObs.measObjs.get(measIndex);
+		    if (singleObject)
+			propagator = filter.estimationStep(thisObs.helpers[0])[0];
+		    else
+		    {
+			filter.estimationStep(thisObs.helpers[0]);
+			propagator = filter.estimationStep(thisObs.helpers[1])[0];
+		    }
+		    propBuilder.enableDMC = true;
+		}
+		else if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
+		{
+		    Position fake = new Position(thisObs.time, fakePosition, fakeError, 1.0, satellite);
+		    fake.addModifier(outlier);
+		    filter.estimationStep(fake);
 		}
 		else
 		{
-		    m0 = odObs.measObjs.get(measIndex*2);
-		    m1 = odObs.measObjs.get(measIndex*2 + 1);
-		}
+		    int toIndex;
+		    double stepSize;
+		    if (measIndex > 0)
+			stepSize = thisObs.time.durationFrom(odObs.array[measIndex - 1].time);
+		    else
+			stepSize = thisObs.time.durationFrom(odCfg.propStart);
+		    for (toIndex = measIndex + 1; toIndex < odObs.array.length; toIndex++)
+		    {
+			if (odObs.array[toIndex].values.length > 0 ||
+			    odObs.array[toIndex].time.durationFrom(odObs.array[toIndex - 1].time) != stepSize)
+			{
+			    toIndex--;
+			    break;
+			}
+		    }
 
-		if (m0.isEnabled())
-		{
-		    AbstractIntegratedPropagator[] estimators = filter.estimationStep(m0);
-		    if (m1 != null && m1.isEnabled())
-			estimators = filter.estimationStep(m1);
-		    if (estimators != null)
-			estimator = estimators[0];
+		    stepIndex = measIndex;
+		    if (propagator == null)
+			propagator = propBuilder.buildPropagator(propBuilder.getSelectedNormalizedParameters());
+		    propagator.setMasterMode(stepSize, this);
+		    propagator.propagate(odObs.array[toIndex].time);
+		    measIndex = toIndex;
 		}
-		else
-		    handleStep(estimator.propagate(m0.getDate()), false);
 	    }
-
-	    propBuilder.enableDMC = false;
-	    if (handler == null && (odObs.rawMeas.length == 0 || !odCfg.propEnd.equals(odObs.rawMeas[odObs.rawMeas.length - 1].time)))
-		handleStep(estimator.propagate(propEnd), true);
 	}
 
 	@Override public RealMatrix getInitialCovarianceMatrix(SpacecraftState init)
@@ -240,37 +237,22 @@ public final class Estimation
 
 	@Override public RealMatrix getProcessNoiseMatrix(SpacecraftState prev, SpacecraftState curr)
 	{
-	    double tmeas = curr.getDate().durationFrom(prev.getDate());
-	    if (tmeas != 0.0)
-		measDeltaT = tmeas;
-	    else
-		tmeas = measDeltaT;
-	    return(odCfg.getProcessNoiseMatrix(tmeas));
+	    return(odCfg.getProcessNoiseMatrix(curr.getDate().durationFrom(prev.getDate())));
 	}
 
 	@Override public void evaluationPerformed(KalmanEstimation est)
 	{
-	    propBuilder.enableDMC = true;
-	    EstimationOutput result = null;
-	    for (EstimationOutput loop: estOutput)
+	    EstimationOutput result;
+	    final Measurements.Measurement thisObs = odObs.array[measIndex];
+	    if (measIndex >= estOutput.size())
 	    {
-		if (loop.time.equals(odObs.rawMeas[measIndex].time) && loop.station.equals(odObs.rawMeas[measIndex].station))
-		{
-		    result = loop;
-		    break;
-		}
-	    }
-
-	    if (result == null)
-	    {
-		result = new EstimationOutput();
-		result.time = odObs.rawMeas[measIndex].time;
-		result.station = odObs.rawMeas[measIndex].station;
+		result = new EstimationOutput(thisObs.time, thisObs.station);
 		estOutput.add(result);
 	    }
+	    else
+		result = estOutput.get(measIndex);
 
-	    final SpacecraftState ssta = est.getCorrectedSpacecraftStates()[0];
-	    final PVCoordinates pvc = ssta.getPVCoordinates();
+	    final PVCoordinates pvc = est.getCorrectedSpacecraftStates()[0].getPVCoordinates();
 	    result.estimatedState = new double[odCfg.parameters.size() + 6];
 	    System.arraycopy(pvc.getPosition().toArray(), 0, result.estimatedState, 0, 3);
 	    System.arraycopy(pvc.getVelocity().toArray(), 0, result.estimatedState, 3, 3);
@@ -282,12 +264,27 @@ public final class Estimation
 		result.estimatedState[i + 6] = est.getEstimatedPropagationParameters().findByName(ep.name).getValue();
 	    }
 
-	    if (est.getPhysicalEstimatedCovarianceMatrix() != null && (odCfg.outputFlags & Settings.OUTPUT_ESTM_COV) != 0)
-		result.estimatedCovariance = getLowerTriangle(est.getPhysicalEstimatedCovarianceMatrix());
+	    if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
+	    {
+		final RealMatrix phi = est.getPhysicalStateTransitionMatrix();
+		if (estmCovariance != null && phi != null)
+		    result.propagatedCovariance = getLowerTriangle(phi.multiply(estmCovariance).multiply(phi.transpose()).
+								   add(odCfg.getProcessNoiseMatrix(result.time.durationFrom(estmTime))));
+		else if (est.getPhysicalEstimatedCovarianceMatrix() != null)
+		    result.propagatedCovariance = getLowerTriangle(est.getPhysicalEstimatedCovarianceMatrix());
+	    }
+
+	    if (thisObs.values.length == 0)
+		return;
+
+	    estmTime = result.time;
+	    estmCovariance = est.getPhysicalEstimatedCovarianceMatrix();
+	    if (estmCovariance != null && (odCfg.outputFlags & Settings.OUTPUT_ESTM_COV) != 0)
+		result.estimatedCovariance = getLowerTriangle(estmCovariance);
 
 	    final double[] prev = est.getPredictedMeasurement().getEstimatedValue();
 	    final double[] post = est.getCorrectedMeasurement().getEstimatedValue();
-	    if (measNames[0] != Settings.MeasurementType.RANGE && measNames[0] != Settings.MeasurementType.RANGE_RATE)
+	    if (singleObject)
 	    {
 		if ((odCfg.outputFlags & Settings.OUTPUT_RESIDUALS) != 0)
 		{
@@ -326,47 +323,23 @@ public final class Estimation
 			result.innovationCovariance[2] = est.getPhysicalInnovationCovarianceMatrix().getEntry(0, 0);
 		}
 	    }
-
-	    RealMatrix phi = est.getPhysicalStateTransitionMatrix();
-	    if (prevCovariance != null && phi != null && (odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
-	    {
-		result.propagatedCovariance = getLowerTriangle(
-		    phi.multiply(prevCovariance).multiply(phi.transpose()).add(odCfg.getProcessNoiseMatrix(measDeltaT)));
-		prevCovariance = est.getPhysicalEstimatedCovarianceMatrix();
-	    }
 	}
 
 	@Override public void handleStep(SpacecraftState state, boolean lastStep)
 	{
-	    final PVCoordinates pvc = state.getPVCoordinates(odCfg.propInertialFrame);
-	    for (ObservedMeasurement m: odObs.measObjs)
+	    Measurements.Measurement thisObs = odObs.array[stepIndex];
+	    if (thisObs.time.equals(state.getDate()))
 	    {
-		if (m.isEnabled() && m.getDate().durationFrom(state.getDate()) == 0.0)
-		    return;
-	    }
-
-	    final EstimationOutput odout = new EstimationOutput();
-	    estOutput.add(odout);
-	    odout.time = state.getDate();
-	    odout.estimatedState = new double[odCfg.parameters.size() + 6];
-	    System.arraycopy(pvc.getPosition().toArray(), 0, odout.estimatedState, 0, 3);
-	    System.arraycopy(pvc.getVelocity().toArray(), 0, odout.estimatedState, 3, 3);
-	    if (odCfg.parameters.size() > 0 && estOutput.size() > 0)
-		System.arraycopy(estOutput.get(estOutput.size()-1).estimatedState, 6, odout.estimatedState, 6, odCfg.parameters.size());
-
-	    if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0 && prevCovariance != null)
-	    {
-		Rotation phi1 = new Rotation(prevPosition, pvc.getPosition());
-		Rotation phi2 = new Rotation(prevVelocity, pvc.getVelocity());
-		RealMatrix phi = MatrixUtils.createRealIdentityMatrix(prevCovariance.getRowDimension());
-		phi.setSubMatrix(phi1.getMatrix(), 0, 0);
-		phi.setSubMatrix(phi2.getMatrix(), 3, 3);
-		prevPosition = pvc.getPosition();
-		prevVelocity = pvc.getVelocity();
-		odout.propagatedCovariance = getLowerTriangle(phi.multiply(prevCovariance).multiply(phi.transpose()).add(
-								  odCfg.getProcessNoiseMatrix(state.getDate().durationFrom(prevDate))));
-		if (odObs.rawMeas.length > 0)
-		    prevDate = state.getDate();
+		PVCoordinates pv = state.getPVCoordinates();
+		EstimationOutput result = new EstimationOutput(thisObs.time, thisObs.station);
+		if (stepIndex > 0)
+		    result.estimatedState = estOutput.get(stepIndex - 1).estimatedState.clone();
+		else
+		    result.estimatedState = odCfg.getInitialState();
+		System.arraycopy(pv.getPosition().toArray(), 0, result.estimatedState, 0, 3);
+		System.arraycopy(pv.getVelocity().toArray(), 0, result.estimatedState, 3, 3);
+		estOutput.add(result);
+		stepIndex++;
 	    }
 	}
     }
@@ -405,13 +378,11 @@ public final class Estimation
 	    }
 
 	    boolean enableDMC = false;
+	    AbsoluteDate startTime = odCfg.propStart;
 	    final int numStates = odCfg.parameters.size() + 6;
 	    final int numSigmas = 2*numStates;
 	    final double weight = 0.5/numStates;
 	    final double[] xInitial = odCfg.getInitialState();
-	    final double bound0 = stepHandlerStart.durationFrom(epoch);
-	    final double bound1 = stepHandlerEnd.durationFrom(epoch);
-	    AbsoluteDate tm = epoch;
 	    final SpacecraftState[] ssta = new SpacecraftState[1];
 	    final ManualPropagation propagator = new ManualPropagation(odCfg);
 	    RealMatrix P = odCfg.getInitialCovariance();
@@ -422,25 +393,16 @@ public final class Estimation
 	    RealMatrix Pprop = null;
 	    ArrayRealVector xhat = new ArrayRealVector(xInitial);
 	    RealVector xhatPrev = new ArrayRealVector(xInitial);
-
 	    final double[] noiseMult = new double[measSize];
 	    Arrays.fill(noiseMult, 1.0);
 
-	    for (int measIndex = 0; measIndex <= odObs.rawMeas.length; measIndex++)
+	    for (int measIndex = 0; measIndex < odObs.array.length; measIndex++)
 	    {
-		final AbsoluteDate t0 = tm;
-		if (measIndex < odObs.rawMeas.length)
-		    tm = odObs.rawMeas[measIndex].time;
-		else
-		{
-		    tm = propEnd;
-		    enableDMC = false;
-		    if (FastMath.abs(tm.durationFrom(t0)) <= 1E-6)
-			break;
-		}
-
-		double stepStart = t0.durationFrom(epoch), stepSum = 0.0;
-		final double stepFinal = tm.durationFrom(epoch);
+		if (measIndex > 0)
+		    startTime = odObs.array[measIndex - 1].time;
+		final Measurements.Measurement thisObs = odObs.array[measIndex];
+		final double stepStart = startTime.durationFrom(odCfg.propStart);
+		final double stepFinal = thisObs.time.durationFrom(odCfg.propStart);
 		final RealMatrix Ptemp = P.scalarMultiply(numStates);
 		final RealMatrix sqrtP = new CholeskyDecomposition(
 		    Ptemp.add(Ptemp.transpose()).scalarMultiply(0.5).add(psdCorr), 1E-6, 1E-16).getL();
@@ -460,100 +422,64 @@ public final class Estimation
 		}
 		sigma.setSubMatrix(sigData, 0, 0);
 
-		boolean useObs = false;
-		for (double v: odObs.rawMeas[measIndex].values)
+		if (stepFinal - stepStart > 1.0E-6)
 		{
-		    if (v != 0.0)
-		    {
-			useObs = true;
-			break;
-		    }
+		    propagator.propagate(stepStart, sigma, stepFinal, propSigma, enableDMC);
+		    sigma.setSubMatrix(propSigma.getData(), 0, 0);
+		}
+		else
+		    propSigma.setSubMatrix(sigma.getData(), 0, 0);
+
+		xhatPrev = addColumns(propSigma).mapMultiplyToSelf(weight);
+		xhat = new ArrayRealVector(xhatPrev);
+		Pprop = odCfg.getProcessNoiseMatrix(stepFinal - stepStart);
+		for (int i = 0; i < numSigmas; i++)
+		{
+		    RealVector y = propSigma.getColumnVector(i).subtract(xhatPrev);
+		    Pprop = Pprop.add(y.outerProduct(y).scalarMultiply(weight));
 		}
 
-		while (true)
+		if (thisObs.values.length == 0)
 		{
-		    double step = stepFinal - stepStart;
-		    if (odCfg.propStep != 0.0 && (stepStart >= bound0 || stepFinal >= bound0) &&
-			(stepStart <= bound1 || stepFinal <= bound1))
-		    {
-			if (odCfg.propStep > 0.0)
-			    step = FastMath.min(step, odCfg.propStep);
-			else
-			    step = FastMath.max(step, odCfg.propStep);
-		    }
-		    stepSum += step;
-
-		    if (FastMath.abs(step) > 1.0E-6)
-		    {
-			propagator.propagate(stepStart, sigma, stepStart + step, propSigma, enableDMC);
-			sigma.setSubMatrix(propSigma.getData(), 0, 0);
-		    }
-		    else
-			propSigma.setSubMatrix(sigma.getData(), 0, 0);
-
-		    xhatPrev = addColumns(propSigma).mapMultiplyToSelf(weight);
-		    xhat = new ArrayRealVector(xhatPrev);
-		    Pprop = odCfg.getProcessNoiseMatrix(stepSum);
-		    for (int i = 0; i < numSigmas; i++)
-		    {
-			RealVector y = propSigma.getColumnVector(i).subtract(xhatPrev);
-			Pprop = Pprop.add(y.outerProduct(y).scalarMultiply(weight));
-		    }
-
-		    if (measIndex == odObs.rawMeas.length || !useObs ||
-			(odCfg.propStep != 0.0 && stepStart + step >= bound0 && stepStart + step <= bound1))
-		    {
-			EstimationOutput odout = new EstimationOutput();
-			odout.time = new AbsoluteDate(epoch, stepStart + step);
-			odout.estimatedState = xhatPrev.toArray();
-			if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
-			    odout.propagatedCovariance = getLowerTriangle(Pprop);
-			estOutput.add(odout);
-		    }
-
-		    stepStart += step;
-		    if (FastMath.abs(step) < 1.0E-6 || FastMath.abs(stepFinal - stepStart) < 1.0E-6)
-			break;
-		}
-
-		if (measIndex == odObs.rawMeas.length)
-		    break;
-		if (!useObs)
+		    EstimationOutput odout = new EstimationOutput(thisObs.time, thisObs.station);
+		    odout.estimatedState = xhatPrev.toArray();
+		    if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
+			odout.propagatedCovariance = getLowerTriangle(Pprop);
+		    estOutput.add(odout);
 		    continue;
+		}
 
 		enableDMC = true;
 		RealVector rawMeas = null, biasCorrection = null;
 		for (int i = 0; i < numSigmas; i++)
 		{
 		    double[] pv = propSigma.getColumn(i);
-		    ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
-										       new Vector3D(pv[3], pv[4], pv[5])),
-								     odCfg.propInertialFrame, tm, Constants.EGM96_EARTH_MU),
-						  propagator.getAttitude(tm, pv), odCfg.rsoMass);
+		    ssta[0] = new SpacecraftState(
+			new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
+					   odCfg.propInertialFrame, thisObs.time, Constants.EGM96_EARTH_MU),
+			propagator.getAttitude(thisObs.time, pv), odCfg.rsoMass);
 
-		    if (measNames[0] != Settings.MeasurementType.RANGE && measNames[0] != Settings.MeasurementType.RANGE_RATE ||
-			measNames.length == 1)
+		    if (singleObject)
 		    {
-			double[] fitv = odObs.measObjs.get(measIndex).estimate(0, 0, ssta).getEstimatedValue();
+			double[] fitv = thisObs.helpers[0].estimate(0, 0, ssta).getEstimatedValue();
 			estimMeas.setColumn(i, fitv);
 			if (rawMeas == null)
-			    rawMeas = new ArrayRealVector(odObs.measObjs.get(measIndex).getObservedValue());
+			    rawMeas = new ArrayRealVector(thisObs.values);
 		    }
 		    else
 		    {
-			double[] fitv = odObs.measObjs.get(measIndex*2).estimate(0, 0, ssta).getEstimatedValue();
+			double[] fitv = thisObs.helpers[0].estimate(0, 0, ssta).getEstimatedValue();
 			estimMeas.setEntry(0, i, fitv[0]);
-			fitv = odObs.measObjs.get(measIndex*2 + 1).estimate(0, 0, ssta).getEstimatedValue();
+			fitv = thisObs.helpers[1].estimate(0, 0, ssta).getEstimatedValue();
 			estimMeas.setEntry(1, i, fitv[0]);
 			if (rawMeas == null)
-			    rawMeas = new ArrayRealVector(new double[]{odObs.measObjs.get(measIndex*2).getObservedValue()[0],
-								       odObs.measObjs.get(measIndex*2 + 1).getObservedValue()[0]});
+			    rawMeas = new ArrayRealVector(thisObs.values);
 		    }
 		}
 
-		if (odObs.rawMeas[measIndex].station.length() > 0)
+		if (thisObs.station.length() > 0)
 		{
-		    Integer pos = biasPos.get(new StringBuilder(odObs.rawMeas[measIndex].station).append(measNames[0]).toString());
+		    Integer pos = biasPos.get(new StringBuilder(thisObs.station).append(measNames[0]).toString());
 		    if (pos != null)
 			biasCorrection = xhatPrev.getSubVector(pos, measSize);
 		}
@@ -576,7 +502,7 @@ public final class Estimation
 			Pxy = Pxy.add(propSigma.getColumnVector(i).subtract(xhatPrev).outerProduct(y).scalarMultiply(weight));
 		    }
 
-		    EstimationOutput odout = new EstimationOutput();
+		    EstimationOutput odout = new EstimationOutput(thisObs.time, thisObs.station);
 		    RealVector error = rawMeas.subtract(yhatpre);
 		    RealMatrix invPyy = MatrixUtils.inverse(Pyy);
 		    RealMatrix K = Pxy.multiply(invPyy);
@@ -601,20 +527,19 @@ public final class Estimation
 			xhat = new ArrayRealVector(xhatPrev.add(odCfg.parameterMatrix.multiply(K).operate(error)));
 
 		    double[] pv = xhat.toArray();
-		    ssta[0] = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]),
-										       new Vector3D(pv[3], pv[4], pv[5])),
-								     odCfg.propInertialFrame, tm, Constants.EGM96_EARTH_MU),
-						  propagator.getAttitude(tm, pv), odCfg.rsoMass);
+		    ssta[0] = new SpacecraftState(
+			new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
+					   odCfg.propInertialFrame, thisObs.time, Constants.EGM96_EARTH_MU),
+			propagator.getAttitude(thisObs.time, pv), odCfg.rsoMass);
 
 		    if ((odCfg.outputFlags & Settings.OUTPUT_RESIDUALS) != 0)
 		    {
 			odout.preFit = yhatpre.toArray();
-			if (measNames[0] != Settings.MeasurementType.RANGE && measNames[0] != Settings.MeasurementType.RANGE_RATE ||
-			    measNames.length == 1)
-			    odout.postFit = odObs.measObjs.get(measIndex).estimate(0, 0, ssta).getEstimatedValue();
+			if (singleObject)
+			    odout.postFit = thisObs.helpers[0].estimate(0, 0, ssta).getEstimatedValue();
 			else
-			    odout.postFit = new double[]{odObs.measObjs.get(measIndex*2).estimate(0, 0, ssta).getEstimatedValue()[0],
-							 odObs.measObjs.get(measIndex*2+1).estimate(0, 0, ssta).getEstimatedValue()[0]};
+			    odout.postFit = new double[]{thisObs.helpers[0].estimate(0, 0, ssta).getEstimatedValue()[0],
+							 thisObs.helpers[1].estimate(0, 0, ssta).getEstimatedValue()[0]};
 		    }
 
 		    if (odCfg.estmOutlierSigma > 0.0 &&	odCfg.estmOutlierWarmup > 0 && measIndex >= odCfg.estmOutlierWarmup &&
@@ -644,8 +569,6 @@ public final class Estimation
 		    }
 
 		    estOutput.add(odout);
-		    odout.time = odObs.rawMeas[measIndex].time;
-		    odout.station = odObs.rawMeas[measIndex].station;
 		    odout.estimatedState = pv;
 		    if ((odCfg.outputFlags & Settings.OUTPUT_ESTM_COV) != 0)
 			odout.estimatedCovariance = getLowerTriangle(P);

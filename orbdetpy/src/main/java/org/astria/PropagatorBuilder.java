@@ -1,6 +1,6 @@
 /*
  * PropagatorBuilder.java - Wrapper for Orekit's propagator builder.
- * Copyright (C) 2018-2020 University of Texas
+ * Copyright (C) 2018-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,33 +25,25 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
 
 public final class PropagatorBuilder extends NumericalPropagatorBuilder
 {
     private final Settings odCfg;
     private final DMCEquations dmcEqns;
-    private final OrekitFixedStepHandler stepHandler;
     protected boolean enableDMC;
 
-    public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode, PositionAngle ang, double pos,
-			     OrekitFixedStepHandler handler, boolean enableDMC)
+    public PropagatorBuilder(Settings cfg, Orbit orb, ODEIntegratorBuilder ode, PositionAngle ang, double pos, boolean enableDMC)
     {
 	super(orb, ode, ang, pos);
 	this.odCfg = cfg;
 	this.dmcEqns = new DMCEquations();
-	this.stepHandler = handler;
 	this.enableDMC = enableDMC;
     }
 
     @Override public NumericalPropagator buildPropagator(double[] par)
     {
 	NumericalPropagator prop = super.buildPropagator(par);
-	if (stepHandler != null)
-	    prop.setMasterMode(odCfg.propStep, stepHandler);
-
 	if (odCfg.estmDMCCorrTime > 0.0 && odCfg.estmDMCSigmaPert > 0.0)
 	{
 	    prop.addAdditionalEquations(dmcEqns);
