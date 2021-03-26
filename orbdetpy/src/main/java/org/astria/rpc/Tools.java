@@ -1,6 +1,6 @@
 /*
  * Tools.java - RPC utility functions.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 package org.astria.rpc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.io.PrintWriter;
@@ -94,9 +93,12 @@ public final class Tools
 							    req.getManeuvers(i).getManeuverParamsList().stream().mapToDouble(Double::doubleValue).toArray());
 	}
 
-	cfg.propStart = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropStart());
-	cfg.propEnd = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropEnd());
 	cfg.propStep = req.getPropStep();
+	if (req.getPropStart() != 0.0 || req.getPropEnd() != 0.0)
+	{
+	    cfg.propStart = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropStart());
+	    cfg.propEnd = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getPropEnd());
+	}
 	if (req.getPropInitialStateCount() > 0)
 	    cfg.propInitialState = req.getPropInitialStateList().stream().mapToDouble(Double::doubleValue).toArray();
 	if (req.getPropInitialTLECount() > 0)
@@ -161,19 +163,16 @@ public final class Tools
     public static Measurements buildMeasurementsFromRequest(List<Messages.Measurement> req, Settings config)
     {
 	Measurements output = new Measurements();
-	output.rawMeas = new Measurements.Measurement[req.size()];
-	for (int i = 0; i < output.rawMeas.length; i++)
+	output.array = new Measurements.Measurement[req.size()];
+	for (int i = 0; i < output.array.length; i++)
 	{
 	    Messages.Measurement min = req.get(i);
-	    output.rawMeas[i] = new Measurements.Measurement();
-	    output.rawMeas[i].time = AbsoluteDate.J2000_EPOCH.shiftedBy(min.getTime());
-	    output.rawMeas[i].station = min.getStation();
-	    if (min.getValuesCount() > 0)
-		output.rawMeas[i].values = min.getValuesList().stream().mapToDouble(Double::doubleValue).toArray();
-	    if (min.getAngleRatesCount() > 0)
-		output.rawMeas[i].angleRates = min.getAngleRatesList().stream().mapToDouble(Double::doubleValue).toArray();
+	    output.array[i] = new Measurements.Measurement();
+	    output.array[i].time = AbsoluteDate.J2000_EPOCH.shiftedBy(min.getTime());
+	    output.array[i].station = min.getStation();
+	    output.array[i].values = min.getValuesList().stream().mapToDouble(Double::doubleValue).toArray();
+	    output.array[i].angleRates = min.getAngleRatesList().stream().mapToDouble(Double::doubleValue).toArray();
 	}
-
 	return(output.build(config));
     }
 

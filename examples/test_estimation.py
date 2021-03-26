@@ -81,11 +81,11 @@ cfg.measurements[MeasurementType.ELEVATION].error[:] = [Constant.ARC_SECOND_TO_R
 # Propagate orbits and generate measurements
 meas = list(m for m in propagate_orbits([cfg])[0].array)
 
-# Zero valued measurements are ignored but they force the filters to output
-# propagated states/covariances at arbitrary intermediate times
+# Empty measurements are ignored in orbit estimation but they force the filters
+# to output propagated states/covariances at arbitrary intermediate times
 t0 = get_J2000_epoch_offset("2019-05-01T00:26:02.853Z")
 for i in range(5):
-    meas.append(build_measurement(t0 + i*60.0, "Maui", [0.0, 0.0]))
+    meas.append(build_measurement(t0 + i*60.0, "", []))
 
 # Measurements must be sorted in ascending chronological order
 meas.sort(key=lambda m: m.time)
@@ -99,8 +99,7 @@ meas.sort(key=lambda m: m.time)
 
 # Perturb truth initial state before running OD
 cfg.prop_initial_state[:] = multivariate_normal(cfg.prop_initial_state, diag([1E6, 1E6, 1E6, 1E2, 1E2, 1E2]))
-# Specify non-zero step to get propagated states/covariances between measurement updates
-cfg.prop_step = 0.0
+# Use Filter.EXTENDED_KALMAN for the EKF
 cfg.estm_filter = Filter.UNSCENTED_KALMAN
 
 # Run OD on simulated measurements

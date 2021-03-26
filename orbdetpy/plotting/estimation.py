@@ -71,8 +71,8 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
                 parnames.append(f"{sk}-{meas_names[m]}")
 
     diag_pos = [0, 2, 5, 9, 14, 20]
-    has_truth = len(inp) > 0 and hasattr(inp[0], "true_state") and len(inp[0].true_state) >= 6
     tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors,state_err,state_cov = [],[],[],[],[],[],[],[],[],[]
+
     for i, o in zip(inp, out):
         tstamp.append(i.time)
         colors.append(cmap[o.station if len(o.station) else None])
@@ -83,7 +83,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
         else:
             inocov.append([0.0]*len(prefit[0]))
 
-        if (has_truth):
+        if (hasattr(i, "true_state") and len(i.true_state) >= 6):
             state_err.append([ix - ox for ix, ox in zip(i.true_state, o.estimated_state)])
             state_cov.append([3.0*numpy.sqrt(o.estimated_covariance[m]) for m in diag_pos if (m < len(o.estimated_covariance))])
 
@@ -103,9 +103,9 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
 
     if (len(tstamp) > 0):
         start = tstamp[0] if (tstamp[0] < tstamp[-1]) else tstamp[-1]
-        tim = [(t - start)/3600 for t in tstamp]
+        times = [(t - start)/3600 for t in tstamp]
     else:
-        tim = []
+        times = []
 
     angles = [MeasurementType.AZIMUTH, MeasurementType.ELEVATION, MeasurementType.RIGHT_ASCENSION, MeasurementType.DECLINATION]
     if (MeasurementType.POSITION in key):
@@ -136,7 +136,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(pre.shape[-1], 1, i + 1)
-        plt.scatter(tim, pre[:,i], color=colors, marker="o", s=7)
+        plt.scatter(times, pre[:,i], color=colors, marker="o", s=7)
         plt.legend(handles=patches, loc="best")
         plt.xlabel("Time [hr]")
         plt.ylabel(f"{ylabs[i]} [{units[i]}]")
@@ -156,10 +156,10 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
             plt.subplot(3, 2, order[i])
         else:
             plt.subplot(pos.shape[-1], 1, i + 1)
-        plt.scatter(tim, pos[:,i], color=colors, marker="o", s=7)
+        plt.scatter(times, pos[:,i], color=colors, marker="o", s=7)
         plt.legend(handles=patches, loc="best")
-        plt.plot(tim, -cov[:,i], "-r")
-        plt.plot(tim,  cov[:,i], "-r")
+        plt.plot(times, -cov[:,i], "-r")
+        plt.plot(times,  cov[:,i], "-r")
         plt.xlabel("Time [hr]")
         plt.ylabel(f"{ylabs[i]} [{units[i]}]")
         plt.grid(True)
@@ -175,7 +175,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
                 plt.figure(2)
                 plt.suptitle("Estimated Parameters")
             plt.subplot(par.shape[1], 1, i + 1)
-            plt.scatter(tim, par[:,i], marker="o", s=7)
+            plt.scatter(times, par[:,i], marker="o", s=7)
             plt.xlabel("Time [hr]")
             plt.ylabel(parnames[i])
             plt.grid(True)
@@ -192,7 +192,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
             for i in range(3):
                 plt.subplot(3, 1, i+1)
                 if (len(estmacc) > 0):
-                    plt.plot(tim, estmacc[:,i])
+                    plt.plot(times, estmacc[:,i])
                 plt.xlabel("Time [hr]")
                 plt.ylabel(lab[i])
                 plt.grid(True)
@@ -202,7 +202,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
                 outfiles.append(output_file_path + "_estacc.png")
                 plt.savefig(outfiles[-1], format="png")
 
-    if (has_truth):
+    if (len(times) == len(state_err)):
         state_err = numpy.array(state_err)
         state_cov = numpy.array(state_cov)
         order = [1, 3, 5, 2, 4, 6]
@@ -212,9 +212,9 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
         plt.suptitle("Position and Velocity Errors")
         for i in range(6):
             plt.subplot(3, 2, order[i])
-            plt.scatter(tim, state_err[:,i], color=colors, marker="o", s=7)
-            plt.plot(tim, -state_cov[:,i], "-r")
-            plt.plot(tim,  state_cov[:,i], "-r")
+            plt.scatter(times, state_err[:,i], color=colors, marker="o", s=7)
+            plt.plot(times, -state_cov[:,i], "-r")
+            plt.plot(times,  state_cov[:,i], "-r")
             plt.xlabel("Time [hr]")
             plt.ylabel(f"{ylabs[i]} [{units[i]}]")
             plt.grid(True)

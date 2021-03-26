@@ -1,6 +1,6 @@
 /*
  * DataManager.java - Functions for handling data files.
- * Copyright (C) 2018-2020 University of Texas
+ * Copyright (C) 2018-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,38 +19,21 @@
 package org.astria;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Scanner;
-import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 public final class DataManager
 {
-    public static class MSISEData
-    {
-	public AbsoluteDate minDate;
-	public AbsoluteDate maxDate;
-	public HashMap<String, double[]> data;
-    }
-
-    private static String dataPath;
+    protected static String dataPath;
     protected static ExecutorService threadPool;
-    protected static MSISEData msiseData;
-    protected static TreeMap<Double, String> wamFileMap;
     protected static OneAxisEllipsoid earthShape;
     protected static HashMap<Integer, AbsoluteDate> epochs;
 
@@ -66,8 +49,6 @@ public final class DataManager
 	DataManager.earthShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
 						      FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	loadEpochs();
-	loadMSISEData();
-	loadWAMData();
     }
 
     public static synchronized void shutdown()
@@ -94,58 +75,6 @@ public final class DataManager
 	epochs.put(9, AbsoluteDate.JULIAN_EPOCH);
 	epochs.put(10, AbsoluteDate.MODIFIED_JULIAN_EPOCH);
 	epochs.put(11, AbsoluteDate.QZSS_EPOCH);
-    }
-
-    private static void loadMSISEData() throws Exception
-    {
-	String[] toks = null;
-	DataManager.msiseData = new MSISEData();
-	DataManager.msiseData.data = new HashMap<String, double[]>();
-	Scanner scan = new Scanner(new File(dataPath, "SpaceWeather.dat"));
-	while (scan.hasNextLine())
-	{
-	    toks = scan.nextLine().split(",");
-	    double[] vals = new double[toks.length];
-	    for (int i = 0; i < toks.length; i++)
-		toks[i] = toks[i].trim();
-
-	    if (DataManager.msiseData.minDate == null)
-		DataManager.msiseData.minDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-								 Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
-	    for (int i = 0; i < toks.length; i++)
-	    {
-		if (toks[i].length() > 0)
-		    vals[i] = Double.parseDouble(toks[i]);
-	    }
-	    DataManager.msiseData.data.put(String.format("%s%s%s", toks[0], toks[1], toks[2]), vals);
-	}
-
-	scan.close();
-	if (toks != null)
-	    DataManager.msiseData.maxDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-							     Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
-    }
-
-    private static void loadWAMData() throws Exception
-    {
-	Path wamPath = Paths.get(dataPath, "WAM");
-	DataManager.wamFileMap = new TreeMap<Double, String>();
-	if (!wamPath.toFile().isDirectory())
-	    return;
-	Files.find(wamPath, Integer.MAX_VALUE, (p, a) -> a.isRegularFile() && p.toString().endsWith(".nc"))
-	    .forEach(cdf -> {
-		    for (String s: cdf.getFileName().toString().split(Pattern.quote(".")))
-		    {
-			if (!s.startsWith("20") || s.length() != 15)
-			    continue;
-			s = s.replace("_", "");
-			String utc = String.format("%s-%s-%sT%s:%s:%sZ", s.substring(0, 4), s.substring(4, 6), s.substring(6, 8),
-						   s.substring(8, 10), s.substring(10, 12), s.substring(12, 14));
-			DataManager.wamFileMap.put(new AbsoluteDate(DateTimeComponents.parseDateTime(utc), TimeScalesFactory.getUTC())
-						   .durationFrom(AbsoluteDate.J2000_EPOCH), cdf.toString());
-			break;
-		    }
-		});
     }
 
     public static AbsoluteDate getEpoch(int epoch)

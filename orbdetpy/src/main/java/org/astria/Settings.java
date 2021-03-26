@@ -1,6 +1,6 @@
 /*
  * Settings.java - Functions to parse OD configuration settings.
- * Copyright (C) 2018-2020 University of Texas
+ * Copyright (C) 2018-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,6 @@ import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
-import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
@@ -61,7 +60,6 @@ import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.frames.Transform;
 import org.orekit.geometry.fov.CircularFieldOfView;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -81,7 +79,6 @@ import org.orekit.propagation.events.GroundFieldOfViewDetector;
 import org.orekit.propagation.events.LongitudeCrossingDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.UT1Scale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -344,7 +341,7 @@ public final class Settings
     public double[] geoZoneLatLon;
 
     public Filter estmFilter = Filter.UNSCENTED_KALMAN;
-    public double[] estmCovariance = new double[]{25E6, 25E6, 25E6, 1E2, 1E2, 1E2, 1.00, 0.25, 1E-6, 1E-6, 1E-6};
+    public double[] estmCovariance = {25E6, 25E6, 25E6, 1E2, 1E2, 1E2, 1.00, 0.25, 1E-6, 1E-6, 1E-6};
     public double[] estmProcessNoise;
     public double estmDMCCorrTime = 40.0;
     public double estmDMCSigmaPert = 5.0E-9;
@@ -448,7 +445,7 @@ public final class Settings
 	    }
 	}
 	else if (dragModel == DragModel.WAM)
-	    atmModel = new WAM(DataManager.earthShape);
+	    atmModel = WAM.getInstance();
 
 	if (atmModel != null)
 	    forces.add(new DragForce(atmModel, dragsc));
@@ -468,7 +465,7 @@ public final class Settings
     private void loadParameters()
     {
 	double bias;
-	final int[] counts = new int[]{0, 0};
+	final int[] counts = {0, 0};
 	final EstimationType[] ops = {EstimationType.ESTIMATE, EstimationType.CONSIDER};
 
 	parameters = new ArrayList<Parameter>();

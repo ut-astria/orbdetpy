@@ -1,6 +1,6 @@
 /*
  * MSISEInputs.java - Class for reading MSISE space weather data.
- * Copyright (C) 2018-2020 University of Texas
+ * Copyright (C) 2018-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,47 +18,87 @@
 
 package org.astria;
 
+import java.io.File;
 import java.util.HashMap;
+import java.util.Scanner;
 import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 
 public final class MSISEInputs implements NRLMSISE00InputParameters
 {
     private static MSISEInputs singleton;
+    private AbsoluteDate minDate;
+    private AbsoluteDate maxDate;
+    private HashMap<String, double[]> weather;
 
-    private MSISEInputs()
+    private MSISEInputs() throws Exception
     {
+	String[] toks = null;
+	weather = new HashMap<String, double[]>();
+	Scanner scan = new Scanner(new File(DataManager.dataPath, "SpaceWeather.dat"));
+	while (scan.hasNextLine())
+	{
+	    toks = scan.nextLine().split(",");
+	    double[] vals = new double[toks.length];
+	    for (int i = 0; i < toks.length; i++)
+		toks[i] = toks[i].trim();
+
+	    if (minDate == null)
+		minDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
+					   Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
+	    for (int i = 0; i < toks.length; i++)
+	    {
+		if (toks[i].length() > 0)
+		    vals[i] = Double.parseDouble(toks[i]);
+	    }
+	    weather.put(String.format("%s%s%s", toks[0], toks[1], toks[2]), vals);
+	}
+
+	scan.close();
+	if (toks != null)
+	    maxDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
+				       Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
     }
 
     public static synchronized MSISEInputs getInstance()
     {
 	if (singleton == null)
-	    singleton = new MSISEInputs();
+	{
+	    try
+	    {
+		singleton = new MSISEInputs();
+	    }
+	    catch (Exception exc)
+	    {
+		throw(new RuntimeException(exc));
+	    }
+	}
 	return(singleton);
     }
 
     @Override public AbsoluteDate getMinDate()
     {
-	return(DataManager.msiseData.minDate);
+	return(minDate);
     }
 
     @Override public AbsoluteDate getMaxDate()
     {
-	return(DataManager.msiseData.maxDate);
+	return(maxDate);
     }
 
     @Override public double getDailyFlux(AbsoluteDate date)
     {
 	String p = date.shiftedBy(-86400.0).toString();
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-	return(DataManager.msiseData.data.get(k)[26]);
+	return(weather.get(k)[26]);
     }
 
     @Override public double getAverageFlux(AbsoluteDate date)
     {
 	String p = date.toString();
 	String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-	return(DataManager.msiseData.data.get(k)[28]);
+	return(weather.get(k)[28]);
     }
 
     @Override public double[] getAp(AbsoluteDate date)
@@ -70,13 +110,13 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 	    {
 		String p = date.toString();
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		apValues[0] = DataManager.msiseData.data.get(k)[22];
+		apValues[0] = weather.get(k)[22];
 	    }
 	    else if (i <= 4)
 	    {
 		String p = date.shiftedBy(-10800.0*(i-1)).toString();
 		String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		apValues[i] = DataManager.msiseData.data.get(k)[Integer.parseInt(p.substring(11, 13))/3 + 14];
+		apValues[i] = weather.get(k)[Integer.parseInt(p.substring(11, 13))/3 + 14];
 	    }
 	    else
 	    {
@@ -84,7 +124,7 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 		{
 		    String p = date.shiftedBy(-10800.0*(j-1)).toString();
 		    String k = p.substring(0, 4) + p.substring(5, 7) + p.substring(8, 10);
-		    apValues[i] += DataManager.msiseData.data.get(k)[Integer.parseInt(p.substring(11, 13))/3 + 14];
+		    apValues[i] += weather.get(k)[Integer.parseInt(p.substring(11, 13))/3 + 14];
 		}
 		apValues[i] = apValues[i]/8.0;
 	    }
