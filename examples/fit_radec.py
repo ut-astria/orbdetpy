@@ -81,6 +81,8 @@ config.measurements[MeasurementType.DECLINATION].error[:] = [2.0*Constant.ARC_SE
 
 # Use Filter.EXTENDED_KALMAN for the EKF
 config.estm_filter = Filter.UNSCENTED_KALMAN
+# Set the initial covariance; diagonal entries for the estimated state vector and parameters 
+config.estm_covariance[:] = [25E6, 25E6, 25E6, 1E2, 1E2, 1E2, 1.00, 0.25, 1E-6, 1E-6, 1E-6]
 
 # Build a list of Measurement objects, one for each RA/dec pair
 meas_obj = []
