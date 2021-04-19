@@ -1,5 +1,5 @@
 # utilities.py - Various utilities.
-# Copyright (C) 2020 University of Texas
+# Copyright (C) 2020-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import List
-from orbdetpy.rpc.messages_pb2 import DoubleArray, InterpolateEphemerisInput
+from orbdetpy.rpc.messages_pb2 import DoubleArray, InterpolateEphemerisInput, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
 from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
 
 def interpolate_ephemeris(source_frame: int, times: List[float], states, num_points: int,
                           dest_frame: int, interp_start: float, interp_end: float, step_size: float):
-    """Interpolates the given state vectors.
+    """Interpolate the given state vectors.
 
     Parameters
     ----------
@@ -42,6 +42,31 @@ def interpolate_ephemeris(source_frame: int, times: List[float], states, num_poi
     resp = _utilities_stub.interpolateEphemeris(InterpolateEphemerisInput(
         source_frame=source_frame, time=times, ephem=[DoubleArray(array=s) for s in states], num_points=num_points,
         dest_frame=dest_frame, interp_start=interp_start, interp_end=interp_end, step_size=step_size))
+    return(resp.array)
+
+def get_density(drag_model: int, time: float, lla: List[float])->List[float]:
+    """Calculate atmospheric neutral density.
+
+    Parameters
+    ----------
+    drag_model : Atmospheric drag model; a constant from DragModel.
+    time : Offset in TT from J2000 epoch [s]. Give a list for bulk calculations.
+    lla : WGS-84 latitude, longitude, altitude. Give a list of lists for bulk calculations.
+
+    Returns
+    -------
+    Atmospheric neutral density [kg/m^3] at the specified coordinates.
+    """
+
+    if (isinstance(time, float) or isinstance(time, str)):
+        time, lla = [time], [lla]
+
+    if (isinstance(time[0], float)):
+        resp = _utilities_stub.getDensity(TransformFrameInput(
+            time=time, pva=[DoubleArray(array=x) for x in lla], dest_frame=str(drag_model)))
+    else:
+        resp = _utilities_stub.getDensity(TransformFrameInput(
+            UTC_time=time, pva=[DoubleArray(array=x) for x in lla], dest_frame=str(drag_model)))
     return(resp.array)
 
 if (__name__ != '__main__'):

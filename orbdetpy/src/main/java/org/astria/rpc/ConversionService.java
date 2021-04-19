@@ -30,6 +30,8 @@ import org.astria.DataManager;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
@@ -113,13 +115,14 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	}
     }
 
-    @Override public void convertPosToLLA(Messages.TransformFrameInput req, StreamObserver<Messages.Double2DArray> resp)
+    @Override public void convertLLAToPos(Messages.TransformFrameInput req, StreamObserver<Messages.Double2DArray> resp)
     {
 	try
 	{
 	    AbsoluteDate time;
 	    boolean stringTime = req.getUTCTimeCount() > 0;
-	    Predefined srcFrame = Predefined.valueOf(req.getSrcFrame());
+	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
 	    Messages.Double2DArray.Builder outer = Messages.Double2DArray.newBuilder();
 
 	    for (int i = 0; i < req.getPvaCount(); i++)
@@ -128,10 +131,48 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 		    time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
 		else
 		    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
-		double[] lla = Conversion.convertPosToLLA(srcFrame, time, req.getPva(i).getArrayList());
+
+		Messages.DoubleArray lla = req.getPva(i);
+		Vector3D pos = earth.transform(new GeodeticPoint(lla.getArray(0), lla.getArray(1), lla.getArray(2)));
 
 		Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder()
-		    .addArray(lla[0]).addArray(lla[1]).addArray(lla[2]);
+		    .addArray(pos.getX()).addArray(pos.getY()).addArray(pos.getZ());
+		if (stringTime)
+		    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
+		outer = outer.addArray(inner.build());
+	    }
+	    resp.onNext(outer.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void convertPosToLLA(Messages.TransformFrameInput req, StreamObserver<Messages.Double2DArray> resp)
+    {
+	try
+	{
+	    AbsoluteDate time;
+	    boolean stringTime = req.getUTCTimeCount() > 0;
+	    Frame srcFrame = FramesFactory.getFrame(Predefined.valueOf(req.getSrcFrame()));
+	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
+	    Messages.Double2DArray.Builder outer = Messages.Double2DArray.newBuilder();
+
+	    for (int i = 0; i < req.getPvaCount(); i++)
+	    {
+		if (stringTime)
+		    time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
+		else
+		    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
+
+		Messages.DoubleArray pos = req.getPva(i);
+		GeodeticPoint gp = earth.transform(new Vector3D(pos.getArray(0), pos.getArray(1), pos.getArray(2)), srcFrame, time);
+
+		Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder()
+		    .addArray(gp.getLatitude()).addArray(gp.getLongitude()).addArray(gp.getAltitude());
 		if (stringTime)
 		    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
 		outer = outer.addArray(inner.build());

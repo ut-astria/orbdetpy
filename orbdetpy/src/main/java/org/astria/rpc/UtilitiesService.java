@@ -1,6 +1,6 @@
 /*
  * UtilitiesService.java - Utilities service handler.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,17 +24,27 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Measurements;
+import org.astria.MSISEInputs;
+import org.astria.Settings;
 import org.astria.Utilities;
+import org.astria.WAM;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
+import org.orekit.models.earth.atmosphere.Atmosphere;
+import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -91,6 +101,43 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 	    }
 
 	    Messages.MeasurementArray.Builder builder = Messages.MeasurementArray.newBuilder().addAllArray(Tools.buildResponseFromMeasurements(output));
+	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void getDensity(Messages.TransformFrameInput req, StreamObserver<Messages.DoubleArray> resp)
+    {
+	try
+	{
+	    Atmosphere atmosphere;
+	    AbsoluteDate time = null;
+	    Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
+	    Settings.DragModel drag = Settings.DragModel.values()[Integer.parseInt(req.getDestFrame())];
+	    OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+							  FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
+	    if (drag == Settings.DragModel.MSISE2000)
+		atmosphere = new NRLMSISE00(MSISEInputs.getInstance(), CelestialBodyFactory.getSun(), earth);
+	    else if (drag == Settings.DragModel.WAM)
+		atmosphere = WAM.getInstance();
+	    else
+		throw(new RuntimeException("Invalid atmospheric drag model"));
+
+	    for (int i = 0; i < req.getPvaCount(); i++)
+	    {
+		if (i < req.getUTCTimeCount())
+		    time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
+		else if (i < req.getTimeCount())
+		    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
+
+		Messages.DoubleArray lla = req.getPva(i);
+		Vector3D pos = earth.transform(new GeodeticPoint(lla.getArray(0), lla.getArray(1), lla.getArray(2)));
+		builder = builder.addArray(atmosphere.getDensity(time, pos, earth.getFrame()));
+	    }
 	    resp.onNext(builder.build());
 	    resp.onCompleted();
 	}

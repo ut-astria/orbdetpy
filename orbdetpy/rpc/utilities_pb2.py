@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\020UtilitiesRequestP\000',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0futilities.proto\x1a\x0emessages.proto2\x89\x01\n\tUtilities\x12\x33\n\timportTDM\x12\x0f.ImportTDMInput\x1a\x13.Measurement2DArray\"\x00\x12G\n\x14interpolateEphemeris\x12\x1a.InterpolateEphemerisInput\x1a\x11.MeasurementArray\"\x00\x42$\n\x0eorg.astria.rpcB\x10UtilitiesRequestP\x00\x62\x06proto3'
+  serialized_pb=b'\n\x0futilities.proto\x1a\x0emessages.proto2\xbd\x01\n\tUtilities\x12\x33\n\timportTDM\x12\x0f.ImportTDMInput\x1a\x13.Measurement2DArray\"\x00\x12G\n\x14interpolateEphemeris\x12\x1a.InterpolateEphemerisInput\x1a\x11.MeasurementArray\"\x00\x12\x32\n\ngetDensity\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x42$\n\x0eorg.astria.rpcB\x10UtilitiesRequestP\x00\x62\x06proto3'
   ,
   dependencies=[messages__pb2.DESCRIPTOR,])
 
@@ -39,7 +39,7 @@ _UTILITIES = _descriptor.ServiceDescriptor(
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
   serialized_start=36,
-  serialized_end=173,
+  serialized_end=225,
   methods=[
   _descriptor.MethodDescriptor(
     name='importTDM',
@@ -58,6 +58,16 @@ _UTILITIES = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=messages__pb2._INTERPOLATEEPHEMERISINPUT,
     output_type=messages__pb2._MEASUREMENTARRAY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='getDensity',
+    full_name='Utilities.getDensity',
+    index=2,
+    containing_service=None,
+    input_type=messages__pb2._TRANSFORMFRAMEINPUT,
+    output_type=messages__pb2._DOUBLEARRAY,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

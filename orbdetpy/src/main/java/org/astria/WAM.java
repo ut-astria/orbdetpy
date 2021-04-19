@@ -42,6 +42,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
+import ucar.nc2.Variable;
 
 public final class WAM implements Atmosphere
 {
@@ -118,9 +119,9 @@ public final class WAM implements Atmosphere
 	    throw(new RuntimeException("WAM data not found for " + date.toString()));
 
 	GeodeticPoint gp = DataManager.earthShape.transform(position, frame, date);
-	float lat = (float)FastMath.toDegrees(gp.getLatitude());
-	float lon = (float)FastMath.toDegrees(MathUtils.normalizeAngle(gp.getLongitude(), FastMath.PI));
-	float alt = (float)gp.getAltitude();
+	double lat = FastMath.toDegrees(gp.getLatitude());
+	double lon = FastMath.toDegrees(MathUtils.normalizeAngle(gp.getLongitude(), FastMath.PI));
+	double alt = gp.getAltitude();
 
 	CacheEntry entry;
 	synchronized (dataCache)
@@ -129,17 +130,26 @@ public final class WAM implements Atmosphere
 	    if (entry == null)
 	    {
 		entry = new CacheEntry();
+		dataCache.put(finfo.getValue(), entry);
 		try (NetcdfFile data = NetcdfFiles.open(finfo.getValue()))
 		{
-		    entry.latitude    = (float[])data.findVariable("lat").read("1:89").copyTo1DJavaArray();
-		    entry.longitude   = (float[])data.findVariable("lon").read().copyTo1DJavaArray();
-		    entry.altitude    = (float[][][])data.findVariable("height").read(":,1:89,:").copyToNDJavaArray();
-		    entry.density     = (float[][][])data.findVariable("thermosphere_mass_density").read(":,1:89,:").copyToNDJavaArray();
-		    entry.temperature = (float[][][])data.findVariable("temp_neutral").read("149,1:89,:").copyToNDJavaArray();
-		    entry.densityN2   = (float[][][])data.findVariable("N2_Density").read("149,1:89,:").copyToNDJavaArray();
-		    entry.densityO    = (float[][][])data.findVariable("O_Density").read("149,1:89,:").copyToNDJavaArray();
-		    entry.densityO2   = (float[][][])data.findVariable("O2_Density").read("149,1:89,:").copyToNDJavaArray();
-		    dataCache.put(finfo.getValue(), entry);
+		    entry.latitude = (float[])data.findVariable("lat").read("1:90").copyTo1DJavaArray();
+		    entry.longitude = (float[])data.findVariable("lon").read().copyTo1DJavaArray();
+		    entry.altitude = (float[][][])data.findVariable("height").read(":,1:90,:").copyToNDJavaArray();
+
+		    Variable var = data.findVariable("thermosphere_mass_density");
+		    if (var == null)
+			var = data.findVariable("neutral_density");
+		    entry.density = (float[][][])var.read(":,1:90,:").copyToNDJavaArray();
+
+		    var = data.findVariable("temp_neutral");
+		    if (var != null)
+		    {
+			entry.temperature = (float[][][])var.read("149,1:90,:").copyToNDJavaArray();
+			entry.densityN2 = (float[][][])data.findVariable("N2_Density").read("149,1:90,:").copyToNDJavaArray();
+			entry.densityO = (float[][][])data.findVariable("O_Density").read("149,1:90,:").copyToNDJavaArray();
+			entry.densityO2 = (float[][][])data.findVariable("O2_Density").read("149,1:90,:").copyToNDJavaArray();
+		    }
 		}
 		catch (Exception exc)
 		{
@@ -148,38 +158,37 @@ public final class WAM implements Atmosphere
 	    }
 	}
 
-	int[] xb = getBounds(entry.latitude, lat, true);
-	int[] yb = getBounds(entry.longitude, lon, true);
-	float[] column = new float[entry.altitude.length];
-	for (int i = 0; i < column.length; i++)
-	    column[i] = entry.altitude[i][xb[0]][yb[0]];
-	int[] zb = getBounds(column, alt, false);
-
-	double[][][] gridF = new double[2][2][2];
+	int[] xb = angleBounds(entry.latitude, (float)lat);
 	double[] gridX = {entry.latitude[xb[0]], entry.latitude[xb[1]]};
+
+	int[] yb = angleBounds(entry.longitude, (float)lon);
 	double[] gridY = {entry.longitude[yb[0]], entry.longitude[yb[1]]};
-	if (yb[1] == 0)
+	if (gridY[1] < gridY[0])
 	    gridY[1] += 360.0;
+
+	int[] zb = altitudeBounds(entry.altitude, xb[0], yb[0], (float)alt);
 	double[] gridZ = {entry.altitude[zb[0]][xb[0]][yb[0]], entry.altitude[zb[1]][xb[0]][yb[0]]};
-	for (int i = 0; i < 2; i++)
-	    for (int j = 0; j < 2; j++)
-		for (int k = 0; k < 2; k++)
+
+	double[][][] gridF = new double[gridX.length][gridY.length][gridZ.length];
+	for (int i = 0; i < gridX.length; i++)
+	    for (int j = 0; j < gridY.length; j++)
+		for (int k = 0; k < gridZ.length; k++)
 		    gridF[i][j][k] = entry.density[zb[k]][xb[i]][yb[j]];
 
 	TricubicInterpolatingFunction function = interpolator.interpolate(gridX, gridY, gridZ, gridF);
-	if (alt >= gridZ[0] && alt <= gridZ[1])
+	if (alt >= gridZ[0] && alt <= gridZ[gridZ.length - 1])
 	    return(function.value(lat, lon, alt));
 	if (alt < gridZ[0])
 	    return(function.value(lat, lon, gridZ[0]));
 
 	double[] species = {entry.densityN2[0][xb[0]][yb[0]], entry.densityO[0][xb[0]][yb[0]], entry.densityO2[0][xb[0]][yb[0]]};
-	while (gridZ[1] < alt)
+	while (gridZ[gridZ.length - 1] < alt)
 	{
-	    double scale = -FastMath.min(alt - gridZ[1], 10E3)*9.80665*FastMath.pow(6371008.8/(gridZ[1] + 6371008.8), 2)/
-		(1.380649E-23*entry.temperature[0][xb[0]][yb[0]]);
+	    double scale = -FastMath.min(alt - gridZ[gridZ.length - 1], 10E3)*9.80665*FastMath.pow(
+		6371008.8/(gridZ[gridZ.length - 1] + 6371008.8), 2)/(1.380649E-23*entry.temperature[0][xb[0]][yb[0]]);
 	    for (int i = 0; i < ATOMIC_MASS.length; i++)
 		species[i] *= FastMath.exp(scale*ATOMIC_MASS[i]);
-	    gridZ[1] += 10E3;
+	    gridZ[gridZ.length - 1] += 10E3;
 	}
 
 	species[0] *= ATOMIC_MASS[0];
@@ -190,7 +199,7 @@ public final class WAM implements Atmosphere
 
     @Override public <T extends RealFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame)
     {
-	throw(new UnsupportedOperationException("Method is not implemented. Call double getDensity(...)."));
+	throw(new UnsupportedOperationException("Not implemented; use double getDensity(...)."));
     }
 
     @Override public Frame getFrame()
@@ -198,30 +207,38 @@ public final class WAM implements Atmosphere
         return(DataManager.earthShape.getBodyFrame());
     }
 
-    private int[] getBounds(float[] array, float key, boolean periodic)
+    private int[] angleBounds(float[] array, float value)
     {
-	int[] bounds = {0, Arrays.binarySearch(array, key)};
+	int[] bounds = {0, Arrays.binarySearch(array, value)};
 	if (bounds[1] < 0)
 	    bounds[1] = -1 - bounds[1];
 	if (bounds[1] == 0)
-	{
-	    if (periodic)
-		bounds[0] = array.length - 1;
-	    else
-		bounds[1] = 1;
-	}
+	    bounds[0] = array.length - 1;
 	else if (bounds[1] == array.length)
 	{
-	    if (periodic)
-	    {
-		bounds[0] = array.length - 1;
-		bounds[1] = 0;
-	    }
-	    else
-	    {
-		bounds[0] = array.length - 2;
-		bounds[1] = array.length - 1;
-	    }
+	    bounds[0] = array.length - 1;
+	    bounds[1] = 0;
+	}
+	else
+	    bounds[0] = bounds[1] - 1;
+	return(bounds);
+    }
+
+    private int[] altitudeBounds(float[][][] altitudes, int xb, int yb, float value)
+    {
+	float[] array = new float[altitudes.length];
+	for (int i = 0; i < array.length; i++)
+	    array[i] = altitudes[i][xb][yb];
+
+	int[] bounds = {0, Arrays.binarySearch(array, value)};
+	if (bounds[1] < 0)
+	    bounds[1] = -1 - bounds[1];
+	if (bounds[1] == 0)
+	    bounds[1] = 1;
+	else if (bounds[1] == array.length)
+	{
+	    bounds[0] = array.length - 2;
+	    bounds[1] = array.length - 1;
 	}
 	else
 	    bounds[0] = bounds[1] - 1;

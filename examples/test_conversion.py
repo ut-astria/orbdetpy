@@ -36,14 +36,17 @@ gcrf_pv = [-6045E3, -3490E3, 2500E3, -3.457E3, 6.618E3, 2.533E3]
 
 # Frame transformations
 itrf_pv = conv.transform_frame(Frame.GCRF, time, gcrf_pv, Frame.ITRF_CIO_CONV_2010_ACCURATE_EOP)
-print("GCRF->ITRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s".format(*itrf_pv))
-print("ITRF->GCRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s\n".format(
+print("GCRF=>ITRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s".format(*itrf_pv))
+print("ITRF=>GCRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s\n".format(
     *conv.transform_frame(Frame.ITRF_CIO_CONV_2010_ACCURATE_EOP, time, itrf_pv, Frame.GCRF)))
 
 # Position => Lat/Lon/Alt
 lla = conv.pos_to_lla(Frame.GCRF, time, gcrf_pv[:3])
-print("pos_to_lla: Lat={:.2f}d, Lon={:.2f}d, Alt={:.2f}m\n".format(
+print("pos_to_lla: Lat={:.2f}d, Lon={:.2f}d, Alt={:.2f}m".format(
     lla[0]/Constant.DEGREE_TO_RAD, lla[1]/Constant.DEGREE_TO_RAD, lla[2]))
+
+# Lat/Lon/Alt => Position
+print("lla_to_pos: {:.2f}m, {:.2f}m, {:.2f}m\n".format(*conv.lla_to_pos(time, lla)))
 
 # State vector <=> orbital elements
 elem = conv.pv_to_elem(Frame.GCRF, time, gcrf_pv)
