@@ -29,8 +29,10 @@ import org.hipparchus.linear.CholeskyDecomposition;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
@@ -45,6 +47,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -119,10 +122,20 @@ public final class Estimation
     public ArrayList<EstimationOutput> determineOrbit()
     {
 	estOutput = new ArrayList<EstimationOutput>(odObs.array.length);
-	if (odCfg.estmFilter == Settings.Filter.UNSCENTED_KALMAN)
-	    new UnscentedKalmanFilter().determineOrbit();
-	else
+	switch (odCfg.estmFilter)
+	{
+	case EXTENDED_KALMAN:
 	    new ExtendedKalmanFilter().determineOrbit();
+	    break;
+	case UNSCENTED_KALMAN:
+	    new UnscentedKalmanFilter().determineOrbit();
+	    break;
+	case BATCH_LEAST_SQUARES:
+	    new BatchLeastSquares().determineOrbit();
+	    break;
+	default:
+	    throw(new RuntimeException("Invalid estimation filter"));
+	}
 	return(estOutput);
     }
 
@@ -167,9 +180,9 @@ public final class Estimation
 		plst.add(pdrv);
 	    }
 
-	    final AttitudeProvider attprov = odCfg.getAttitudeProvider();
-	    if (attprov != null)
-		propBuilder.setAttitudeProvider(attprov);
+	    final AttitudeProvider attProv = odCfg.getAttitudeProvider();
+	    if (attProv != null)
+		propBuilder.setAttitudeProvider(attProv);
 
 	    final KalmanEstimatorBuilder builder = new KalmanEstimatorBuilder();
 	    builder.addPropagationConfiguration(propBuilder, this);
@@ -257,11 +270,11 @@ public final class Estimation
 	    System.arraycopy(pvc.getPosition().toArray(), 0, result.estimatedState, 0, 3);
 	    System.arraycopy(pvc.getVelocity().toArray(), 0, result.estimatedState, 3, 3);
 
-	    final ParameterDriversList plst = est.getEstimatedPropagationParameters();
+	    ParameterDriversList plst = est.getEstimatedPropagationParameters();
 	    for (int i = 0; i < odCfg.parameters.size(); i++)
 	    {
 		Settings.Parameter ep = odCfg.parameters.get(i);
-		result.estimatedState[i + 6] = est.getEstimatedPropagationParameters().findByName(ep.name).getValue();
+		result.estimatedState[i + 6] = plst.findByName(ep.name).getValue();
 	    }
 
 	    if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
@@ -378,11 +391,11 @@ public final class Estimation
 	    }
 
 	    boolean enableDMC = false;
+	    final double[] xInitial = odCfg.getInitialState();
 	    AbsoluteDate startTime = odCfg.propStart;
 	    final int numStates = odCfg.parameters.size() + 6;
 	    final int numSigmas = 2*numStates;
 	    final double weight = 0.5/numStates;
-	    final double[] xInitial = odCfg.getInitialState();
 	    final SpacecraftState[] ssta = new SpacecraftState[1];
 	    final ManualPropagation propagator = new ManualPropagation(odCfg);
 	    RealMatrix P = odCfg.getInitialCovariance();
@@ -547,21 +560,18 @@ public final class Estimation
 		    {
 			int pos = 0;
 			boolean isOutlier = false;
-			for (int i = 0; i < measNames.length; i++)
+			double[] fit = odout.postFit;
+			for (int j = 0; j < fit.length; j++)
 			{
-			    double[] fit = odout.postFit;
-			    for (int j = 0; j < fit.length; j++)
+			    if (FastMath.pow(rawMeas.getEntry(pos) - fit[j], 2) >
+				odCfg.estmOutlierSigma*odCfg.estmOutlierSigma*Pyy.getEntry(pos, pos))
 			    {
-				if (FastMath.pow(rawMeas.getEntry(pos) - fit[j], 2) >
-				    odCfg.estmOutlierSigma*odCfg.estmOutlierSigma*Pyy.getEntry(pos, pos))
-				{
-				    isOutlier = true;
-				    noiseMult[pos] = 1.0E16;
-				}
-				else
-				    noiseMult[pos] = 1.0;
-				pos++;
+				isOutlier = true;
+				noiseMult[pos] = 1.0E16;
 			    }
+			    else
+				noiseMult[pos] = 1.0;
+			    pos++;
 			}
 
 			if (isOutlier)
@@ -596,6 +606,48 @@ public final class Estimation
 		out.setEntry(j, sum);
 	    }
 	    return(out);
+	}
+    }
+
+    private class BatchLeastSquares
+    {
+	private void determineOrbit()
+	{
+	    double[] x0 = odCfg.getInitialState();
+	    CartesianOrbit X0 = new CartesianOrbit(new PVCoordinates(new Vector3D(x0[0], x0[1], x0[2]), new Vector3D(x0[3], x0[4], x0[5])),
+						   odCfg.propInertialFrame, odCfg.propStart, Constants.EGM96_EARTH_MU);
+
+	    NumericalPropagatorBuilder propBuilder = new NumericalPropagatorBuilder(
+		X0, new DormandPrince853IntegratorBuilder(odCfg.integMinTimeStep,odCfg.integMaxTimeStep, 1.0), PositionAngle.TRUE, 10.0);
+	    propBuilder.setMass(odCfg.rsoMass);
+	    for (ForceModel fm: odCfg.forces)
+		propBuilder.addForceModel(fm);
+
+	    AttitudeProvider attProv = odCfg.getAttitudeProvider();
+	    if (attProv != null)
+		propBuilder.setAttitudeProvider(attProv);
+
+	    BatchLSEstimator filter = new BatchLSEstimator(new GaussNewtonOptimizer(), propBuilder);
+	    filter.setParametersConvergenceThreshold(1E-3);
+	    filter.setMaxIterations(100);
+	    filter.setMaxEvaluations(300);
+
+	    for (Measurements.Measurement m: odObs.array)
+	    {
+		for (int i = 0; i < m.helpers.length; i++)
+		    filter.addMeasurement(m.helpers[i]);
+	    }
+
+	    AbstractIntegratedPropagator propagator = filter.estimate()[0];
+	    for (Measurements.Measurement m: odObs.array)
+	    {
+		EstimationOutput result = new EstimationOutput(m.time, m.station);
+		estOutput.add(result);
+		result.estimatedState = new double[6];
+		PVCoordinates pv = propagator.getPVCoordinates(m.time, odCfg.propInertialFrame);
+		System.arraycopy(pv.getPosition().toArray(), 0, result.estimatedState, 0, 3);
+		System.arraycopy(pv.getVelocity().toArray(), 0, result.estimatedState, 3, 3);
+	    }
 	}
     }
 }

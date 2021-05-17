@@ -112,8 +112,7 @@ public final class Measurements
 	    cpos == null && cposvel == null)
 	    throw(new RuntimeException("Measurement types not defined"));
 
-	boolean addBias = odCfg.estmFilter == Settings.Filter.EXTENDED_KALMAN;
-	boolean addOutlier = addBias && odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0;
+	boolean addOutlier = odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0;
 	ObservableSatellite satellite = new ObservableSatellite(0);
 	double[] oneOnes = {1.0};
 	double[] twoOnes = {1.0, 1.0};
@@ -146,7 +145,7 @@ public final class Measurements
 		obs.addModifier(new AngularRadioRefractionModifier(new EarthITU453AtmosphereRefraction(jsn.altitude)));
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<AngularAzEl>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
-		if (addBias && jsn.bias != null && jsn.bias.length > 0)
+		if (jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{jsn.bias[0], jsn.bias[1]}, twoOnes, twoNegInf, twoPosInf));
 	    }
 
@@ -157,7 +156,7 @@ public final class Measurements
 		m.addHelper(obs);
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<AngularRaDec>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
-		if (addBias && jsn.bias != null && jsn.bias.length > 0)
+		if (jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[]{jsn.bias[0], jsn.bias[1]}, twoOnes, twoNegInf, twoPosInf));
 	    }
 
@@ -167,7 +166,7 @@ public final class Measurements
 		m.addHelper(obs);
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<Range>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
-		if (addBias && jsn.bias != null && jsn.bias.length > 0)
+		if (jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<Range>(biasRange, new double[]{jsn.bias[0]}, oneOnes, oneNegInf, onePosInf));
 	    }
 
@@ -177,7 +176,7 @@ public final class Measurements
 		m.addHelper(obs);
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<RangeRate>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
-		if (addBias && jsn.bias != null && jsn.bias.length > 0)
+		if (jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{jsn.bias[jsn.bias.length-1]}, oneOnes, oneNegInf, onePosInf));
 	    }
 

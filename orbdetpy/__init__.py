@@ -74,6 +74,7 @@ class Filter():
 
     EXTENDED_KALMAN = 0
     UNSCENTED_KALMAN = 1
+    BATCH_LEAST_SQUARES = 2
 
 class Frame():
     """Orekit reference frames.

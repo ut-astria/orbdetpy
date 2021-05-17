@@ -219,7 +219,8 @@ public final class Settings
     public static enum Filter
     {
 	EXTENDED_KALMAN(0),
-	UNSCENTED_KALMAN(1);
+	UNSCENTED_KALMAN(1),
+	BATCH_LEAST_SQUARES(2);
 
 	private final int value;
 
