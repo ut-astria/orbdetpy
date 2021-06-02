@@ -1,5 +1,5 @@
 # predict_passes.py - Predict satellite passes for ground stations.
-# Copyright (C) 2020 University of Texas
+# Copyright (C) 2020-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ import json
 from os import path
 import datetime as dt
 import tkinter as tk
-from orbdetpy import add_station, configure, Constant, Frame, MeasurementType
+from orbdetpy import add_station, configure, Constant, DragModel, Frame, MeasurementType
 from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string, pos_to_lla
 from orbdetpy.propagation import propagate_orbits
 
@@ -128,8 +128,7 @@ class Application(tk.Frame):
         data, tle = {}, [l for l in self.tle.get("0.0", "end-1c").splitlines()
                          if l.startswith("1") or l.startswith("2")]
 
-        for f in ["latitude", "longitude", "altitude", "fov_azimuth", "fov_elevation",
-                  "fov_aperture", "step_size"]:
+        for f in ["latitude", "longitude", "altitude", "fov_azimuth", "fov_elevation", "fov_aperture", "step_size"]:
             data[f] = [float(t.strip()) for t in getattr(self, f).get().split(",")]
             if (f not in ["altitude", "step_size"]):
                 data[f] = [d*Constant.DEGREE_TO_RAD for d in data[f]]
@@ -137,17 +136,16 @@ class Application(tk.Frame):
         cfg_list = []
         sim_meas = len(data["latitude"]) <= 2 or len(data["latitude"]) != len(data["longitude"])
         for i in range(0, len(tle), 2):
-            cfg_list.append(configure(prop_start=start, prop_initial_TLE=tle[i:i+2],
-                                      prop_end=end, prop_step=data["step_size"][0],
-                                      sim_measurements=sim_meas))
+            cfg_list.append(configure(prop_start=start, prop_initial_TLE=tle[i:i+2], prop_end=end, prop_step=data["step_size"][0],
+                                      sim_measurements=sim_meas, gravity_degree=-1, gravity_order=-1, ocean_tides_degree=-1,
+                                      ocean_tides_order=-1, third_body_sun=False, third_body_moon=False, solid_tides_sun=False,
+                                      solid_tides_moon=False, drag_model=DragModel.UNDEFINED, rp_sun=False))
             if (not sim_meas):
-                cfg_list[-1].geo_zone_lat_lon[:] = [l for ll in zip(data["latitude"], data["longitude"])
-                                                    for l in ll]
+                cfg_list[-1].geo_zone_lat_lon[:] = [l for ll in zip(data["latitude"], data["longitude"]) for l in ll]
                 continue
 
-            add_station(cfg_list[-1], "Sensor", data["latitude"][0], data["longitude"][0],
-                        data["altitude"][0], data["fov_azimuth"][0], data["fov_elevation"][0],
-                        data["fov_aperture"][0])
+            add_station(cfg_list[-1], "Sensor", data["latitude"][0], data["longitude"][0], data["altitude"][0],
+                        data["fov_azimuth"][0], data["fov_elevation"][0], data["fov_aperture"][0])
             cfg_list[-1].measurements[MeasurementType.AZIMUTH].error[:] = [0.0]
             cfg_list[-1].measurements[MeasurementType.ELEVATION].error[:] = [0.0]
 

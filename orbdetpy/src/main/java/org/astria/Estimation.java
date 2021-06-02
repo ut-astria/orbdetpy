@@ -42,7 +42,6 @@ import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
 import org.orekit.estimation.sequential.KalmanObserver;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -93,9 +92,6 @@ public final class Estimation
     {
 	this.odCfg = odCfg;
 	this.odObs = odObs;
-	if (odCfg.estmFilter == Settings.Filter.UNSCENTED_KALMAN && odCfg.gravityDegree >= 2 && odCfg.gravityOrder >= 0)
-	    odCfg.forces.add(0, new NewtonianAttraction(Constants.EGM96_EARTH_MU));
-
 	measNames = odCfg.cfgMeasurements.keySet().toArray(new Settings.MeasurementType[0]);
 	Arrays.sort(measNames);
 	switch (measNames[0])

@@ -18,7 +18,7 @@
 import math
 from os import path
 from datetime import datetime, timedelta
-from orbdetpy import configure, Frame
+from orbdetpy import configure, DragModel, Frame
 from orbdetpy.conversion import get_J2000_epoch_offset
 from orbdetpy.propagation import propagate_orbits
 
@@ -30,7 +30,9 @@ with open(path.join(path.dirname(path.realpath(__file__)), "tle_tests.txt"), "r"
         else:
             test_cases.append([])
 
-config = [configure(prop_step=60.0, prop_inertial_frame=Frame.TEME)]
+config = [configure(prop_step=60.0, prop_inertial_frame=Frame.TEME, gravity_degree=-1, gravity_order=-1, ocean_tides_degree=-1,
+                    ocean_tides_order=-1, third_body_sun=False, third_body_moon=False, solid_tides_sun=False,
+                    solid_tides_moon=False, drag_model=DragModel.UNDEFINED, rp_sun=False)]
 diff_norm = lambda x, y: math.sqrt((x[0]-y[0])**2 + (x[1]-y[1])**2 + (x[2]-y[2])**2)
 
 for test in test_cases:

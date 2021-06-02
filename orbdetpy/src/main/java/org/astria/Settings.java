@@ -391,23 +391,17 @@ public final class Settings
     private void loadForces()
     {
 	forces = new ArrayList<ForceModel>();
-	NormalizedSphericalHarmonicsProvider grav = null;
-	if (gravityDegree >= 2 && gravityOrder >= 0)
-	{
-	    grav = GravityFieldFactory.getNormalizedProvider(gravityDegree, gravityOrder);
-	    forces.add(new HolmesFeatherstoneAttractionModel(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP), grav));
-	}
-	else
-	    forces.add(new NewtonianAttraction(Constants.EGM96_EARTH_MU));
-
 	if (oceanTidesDegree >= 0 && oceanTidesOrder >= 0)
 	    forces.add(new OceanTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 				      Constants.EGM96_EARTH_MU, oceanTidesDegree, oceanTidesOrder, IERSConventions.IERS_2010,
 				      TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false)));
 
-	if ((solidTidesSun || solidTidesMoon) && grav != null)
+	NormalizedSphericalHarmonicsProvider harmonics = null;
+	if (gravityDegree >= 2 && gravityOrder >= 0)
+	    harmonics = GravityFieldFactory.getNormalizedProvider(gravityDegree, gravityOrder);
+	if ((solidTidesSun || solidTidesMoon) && harmonics != null)
 	    forces.add(new SolidTides(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-				      Constants.EGM96_EARTH_MU, grav.getTideSystem(), IERSConventions.IERS_2010,
+				      Constants.EGM96_EARTH_MU, harmonics.getTideSystem(), IERSConventions.IERS_2010,
 				      TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false),
 				      CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon()));
 
@@ -453,14 +447,20 @@ public final class Settings
 	if (rpSun)
 	    forces.add(new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS, radnsc));
 
-	if (cfgManeuvers == null)
-	    return;
-	for (Maneuver m: cfgManeuvers)
+	if (cfgManeuvers != null)
 	{
-	    if (m.triggerEvent == ManeuverTrigger.DATE_TIME && m.maneuverType == ManeuverType.CONSTANT_THRUST)
-		forces.add(new ConstantThrustManeuver(m.time, m.maneuverParams[3], m.maneuverParams[4], m.maneuverParams[5],
-						      new Vector3D(m.maneuverParams[0], m.maneuverParams[1], m.maneuverParams[2])));
+	    for (Maneuver m: cfgManeuvers)
+	    {
+		if (m.triggerEvent == ManeuverTrigger.DATE_TIME && m.maneuverType == ManeuverType.CONSTANT_THRUST)
+		    forces.add(new ConstantThrustManeuver(m.time, m.maneuverParams[3], m.maneuverParams[4], m.maneuverParams[5],
+							  new Vector3D(m.maneuverParams[0], m.maneuverParams[1], m.maneuverParams[2])));
+	    }
 	}
+
+	if (harmonics != null)
+	    forces.add(new HolmesFeatherstoneAttractionModel(FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP), harmonics));
+	if (gravityDegree >= 0 && gravityOrder >= 0)
+	    forces.add(new NewtonianAttraction(Constants.EGM96_EARTH_MU));
     }
 
     private void loadParameters()
