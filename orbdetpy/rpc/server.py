@@ -47,7 +47,6 @@ class RemoteServer:
                 java_exec = path.join(java_home, "bin", "java")
             else:
                 java_exec = "java"
-
             cls.rpc_server = Popen([java_exec, "-Xmx2G", "-XX:+UseG1GC", "-jar", jar_file, rpc_port, data_dir])
 
         rpc_uri = f"{rpc_host}:{rpc_port}"

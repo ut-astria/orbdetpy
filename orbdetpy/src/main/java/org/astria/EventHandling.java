@@ -1,6 +1,6 @@
 /*
  * EventHandling.java - Functions to handle orbit events.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,10 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.GeographicZoneDetector;
+import org.orekit.propagation.events.GroundFieldOfViewDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.utils.PVCoordinates;
 
@@ -52,14 +55,13 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
     {
 	if (maneuverType == Settings.ManeuverType.UNDEFINED && stationName != null)
 	{
-	    String name = detector.getClass().getSimpleName();
-	    if (name.equals("ElevationDetector"))
+	    if (detector instanceof ElevationDetector)
 	    {
 		isVisible = increasing;
 		if (increasing)
 		    return(Action.STOP);
 	    }
-	    else if (name.equals("GroundFieldOfViewDetector") || name.equals("GeographicZoneDetector"))
+	    else if (detector instanceof GroundFieldOfViewDetector || detector instanceof GeographicZoneDetector)
 	    {
 		isVisible = !increasing;
 		if (!increasing)
@@ -101,8 +103,7 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	    Transform xfm = DataManager.earthShape.getFrame().getTransformTo(old.getFrame(), old.getDate());
 	    Vector3D newpos = xfm.transformPosition(DataManager.earthShape.transform(geo));
 	    Rotation rot = new Rotation(pvc.getPosition(), newpos);
-	    neworb = new CartesianOrbit(new PVCoordinates(newpos, rot.applyTo(pvc.getVelocity())), old.getFrame(),
-					old.getDate(), old.getMu());
+	    neworb = new CartesianOrbit(new PVCoordinates(newpos, rot.applyTo(pvc.getVelocity())), old.getFrame(), old.getDate(), old.getMu());
 	}
 	else
 	{
@@ -130,8 +131,7 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 		throw(new RuntimeException("Invalid maneuver type"));
 	    }
 
-	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(),
-					old.getDate(), old.getMu());
+	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
 	}
 
 	return(new SpacecraftState(neworb, old.getAttitude(), old.getMass(), old.getAdditionalStates()));

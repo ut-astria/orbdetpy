@@ -113,8 +113,7 @@ class Application(tk.Frame):
 
     def save_settings(self):
         cfg = {}
-        for f in ["latitude", "longitude", "altitude", "fov_azimuth", "fov_elevation",
-                  "fov_aperture", "tle"]:
+        for f in ["latitude", "longitude", "altitude", "fov_azimuth", "fov_elevation", "fov_aperture", "tle"]:
             cfg[f] = getattr(self, f).get("0.0", "end-1c") if (f == "tle") else getattr(self, f).get()
 
         self.master.destroy()
@@ -125,8 +124,7 @@ class Application(tk.Frame):
         self.predict["state"] = "disabled"
         start = get_J2000_epoch_offset(self.start_time.get())
         end = get_J2000_epoch_offset(self.end_time.get())
-        data, tle = {}, [l for l in self.tle.get("0.0", "end-1c").splitlines()
-                         if l.startswith("1") or l.startswith("2")]
+        data, tle = {}, [l for l in self.tle.get("0.0", "end-1c").splitlines() if l.startswith("1") or l.startswith("2")]
 
         for f in ["latitude", "longitude", "altitude", "fov_azimuth", "fov_elevation", "fov_aperture", "step_size"]:
             data[f] = [float(t.strip()) for t in getattr(self, f).get().split(",")]
@@ -169,7 +167,6 @@ class Application(tk.Frame):
                         lla = pos_to_lla(Frame.GCRF, m.time, m.true_state)
                         self.output.insert(tk.END, "{}: {:.5f}, {:.5f}, {:.2f}\n".format(
                             get_UTC_string(m.time), lla[0]/Constant.DEGREE_TO_RAD, lla[1]/Constant.DEGREE_TO_RAD, lla[2]))
-
         self.predict["state"] = "normal"
 
 Application(master=tk.Tk()).mainloop()

@@ -1,5 +1,5 @@
 # astro_data.py - Update Orekit astrodynamics data files.
-# Copyright (C) 2019-2020 University of Texas
+# Copyright (C) 2019-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
 
 import requests
 from os import path
-from orbdetpy import _data_dir
 
 def format_weather(lines: str)->str:
     """Re-format space weather data into a more efficient form.
@@ -38,12 +37,13 @@ def update_data()->None:
     """Download and re-format astrodynamics data from multiple sources.
     """
 
+    data_dir = path.join(path.dirname(path.abspath(path.realpath(__file__))), "orekit-data")
     updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
-                path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
+                path.join(data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
                ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
-                path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
-               ["http://astria.tacc.utexas.edu/AstriaGraph/SP_ephemeris/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None],
-               ["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(_data_dir, "SpaceWeather.dat"), format_weather]]
+                path.join(data_dir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
+               ["http://astria.tacc.utexas.edu/AstriaGraph/SP_ephemeris/tai-utc.dat", path.join(data_dir, "tai-utc.dat"), None],
+               ["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(data_dir, "SpaceWeather.dat"), format_weather]]
     # http://maia.usno.navy.mil/ser7
     for u in updates:
         print(f"Updating {u[1]}")
@@ -56,3 +56,6 @@ def update_data()->None:
                 print(f"HTTP error: {resp.status_code}")
         except Exception as exc:
             print(exc)
+
+if (__name__ == '__main__'):
+    update_data()
