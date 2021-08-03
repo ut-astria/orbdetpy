@@ -51,13 +51,11 @@ cfg = configure(prop_start=get_J2000_epoch_offset("2019-05-01T00:00:00Z"),
 
 # ManeuverType.*_CHANGE maneuvers take a single "delta" argument representing change in the
 # corresponding element; values are in meters for distances and radians for angles
-#add_maneuver(cfg, get_J2000_epoch_offset("2019-05-01T00:10:00Z"), ManeuverTrigger.DATE_TIME,
-#             None, ManeuverType.PERIGEE_CHANGE, [50000.0])
+#add_maneuver(cfg, get_J2000_epoch_offset("2019-05-01T00:10:00Z"), ManeuverTrigger.DATE_TIME, None, ManeuverType.PERIGEE_CHANGE, [5E4])
 
 # Define ground stations
 add_station(cfg, "Maui", 0.3614, -2.7272, 3059.0)
-add_station(cfg, "Millstone", 0.7438, -1.2652, 100.0, fov_azimuth=-2.75,
-            fov_elevation=0.62, fov_aperture=15*Constant.DEGREE_TO_RAD)
+add_station(cfg, "Millstone", 0.7438, -1.2652, 100.0, fov_azimuth=-2.75, fov_elevation=0.62, fov_aperture=15*Constant.DEGREE_TO_RAD)
 
 # Uncomment mutually exclusive sections below to choose different measurements 
 # AZIMUTH and ELEVATION must be given
@@ -91,11 +89,11 @@ for i in range(5):
 meas.sort(key=lambda m: m.time)
 
 # Plot orbital elements from the simulation
-#simulation_plot(meas, interactive=True)
+simulation_plot(meas, interactive=True)
 
-# Uncomment to export simulated measurements to a CCSDS TDM file
-#with open("orbdetpy_sim.tdm", "w") as fp:
-#    fp.write(export_TDM(cfg, meas, "COVID-19"))
+# Export simulated measurements to a CCSDS TDM file
+with open("orbdetpy_sim.tdm", "w") as fp:
+    fp.write(export_TDM(cfg, meas, "DEBRIS"))
 
 # Perturb truth initial state before running OD
 cfg.prop_initial_state[:] = multivariate_normal(cfg.prop_initial_state, diag([1E6, 1E6, 1E6, 1E2, 1E2, 1E2]))
@@ -118,6 +116,6 @@ for f in fit:
 # Plot OD results
 estimation_plot(cfg, meas, fit, interactive=True, estim_param=False)
 
-# Uncomment to export ephemeris to a CCSDS OEM file
-#with open("orbdetpy_fit.oem", "w") as fp:
-#    fp.write(export_OEM(cfg, fit, "2020-001A", "COVID-19"))
+# Export ephemeris to a CCSDS OEM file
+with open("orbdetpy_fit.oem", "w") as fp:
+    fp.write(export_OEM(cfg, fit, "2021-001A", "DEBRIS"))

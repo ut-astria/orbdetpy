@@ -18,7 +18,7 @@ import json
 from os import path
 import datetime as dt
 import tkinter as tk
-from orbdetpy import add_station, configure, Constant, DragModel, Frame, MeasurementType
+from orbdetpy import add_station, configure, Constant, DragModel, Frame, MeasurementType, OutputFlag
 from orbdetpy.conversion import get_J2000_epoch_offset, get_UTC_string, pos_to_lla
 from orbdetpy.propagation import propagate_orbits
 
@@ -138,17 +138,18 @@ class Application(tk.Frame):
                                       sim_measurements=sim_meas, gravity_degree=-1, gravity_order=-1, ocean_tides_degree=-1,
                                       ocean_tides_order=-1, third_body_sun=False, third_body_moon=False, solid_tides_sun=False,
                                       solid_tides_moon=False, drag_model=DragModel.UNDEFINED, rp_sun=False))
-            if (not sim_meas):
+            cfg_list[-1].output_flags |= OutputFlag.OUTPUT_ECLIPSE
+            if (sim_meas):
+                add_station(cfg_list[-1], "Sensor", data["latitude"][0], data["longitude"][0], data["altitude"][0],
+                            data["fov_azimuth"][0], data["fov_elevation"][0], data["fov_aperture"][0])
+                cfg_list[-1].measurements[MeasurementType.AZIMUTH].error[:] = [0.0]
+                cfg_list[-1].measurements[MeasurementType.ELEVATION].error[:] = [0.0]
+            else:
                 cfg_list[-1].geo_zone_lat_lon[:] = [l for ll in zip(data["latitude"], data["longitude"]) for l in ll]
-                continue
-
-            add_station(cfg_list[-1], "Sensor", data["latitude"][0], data["longitude"][0], data["altitude"][0],
-                        data["fov_azimuth"][0], data["fov_elevation"][0], data["fov_aperture"][0])
-            cfg_list[-1].measurements[MeasurementType.AZIMUTH].error[:] = [0.0]
-            cfg_list[-1].measurements[MeasurementType.ELEVATION].error[:] = [0.0]
 
         if (len(cfg_list)):
             i = 0
+            lookup = {0.0: "Sunlit", 0.5: "Penumbra", 1.0: "Umbra"}
             self.output.delete("0.0", tk.END)
             if (sim_meas):
                 self.output_label["text"] = "UTC, Azimuth [deg], Elevation [deg]"
@@ -156,17 +157,15 @@ class Application(tk.Frame):
                 self.output_label["text"] = "UTC, Latitude [deg], Longitude [deg], Altitude [m]"
 
             for o in propagate_orbits(cfg_list):
-                self.output.insert(tk.END, "\nObject {}:\n".format(tle[i][2:7]))
+                self.output.insert(tk.END, f"\nObject {tle[i][2:7]}:\n")
                 i += 2
                 for m in o.array:
                     if (sim_meas):
-                        self.output.insert(tk.END, "{}: {:.5f}, {:.5f}\n".format(
-                            get_UTC_string(m.time), (m.values[0]/Constant.DEGREE_TO_RAD + 360)%360,
-                            m.values[1]/Constant.DEGREE_TO_RAD))
+                        self.output.insert(tk.END, "{}: {:.5f}, {:.5f} ({})\n".format(get_UTC_string(m.time),                                                                                      (m.values[0]/Constant.DEGREE_TO_RAD + 360)%360, m.values[1]/Constant.DEGREE_TO_RAD, lookup[m.true_state[-1]]))
                     else:
                         lla = pos_to_lla(Frame.GCRF, m.time, m.true_state)
-                        self.output.insert(tk.END, "{}: {:.5f}, {:.5f}, {:.2f}\n".format(
-                            get_UTC_string(m.time), lla[0]/Constant.DEGREE_TO_RAD, lla[1]/Constant.DEGREE_TO_RAD, lla[2]))
+                        self.output.insert(tk.END, "{}: {:.5f}, {:.5f}, {:.2f} ({})\n".format(get_UTC_string(m.time),
+                            lla[0]/Constant.DEGREE_TO_RAD, lla[1]/Constant.DEGREE_TO_RAD, lla[2], lookup[m.true_state[-1]]))
         self.predict["state"] = "normal"
 
 Application(master=tk.Tk()).mainloop()

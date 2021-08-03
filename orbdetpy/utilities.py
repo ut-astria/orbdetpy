@@ -60,7 +60,6 @@ def get_density(drag_model: int, time: float, lla: List[float])->List[float]:
 
     if (isinstance(time, float) or isinstance(time, str)):
         time, lla = [time], [lla]
-
     if (isinstance(time[0], float)):
         resp = _utilities_stub.getDensity(TransformFrameInput(
             time=time, pva=[DoubleArray(array=x) for x in lla], dest_frame=str(drag_model)))

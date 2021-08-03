@@ -18,6 +18,7 @@
 
 package org.astria;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -62,15 +63,15 @@ public final class Measurements
 	    this.helpers = src.helpers;
 	}
 
-	public Measurement(TimeStampedPVCoordinates pv, double[] extras)
+	public Measurement(TimeStampedPVCoordinates pv, ArrayList<Double> extras)
 	{
 	    this.time = pv.getDate();
-	    double[] p = pv.getPosition().toArray();
-	    double[] v = pv.getVelocity().toArray();
-	    if (extras != null && extras.length > 0)
-		this.trueState = new double[6 + extras.length];
+	    if (extras != null && extras.size() > 0)
+		this.trueState = new double[6 + extras.size()];
 	    else
 		this.trueState = new double[6];
+	    double[] p = pv.getPosition().toArray();
+	    double[] v = pv.getVelocity().toArray();
 	    for (int i = 0; i < this.trueState.length; i++)
 	    {
 		if (i < 3)
@@ -78,7 +79,7 @@ public final class Measurements
 		else if (i < 6)
 		    this.trueState[i] = v[i - 3];
 		else
-		    this.trueState[i] = extras[i - 6];
+		    this.trueState[i] = extras.get(i - 6);
 	    }
 	}
 

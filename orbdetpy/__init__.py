@@ -195,6 +195,7 @@ class OutputFlag():
     OUTPUT_INNO_COV = 4
     OUTPUT_RESIDUALS = 8
     OUTPUT_DENSITY = 16
+    OUTPUT_ECLIPSE = 32
 
 class Constant():
     """Miscellaneous constants.

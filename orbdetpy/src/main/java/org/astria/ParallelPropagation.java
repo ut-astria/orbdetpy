@@ -116,7 +116,6 @@ public final class ParallelPropagation
 		    stepEnd.set(i, cfg.propEnd);
 	    }
 	}
-
 	return(output);
     }
 
@@ -179,10 +178,28 @@ public final class ParallelPropagation
 	public static boolean simulate(Settings simCfg, SpacecraftState state, ArrayList<EventHandling> handlers,
 				       ArrayList<Measurements.Measurement> measOut)
 	{
-	    double[] extraStates = null;
+	    ArrayList<Double> extraStates = new ArrayList<Double>();
 	    TimeStampedPVCoordinates pvc = state.getPVCoordinates(simCfg.propInertialFrame);
 	    if (simCfg.atmModel != null && (simCfg.outputFlags & Settings.OUTPUT_DENSITY) != 0)
-		extraStates = new double[]{simCfg.atmModel.getDensity(pvc.getDate(), pvc.getPosition(), simCfg.propInertialFrame)};
+		extraStates.add(simCfg.atmModel.getDensity(pvc.getDate(), pvc.getPosition(), simCfg.propInertialFrame));
+	    if ((simCfg.outputFlags & Settings.OUTPUT_ECLIPSE) != 0)
+	    {
+		double eclipse = 0.0;
+		for (EventHandling hnd: handlers)
+		{
+		    if (hnd.stationName != null)
+		    {
+			if (hnd.stationName.equals(EventHandling.UMBRA) && hnd.detected)
+			{
+			    eclipse = 1.0;
+			    break;
+			}
+			if (hnd.stationName.equals(EventHandling.PENUMBRA) && hnd.detected)
+			    eclipse = 0.5;
+		    }
+		}
+		extraStates.add(eclipse);
+	    }
 
 	    Measurements.Measurement meas = new Measurements.Measurement(pvc, extraStates);
 	    if (!simCfg.simMeasurements)
@@ -190,9 +207,9 @@ public final class ParallelPropagation
 		boolean isVisible = true;
 		for (EventHandling hnd: handlers)
 		{
-		    if (hnd.isVisible != null && hnd.stationName != null && hnd.stationName.equals(EventHandling.GEO_ZONE_NAME))
+		    if (hnd.detected != null && hnd.stationName != null && hnd.stationName.equals(EventHandling.GEO_ZONE_NAME))
 		    {
-			isVisible = hnd.isVisible;
+			isVisible = hnd.detected;
 			break;
 		    }
 		}
@@ -210,9 +227,9 @@ public final class ParallelPropagation
 		String gsName = kv.getKey();
 		for (EventHandling hnd: handlers)
 		{
-		    if (hnd.isVisible != null && hnd.stationName != null && hnd.stationName.equals(gsName))
+		    if (hnd.detected != null && hnd.stationName != null && hnd.stationName.equals(gsName))
 		    {
-			isVisible = hnd.isVisible;
+			isVisible = hnd.detected;
 			break;
 		    }
 		}
@@ -288,7 +305,6 @@ public final class ParallelPropagation
 		    }
 		}
 	    }
-
 	    return(continueProp);
 	}
     }
