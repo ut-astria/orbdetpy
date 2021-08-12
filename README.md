@@ -51,6 +51,8 @@ Development
 
    `mvn -e package`
 
+3. Run `pip install -e ./` from the top-level folder containing `setup.py`.
+
 Examples
 --------
 

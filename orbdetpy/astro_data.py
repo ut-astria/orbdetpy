@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import tarfile
 import requests
-from os import path
+from os import path, remove
 
 def format_weather(lines: str)->str:
     """Re-format space weather data into a more efficient form.
@@ -37,7 +38,23 @@ def update_data()->None:
     """Download and re-format astrodynamics data from multiple sources.
     """
 
-    data_dir = path.join(path.dirname(path.abspath(path.realpath(__file__))), "orekit-data")
+    root_dir = path.dirname(path.abspath(path.realpath(__file__)))
+    data_dir = path.join(root_dir, "orekit-data")
+    if (not path.isdir(data_dir)):
+        uri = "https://github.com/ut-astria/orbdetpy/releases/download/2.0.6/orekit-data.tar.gz"
+        print(f"Downloading {uri}")
+        resp = requests.get(uri, timeout=10.0, stream=True)
+        if (resp.status_code == requests.codes.ok):
+            tgz = path.join(root_dir, "orekit-data.tar.gz")
+            with open(tgz, "wb") as fp:
+                fp.write(resp.raw.read())
+            tar = tarfile.open(tgz, "r:gz")
+            tar.extractall()
+            tar.close()
+            remove(tgz)
+        else:
+            print(f"HTTP error: {resp.status_code}")
+
     updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
                 path.join(data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
                ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
@@ -51,7 +68,7 @@ def update_data()->None:
             resp = requests.get(u[0], timeout=10.0)
             if (resp.status_code == requests.codes.ok):
                 with open(u[1], "w") as fp:
-                    fp.write(u[2](resp.text) if (u[2] is not None) else resp.text)
+                    fp.write(u[2](resp.text) if (u[2]) else resp.text)
             else:
                 print(f"HTTP error: {resp.status_code}")
         except Exception as exc:
