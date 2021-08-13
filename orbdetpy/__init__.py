@@ -23,7 +23,6 @@ from math import pi, sqrt
 from typing import List, Optional, Tuple
 from .version import __version__
 from orbdetpy.rpc.messages_pb2 import Facet, Maneuver, Measurement, Parameter, Settings, Station
-from orbdetpy.rpc.server import RemoteServer
 
 class AttitudeType():
     """Orekit attitude providers.
@@ -367,4 +366,3 @@ if (__name__ != '__main__'):
     _data_dir = path.join(_root_dir, "orekit-data")
     stat(_jar_file)
     stat(_data_dir)
-    RemoteServer.connect(_data_dir, _jar_file)
