@@ -21,7 +21,7 @@
 from os import path, stat
 from math import pi, sqrt
 from typing import List, Optional, Tuple
-from .version import __version__
+from orbdetpy.version import __version__
 from orbdetpy.rpc.messages_pb2 import Facet, Maneuver, Measurement, Parameter, Settings, Station
 
 class AttitudeType():
@@ -364,5 +364,3 @@ if (__name__ != '__main__'):
     _libs_dir = path.join(_root_dir, "target")
     _jar_file = path.join(_libs_dir, "orbdetpy-server-{}.jar".format(__version__))
     _data_dir = path.join(_root_dir, "orekit-data")
-    stat(_jar_file)
-    stat(_data_dir)

@@ -17,6 +17,7 @@
 import tarfile
 import requests
 from os import path, remove
+from orbdetpy import _root_dir, _data_dir
 
 def format_weather(lines: str)->str:
     """Re-format space weather data into a more efficient form.
@@ -30,22 +31,20 @@ def format_weather(lines: str)->str:
     for line in lines.splitlines():
         if (line == "END DAILY_PREDICTED"):
             break
-        if (len(line) > 0 and line[0].isnumeric()):
-            output.append(",".join([line[i:j] for i, j in zip(c1, c2)]))
+        if (line and line[0].isnumeric()):
+            output.append(",".join((line[i:j].strip() for i, j in zip(c1, c2))))
     return("\n".join(output))
 
 def update_data()->None:
     """Download and re-format astrodynamics data from multiple sources.
     """
 
-    root_dir = path.dirname(path.abspath(path.realpath(__file__)))
-    data_dir = path.join(root_dir, "orekit-data")
-    if (not path.isdir(data_dir)):
+    if (not path.isdir(_data_dir)):
         uri = "https://github.com/ut-astria/orbdetpy/releases/download/2.0.6/orekit-data.tar.gz"
         print(f"Downloading {uri}")
         resp = requests.get(uri, timeout=10.0, stream=True)
         if (resp.status_code == requests.codes.ok):
-            tgz = path.join(root_dir, "orekit-data.tar.gz")
+            tgz = path.join(_root_dir, "orekit-data.tar.gz")
             with open(tgz, "wb") as fp:
                 fp.write(resp.raw.read())
             tar = tarfile.open(tgz, "r:gz")
@@ -56,11 +55,11 @@ def update_data()->None:
             print(f"HTTP error: {resp.status_code}")
 
     updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
-                path.join(data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
+                path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
                ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
-                path.join(data_dir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
-               ["http://astria.tacc.utexas.edu/AstriaGraph/SP_ephemeris/tai-utc.dat", path.join(data_dir, "tai-utc.dat"), None],
-               ["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(data_dir, "SpaceWeather.dat"), format_weather]]
+                path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
+               ["http://astria.tacc.utexas.edu/AstriaGraph/SP_ephemeris/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None],
+               ["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(_data_dir, "SpaceWeather.dat"), format_weather]]
     # http://maia.usno.navy.mil/ser7
     for u in updates:
         print(f"Updating {u[1]}")
