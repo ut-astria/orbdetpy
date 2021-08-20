@@ -77,7 +77,10 @@ import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.GeographicZoneDetector;
 import org.orekit.propagation.events.GroundFieldOfViewDetector;
+import org.orekit.propagation.events.LatitudeCrossingDetector;
+import org.orekit.propagation.events.LatitudeExtremumDetector;
 import org.orekit.propagation.events.LongitudeCrossingDetector;
+import org.orekit.propagation.events.LongitudeExtremumDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -236,7 +239,10 @@ public final class Settings
 	UNDEFINED(0),
 	DATE_TIME(1),
 	LONGITUDE_CROSSING(2),
-	APSIDE_CROSSING(3);
+	APSIDE_CROSSING(3),
+	LONGITUDE_EXTREMUM(4),
+	LATITUDE_CROSSING(5),
+	LATITUDE_EXTREMUM(6);
 
 	private final int value;
 
@@ -737,27 +743,45 @@ public final class Settings
 	{
 	    if (m.maneuverType == ManeuverType.CONSTANT_THRUST)
 		continue;
-	    if (m.triggerEvent == ManeuverTrigger.DATE_TIME)
+	    switch (m.triggerEvent)
 	    {
-		EventHandler<DateDetector> handler = new EventHandling<DateDetector>(m.maneuverType, m.maneuverParams[0], null, null);
-		prop.addEventDetector(new DateDetector(m.time).withHandler(handler));
-		handles.add((EventHandling)handler);
-	    }
-	    else if (m.triggerEvent == ManeuverTrigger.LONGITUDE_CROSSING)
-	    {
-		EventHandler<LongitudeCrossingDetector> handler = new EventHandling<LongitudeCrossingDetector>(
+	    case DATE_TIME:
+		EventHandler<DateDetector> time = new EventHandling<DateDetector>(m.maneuverType, m.maneuverParams[0], null, null);
+		prop.addEventDetector(new DateDetector(m.time).withHandler(time));
+		handles.add((EventHandling)time);
+		break;
+	    case LONGITUDE_CROSSING:
+		EventHandler<LongitudeCrossingDetector> lonc = new EventHandling<LongitudeCrossingDetector>(
 		    m.maneuverType, m.maneuverParams[0], null, null);
-		prop.addEventDetector(new LongitudeCrossingDetector(DataManager.earthShape, m.triggerParams[0]).withHandler(handler));
-		handles.add((EventHandling)handler);
-	    }
-	    else if (m.triggerEvent == ManeuverTrigger.APSIDE_CROSSING)
-	    {
-		EventHandler<ApsideDetector> handler = new EventHandling<ApsideDetector>(m.maneuverType, m.maneuverParams[0], null, null);
-		prop.addEventDetector(new ApsideDetector(initialState.getOrbit()).withHandler(handler));
-		handles.add((EventHandling)handler);
-	    }
-	    else
+		prop.addEventDetector(new LongitudeCrossingDetector(DataManager.earthShape, m.triggerParams[0]).withHandler(lonc));
+		handles.add((EventHandling)lonc);
+		break;
+	    case APSIDE_CROSSING:
+		EventHandler<ApsideDetector> apse = new EventHandling<ApsideDetector>(m.maneuverType, m.maneuverParams[0], null, null);
+		prop.addEventDetector(new ApsideDetector(initialState.getOrbit()).withHandler(apse));
+		handles.add((EventHandling)apse);
+		break;
+	    case LONGITUDE_EXTREMUM:
+		EventHandler<LongitudeExtremumDetector> lone = new EventHandling<LongitudeExtremumDetector>(
+		    m.maneuverType, m.maneuverParams[0], null, null);
+		prop.addEventDetector(new LongitudeExtremumDetector(DataManager.earthShape).withHandler(lone));
+		handles.add((EventHandling)lone);
+		break;
+	    case LATITUDE_CROSSING:
+		EventHandler<LatitudeCrossingDetector> latc = new EventHandling<LatitudeCrossingDetector>(
+		    m.maneuverType, m.maneuverParams[0], null, null);
+		prop.addEventDetector(new LatitudeCrossingDetector(DataManager.earthShape, m.triggerParams[0]).withHandler(latc));
+		handles.add((EventHandling)latc);
+		break;
+	    case LATITUDE_EXTREMUM:
+		EventHandler<LatitudeExtremumDetector> late = new EventHandling<LatitudeExtremumDetector>(
+		    m.maneuverType, m.maneuverParams[0], null, null);
+		prop.addEventDetector(new LatitudeExtremumDetector(DataManager.earthShape).withHandler(late));
+		handles.add((EventHandling)late);
+		break;
+	    default:
 		throw(new RuntimeException("Invalid maneuver trigger event"));
+	    }
 	}
 	return(handles);
     }

@@ -139,6 +139,9 @@ class ManeuverTrigger():
     DATE_TIME = 1
     LONGITUDE_CROSSING = 2
     APSIDE_CROSSING = 3
+    LONGITUDE_EXTREMUM = 4
+    LATITUDE_CROSSING = 5
+    LATITUDE_EXTREMUM = 6
 
 class ManeuverType():
     """Maneuver types.
