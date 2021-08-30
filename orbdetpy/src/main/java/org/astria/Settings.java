@@ -81,6 +81,7 @@ import org.orekit.propagation.events.LatitudeCrossingDetector;
 import org.orekit.propagation.events.LatitudeExtremumDetector;
 import org.orekit.propagation.events.LongitudeCrossingDetector;
 import org.orekit.propagation.events.LongitudeExtremumDetector;
+import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -242,7 +243,8 @@ public final class Settings
 	APSIDE_CROSSING(3),
 	LONGITUDE_EXTREMUM(4),
 	LATITUDE_CROSSING(5),
-	LATITUDE_EXTREMUM(6);
+	LATITUDE_EXTREMUM(6),
+	NODE_CROSSING(7);
 
 	private final int value;
 
@@ -743,44 +745,47 @@ public final class Settings
 	{
 	    if (m.maneuverType == ManeuverType.CONSTANT_THRUST)
 		continue;
+	    double delta = m.maneuverParams.length > 0 ? m.maneuverParams[0] : 0.0;
 	    switch (m.triggerEvent)
 	    {
 	    case DATE_TIME:
-		EventHandler<DateDetector> time = new EventHandling<DateDetector>(m.maneuverType, m.maneuverParams[0], null, null);
+		EventHandler<DateDetector> time = new EventHandling<DateDetector>(m.maneuverType, delta, null, false);
 		prop.addEventDetector(new DateDetector(m.time).withHandler(time));
 		handles.add((EventHandling)time);
 		break;
 	    case LONGITUDE_CROSSING:
-		EventHandler<LongitudeCrossingDetector> lonc = new EventHandling<LongitudeCrossingDetector>(
-		    m.maneuverType, m.maneuverParams[0], null, null);
+		EventHandler<LongitudeCrossingDetector> lonc = new EventHandling<LongitudeCrossingDetector>(m.maneuverType, delta, null, false);
 		prop.addEventDetector(new LongitudeCrossingDetector(DataManager.earthShape, m.triggerParams[0]).withHandler(lonc));
 		handles.add((EventHandling)lonc);
 		break;
 	    case APSIDE_CROSSING:
-		EventHandler<ApsideDetector> apse = new EventHandling<ApsideDetector>(m.maneuverType, m.maneuverParams[0], null, null);
+		EventHandler<ApsideDetector> apse = new EventHandling<ApsideDetector>(m.maneuverType, delta, null, false);
 		prop.addEventDetector(new ApsideDetector(initialState.getOrbit()).withHandler(apse));
 		handles.add((EventHandling)apse);
 		break;
 	    case LONGITUDE_EXTREMUM:
-		EventHandler<LongitudeExtremumDetector> lone = new EventHandling<LongitudeExtremumDetector>(
-		    m.maneuverType, m.maneuverParams[0], null, null);
+		EventHandler<LongitudeExtremumDetector> lone = new EventHandling<LongitudeExtremumDetector>(m.maneuverType, delta, null, false);
 		prop.addEventDetector(new LongitudeExtremumDetector(DataManager.earthShape).withHandler(lone));
 		handles.add((EventHandling)lone);
 		break;
 	    case LATITUDE_CROSSING:
-		EventHandler<LatitudeCrossingDetector> latc = new EventHandling<LatitudeCrossingDetector>(
-		    m.maneuverType, m.maneuverParams[0], null, null);
+		EventHandler<LatitudeCrossingDetector> latc = new EventHandling<LatitudeCrossingDetector>(m.maneuverType, delta, null, false);
 		prop.addEventDetector(new LatitudeCrossingDetector(DataManager.earthShape, m.triggerParams[0]).withHandler(latc));
 		handles.add((EventHandling)latc);
 		break;
 	    case LATITUDE_EXTREMUM:
-		EventHandler<LatitudeExtremumDetector> late = new EventHandling<LatitudeExtremumDetector>(
-		    m.maneuverType, m.maneuverParams[0], null, null);
+		EventHandler<LatitudeExtremumDetector> late = new EventHandling<LatitudeExtremumDetector>(m.maneuverType, delta, null, false);
 		prop.addEventDetector(new LatitudeExtremumDetector(DataManager.earthShape).withHandler(late));
 		handles.add((EventHandling)late);
 		break;
+	    case NODE_CROSSING:
+		String type = (m.triggerParams.length == 0 || m.triggerParams[0] == 0.0) ? EventHandling.ASC_NODE : EventHandling.DES_NODE;
+		EventHandler<NodeDetector> node = new EventHandling<NodeDetector>(m.maneuverType, delta, type, false);
+		prop.addEventDetector(new NodeDetector(initialState.getOrbit(), propInertialFrame).withHandler(node));
+		handles.add((EventHandling)node);
+		break;
 	    default:
-		throw(new RuntimeException("Invalid maneuver trigger event"));
+		throw(new RuntimeException("Invalid maneuver trigger"));
 	    }
 	}
 	return(handles);

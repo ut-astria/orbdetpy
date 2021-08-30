@@ -187,14 +187,14 @@ public final class ParallelPropagation
 		double eclipse = 0.0;
 		for (EventHandling hnd: handlers)
 		{
-		    if (hnd.stationName != null)
+		    if (hnd.observer != null)
 		    {
-			if (hnd.stationName.equals(EventHandling.UMBRA) && hnd.detected)
+			if (hnd.observer.equals(EventHandling.UMBRA) && hnd.detected)
 			{
 			    eclipse = 1.0;
 			    break;
 			}
-			if (hnd.stationName.equals(EventHandling.PENUMBRA) && hnd.detected)
+			if (hnd.observer.equals(EventHandling.PENUMBRA) && hnd.detected)
 			    eclipse = 0.5;
 		    }
 		}
@@ -207,7 +207,7 @@ public final class ParallelPropagation
 		boolean isVisible = true;
 		for (EventHandling hnd: handlers)
 		{
-		    if (hnd.detected != null && hnd.stationName != null && hnd.stationName.equals(EventHandling.GEO_ZONE_NAME))
+		    if (hnd.detected != null && hnd.observer != null && hnd.observer.equals(EventHandling.GEO_ZONE_NAME))
 		    {
 			isVisible = hnd.detected;
 			break;
@@ -227,7 +227,7 @@ public final class ParallelPropagation
 		String gsName = kv.getKey();
 		for (EventHandling hnd: handlers)
 		{
-		    if (hnd.detected != null && hnd.stationName != null && hnd.stationName.equals(gsName))
+		    if (hnd.detected != null && hnd.observer != null && hnd.observer.equals(gsName))
 		    {
 			isVisible = hnd.detected;
 			break;

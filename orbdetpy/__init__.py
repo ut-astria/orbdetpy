@@ -142,6 +142,7 @@ class ManeuverTrigger():
     LONGITUDE_EXTREMUM = 4
     LATITUDE_CROSSING = 5
     LATITUDE_EXTREMUM = 6
+    NODE_CROSSING = 7
 
 class ManeuverType():
     """Maneuver types.

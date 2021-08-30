@@ -33,6 +33,7 @@ import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.GeographicZoneDetector;
 import org.orekit.propagation.events.GroundFieldOfViewDetector;
+import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.utils.PVCoordinates;
 
@@ -41,16 +42,19 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
     public final static String GEO_ZONE_NAME = "GeoRegion";
     public final static String PENUMBRA = "Penumbra";
     public final static String UMBRA = "Umbra";
-    public final Settings.ManeuverType maneuverType;
-    public final double delta;
-    public final String stationName;
+    public final static String ASC_NODE = "Ascend";
+    public final static String DES_NODE = "Descend";
+
+    private final Settings.ManeuverType maneuverType;
+    private final double delta;
+    public final String observer;
     public Boolean detected;
 
-    public EventHandling(Settings.ManeuverType maneuverType, double delta, String stationName, Boolean detected)
+    public EventHandling(Settings.ManeuverType maneuverType, double delta, String observer, Boolean detected)
     {
 	this.maneuverType = maneuverType;
 	this.delta = delta;
-	this.stationName = stationName;
+	this.observer = observer;
 	this.detected = detected;
     }
 
@@ -72,6 +76,14 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	    }
 	    else if (detector instanceof EclipseDetector)
 		detected = !increasing;
+	    else if (detector instanceof NodeDetector)
+	    {
+		if ((observer.equals(ASC_NODE) && increasing) || (observer.equals(DES_NODE) && !increasing))
+		{
+		    detected = true;
+		    return(Action.STOP);
+		}
+	    }
 	}
 	else if (maneuverType == Settings.ManeuverType.STOP_PROPAGATION)
 	    return(Action.STOP);
