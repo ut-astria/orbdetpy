@@ -18,6 +18,7 @@
 
 package org.astria;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -62,15 +63,15 @@ public final class Measurements
 	    this.helpers = src.helpers;
 	}
 
-	public Measurement(TimeStampedPVCoordinates pv, double[] extras)
+	public Measurement(TimeStampedPVCoordinates pv, ArrayList<Double> extras)
 	{
 	    this.time = pv.getDate();
-	    double[] p = pv.getPosition().toArray();
-	    double[] v = pv.getVelocity().toArray();
-	    if (extras != null && extras.length > 0)
-		this.trueState = new double[6 + extras.length];
+	    if (extras != null && extras.size() > 0)
+		this.trueState = new double[6 + extras.size()];
 	    else
 		this.trueState = new double[6];
+	    double[] p = pv.getPosition().toArray();
+	    double[] v = pv.getVelocity().toArray();
 	    for (int i = 0; i < this.trueState.length; i++)
 	    {
 		if (i < 3)
@@ -78,7 +79,7 @@ public final class Measurements
 		else if (i < 6)
 		    this.trueState[i] = v[i - 3];
 		else
-		    this.trueState[i] = extras[i - 6];
+		    this.trueState[i] = extras.get(i - 6);
 	    }
 	}
 
@@ -112,8 +113,7 @@ public final class Measurements
 	    cpos == null && cposvel == null)
 	    throw(new RuntimeException("Measurement types not defined"));
 
-	boolean addBias = odCfg.estmFilter == Settings.Filter.EXTENDED_KALMAN;
-	boolean addOutlier = addBias && odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0;
+	boolean addOutlier = odCfg.estmOutlierSigma > 0.0 && odCfg.estmOutlierWarmup > 0;
 	ObservableSatellite satellite = new ObservableSatellite(0);
 	double[] oneOnes = {1.0};
 	double[] twoOnes = {1.0, 1.0};
@@ -146,7 +146,7 @@ public final class Measurements
 		obs.addModifier(new AngularRadioRefractionModifier(new EarthITU453AtmosphereRefraction(jsn.altitude)));
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<AngularAzEl>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
-		if (addBias && jsn.bias != null && jsn.bias.length > 0)
+		if (jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{jsn.bias[0], jsn.bias[1]}, twoOnes, twoNegInf, twoPosInf));
 	    }
 
@@ -157,7 +157,7 @@ public final class Measurements
 		m.addHelper(obs);
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<AngularRaDec>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
-		if (addBias && jsn.bias != null && jsn.bias.length > 0)
+		if (jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[]{jsn.bias[0], jsn.bias[1]}, twoOnes, twoNegInf, twoPosInf));
 	    }
 
@@ -167,7 +167,7 @@ public final class Measurements
 		m.addHelper(obs);
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<Range>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
-		if (addBias && jsn.bias != null && jsn.bias.length > 0)
+		if (jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<Range>(biasRange, new double[]{jsn.bias[0]}, oneOnes, oneNegInf, onePosInf));
 	    }
 
@@ -177,7 +177,7 @@ public final class Measurements
 		m.addHelper(obs);
 		if (addOutlier)
 		    obs.addModifier(new OutlierFilter<RangeRate>(odCfg.estmOutlierWarmup, odCfg.estmOutlierSigma));
-		if (addBias && jsn.bias != null && jsn.bias.length > 0)
+		if (jsn.bias != null && jsn.bias.length > 0)
 		    obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{jsn.bias[jsn.bias.length-1]}, oneOnes, oneNegInf, onePosInf));
 	    }
 

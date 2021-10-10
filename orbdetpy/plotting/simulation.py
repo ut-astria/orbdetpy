@@ -14,10 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import matplotlib.pyplot as plt
 from math import acos, pi
 from numpy import array, cross, dot
 from numpy.linalg import norm
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     """Plot simulated orbital elements, angular momenta, and specific energy.
@@ -77,67 +78,43 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     tim = [(t - tstamp[0])/3600 for t in tstamp]
 
     plt.figure(0)
-    plt.subplot(611)
-    plt.scatter(tim, sma, marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel("a [km]")
-    plt.subplot(612)
-    plt.scatter(tim, ecc, marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel("e")
-    plt.subplot(613)
-    plt.scatter(tim, inc, marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel("i [deg]")
-    plt.subplot(614)
-    plt.scatter(tim, raan, marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel(r"$\Omega$ [deg]")
-    plt.subplot(615)
-    plt.scatter(tim, argp, marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel(r"$\omega$ arg. [deg]")
-    plt.subplot(616)
-    plt.scatter(tim, tran, marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel(r"$\theta$ [deg]")
     plt.suptitle("Orbital Elements")
-    if (output_file_path is not None):
+    for i in range(6):
+        axis = plt.subplot(6, 1, i + 1)
+        axis.ticklabel_format(useOffset=False)
+        plt.scatter(tim, (sma, ecc, inc, raan, argp, tran)[i], c="b", marker="o", s=7)
+        plt.xlabel("Time [hr]")
+        plt.ylabel(("a [km]", "e", "i [deg]", r"$\Omega$ [deg]", r"$\omega$ [deg]", r"$\theta$ [deg]")[i])
+    if (output_file_path):
         outfiles.append(output_file_path + "_elements.png")
-        plt.savefig(outfiles[-1], format = "png")
+        plt.savefig(outfiles[-1], format="png")
 
     plt.figure(1)
-    plt.subplot(211)
-    plt.scatter(tim, hmag, marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel("Angular Momentum")
-    plt.subplot(212)
-    plt.scatter(tim, ener, marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel("Specific Energy")
-    plt.tight_layout(rect = [0, 0.03, 1, 0.95])
-    if (output_file_path is not None):
+    plt.suptitle("Specific Angular Momentum & Energy")
+    for i in range(2):
+        axis = plt.subplot(2, 1, i + 1)
+        axis.ticklabel_format(useOffset=False)
+        plt.scatter(tim, (hmag, ener)[i], c="b", marker="o", s=7)
+        plt.xlabel("Time [hr]")
+        plt.ylabel((r"h [$km^2/s$]", r"E [$km^2/s^2$]")[i])
+    plt.tight_layout(rect=(0, 0.03, 1, 0.95))
+    if (output_file_path):
         outfiles.append(output_file_path + "_momentum_energy.png")
-        plt.savefig(outfiles[-1], format = "png")
+        plt.savefig(outfiles[-1], format="png")
 
-    plt.figure(2)
-    plt.subplot(311)
-    plt.scatter(tim, hvec[:,0], marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel("h(x)")
-    plt.subplot(312)
-    plt.scatter(tim, hvec[:,1], marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel("h(y)")
-    plt.subplot(313)
-    plt.scatter(tim, hvec[:,2], marker = "o", s = 7)
-    plt.xlabel("Time [hr]")
-    plt.ylabel("h(z)")
-    plt.suptitle("Angular Momentum Components")
-    plt.tight_layout(rect = [0, 0.03, 1, 0.95])
-    if (output_file_path is not None):
-        outfiles.append(output_file_path + "_momentum_components.png")
-        plt.savefig(outfiles[-1], format = "png")
+    fig = plt.figure(2)
+    plt.suptitle("Specific Angular Momentum")
+    axis = fig.add_subplot(111, projection="3d")
+    axis.ticklabel_format(useOffset=False)
+    axis.scatter(hvec[:,0], hvec[:,1], hvec[:,2], c="b", marker="o", s=7)
+    axis.grid(True)
+    axis.set_xlabel(r"h(x) [$km^2/s$]")
+    axis.set_ylabel(r"h(y) [$km^2/s$]")
+    axis.set_zlabel(r"h(z) [$km^2/s$]")
+    plt.tight_layout(rect=(0, 0.03, 1, 0.95))
+    if (output_file_path):
+        outfiles.append(output_file_path + "_momentum_3D.png")
+        plt.savefig(outfiles[-1], format="png")
 
     if (interactive):
         plt.show()

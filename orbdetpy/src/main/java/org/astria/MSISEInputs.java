@@ -34,31 +34,26 @@ public final class MSISEInputs implements NRLMSISE00InputParameters
 
     private MSISEInputs() throws Exception
     {
-	String[] toks = null;
+	String[] tok = null;
 	weather = new HashMap<String, double[]>();
 	Scanner scan = new Scanner(new File(DataManager.dataPath, "SpaceWeather.dat"));
 	while (scan.hasNextLine())
 	{
-	    toks = scan.nextLine().split(",");
-	    double[] vals = new double[toks.length];
-	    for (int i = 0; i < toks.length; i++)
-		toks[i] = toks[i].trim();
-
-	    if (minDate == null)
-		minDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-					   Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
-	    for (int i = 0; i < toks.length; i++)
+	    tok = scan.nextLine().split(",");
+	    double[] vals = new double[tok.length];
+	    for (int i = 0; i < tok.length; i++)
 	    {
-		if (toks[i].length() > 0)
-		    vals[i] = Double.parseDouble(toks[i]);
+		if (tok[i].length() > 0)
+		    vals[i] = Double.parseDouble(tok[i]);
 	    }
-	    weather.put(String.format("%s%s%s", toks[0], toks[1], toks[2]), vals);
+	    weather.put(String.format("%s%s%s", tok[0], tok[1], tok[2]), vals);
+	    if (minDate == null)
+		minDate = new AbsoluteDate(Integer.parseInt(tok[0]), Integer.parseInt(tok[1]), Integer.parseInt(tok[2]), TimeScalesFactory.getUTC());
 	}
 
 	scan.close();
-	if (toks != null)
-	    maxDate = new AbsoluteDate(Integer.parseInt(toks[0]), Integer.parseInt(toks[1]),
-				       Integer.parseInt(toks[2]), TimeScalesFactory.getUTC());
+	if (tok != null)
+	    maxDate = new AbsoluteDate(Integer.parseInt(tok[0]), Integer.parseInt(tok[1]), Integer.parseInt(tok[2]), TimeScalesFactory.getUTC());
     }
 
     public static synchronized MSISEInputs getInstance()

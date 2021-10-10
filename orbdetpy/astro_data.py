@@ -1,5 +1,5 @@
 # astro_data.py - Update Orekit astrodynamics data files.
-# Copyright (C) 2019-2020 University of Texas
+# Copyright (C) 2019-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import tarfile
 import requests
-from os import path
-from orbdetpy import _data_dir
+from os import path, remove
+from orbdetpy import _root_dir, _data_dir
 
 def format_weather(lines: str)->str:
     """Re-format space weather data into a more efficient form.
@@ -30,13 +31,28 @@ def format_weather(lines: str)->str:
     for line in lines.splitlines():
         if (line == "END DAILY_PREDICTED"):
             break
-        if (len(line) > 0 and line[0].isnumeric()):
-            output.append(",".join([line[i:j] for i, j in zip(c1, c2)]))
+        if (line and line[0].isnumeric()):
+            output.append(",".join((line[i:j].strip() for i, j in zip(c1, c2))))
     return("\n".join(output))
 
 def update_data()->None:
     """Download and re-format astrodynamics data from multiple sources.
     """
+
+    if (not path.isdir(_data_dir)):
+        uri = "https://github.com/ut-astria/orbdetpy/releases/download/2.0.6/orekit-data.tar.gz"
+        print(f"Downloading {uri}")
+        resp = requests.get(uri, timeout=10.0, stream=True)
+        if (resp.status_code == requests.codes.ok):
+            tgz = path.join(_root_dir, "orekit-data.tar.gz")
+            with open(tgz, "wb") as fp:
+                fp.write(resp.raw.read())
+            tar = tarfile.open(tgz, "r:gz")
+            tar.extractall()
+            tar.close()
+            remove(tgz)
+        else:
+            print(f"HTTP error: {resp.status_code}")
 
     updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
                 path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
@@ -51,8 +67,11 @@ def update_data()->None:
             resp = requests.get(u[0], timeout=10.0)
             if (resp.status_code == requests.codes.ok):
                 with open(u[1], "w") as fp:
-                    fp.write(u[2](resp.text) if (u[2] is not None) else resp.text)
+                    fp.write(u[2](resp.text) if (u[2]) else resp.text)
             else:
                 print(f"HTTP error: {resp.status_code}")
         except Exception as exc:
             print(exc)
+
+if (__name__ == '__main__'):
+    update_data()

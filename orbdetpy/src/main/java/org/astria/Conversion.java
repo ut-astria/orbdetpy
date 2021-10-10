@@ -1,6 +1,6 @@
 /*
  * Conversion.java - Various conversion functions.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,11 +81,5 @@ public final class Conversion
 	double[] xyz = toVec.toArray();
 	return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[0], xyz[1]), FastMath.PI),
 			    FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))});
-    }
-
-    public static double[] convertPosToLLA(Predefined frame, AbsoluteDate time, List<Double> pos)
-    {
-	GeodeticPoint point = DataManager.earthShape.transform(new Vector3D(pos.get(0), pos.get(1), pos.get(2)), FramesFactory.getFrame(frame), time);
-	return(new double[]{point.getLatitude(), point.getLongitude(), point.getAltitude()});
     }
 }

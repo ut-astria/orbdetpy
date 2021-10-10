@@ -37,7 +37,7 @@ Installation
 Development
 -----------
 
-1. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.6/orekit-data.tar.gz>
+1. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.7/orekit-data.tar.gz>
    under the `orbdetpy/` sub-folder.
 
 2. Developers will need Apache Maven 3+ to build the Java library. Build
@@ -50,6 +50,8 @@ Development
    The command-line is simpler on Intel/AMD 64-bit Linux:
 
    `mvn -e package`
+
+3. Run `pip install -e ./` from the top-level folder containing `setup.py`.
 
 Examples
 --------

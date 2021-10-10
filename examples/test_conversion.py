@@ -36,14 +36,16 @@ gcrf_pv = [-6045E3, -3490E3, 2500E3, -3.457E3, 6.618E3, 2.533E3]
 
 # Frame transformations
 itrf_pv = conv.transform_frame(Frame.GCRF, time, gcrf_pv, Frame.ITRF_CIO_CONV_2010_ACCURATE_EOP)
-print("GCRF->ITRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s".format(*itrf_pv))
-print("ITRF->GCRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s\n".format(
+print("GCRF=>ITRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s".format(*itrf_pv))
+print("ITRF=>GCRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s\n".format(
     *conv.transform_frame(Frame.ITRF_CIO_CONV_2010_ACCURATE_EOP, time, itrf_pv, Frame.GCRF)))
 
 # Position => Lat/Lon/Alt
 lla = conv.pos_to_lla(Frame.GCRF, time, gcrf_pv[:3])
-print("pos_to_lla: Lat={:.2f}d, Lon={:.2f}d, Alt={:.2f}m\n".format(
-    lla[0]/Constant.DEGREE_TO_RAD, lla[1]/Constant.DEGREE_TO_RAD, lla[2]))
+print(f"pos_to_lla: Lat={lla[0]/Constant.DEGREE_TO_RAD:.2f}d, Lon={lla[1]/Constant.DEGREE_TO_RAD:.2f}d, Alt={lla[2]:.2f}m")
+
+# Lat/Lon/Alt => Position
+print("lla_to_pos: {:.2f}m, {:.2f}m, {:.2f}m\n".format(*conv.lla_to_pos(time, lla)))
 
 # State vector <=> orbital elements
 elem = conv.pv_to_elem(Frame.GCRF, time, gcrf_pv)
@@ -56,7 +58,7 @@ print("elem_to_pv: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s\n"
 lat, lon, alt = 52.5*Constant.DEGREE_TO_RAD, -1.917*Constant.DEGREE_TO_RAD, 0.0
 ra, dec = 250.425*Constant.DEGREE_TO_RAD, 36.467*Constant.DEGREE_TO_RAD
 az, el = conv.radec_to_azel(Frame.GCRF, time, ra, dec, lat, lon, alt)
-print("radec_to_azel: Azimuth={:.3f}d, Elevation={:.3f}d".format(az/Constant.DEGREE_TO_RAD, el/Constant.DEGREE_TO_RAD))
+print(f"radec_to_azel: Azimuth={az/Constant.DEGREE_TO_RAD:.3f}d, Elevation={el/Constant.DEGREE_TO_RAD:.3f}d")
 
 r, d = conv.azel_to_radec(time, az, el, lat, lon, alt, Frame.GCRF)
-print("azel_to_radec: RA={:.3f}d, Dec={:.3f}d\n".format(r/Constant.DEGREE_TO_RAD, d/Constant.DEGREE_TO_RAD))
+print(f"azel_to_radec: RA={r/Constant.DEGREE_TO_RAD:.3f}d, Dec={d/Constant.DEGREE_TO_RAD:.3f}d\n")

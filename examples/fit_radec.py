@@ -69,8 +69,8 @@ initial_epoch = times[1]
 initial_state = iod_laplace(Frame.EME2000, lat, lon, alt, times, ra, dec)
 
 # Configure orbit determination
-config = configure(prop_start=initial_epoch, prop_initial_state=initial_state,
-                   prop_end=get_J2000_epoch_offset(real_obs[-1][0]))
+config = configure(prop_start=initial_epoch, prop_initial_state=initial_state, prop_end=get_J2000_epoch_offset(real_obs[-1][0]),
+                   rso_mass=250.0, rso_area=10.0, estm_DMC_corr_time=15.0, estm_DMC_sigma_pert=3.0)
 
 # Define ground station(s)
 add_station(config, "UTA-ASTRIA-NMSkies", lat, lon, alt)
@@ -81,6 +81,8 @@ config.measurements[MeasurementType.DECLINATION].error[:] = [2.0*Constant.ARC_SE
 
 # Use Filter.EXTENDED_KALMAN for the EKF
 config.estm_filter = Filter.UNSCENTED_KALMAN
+# Set the initial covariance; diagonal entries for the estimated state vector and parameters 
+config.estm_covariance[:] = [25E6, 25E6, 25E6, 1E2, 1E2, 1E2, 1.00, 0.25, 1E-6, 1E-6, 1E-6]
 
 # Build a list of Measurement objects, one for each RA/dec pair
 meas_obj = []

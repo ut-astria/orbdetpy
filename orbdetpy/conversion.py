@@ -1,5 +1,5 @@
 # conversion.py - Various conversion functions.
-# Copyright (C) 2019-2020 University of Texas
+# Copyright (C) 2019-2021 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,8 +39,7 @@ def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: i
     """
 
     if (isinstance(time, float) or isinstance(time, str)):
-        single = True
-        time, pva = [time], [pva]
+        single, time, pva = True, [time], [pva]
     else:
         single = False
 
@@ -116,14 +115,38 @@ def radec_to_azel(frame: int, time: float, ra: float, dec: float, lat: float, lo
                                                            latitude=lat, longitude=lon, altitude=alt, frame=frame))
     return(resp.array)
 
-def pos_to_lla(frame: int, time: float, pos: List[float])->List[float]:
-    """Convert an inertial position to WGS-84 lat/lon/alt.
+def lla_to_pos(time: float, lla: List[float])->List[float]:
+    """Convert WGS-84 lat/lon/alt to Cartesian position.
 
     Parameters
     ----------
-    frame : Inertial reference frame; a constant from Frame.
     time : Offset in TT from J2000 epoch [s]. Give a list for bulk conversions.
-    pos : Inertial position vector. Provide a list of lists for bulk conversions.
+    lla : WGS-84 latitude, longitude, altitude. Provide a list of lists for bulk conversions.
+
+    Returns
+    -------
+    ITRF geocentric Cartesian position [m].
+    """
+
+    if (isinstance(time, float) or isinstance(time, str)):
+        single, time, lla = True, [time], [lla]
+    else:
+        single = False
+
+    if (isinstance(time[0], float)):
+        resp = _conversion_stub.convertLLAToPos(TransformFrameInput(time=time, pva=[DoubleArray(array=x) for x in lla]))
+    else:
+        resp = _conversion_stub.convertLLAToPos(TransformFrameInput(UTC_time=time, pva=[DoubleArray(array=x) for x in lla]))
+    return(resp.array[0].array if (single) else resp.array)
+
+def pos_to_lla(frame: int, time: float, pos: List[float])->List[float]:
+    """Convert a Cartesian position to WGS-84 lat/lon/alt.
+
+    Parameters
+    ----------
+    frame : Position reference frame; a constant from Frame.
+    time : Offset in TT from J2000 epoch [s]. Give a list for bulk conversions.
+    pos : Position vector [m]. Provide a list of lists for bulk conversions.
 
     Returns
     -------
@@ -131,17 +154,14 @@ def pos_to_lla(frame: int, time: float, pos: List[float])->List[float]:
     """
 
     if (isinstance(time, float) or isinstance(time, str)):
-        single = True
-        time, pos = [time], [pos]
+        single, time, pos = True, [time], [pos]
     else:
         single = False
 
     if (isinstance(time[0], float)):
-        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(
-            src_frame=frame, time=time, pva=[DoubleArray(array=x) for x in pos]))
+        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(src_frame=frame, time=time, pva=[DoubleArray(array=x) for x in pos]))
     else:
-        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(
-            src_frame=frame, UTC_time=time, pva=[DoubleArray(array=x) for x in pos]))
+        resp = _conversion_stub.convertPosToLLA(TransformFrameInput(src_frame=frame, UTC_time=time, pva=[DoubleArray(array=x) for x in pos]))
     return(resp.array[0].array if (single) else resp.array)
 
 def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
@@ -166,9 +186,7 @@ def elem_to_pv(frame: int, time: float, sma: float, ecc: float, inc: float,
     """
 
     if (isinstance(time, float) or isinstance(time, str)):
-        single = True
-        time, sma, ecc, inc, raan, argp, anom, anom_type = (
-            [time], [sma], [ecc], [inc], [raan], [argp], [anom], [anom_type])
+        single, time, sma, ecc, inc, raan, argp, anom, anom_type = True, [time], [sma], [ecc], [inc], [raan], [argp], [anom], [anom_type]
     else:
         single = False
 
@@ -195,17 +213,14 @@ def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
     """
 
     if (isinstance(time, float) or isinstance(time, str)):
-        single = True
-        time, pv = [time], [pv]
+        single, time, pv = True, [time], [pv]
     else:
         single = False
 
     if (isinstance(time[0], float)):
-        resp = _conversion_stub.convertPvToElem(TransformFrameInput(
-            src_frame=frame, time=time, pva=[DoubleArray(array=x) for x in pv]))
+        resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, time=time, pva=[DoubleArray(array=x) for x in pv]))
     else:
-        resp = _conversion_stub.convertPvToElem(TransformFrameInput(
-            src_frame=frame, UTC_time=time, pva=[DoubleArray(array=x) for x in pv]))
+        resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, UTC_time=time, pva=[DoubleArray(array=x) for x in pv]))
     return(resp.array[0].array if (single) else resp.array)
 
 def get_UTC_string(j2000_offset: float, truncate: bool=True)->str:

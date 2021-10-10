@@ -1,6 +1,6 @@
 /*
  * EventHandling.java - Functions to handle orbit events.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,58 +28,73 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EclipseDetector;
+import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.GeographicZoneDetector;
+import org.orekit.propagation.events.GroundFieldOfViewDetector;
+import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.utils.PVCoordinates;
 
 public final class EventHandling<T extends EventDetector> implements EventHandler<T>
 {
-    public final static String GEO_ZONE_NAME = "Geographic Region";
-    public final Settings.ManeuverType maneuverType;
-    public final double delta;
-    public final String stationName;
-    public Boolean isVisible;
+    public final static String GEO_ZONE_NAME = "GeoRegion";
+    public final static String PENUMBRA = "Penumbra";
+    public final static String UMBRA = "Umbra";
+    public final static String ASC_NODE = "Ascend";
+    public final static String DES_NODE = "Descend";
 
-    public EventHandling(Settings.ManeuverType maneuverType, double delta, String stationName, Boolean isVisible)
+    private final Settings.ManeuverType maneuverType;
+    private final double delta;
+    public final String observer;
+    public Boolean detected;
+
+    public EventHandling(Settings.ManeuverType maneuverType, double delta, String observer, Boolean detected)
     {
 	this.maneuverType = maneuverType;
 	this.delta = delta;
-	this.stationName = stationName;
-	this.isVisible = isVisible;
+	this.observer = observer;
+	this.detected = detected;
     }
 
     @Override public Action eventOccurred(SpacecraftState state, T detector, boolean increasing)
     {
-	if (maneuverType == Settings.ManeuverType.UNDEFINED && stationName != null)
+	if (maneuverType == Settings.ManeuverType.UNDEFINED)
 	{
-	    String name = detector.getClass().getSimpleName();
-	    if (name.equals("ElevationDetector"))
+	    if (detector instanceof ElevationDetector)
 	    {
-		isVisible = increasing;
+		detected = increasing;
 		if (increasing)
 		    return(Action.STOP);
 	    }
-	    else if (name.equals("GroundFieldOfViewDetector") || name.equals("GeographicZoneDetector"))
+	    else if (detector instanceof GroundFieldOfViewDetector || detector instanceof GeographicZoneDetector)
 	    {
-		isVisible = !increasing;
+		detected = !increasing;
 		if (!increasing)
 		    return(Action.STOP);
 	    }
+	    else if (detector instanceof EclipseDetector)
+		detected = !increasing;
+	    else if (detector instanceof NodeDetector)
+	    {
+		if ((observer.equals(ASC_NODE) && increasing) || (observer.equals(DES_NODE) && !increasing))
+		{
+		    detected = true;
+		    return(Action.STOP);
+		}
+	    }
 	}
-
-	if (maneuverType != Settings.ManeuverType.UNDEFINED)
-	{
-	    if (maneuverType == Settings.ManeuverType.STOP_PROPAGATION)
-		return(Action.STOP);
-	    if (delta != 0.0)
-		return(Action.RESET_STATE);
-	}
-
+	else if (maneuverType == Settings.ManeuverType.STOP_PROPAGATION)
+	    return(Action.STOP);
+	else if (delta != 0.0)
+	    return(Action.RESET_STATE);
 	return(Action.CONTINUE);
     }
 
     @Override public SpacecraftState resetState(T det, SpacecraftState old)
     {
+	Orbit neworb = null;
 	KeplerianOrbit kep = new KeplerianOrbit(old.getOrbit());
 	double a = kep.getA();
 	double e = kep.getE();
@@ -88,7 +103,6 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	double w = kep.getPerigeeArgument();
 	double theta = kep.getTrueAnomaly();
 
-	Orbit neworb = null;
 	if (maneuverType == Settings.ManeuverType.NORTH_SOUTH_STATIONING || maneuverType == Settings.ManeuverType.EAST_WEST_STATIONING)
 	{
 	    PVCoordinates pvc = old.getOrbit().getPVCoordinates();
@@ -97,12 +111,10 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 		geo = new GeodeticPoint(geo.getLatitude() + delta, geo.getLongitude(), geo.getAltitude());
 	    else
 		geo = new GeodeticPoint(geo.getLatitude(), geo.getLongitude() + delta, geo.getAltitude());
-
 	    Transform xfm = DataManager.earthShape.getFrame().getTransformTo(old.getFrame(), old.getDate());
 	    Vector3D newpos = xfm.transformPosition(DataManager.earthShape.transform(geo));
 	    Rotation rot = new Rotation(pvc.getPosition(), newpos);
-	    neworb = new CartesianOrbit(new PVCoordinates(newpos, rot.applyTo(pvc.getVelocity())), old.getFrame(),
-					old.getDate(), old.getMu());
+	    neworb = new CartesianOrbit(new PVCoordinates(newpos, rot.applyTo(pvc.getVelocity())), old.getFrame(), old.getDate(), old.getMu());
 	}
 	else
 	{
@@ -129,11 +141,8 @@ public final class EventHandling<T extends EventDetector> implements EventHandle
 	    default:
 		throw(new RuntimeException("Invalid maneuver type"));
 	    }
-
-	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(),
-					old.getDate(), old.getMu());
+	    neworb = new KeplerianOrbit(a, e, i, w, O, theta, PositionAngle.TRUE, old.getFrame(), old.getDate(), old.getMu());
 	}
-
 	return(new SpacecraftState(neworb, old.getAttitude(), old.getMass(), old.getAdditionalStates()));
     }
 }

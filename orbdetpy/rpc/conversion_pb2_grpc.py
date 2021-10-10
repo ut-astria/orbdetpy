@@ -30,6 +30,11 @@ class ConversionStub(object):
                 request_serializer=messages__pb2.AnglesInput.SerializeToString,
                 response_deserializer=messages__pb2.DoubleArray.FromString,
                 )
+        self.convertLLAToPos = channel.unary_unary(
+                '/Conversion/convertLLAToPos',
+                request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
+                )
         self.convertPosToLLA = channel.unary_unary(
                 '/Conversion/convertPosToLLA',
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
@@ -78,6 +83,12 @@ class ConversionServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def convertRaDecToAzEl(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def convertLLAToPos(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -136,6 +147,11 @@ def add_ConversionServicer_to_server(servicer, server):
                     servicer.convertRaDecToAzEl,
                     request_deserializer=messages__pb2.AnglesInput.FromString,
                     response_serializer=messages__pb2.DoubleArray.SerializeToString,
+            ),
+            'convertLLAToPos': grpc.unary_unary_rpc_method_handler(
+                    servicer.convertLLAToPos,
+                    request_deserializer=messages__pb2.TransformFrameInput.FromString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
             'convertPosToLLA': grpc.unary_unary_rpc_method_handler(
                     servicer.convertPosToLLA,
@@ -225,6 +241,23 @@ class Conversion(object):
         return grpc.experimental.unary_unary(request, target, '/Conversion/convertRaDecToAzEl',
             messages__pb2.AnglesInput.SerializeToString,
             messages__pb2.DoubleArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def convertLLAToPos(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Conversion/convertLLAToPos',
+            messages__pb2.TransformFrameInput.SerializeToString,
+            messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

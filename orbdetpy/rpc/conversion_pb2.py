@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\021ConversionRequestP\000',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x10\x63onversion.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x0emessages.proto2\xa7\x04\n\nConversion\x12\x38\n\x0etransformFrame\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x32\n\x12\x63onvertAzElToRaDec\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x32\n\x12\x63onvertRaDecToAzEl\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x39\n\x0f\x63onvertPosToLLA\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertElemToPv\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertPvToElem\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12<\n\x0cgetUTCString\x12\x0c.DoubleArray\x1a\x1c.google.protobuf.StringValue\"\x00\x12\x43\n\x13getJ2000EpochOffset\x12\x1c.google.protobuf.StringValue\x1a\x0c.DoubleArray\"\x00\x12\x43\n\x12getEpochDifference\x12\r.IntegerArray\x1a\x1c.google.protobuf.DoubleValue\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x43onversionRequestP\x00\x62\x06proto3'
+  serialized_pb=b'\n\x10\x63onversion.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x0emessages.proto2\xe2\x04\n\nConversion\x12\x38\n\x0etransformFrame\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x32\n\x12\x63onvertAzElToRaDec\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x32\n\x12\x63onvertRaDecToAzEl\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x39\n\x0f\x63onvertLLAToPos\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertPosToLLA\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertElemToPv\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertPvToElem\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12<\n\x0cgetUTCString\x12\x0c.DoubleArray\x1a\x1c.google.protobuf.StringValue\"\x00\x12\x43\n\x13getJ2000EpochOffset\x12\x1c.google.protobuf.StringValue\x1a\x0c.DoubleArray\"\x00\x12\x43\n\x12getEpochDifference\x12\r.IntegerArray\x1a\x1c.google.protobuf.DoubleValue\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x43onversionRequestP\x00\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,messages__pb2.DESCRIPTOR,])
 
@@ -40,7 +40,7 @@ _CONVERSION = _descriptor.ServiceDescriptor(
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
   serialized_start=69,
-  serialized_end=620,
+  serialized_end=679,
   methods=[
   _descriptor.MethodDescriptor(
     name='transformFrame',
@@ -73,9 +73,19 @@ _CONVERSION = _descriptor.ServiceDescriptor(
     create_key=_descriptor._internal_create_key,
   ),
   _descriptor.MethodDescriptor(
+    name='convertLLAToPos',
+    full_name='Conversion.convertLLAToPos',
+    index=3,
+    containing_service=None,
+    input_type=messages__pb2._TRANSFORMFRAMEINPUT,
+    output_type=messages__pb2._DOUBLE2DARRAY,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
     name='convertPosToLLA',
     full_name='Conversion.convertPosToLLA',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=messages__pb2._TRANSFORMFRAMEINPUT,
     output_type=messages__pb2._DOUBLE2DARRAY,
@@ -85,7 +95,7 @@ _CONVERSION = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='convertElemToPv',
     full_name='Conversion.convertElemToPv',
-    index=4,
+    index=5,
     containing_service=None,
     input_type=messages__pb2._TRANSFORMFRAMEINPUT,
     output_type=messages__pb2._DOUBLE2DARRAY,
@@ -95,7 +105,7 @@ _CONVERSION = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='convertPvToElem',
     full_name='Conversion.convertPvToElem',
-    index=5,
+    index=6,
     containing_service=None,
     input_type=messages__pb2._TRANSFORMFRAMEINPUT,
     output_type=messages__pb2._DOUBLE2DARRAY,
@@ -105,7 +115,7 @@ _CONVERSION = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getUTCString',
     full_name='Conversion.getUTCString',
-    index=6,
+    index=7,
     containing_service=None,
     input_type=messages__pb2._DOUBLEARRAY,
     output_type=google_dot_protobuf_dot_wrappers__pb2._STRINGVALUE,
@@ -115,7 +125,7 @@ _CONVERSION = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getJ2000EpochOffset',
     full_name='Conversion.getJ2000EpochOffset',
-    index=7,
+    index=8,
     containing_service=None,
     input_type=google_dot_protobuf_dot_wrappers__pb2._STRINGVALUE,
     output_type=messages__pb2._DOUBLEARRAY,
@@ -125,7 +135,7 @@ _CONVERSION = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='getEpochDifference',
     full_name='Conversion.getEpochDifference',
-    index=8,
+    index=9,
     containing_service=None,
     input_type=messages__pb2._INTEGERARRAY,
     output_type=google_dot_protobuf_dot_wrappers__pb2._DOUBLEVALUE,

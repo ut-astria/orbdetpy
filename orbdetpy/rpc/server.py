@@ -19,15 +19,16 @@ from atexit import register
 from os import environ, path
 from psutil import Popen, process_iter
 from grpc import channel_ready_future, insecure_channel
+from orbdetpy import _data_dir, _jar_file
 
 class RemoteServer:
     rpc_server = None
     rpc_channel = None
 
     @classmethod
-    def connect(cls, data_dir, jar_file):
+    def connect(cls):
         register(RemoteServer.disconnect)
-        jar = path.split(jar_file)[-1]
+        jar = path.split(_jar_file)[-1]
         rpc_host, rpc_port = "127.0.0.1", "50051"
         for p in process_iter(attrs=["cmdline"]):
             cmdline = p.info.get("cmdline")
@@ -47,8 +48,7 @@ class RemoteServer:
                 java_exec = path.join(java_home, "bin", "java")
             else:
                 java_exec = "java"
-
-            cls.rpc_server = Popen([java_exec, "-Xmx2G", "-XX:+UseG1GC", "-jar", jar_file, rpc_port, data_dir])
+            cls.rpc_server = Popen([java_exec, "-Xmx2G", "-XX:+UseG1GC", "-jar", _jar_file, rpc_port, _data_dir])
 
         rpc_uri = f"{rpc_host}:{rpc_port}"
         cls.rpc_channel = insecure_channel(rpc_uri, options=[("grpc.max_send_message_length", 2147483647),
@@ -57,6 +57,8 @@ class RemoteServer:
 
     @classmethod
     def channel(cls):
+        if (not cls.rpc_channel):
+            RemoteServer.connect()
         return(cls.rpc_channel)
 
     @classmethod

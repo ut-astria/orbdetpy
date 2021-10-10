@@ -24,6 +24,11 @@ class UtilitiesStub(object):
                 request_serializer=messages__pb2.InterpolateEphemerisInput.SerializeToString,
                 response_deserializer=messages__pb2.MeasurementArray.FromString,
                 )
+        self.getDensity = channel.unary_unary(
+                '/Utilities/getDensity',
+                request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
+                response_deserializer=messages__pb2.DoubleArray.FromString,
+                )
 
 
 class UtilitiesServicer(object):
@@ -41,6 +46,12 @@ class UtilitiesServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def getDensity(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_UtilitiesServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -53,6 +64,11 @@ def add_UtilitiesServicer_to_server(servicer, server):
                     servicer.interpolateEphemeris,
                     request_deserializer=messages__pb2.InterpolateEphemerisInput.FromString,
                     response_serializer=messages__pb2.MeasurementArray.SerializeToString,
+            ),
+            'getDensity': grpc.unary_unary_rpc_method_handler(
+                    servicer.getDensity,
+                    request_deserializer=messages__pb2.TransformFrameInput.FromString,
+                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,5 +111,22 @@ class Utilities(object):
         return grpc.experimental.unary_unary(request, target, '/Utilities/interpolateEphemeris',
             messages__pb2.InterpolateEphemerisInput.SerializeToString,
             messages__pb2.MeasurementArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getDensity(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Utilities/getDensity',
+            messages__pb2.TransformFrameInput.SerializeToString,
+            messages__pb2.DoubleArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
