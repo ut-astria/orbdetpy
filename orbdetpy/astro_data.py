@@ -18,6 +18,7 @@ import tarfile
 import requests
 from os import path, remove
 from orbdetpy import _root_dir, _data_dir
+from orbdetpy.version import __version__
 
 def format_weather(lines: str)->str:
     """Re-format space weather data into a more efficient form.
@@ -40,8 +41,8 @@ def update_data()->None:
     """
 
     if (not path.isdir(_data_dir)):
-        uri = "https://github.com/ut-astria/orbdetpy/releases/download/2.0.6/orekit-data.tar.gz"
-        print(f"Downloading {uri}")
+        uri = f"https://github.com/ut-astria/orbdetpy/releases/download/{__version__}/orekit-data.tar.gz"
+        print(f"{_data_dir} not found; downloading {uri}")
         resp = requests.get(uri, timeout=10.0, stream=True)
         if (resp.status_code == requests.codes.ok):
             tgz = path.join(_root_dir, "orekit-data.tar.gz")
