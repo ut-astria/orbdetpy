@@ -87,18 +87,11 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 		states.add(new SpacecraftState(new CartesianOrbit(tspv, fromFrame, Constants.EGM96_EARTH_MU)));
 	    }
 
-	    AbsoluteDate tm = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpStart());
-	    AbsoluteDate interpEnd = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpEnd());
-	    ArrayList<Measurements.Measurement> output = new ArrayList<Measurements.Measurement>(2*req.getTimeCount());
 	    Ephemeris interpolator = new Ephemeris(states, req.getNumPoints());
-	    while (true)
-	    {
-		output.add(new Measurements.Measurement(interpolator.getPVCoordinates(tm, toFrame), null));
-		double deltat = interpEnd.durationFrom(tm);
-		if (deltat <= 0.0)
-		    break;
-		tm = new AbsoluteDate(tm, FastMath.min(deltat, req.getStepSize()));
-	    }
+	    ArrayList<Measurements.Measurement> output = new ArrayList<Measurements.Measurement>(req.getInterpTimeCount());
+	    for (int i = 0; i < req.getInterpTimeCount(); i++)
+		output.add(new Measurements.Measurement(
+			       interpolator.getPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpTime(i)), toFrame), null));
 
 	    Messages.MeasurementArray.Builder builder = Messages.MeasurementArray.newBuilder().addAllArray(Tools.buildResponseFromMeasurements(output));
 	    resp.onNext(builder.build());

@@ -1,6 +1,6 @@
 /*
  * messages.proto - Message type declarations.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2021 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -225,7 +225,5 @@ message InterpolateEphemerisInput
     repeated DoubleArray ephem = 3;
     int32 num_points = 4;
     string dest_frame = 5;
-    double interp_start = 6;
-    double interp_end = 7;
-    double step_size = 8;
+    repeated double interp_time = 6 [packed = true];
 }
