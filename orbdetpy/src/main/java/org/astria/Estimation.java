@@ -44,10 +44,10 @@ import org.orekit.estimation.sequential.KalmanObserver;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -185,7 +185,7 @@ public final class Estimation
 	    final KalmanEstimator filter = builder.build();
 	    filter.setObserver(this);
 
-	    AbstractIntegratedPropagator propagator = null;
+	    Propagator propagator = null;
 	    final Vector3D fakePosition = new Vector3D(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
 	    final double[] fakeError = {100.0, 100.0, 100.0};
 	    final ObservableSatellite satellite = new ObservableSatellite(0);
@@ -232,7 +232,7 @@ public final class Estimation
 		    stepIndex = measIndex;
 		    if (propagator == null)
 			propagator = propBuilder.buildPropagator(propBuilder.getSelectedNormalizedParameters());
-		    propagator.setMasterMode(stepSize, this);
+		    propagator.setStepHandler(stepSize, this);
 		    propagator.propagate(odObs.array[toIndex].time);
 		    measIndex = toIndex;
 		}
@@ -334,7 +334,7 @@ public final class Estimation
 	    }
 	}
 
-	@Override public void handleStep(SpacecraftState state, boolean lastStep)
+	@Override public void handleStep(SpacecraftState state)
 	{
 	    Measurements.Measurement thisObs = odObs.array[stepIndex];
 	    if (thisObs.time.equals(state.getDate()))
@@ -634,7 +634,7 @@ public final class Estimation
 		    filter.addMeasurement(m.helpers[i]);
 	    }
 
-	    AbstractIntegratedPropagator propagator = filter.estimate()[0];
+	    Propagator propagator = filter.estimate()[0];
 	    for (Measurements.Measurement m: odObs.array)
 	    {
 		EstimationOutput result = new EstimationOutput(m.time, m.station);

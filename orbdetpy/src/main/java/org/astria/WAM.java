@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-import org.hipparchus.RealFieldElement;
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.TricubicInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.TricubicInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -197,7 +197,7 @@ public final class WAM implements Atmosphere
 	return(species[0]);
     }
 
-    @Override public <T extends RealFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame)
+    @Override public <T extends CalculusFieldElement<T>> T getDensity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame)
     {
 	throw(new UnsupportedOperationException("Not implemented; use double getDensity(...)."));
     }

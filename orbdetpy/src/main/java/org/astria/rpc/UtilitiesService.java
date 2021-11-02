@@ -29,11 +29,10 @@ import org.astria.Settings;
 import org.astria.Utilities;
 import org.astria.WAM;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.files.ccsds.TDMParser.TDMFileFormat;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
@@ -54,7 +53,7 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
     {
 	try
 	{
-	    ArrayList<ArrayList<Measurements.Measurement>> mlist = Utilities.importTDM(req.getFileName(), TDMFileFormat.values()[req.getFileFormat()]);
+	    ArrayList<ArrayList<Measurements.Measurement>> mlist = Utilities.importTDM(req.getFileName(), FileFormat.values()[req.getFileFormat()]);
 	    Messages.Measurement2DArray.Builder outer = Messages.Measurement2DArray.newBuilder();
 	    for (ArrayList<Measurements.Measurement> m: mlist)
 	    {
