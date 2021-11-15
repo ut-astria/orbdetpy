@@ -271,7 +271,7 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 	    for (int i = 1; i < req.getArrayCount(); i++)
 	    {
 		if (truncate)
-		    utc.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).toString(TimeScalesFactory.getUTC()) + "Z");
+		    utc.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).toString(0, TimeScalesFactory.getUTC()));
 		else
 		    utc.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).toStringRfc3339(TimeScalesFactory.getUTC()));
 	    }

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 from orbdetpy import Constant, Frame, MeasurementType
 from orbdetpy.conversion import get_UTC_string
@@ -41,7 +41,7 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, time_list: List[s
 
     utc_list = get_UTC_string((o.time for o in obs))
     oem_header = f"""CCSDS_OEM_VERS = 2.0
-CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")}
+CREATION_DATE = {datetime.now(timezone.utc).isoformat()}
 ORIGINATOR = UT-Austin
 
 META_START
@@ -50,8 +50,8 @@ OBJECT_ID = {obj_id}
 CENTER_NAME = EARTH
 REF_FRAME = {cfg.prop_inertial_frame}
 TIME_SYSTEM = UTC
-START_TIME = {time_list[0] if (time_list) else utc_list[0][:-1]}
-STOP_TIME = {time_list[-1] if (time_list) else utc_list[-1][:-1]}
+START_TIME = {time_list[0] if (time_list) else utc_list[0]}
+STOP_TIME = {time_list[-1] if (time_list) else utc_list[-1]}
 META_STOP
 
 """
@@ -60,7 +60,6 @@ META_STOP
     is_estm = hasattr(obs[0], "estimated_state") and hasattr(obs[0], "estimated_covariance") and hasattr(obs[0], "propagated_covariance")
     eph_key = "estimated_state" if (is_estm) else "true_state"
     for utc, o in zip(utc_list, obs):
-        utc = utc[:-1]
         if (o.time not in added):
             added.add(o.time)
             if (time_list is None or utc in time_list):
@@ -112,7 +111,7 @@ def export_TDM(cfg: Settings, obs, obj_id: str, station_list: List[str]=None)->s
 
     blocks = []
     tdm_header = f"""CCSDS_TDM_VERS = 1.0
-CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")}
+CREATION_DATE = {datetime.now(timezone.utc).isoformat()}
 ORIGINATOR = UT-Austin
 
 """
@@ -132,7 +131,6 @@ META_STOP
 """)
         blocks.append("DATA_START")
         for utc, o in zip(utc_list, obs):
-            utc = utc[:-1]
             if (o.station == sname):
                 if (MeasurementType.RANGE in miter or MeasurementType.RANGE_RATE in miter):
                     if (MeasurementType.RANGE in miter):

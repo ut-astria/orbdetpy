@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from datetime import datetime, timezone
 import orbdetpy.conversion as conv
 from orbdetpy import Constant, Epoch, Frame, PositionAngle
 
 # TT <=> UTC
-now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+now = datetime.now(timezone.utc).isoformat()
 print(f"J2000_EPOCH = {conv.get_UTC_string(0.0)}")
 print(f"""J2000_EPOCH => 2000-01-01T12:00:00Z = {conv.get_J2000_epoch_offset("2000-01-01T12:00:00Z")}s""")
 print(f"""J2000_EPOCH => {now} (now) = {conv.get_J2000_epoch_offset(now)}s""")
