@@ -291,7 +291,7 @@ public class CAR
 			//Compute computational domain size for no semi-major axis constraint
 			double ac0 = Math.abs(a13/a11);
 			double a33bar0 = -a33 + Math.pow(a13,2)/a11 + Math.pow(a23,2)/a22;
-			double as0 = Math.abs(a33bar0/a11);
+			double as0 = Math.sqrt(Math.abs(a33bar0/a11));
 			
 			double[] domain = new double[(int) ((2 * (ac0 + as0))/ gridSpacing)+1];
 			
@@ -299,6 +299,7 @@ public class CAR
 			{
 				domain[i] =  i * gridSpacing - (ac0 + as0);
 			}
+			
 			
 			Double[] aMinL = new Double[domain.length];
 			Double[] aMinU = new Double[domain.length];
@@ -318,35 +319,14 @@ public class CAR
 
 			double a33barmin = -a33min + Math.pow(a13,2)/a11 + Math.pow(a23,2)/a22;
 			double a33barmax = -a33max + Math.pow(a13,2)/a11 + Math.pow(a23,2)/a22;
-					
-			
-			System.out.println(Math.pow(meas4,2));
-			System.out.println(w1 * meas4);
-			System.out.println(w4);
-			System.out.println(2 * mu);
-			System.out.println(Math.sqrt(a22 + w5 * meas3 + w0));
-
-			
-			System.out.println(a33);
-			System.out.println(mu / amin);
-			System.out.println(mu / amax);
-
-			
-			System.out.println(a33min);
-			System.out.println(a33max);
-			
-			System.out.println(a33barmin);
-			System.out.println(a33barmax);
-
-			System.exit(0);
-			
+								
 			
 			double ac = -a13/a11;
 			double dc = -a23/a22;
-			double asmin = Math.abs(a33barmin/a11);
-			double asmax = Math.abs(a33barmax/a11);
-			double dsmin = Math.abs(a33barmin/a22);
-			double dsmax = Math.abs(a33barmax/a22);	
+			double asmin = Math.sqrt(Math.abs(a33barmin/a11));
+			double asmax = Math.sqrt(Math.abs(a33barmax/a11));
+			double dsmin = Math.sqrt(Math.abs(a33barmin/a22));
+			double dsmax = Math.sqrt(Math.abs(a33barmax/a22));	
 			
 			for(int i = 0; i < 180; i++)
 			{
@@ -363,11 +343,13 @@ public class CAR
 			for(int i = 0; i < domain.length; i++)
 			{
 				double RArate = domain[i];
+				System.out.println(domain[i]);
 				//compute amin and amax bounds
 
 				double[] aminData = interpolate(InterpolationTableAMin, RArate);
 				double[] amaxData = interpolate(InterpolationTableAMax, RArate);
 
+				
 				if(aminData[0] < aminData[1])
 				{
 					aMinL[i] = aminData[0];
@@ -407,11 +389,11 @@ public class CAR
 				Double[] realRoots = new Double[2];
 	
 				
-				System.out.println("------------------------------");
+				//System.out.println("------------------------------");
 
 				for(int j = 0; j < roots.length; j ++)
 				{
-					System.out.println(roots[j].getReal() + " + i" + roots[j].getImaginary());
+					//System.out.println(roots[j].getReal() + " + i" + roots[j].getImaginary());
 					if(Math.abs(roots[j].getImaginary()) < 1e-11)
 					{
 						if(realRoots[0] == null)
@@ -445,22 +427,33 @@ public class CAR
 				
 				
 			}
-
 			
 			//write gaussians to file
 			try {
-			      FileWriter myWriter = new FileWriter("RangeCAR.txt");
+			      FileWriter myWriter = new FileWriter("RangeCARInterpTable.txt");
 			      for(int i = 0; i < InterpolationTableAMin.length; i++)
 			      {
 			          myWriter.write(InterpolationTableAMin[i][0] + "," + InterpolationTableAMin[i][1] + "," + InterpolationTableAMin[i][2] + "," + InterpolationTableAMax[i][0] + "," + InterpolationTableAMax[i][1] + "," + InterpolationTableAMax[i][2]+"\n");
-			          //myWriter.write(domain[i] + "," + aMinU[i] + "," + aMinL[i] + "," + aMaxU[i]+ "," + aMaxL[i] + "," + eMaxU[i]+ "," + eMaxL[i] + "\n");
-			          //myWriter.write(domain[i] + "," + aMinU[i] + "," + aMinL[i] + "," + aMaxU[i]+ "," + aMaxL[i] + "," + "\n");
 			      }
 			      myWriter.close();
 			    } catch (IOException e) {
 			      e.printStackTrace();
 			    }
 			
+			try {
+			      FileWriter myWriter = new FileWriter("RangeCAR.txt");
+			      for(int i = 0; i < domain.length; i++)
+			      {
+			          //myWriter.write(domain[i] + "," + aMinU[i] + "," + aMinL[i] + "," + aMaxU[i]+ "," + aMaxL[i] + "," + eMaxU[i]+ "," + eMaxL[i] + "\n");
+			          myWriter.write(domain[i] + "," + aMinU[i] + "," + aMinL[i] + "," + aMaxU[i]+ "," + aMaxL[i] + "," + "\n");
+			      }
+			      myWriter.close();
+			    } catch (IOException e) {
+			      e.printStackTrace();
+			    }
+			
+			System.exit(0);
+
 			splitCAR(domain, sigma1, sigma2, aMinU, aMinL, aMaxU, aMaxL, eMaxU, eMaxL);
 
 		}
@@ -472,11 +465,22 @@ public class CAR
 	
 	double[] interpolate(double[][] table, double x)
 	{
+		
+		//System.out.println(x);
+		//System.out.println("--------------------");
+
 		int i = 0;
 		while(i+2 < table.length && x > table[i+1][0])
 		{
+			//System.out.println(table[i+1][0]);
 			i++;
 		}
+		
+		//System.out.println(table[i+1][0]);
+		//System.out.println(table[i+2][0]);
+		//System.out.println(i);
+		//System.exit(0);
+
 		
 		double slopeL = (table[i][1] - table[i+1][1])/(table[i][0] - table[i+1][0]);
 		double slopeU = (table[i][2] - table[i+1][2])/(table[i][0] - table[i+1][0]);
