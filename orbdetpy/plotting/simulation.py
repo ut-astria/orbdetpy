@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from math import acos, pi
+from math import acos, pi, sqrt
 from numpy import array, cross, dot
 from numpy.linalg import norm
 import matplotlib.pyplot as plt
@@ -34,8 +34,8 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     List of plot files if they were saved to disk.
     """
 
-    mu = 398600.4418
-    tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
+    mu, earth_equ_r = 398600.4418, 6378.1363
+    tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran,period,altitude = [],[],[],[],[],[],[],[],[],[],[],[]
     for o in sim_data:
         if (hasattr(o, "true_state")):
             rv = [x/1000.0 for x in o.true_state[:6]]
@@ -72,6 +72,8 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
         raan.append(O)
         argp.append(w)
         tran.append(theta)
+        period.append(2.0*pi*sqrt(a**3/mu)/60.0)
+        altitude.append(rn - earth_equ_r)
 
     outfiles = []
     hvec = array(hvec)
@@ -82,7 +84,7 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     for i in range(6):
         axis = plt.subplot(6, 1, i + 1)
         axis.ticklabel_format(useOffset=False)
-        plt.scatter(tim, (sma, ecc, inc, raan, argp, tran)[i], c="b", marker="o", s=7)
+        plt.scatter(tim, (sma, ecc, inc, raan, argp, tran)[i], c="b", marker="o", s=3)
         plt.xlabel("Time [hr]")
         plt.ylabel(("a [km]", "e", "i [deg]", r"$\Omega$ [deg]", r"$\omega$ [deg]", r"$\theta$ [deg]")[i])
     if (output_file_path):
@@ -94,7 +96,7 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     for i in range(2):
         axis = plt.subplot(2, 1, i + 1)
         axis.ticklabel_format(useOffset=False)
-        plt.scatter(tim, (hmag, ener)[i], c="b", marker="o", s=7)
+        plt.scatter(tim, (hmag, ener)[i], c="b", marker="o", s=3)
         plt.xlabel("Time [hr]")
         plt.ylabel((r"h [$km^2/s$]", r"E [$km^2/s^2$]")[i])
     plt.tight_layout(rect=(0, 0.03, 1, 0.95))
@@ -106,7 +108,7 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     plt.suptitle("Specific Angular Momentum")
     axis = fig.add_subplot(111, projection="3d")
     axis.ticklabel_format(useOffset=False)
-    axis.scatter(hvec[:,0], hvec[:,1], hvec[:,2], c="b", marker="o", s=7)
+    axis.scatter(hvec[:,0], hvec[:,1], hvec[:,2], c="b", marker="o", s=3)
     axis.grid(True)
     axis.set_xlabel(r"h(x) [$km^2/s$]")
     axis.set_ylabel(r"h(y) [$km^2/s$]")
@@ -114,6 +116,18 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     plt.tight_layout(rect=(0, 0.03, 1, 0.95))
     if (output_file_path):
         outfiles.append(output_file_path + "_momentum_3D.png")
+        plt.savefig(outfiles[-1], format="png")
+
+    fig = plt.figure(3)
+    plt.suptitle("Gabbard Plot")
+    plt.ticklabel_format(useOffset=False)
+    plt.scatter(period, altitude, c="b", marker="o", s=3)
+    plt.grid(True)
+    plt.xlabel("Time [min]")
+    plt.ylabel("Altitude [km]")
+    plt.tight_layout(rect=(0, 0.03, 1, 0.95))
+    if (output_file_path):
+        outfiles.append(output_file_path + "_gabbard.png")
         plt.savefig(outfiles[-1], format="png")
 
     if (interactive):
