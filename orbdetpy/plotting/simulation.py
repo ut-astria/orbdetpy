@@ -15,10 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from math import acos, pi, sqrt
-from numpy import array, cross, dot
-from numpy.linalg import norm
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from numpy import array, cross, dot
+from numpy.linalg import norm
+from orbdetpy.conversion import get_UTC_string
 
 def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     """Plot simulated orbital elements, angular momenta, and specific energy.
@@ -77,10 +78,11 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
 
     outfiles = []
     hvec = array(hvec)
+    utc_time = get_UTC_string([tstamp[0], tstamp[-1]])
     tim = [(t - tstamp[0])/3600 for t in tstamp]
 
     plt.figure(0)
-    plt.suptitle("Orbital Elements")
+    plt.suptitle(f"Orbital Elements\n{utc_time[0]} to {utc_time[1]}")
     for i in range(6):
         axis = plt.subplot(6, 1, i + 1)
         axis.ticklabel_format(useOffset=False)
@@ -92,7 +94,7 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
         plt.savefig(outfiles[-1], format="png")
 
     plt.figure(1)
-    plt.suptitle("Specific Angular Momentum & Energy")
+    plt.suptitle(f"Specific Angular Momentum and Energy\n{utc_time[0]} to {utc_time[1]}")
     for i in range(2):
         axis = plt.subplot(2, 1, i + 1)
         axis.ticklabel_format(useOffset=False)
@@ -105,7 +107,7 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
         plt.savefig(outfiles[-1], format="png")
 
     fig = plt.figure(2)
-    plt.suptitle("Specific Angular Momentum")
+    plt.suptitle(f"Specific Angular Momentum\n{utc_time[0]} to {utc_time[1]}")
     axis = fig.add_subplot(111, projection="3d")
     axis.ticklabel_format(useOffset=False)
     axis.scatter(hvec[:,0], hvec[:,1], hvec[:,2], c="b", marker="o", s=3)
@@ -119,7 +121,7 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
         plt.savefig(outfiles[-1], format="png")
 
     fig = plt.figure(3)
-    plt.suptitle("Gabbard Plot")
+    plt.suptitle(f"Gabbard Plot\n{utc_time[0]} to {utc_time[1]}")
     plt.ticklabel_format(useOffset=False)
     plt.scatter(period, altitude, c="b", marker="o", s=3)
     plt.grid(True)
