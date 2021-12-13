@@ -284,17 +284,17 @@ public final class MultiTargetEstimation
 		//Create new objects with CAR
 		if(activateCAR == true && residentSpaceObjects.size() == 0)
 		{
-			System.out.println("Poggy");
+			System.out.println("Check1");
 			for(int measNum = 0; measNum <= additionalMeas; measNum++)
 			{
 				
 				ArrayList<SingleObject> tempHypotheses = new ArrayList<SingleObject>();
-				System.out.println("Poggy2");
+				System.out.println("Check2");
 
 				ArrayList<Hypothesis> newHypotheses = GenerateOpticalHypotheses(rawMeasurements.get(measNum).rawmeas, R.getEntry(0,0), Math.pow(1e-5,2), R.getEntry(1,1), Math.pow(1e-5,2), numStates, numSigmas);
 
 
-				System.out.println("Poggy3");
+				System.out.println("Check3");
 
 				for(int hypNum = 0; hypNum < newHypotheses.size(); hypNum++)
 				{
@@ -343,6 +343,7 @@ public final class MultiTargetEstimation
 
 		while (true)
 		{
+			
 			if(currSC.dataAssociated == true)
 			{
 			    currSC.dataAssociated = false;
@@ -646,6 +647,7 @@ public final class MultiTargetEstimation
 		    currSC.xhat = new ArrayRealVector(currSC.xhatPrev.add(odCfg.parameterMatrix.multiply(K).operate(Betav)));
 		    currSC.P = currSC.Pprop.subtract(odCfg.parameterMatrix.multiply(K.multiply(Pyy.multiply(K.transpose()))).subtract(Ptilda)); //Ptilda is subtracted due to need to include with parameter matrix.
 		    
+
 		    //For Estimated Parameters, return xhat values to max/min bounds. If far outside the bounds, can result in
 		    //Singular Matrix when taking the inverse for smoothing.
 
@@ -655,6 +657,7 @@ public final class MultiTargetEstimation
 			currSC.xhat.setEntry(j, FastMath.min(FastMath.max(currSC.xhat.getEntry(j), tempep.min), tempep.max));
 		    }
 
+		    
 		    //If data associated, save data and compute smoother values.
 		    if(currSC.dataAssociated == true)
 		    {
@@ -751,6 +754,9 @@ public final class MultiTargetEstimation
 
 		    currSC.smootherData.add(smout);
 		    }
+		    
+		    
+		    
 
 		}
 	    }
@@ -763,7 +769,7 @@ public final class MultiTargetEstimation
 		
 		for(int objNum = 0; objNum < totalObjNum; objNum++)
 		{
-			MergeHypotheses(residentSpaceObjects.get(objNum));
+			//MergeHypotheses(residentSpaceObjects.get(objNum));
 		}
 		
 		// Normalize Weights
@@ -819,7 +825,7 @@ public final class MultiTargetEstimation
 		    }
 
 		// compute McReynolds Consistency or merge all hypotheses into one hypothesis
-	    if(residentSpaceObjects.get(objNum).size() == 1)
+	    if(residentSpaceObjects.get(objNum).get(0).fromCAR == false)
 	    {
 		double McReynoldsVal = -99999;
 
@@ -885,7 +891,11 @@ public final class MultiTargetEstimation
 		}
 	    else
 	    {
+	    	residentSpaceObjects.get(objNum).get(0).fromCAR = false;
 	    	currSC.McReynoldsConsistencyPass = false;
+	    	System.out.println("Add code to merge remaining hypotheses");
+	    	break;
+	    	//TODO Merge remaining hypotheses here
 	    }
 	    
 	    
@@ -960,8 +970,10 @@ public final class MultiTargetEstimation
 
 				
 			}
-
-			if(rawMeasurements.size() == 0)
+			System.out.println("Number of Unassociated Measurements Remaining:");
+			System.out.println(rawMeasurements.size());
+			
+			if(rawMeasurements.size() <= 5)
 		    break;
 
 			if(residentSpaceObjects.size() == 0)
@@ -1021,21 +1033,30 @@ public final class MultiTargetEstimation
 				//If mahalanobis distance low, combine distributions.
 				if(Math.min(Mahalanobis1.getEntry(0,0),Mahalanobis2.getEntry(0,0)) < 1)
 				{
-					RealVector xhatTemp =  obj1.xhat.mapMultiply(obj1.hypothesisWeight).add(obj2.xhat.mapMultiply(obj2.hypothesisWeight));
+					RealVector xhatTemp =  obj1.xhat.mapMultiply(obj1.hypothesisWeight).add(obj2.xhat.mapMultiply(obj2.hypothesisWeight)).mapMultiply(1/(obj1.hypothesisWeight + obj2.hypothesisWeight));
+							
+					RealMatrix matrixTemp = MatrixUtils.createColumnRealMatrix(obj1.xhat.toArray());
 					
-					RealMatrix innovTemp = MatrixUtils.createColumnRealMatrix(obj1.xhat.subtract(xhatTemp).toArray());
+					RealMatrix PTemp = (obj1.P.add(matrixTemp.multiply(matrixTemp.transpose()))).scalarMultiply(obj1.hypothesisWeight / (obj1.hypothesisWeight + obj2.hypothesisWeight));
 					
-					RealMatrix PTemp = (obj1.P.add(innovTemp.multiply(innovTemp.transpose()))).scalarMultiply(obj1.hypothesisWeight);
-					
-					innovTemp = MatrixUtils.createColumnRealMatrix(obj2.xhat.subtract(xhatTemp).toArray());
+					matrixTemp = MatrixUtils.createColumnRealMatrix(obj2.xhat.toArray());
 
-					PTemp = PTemp.add((obj2.P.add(innovTemp.multiply(innovTemp.transpose()))).scalarMultiply(obj2.hypothesisWeight));
+					PTemp = PTemp.add((obj2.P.add(matrixTemp.multiply(matrixTemp.transpose()))).scalarMultiply(obj2.hypothesisWeight / (obj1.hypothesisWeight + obj2.hypothesisWeight)));
 
+					matrixTemp = MatrixUtils.createColumnRealMatrix(xhatTemp.toArray());
+					
 					hypotheses.get(hypNum1).xhat = new ArrayRealVector(xhatTemp);
-					hypotheses.get(hypNum1).P = PTemp;
+					hypotheses.get(hypNum1).P = PTemp.subtract(matrixTemp.multiply(matrixTemp.transpose()));
 					hypotheses.get(hypNum1).hypothesisWeight += hypotheses.get(hypNum2).hypothesisWeight;
 					
+					
+
+					
+					
+					
 					hypotheses.remove(hypNum2);
+					
+
 
 				}
 				else
@@ -1086,8 +1107,8 @@ public final class MultiTargetEstimation
 		
 		TimeStampedPVCoordinates stationCoords = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(date, odCfg.propFrame);
 		
-		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 3000.0, 5, 500.0 ,26000000, 26500000, 0.01, combinedMeas).getCAR(); //ASTRIA Test Case
-		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 10000.0, 10.0, 10000.0 ,17000000, 37000000, 0.05, combinedMeas).getCAR();
+		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 3000.0, 5, 500.0 ,26000000, 26500000, 0.01, combinedMeas).getCAR(); //ASTRIA Test Case
+		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 10000.0, 10.0, 10000.0 ,17000000, 37000000, 0.05, combinedMeas).getCAR(); //Simulated Test Case
 		
 		System.out.println(CARGaussians.size());
 		ArrayList<Hypothesis> objectHypotheses= new ArrayList<Hypothesis>();
@@ -1149,7 +1170,8 @@ public final class MultiTargetEstimation
 		TimeStampedPVCoordinates stationCoords = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(date, odCfg.propFrame);
 		
 		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 3000.0, 5, 500.0 ,26000000, 26500000, 0.01, combinedMeas).getCAR(); //ASTRIA Test Case
-		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, stationCoords, 1e-5, 1e-5, 1e-5 ,17000000, 37000000, 0.05, combinedMeas).getCAR();
+		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, stationCoords, 1e-5, 1e-5, 1e-5 ,17000000, 37000000, 0.05, combinedMeas).getCAR();
+		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, stationCoords, 10000, 100, 10000 ,17000000, 37000000, 0.01, combinedMeas).getCAR();
 		
 		System.out.println(CARGaussians.size());
 		ArrayList<Hypothesis> objectHypotheses= new ArrayList<Hypothesis>();
@@ -1427,7 +1449,8 @@ public final class MultiTargetEstimation
 
 	    boolean dataAssociated;
 	    boolean McReynoldsConsistencyPass;
-
+	    boolean fromCAR;
+	    
 	    public SingleObject(Settings Config, int numStates, int numSigmas, int Rsize)
 	    {
 		xInitial = Config.getInitialState();
@@ -1446,6 +1469,7 @@ public final class MultiTargetEstimation
 		estOutput = new ArrayList<Estimation.EstimationOutput>();
 		dataAssociated = true;
 		hypothesisWeight = 1;
+		fromCAR = false;
 	    }
 	    
 	    public SingleObject(double[] x, RealMatrix Covar, int numStates, int numSigmas, int Rsize, double hypWeight)
@@ -1466,6 +1490,7 @@ public final class MultiTargetEstimation
 		estOutput = new ArrayList<Estimation.EstimationOutput>();
 		dataAssociated = true;
 		hypothesisWeight = hypWeight;
+		fromCAR = true;
 
 	    }
 	}

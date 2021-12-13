@@ -80,6 +80,7 @@ public class CAR
 		RealMatrix q_d = new Array2DRowRealMatrix(stationCoords.getVelocity().toArray());
 		
 		// Test Case ////////////////////////////////////////////////////
+		/*
 		meas1 = 5 * Math.PI/180;
 		meas2 = -45 * Math.PI/180;
 		meas3 = 3600*1000;
@@ -99,7 +100,7 @@ public class CAR
 		sigma1 = 1e-6;
 		sigma2 = 1e-6;
 		gridSpacing = 1e-6;
-		
+		*/
 		//////////////////////////////////////////////////////////////////
 		
 		RealMatrix u_p = new Array2DRowRealMatrix(new  double[] {Math.cos(meas1) * Math.cos(meas2) , Math.sin(meas1) * Math.cos(meas2) , Math.sin(meas2)});
