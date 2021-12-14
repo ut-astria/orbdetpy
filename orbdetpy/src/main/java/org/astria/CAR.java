@@ -79,7 +79,7 @@ public class CAR
 		RealMatrix q = new Array2DRowRealMatrix(stationCoords.getPosition().toArray());
 		RealMatrix q_d = new Array2DRowRealMatrix(stationCoords.getVelocity().toArray());
 		
-		// Test Case ////////////////////////////////////////////////////
+		// Test Case from RangeCAR Paper////////////////////////////////////////////////////
 		/*
 		meas1 = 5 * Math.PI/180;
 		meas2 = -45 * Math.PI/180;
@@ -258,7 +258,7 @@ public class CAR
 			double a23 = meas3 * dotProduct(q_d, u_d);
 			double a33 = Math.pow(meas4,2) + w1 * meas4 + w4 - 2 * mu / Math.sqrt(a22 + w5 * meas3 + w0);
 			
-			RealMatrix r = u_p.scalarMultiply(meas3);
+			RealMatrix r = q.add(u_p.scalarMultiply(meas3));
 
 			RealMatrix hp = crossProduct(r, q_d.add(u_p.scalarMultiply(meas4)));
 			RealMatrix ha = crossProduct(r.scalarMultiply(meas3), u_a);
@@ -340,11 +340,10 @@ public class CAR
 				InterpolationTableAMax[i][1] = dc - dsmax * Math.sin(theta); //Lower Bound
 				InterpolationTableAMax[i][2] = dc + dsmax * Math.sin(theta); // Upper Bound
 			}		
-					
+
 			for(int i = 0; i < domain.length; i++)
 			{
 				double RArate = domain[i];
-				System.out.println(domain[i]);
 				//compute amin and amax bounds
 
 				double[] aminData = interpolate(InterpolationTableAMin, RArate);
@@ -356,22 +355,12 @@ public class CAR
 					aMinL[i] = aminData[0];
 					aMinU[i] = aminData[1];
 				}
-				else
-				{
-					aMinL[i] = new Double(0);
-					aMinU[i] = new Double(0);
-				}
-				
+
 
 				if(amaxData[0] < amaxData[1])
 				{
 					aMaxL[i] = amaxData[0];
 					aMaxU[i] = amaxData[1];
-				}
-				else
-				{
-					aMaxL[i] = new Double(0);
-					aMaxU[i] = new Double(0);
 				}
 
 				
@@ -389,12 +378,10 @@ public class CAR
 				
 				Double[] realRoots = new Double[2];
 	
-				
-				//System.out.println("------------------------------");
+
 
 				for(int j = 0; j < roots.length; j ++)
 				{
-					//System.out.println(roots[j].getReal() + " + i" + roots[j].getImaginary());
 					if(Math.abs(roots[j].getImaginary()) < 1e-11)
 					{
 						if(realRoots[0] == null)
@@ -429,33 +416,24 @@ public class CAR
 				
 			}
 			
-			//write gaussians to file
-			try {
-			      FileWriter myWriter = new FileWriter("RangeCARInterpTable.txt");
-			      for(int i = 0; i < InterpolationTableAMin.length; i++)
-			      {
-			          myWriter.write(InterpolationTableAMin[i][0] + "," + InterpolationTableAMin[i][1] + "," + InterpolationTableAMin[i][2] + "," + InterpolationTableAMax[i][0] + "," + InterpolationTableAMax[i][1] + "," + InterpolationTableAMax[i][2]+"\n");
-			      }
-			      myWriter.close();
-			    } catch (IOException e) {
-			      e.printStackTrace();
-			    }
+			
+			//write data to file
+			/*
 			
 			try {
 			      FileWriter myWriter = new FileWriter("RangeCAR.txt");
 			      for(int i = 0; i < domain.length; i++)
 			      {
-			          //myWriter.write(domain[i] + "," + aMinU[i] + "," + aMinL[i] + "," + aMaxU[i]+ "," + aMaxL[i] + "," + eMaxU[i]+ "," + eMaxL[i] + "\n");
-			          myWriter.write(domain[i] + "," + aMinU[i] + "," + aMinL[i] + "," + aMaxU[i]+ "," + aMaxL[i] + "," + "\n");
+			          myWriter.write(domain[i] + "," + aMinU[i] + "," + aMinL[i] + "," + aMaxU[i]+ "," + aMaxL[i] + "," + eMaxU[i]+ "," + eMaxL[i] + "\n");
 			      }
 			      myWriter.close();
 			    } catch (IOException e) {
 			      e.printStackTrace();
 			    }
-			
-			System.exit(0);
+			*/
 
 			splitCAR(domain, sigma1, sigma2, aMinU, aMinL, aMaxU, aMaxL, eMaxU, eMaxL);
+			
 
 		}
 		
@@ -466,22 +444,12 @@ public class CAR
 	
 	double[] interpolate(double[][] table, double x)
 	{
-		
-		//System.out.println(x);
-		//System.out.println("--------------------");
 
 		int i = 0;
 		while(i+2 < table.length && x > table[i+1][0])
 		{
-			//System.out.println(table[i+1][0]);
 			i++;
 		}
-		
-		//System.out.println(table[i+1][0]);
-		//System.out.println(table[i+2][0]);
-		//System.out.println(i);
-		//System.exit(0);
-
 		
 		double slopeL = (table[i][1] - table[i+1][1])/(table[i][0] - table[i+1][0]);
 		double slopeU = (table[i][2] - table[i+1][2])/(table[i][0] - table[i+1][0]);
@@ -724,22 +692,22 @@ public class CAR
 		double rangeSigVal = GMSplitLibrary[Jp-1];
 		
 
-		double[] rangeMean = new double[Jp];
+		double[] abscissaMean = new double[Jp];
 		double rangeSigma = (domain[CARIndexEnd] - domain[CARIndexStart]) * rangeSigVal;
 		
-		for(int i=0; i < rangeMean.length; i++)
+		for(int i=0; i < abscissaMean.length; i++)
 		{
-			rangeMean[i] = domain[CARIndexStart] + (domain[CARIndexEnd] - domain[CARIndexStart]) * (i+1) / (Jp + 1);
+			abscissaMean[i] = domain[CARIndexStart] + (domain[CARIndexEnd] - domain[CARIndexStart]) * (i+1) / (Jp + 1);
 		}
 		
 		
-		double[][] gaussianContributions = new double[CARIndexEnd - CARIndexStart][rangeMean.length];
+		double[][] gaussianContributions = new double[CARIndexEnd - CARIndexStart][abscissaMean.length];
 		
 		for(int i=0; i < gaussianContributions.length; i++)
 		{
 			for(int j=0; j < gaussianContributions[i].length; j++)
 			{
-				gaussianContributions[i][j] = Math.exp(-Math.pow(binLocRho[i]-rangeMean[j], 2) / (2 * rangeSigma * rangeSigma)) / (Math.sqrt(2*  rangeSigma * rangeSigma *  Math.PI)); 
+				gaussianContributions[i][j] = Math.exp(-Math.pow(binLocRho[i]-abscissaMean[j], 2) / (2 * rangeSigma * rangeSigma)) / (Math.sqrt(2*  rangeSigma * rangeSigma *  Math.PI)); 
 			}
 		}
 				
@@ -767,7 +735,7 @@ public class CAR
 		      }
 		};
 		
-	   double startArray[] = new double[rangeMean.length]; 
+	   double startArray[] = new double[abscissaMean.length]; 
 	   Arrays.fill(startArray, 0.0);
 
 		
@@ -812,7 +780,7 @@ public class CAR
 
 
 		// make arraylist for mean, std, weights? and CARGaussianElement Object?
-		for(int i = 0; i < rangeMean.length; i++)
+		for(int i = 0; i < abscissaMean.length; i++)
 		{
 			//skip weights that are <= 0 or >1
 			if(zeroWeights.contains(i))
@@ -825,7 +793,7 @@ public class CAR
 			
 			for(int j = 0; j < CARIndexEnd - CARIndexStart; j++)
 			{
-				if(rangeMean[i] >= domain[CARIndexStart + j] && rangeMean[i] <= domain[CARIndexStart + j + 1])
+				if(abscissaMean[i] >= domain[CARIndexStart + j] && abscissaMean[i] <= domain[CARIndexStart + j + 1])
 				{
 					currentRho = domain[CARIndexStart + j];
 					break;
@@ -849,7 +817,7 @@ public class CAR
 						if(k + 1 < upperCAR.size())
 						{
 							
-							tempGaussians.addAll(generateHypotheses(upperCAR, k, sigma2, rangeMean[i], rangeSigma, GMSplitLibrary));
+							tempGaussians.addAll(generateHypotheses(upperCAR, k, sigma2, abscissaMean[i], rangeSigma, GMSplitLibrary));
 							
 							skipMain = true;
 						}
@@ -865,7 +833,7 @@ public class CAR
 							
 							
 							
-							tempGaussians.addAll(generateHypotheses(tempCAR, 0, sigma2,rangeMean[i], rangeSigma, GMSplitLibrary));
+							tempGaussians.addAll(generateHypotheses(tempCAR, 0, sigma2,abscissaMean[i], rangeSigma, GMSplitLibrary));
 
 							skipLower = true;
 							
@@ -884,7 +852,7 @@ public class CAR
 					if(lowerCAR.get(k).domain == currentRho)
 					{
 
-						tempGaussians.addAll(generateHypotheses(lowerCAR, k, sigma2,rangeMean[i], rangeSigma, GMSplitLibrary));
+						tempGaussians.addAll(generateHypotheses(lowerCAR, k, sigma2,abscissaMean[i], rangeSigma, GMSplitLibrary));
 						
 						skipMain = true;
 											
@@ -902,7 +870,7 @@ public class CAR
 					if(mainCAR.get(k).domain == currentRho)
 					{
 
-						tempGaussians.addAll(generateHypotheses(mainCAR, k, sigma2,rangeMean[i], rangeSigma, GMSplitLibrary));
+						tempGaussians.addAll(generateHypotheses(mainCAR, k, sigma2,abscissaMean[i], rangeSigma, GMSplitLibrary));
 						
 						skipMain = true;
 											
@@ -926,17 +894,19 @@ public class CAR
 		
 		
 		//write gaussians to file
+		/*
 		try {
 		      FileWriter myWriter = new FileWriter("Gaussians.txt");
 		      System.out.println(gaussians.size());
 		      for(int i = 0; i < gaussians.size(); i++)
 		      {
-		          myWriter.write(gaussians.get(i).rangeMean + "," + gaussians.get(i).rangeRateMean + "," + gaussians.get(i).rangeStd + "," + gaussians.get(i).rangeRateStd+ "," + gaussians.get(i).weight+"\n");
+		          myWriter.write(gaussians.get(i).abscissaMean + "," + gaussians.get(i).ordinateMean + "," + gaussians.get(i).abscissaStd + "," + gaussians.get(i).ordinateStd+ "," + gaussians.get(i).weight+"\n");
 		      }
 		      myWriter.close();
 		    } catch (IOException e) {
 		      e.printStackTrace();
 		    }
+		 */
 	}
 	
 	ArrayList <CARGaussianElement> getCAR()
@@ -967,17 +937,17 @@ public class CAR
 	
 	
 	
-	ArrayList <CARGaussianElement> generateHypotheses(ArrayList <boundaryCAR> currentCAR, int k, double sigma2, double rangeMean, double rangeSigma, double[] GMSplitLibrary)
+	ArrayList <CARGaussianElement> generateHypotheses(ArrayList <boundaryCAR> currentCAR, int k, double sigma2, double abscissaMean, double rangeSigma, double[] GMSplitLibrary)
 	{
 		ArrayList <CARGaussianElement> tempGaussians = new ArrayList<CARGaussianElement>();
 
 		//interpolate for min/max
 		
 		double max_rr = (currentCAR.get(k + 1).upperBound - currentCAR.get(k).upperBound) / (currentCAR.get(k + 1).domain - currentCAR.get(k).domain) 
-						* (rangeMean - currentCAR.get(k).domain) + currentCAR.get(k).upperBound;
+						* (abscissaMean - currentCAR.get(k).domain) + currentCAR.get(k).upperBound;
 		
 		double min_rr = (currentCAR.get(k + 1).lowerBound - currentCAR.get(k).lowerBound) / (currentCAR.get(k + 1).domain - currentCAR.get(k).domain) 
-						* (rangeMean - currentCAR.get(k).domain) + currentCAR.get(k).lowerBound;
+						* (abscissaMean - currentCAR.get(k).domain) + currentCAR.get(k).lowerBound;
 		
 		//find number of mean points (Jp)
 				
@@ -1006,10 +976,10 @@ public class CAR
 			CARGaussianElement temp = new CARGaussianElement();
 			
 			
-			temp.rangeMean = rangeMean;
-			temp.rangeRateMean = min_rr + (max_rr - min_rr) * (w+1) / (Jp_rr + 1);
-			temp.rangeRateStd = rangeRateSigma;
-			temp.rangeStd = rangeSigma;
+			temp.abscissaMean = abscissaMean;
+			temp.ordinateMean = min_rr + (max_rr - min_rr) * (w+1) / (Jp_rr + 1);
+			temp.ordinateStd = rangeRateSigma;
+			temp.abscissaStd = rangeSigma;
 			
 			tempGaussians.add(temp);
 			
@@ -1070,10 +1040,10 @@ public class CAR
 	class CARGaussianElement
 	{
 		
-		double rangeMean;
-		double rangeRateMean;
-		double rangeStd;
-		double rangeRateStd;
+		double abscissaMean; //For Optical CAR this is RangeMean, for range CAR this is RaRateMean
+		double ordinateMean; //For Optical CAR this is RangeRateMean, for range CAR this is DecRateMean
+		double abscissaStd; //For Optical CAR this is RangeStd, for range CAR this is RaRateStd
+		double ordinateStd;  //For Optical CAR this is RangeRateStd, for range CAR this is DecRateStd
 		double weight;
 		
 		

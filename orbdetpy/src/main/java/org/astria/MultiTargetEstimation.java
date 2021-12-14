@@ -284,17 +284,22 @@ public final class MultiTargetEstimation
 		//Create new objects with CAR
 		if(activateCAR == true && residentSpaceObjects.size() == 0)
 		{
-			System.out.println("Check1");
 			for(int measNum = 0; measNum <= additionalMeas; measNum++)
 			{
 				
 				ArrayList<SingleObject> tempHypotheses = new ArrayList<SingleObject>();
-				System.out.println("Check2");
 
-				ArrayList<Hypothesis> newHypotheses = GenerateOpticalHypotheses(rawMeasurements.get(measNum).rawmeas, R.getEntry(0,0), Math.pow(1e-5,2), R.getEntry(1,1), Math.pow(1e-5,2), numStates, numSigmas);
+				ArrayList<Hypothesis> newHypotheses = new ArrayList<Hypothesis>();
+				
+				if(combinedMeas)
+				{
+					newHypotheses = GenerateOpticalHypotheses(rawMeasurements.get(measNum).rawmeas, R.getEntry(0,0), Math.pow(1e-5,2), R.getEntry(1,1), Math.pow(1e-5,2), numStates, numSigmas); //Hardcoded Vals
+				}
+				else
+				{
+					newHypotheses = GenerateRadarHypotheses(rawMeasurements.get(measNum).rawmeas, R.getEntry(0,0), R.getEntry(1,1), 15e-6, 15e-6, numStates, numSigmas); //Hardcoded Vals
+				}
 
-
-				System.out.println("Check3");
 
 				for(int hypNum = 0; hypNum < newHypotheses.size(); hypNum++)
 				{
@@ -1116,13 +1121,13 @@ public final class MultiTargetEstimation
 		
 		for(int i = 0; i < CARGaussians.size(); i++)
 		{
-			if(CARGaussians.get(i).rangeRateStd<0)  //Need to fix, These hypotheses should not occur in the first place.
+			if(CARGaussians.get(i).ordinateStd<0)  //Need to fix, These hypotheses should not occur in the first place.
 				continue;
 			
 			Hypothesis singleHypothesis= new Hypothesis();
 			
-			RealVector meanTemp = new ArrayRealVector(new double[] {CARGaussians.get(i).rangeMean, RA, Dec, CARGaussians.get(i).rangeRateMean, RA_d, Dec_d, odCfg.getInitialState()[6], odCfg.getInitialState()[7]});
-			RealMatrix CovarTemp = new DiagonalMatrix(new double[] {Math.pow(CARGaussians.get(i).rangeStd,2), sigmaRA, sigmaDec, Math.pow(CARGaussians.get(i).rangeRateStd,2), 
+			RealVector meanTemp = new ArrayRealVector(new double[] {CARGaussians.get(i).abscissaMean, RA, Dec, CARGaussians.get(i).ordinateMean, RA_d, Dec_d, odCfg.getInitialState()[6], odCfg.getInitialState()[7]});
+			RealMatrix CovarTemp = new DiagonalMatrix(new double[] {Math.pow(CARGaussians.get(i).abscissaStd,2), sigmaRA, sigmaDec, Math.pow(CARGaussians.get(i).ordinateStd,2), 
 																	sigmaRAd, sigmaDecd, Math.pow(odCfg.estmCovariance[6],2), Math.pow(odCfg.estmCovariance[7],2)});
 									
 			Array2DRowRealMatrix sigma = GenerateSigmaPoints(meanTemp, CovarTemp, numStates, numSigmas);
@@ -1133,7 +1138,7 @@ public final class MultiTargetEstimation
 			{
 				sigma.setColumn(j, RangeRaDec2XYZ(sigma.getColumnVector(j), date, obs.station));
 			}
-		    new ManualPropagation(odCfg).propagate(0, sigma, CARGaussians.get(i).rangeMean/Constants.SPEED_OF_LIGHT, sigmaXYZ, false);
+		    new ManualPropagation(odCfg).propagate(0, sigma, CARGaussians.get(i).abscissaMean/Constants.SPEED_OF_LIGHT, sigmaXYZ, false);
 
 			RealMatrix Pxx = new Array2DRowRealMatrix(numStates, numStates);
 			RealVector xhat = addColumns(sigma).mapMultiplyToSelf(0.5/numStates);
@@ -1169,27 +1174,23 @@ public final class MultiTargetEstimation
 		
 		TimeStampedPVCoordinates stationCoords = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(date, odCfg.propFrame);
 		
-		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 3000.0, 5, 500.0 ,26000000, 26500000, 0.01, combinedMeas).getCAR(); //ASTRIA Test Case
-		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, stationCoords, 1e-5, 1e-5, 1e-5 ,17000000, 37000000, 0.05, combinedMeas).getCAR();
-		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, stationCoords, 10000, 100, 10000 ,17000000, 37000000, 0.01, combinedMeas).getCAR();
-		
+		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, stationCoords, 5e-6, 5e-6, 5e-6 ,17000000, 37000000, 0.1, combinedMeas).getCAR(); // Simulated Range CAR Case
+				
 		System.out.println(CARGaussians.size());
 		ArrayList<Hypothesis> objectHypotheses= new ArrayList<Hypothesis>();
 		
 		
 		for(int i = 0; i < CARGaussians.size(); i++)
 		{
-			if(CARGaussians.get(i).rangeRateStd<0)  //Need to fix, These hypotheses should not occur in the first place.
+			if(CARGaussians.get(i).ordinateStd<0)  //Need to fix, These hypotheses should not occur in the first place.
 				continue;
 			
 			Hypothesis singleHypothesis= new Hypothesis();
 			
-			System.out.println("fix the 999s");
-			System.out.println("remember to square");
 			
-			RealVector meanTemp = new ArrayRealVector(new double[] {range, ra, dec, rangeRate, 999, 999, odCfg.getInitialState()[6], odCfg.getInitialState()[7]});
-			RealMatrix CovarTemp = new DiagonalMatrix(new double[] {sigmaRange, sigmaRA, sigmaDec, sigmaRR, 
-																	999, 999, Math.pow(odCfg.estmCovariance[6],2), Math.pow(odCfg.estmCovariance[7],2)});
+			RealVector meanTemp = new ArrayRealVector(new double[] {range, ra, dec, rangeRate, CARGaussians.get(i).abscissaMean, CARGaussians.get(i).ordinateMean, odCfg.getInitialState()[6], odCfg.getInitialState()[7]});
+			RealMatrix CovarTemp = new DiagonalMatrix(new double[] {sigmaRange, sigmaRA, sigmaDec, sigmaRR, Math.pow(CARGaussians.get(i).abscissaStd,2), 
+																	Math.pow(CARGaussians.get(i).ordinateStd,2), Math.pow(odCfg.estmCovariance[6],2), Math.pow(odCfg.estmCovariance[7],2)});
 									
 			Array2DRowRealMatrix sigma = GenerateSigmaPoints(meanTemp, CovarTemp, numStates, numSigmas);
 
@@ -1199,7 +1200,7 @@ public final class MultiTargetEstimation
 			{
 				sigma.setColumn(j, RangeRaDec2XYZ(sigma.getColumnVector(j), date, obs.station));
 			}
-		    new ManualPropagation(odCfg).propagate(0, sigma, CARGaussians.get(i).rangeMean/Constants.SPEED_OF_LIGHT, sigmaXYZ, false);
+		    new ManualPropagation(odCfg).propagate(0, sigma, range/Constants.SPEED_OF_LIGHT, sigmaXYZ, false);
 
 			RealMatrix Pxx = new Array2DRowRealMatrix(numStates, numStates);
 			RealVector xhat = addColumns(sigma).mapMultiplyToSelf(0.5/numStates);
