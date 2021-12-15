@@ -200,7 +200,7 @@ public class CAR
 				double a1 = F * P + w1 * U;
 				double a0 = F * U + mu*mu * (1 - emax*emax);
 				
-				LaguerreSolver poly = new LaguerreSolver(1e-12,1e-12);
+				LaguerreSolver poly = new LaguerreSolver(1e-12,1e-12);  //Hardcoded Vals
 				
 				
 				Complex[] roots = poly.solveAllComplex(new double[]{a0,a1,a2,a3,a4},0);
@@ -210,7 +210,7 @@ public class CAR
 				for(int j = 0; j < roots.length; j ++)
 				{
 	
-					if(Math.abs(roots[j].getImaginary()) < 1e-11)
+					if(Math.abs(roots[j].getImaginary()) < 1e-11)  //Hardcoded Vals
 					{
 						if(realRoots[0] == null)
 						{
@@ -372,7 +372,7 @@ public class CAR
 				double p3 = c31*RArate + c30;
 				double p4 = c40;
 				
-				LaguerreSolver poly = new LaguerreSolver(1e-12,1e-12);
+				LaguerreSolver poly = new LaguerreSolver(1e-12,1e-12);  //Hardcoded Vals
 				
 				Complex[] roots = poly.solveAllComplex(new double[]{p0,p1,p2,p3,p4},0);
 				
@@ -382,7 +382,7 @@ public class CAR
 
 				for(int j = 0; j < roots.length; j ++)
 				{
-					if(Math.abs(roots[j].getImaginary()) < 1e-11)
+					if(Math.abs(roots[j].getImaginary()) < 1e-11)  //Hardcoded Vals
 					{
 						if(realRoots[0] == null)
 						{
@@ -432,6 +432,10 @@ public class CAR
 			    }
 			*/
 
+			
+			//TODO First, an inclination constraint must be added to handle discontinuous eccentricity constraints for rangeCAR
+			//TODO Second, the splitCAR function must be modified to handle eccentricity constraints that have 4 eccentricity bounds for each RaRate (instead of 2)
+			// It may be easier to have a rangeSplitCAR and an opticalSplitCAR
 			splitCAR(domain, sigma1, sigma2, aMinU, aMinL, aMaxU, aMaxL, eMaxU, eMaxL);
 			
 
@@ -467,7 +471,7 @@ public class CAR
 	void splitCAR(double[] domain, double sigma1, double sigma2, Double[] aMinU, Double[] aMinL, Double[] aMaxU, Double[] aMaxL, Double[] eMaxU, Double[] eMaxL)
 	{
 		double[] GMSplitLibrary = new double[1000];
-		GMSplitLibrary = readFile("data/input/uniformSigVals.txt");
+		GMSplitLibrary = readFile("data/input/uniformSigVals.txt"); //TODO file comes from Dr. Jones's debris class, Models a uniform distribution as a Gaussian Mixture. Eventually may want to expand library.
 		
 		// find range of truncated CAR
 
@@ -570,7 +574,7 @@ public class CAR
 			
 			//compute area using trapzeoid rule
 
-			// I dont think i need this area calc, since only relative size of weights matters. Test removing the Area value & see if code still works.
+			//TODO I dont think i need this area calc, since only relative size of weights matters. Test removing the Area value & see if code still works.
 			if(!lowerCAR.isEmpty() && !upperCAR.isEmpty() && upperIndex + 1 == upperCAR.size() && lowerIndex + 1 == lowerCAR.size())
 			{
 

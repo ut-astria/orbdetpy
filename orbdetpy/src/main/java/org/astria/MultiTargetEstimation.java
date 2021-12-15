@@ -231,7 +231,7 @@ public final class MultiTargetEstimation
 		{
 			for(int objNum = 0; objNum < totalObjNum; objNum++)
 			{
-				SingleObject currSC = residentSpaceObjects.get(objNum).get(0);
+				SingleObject currSC = residentSpaceObjects.get(objNum).get(0); // TODO Hypotheses need to be merged by this point, since it pulls the 0th hypothesis
 								
 				currSC.xhat = new ArrayRealVector(currSC.estOutput.get(0).estimatedState);
 				currSC.xhatPrev = new ArrayRealVector(currSC.estOutput.get(0).estimatedState);
@@ -455,7 +455,7 @@ public final class MultiTargetEstimation
 						{
 							JPDAtemp = new JPDALikelihoods();
 
-							//JPDAtemp2.psi =  Math.exp(-JPDATemp.getEntry(0,0)/2) / (Math.sqrt(new LUDecomposition(currentObj.Pyy).getDeterminant() * Math.pow(2 * Math.PI, currentObj.Rsize)));
+							//JPDAtemp2.psi =  Math.exp(-JPDATemp.getEntry(0,0)/2) / (Math.sqrt(new LUDecomposition(currentObj.Pyy).getDeterminant() * Math.pow(2 * Math.PI, currentObj.Rsize))); //TODO modified likelihood function
 							JPDAtemp.psi = (1 - new ChiSquaredDistribution(Rsize).cumulativeProbability(Mahalanobis.getEntry(0,0))) * currSC.hypothesisWeight;
 							JPDAtemp.object = objNum;
 							JPDAtemp.measurement = measNum+1;
@@ -774,7 +774,7 @@ public final class MultiTargetEstimation
 		
 		for(int objNum = 0; objNum < totalObjNum; objNum++)
 		{
-			//MergeHypotheses(residentSpaceObjects.get(objNum));
+			//MergeHypotheses(residentSpaceObjects.get(objNum)); //TODO Fix merge function or remove. Not sure that it can be fixed due to interaction with smoother
 		}
 		
 		// Normalize Weights
@@ -845,7 +845,7 @@ public final class MultiTargetEstimation
 		for(int j = 0; j < 5; j++)
 		{			
 		    McReynoldsVal = Math.max(McReynoldsVal, Math.abs(delx.getEntry(j,0)) / Math.sqrt(Math.abs(delP.getEntry(j,j))));
-		    if(Math.abs(delx.getEntry(j,0)) / Math.sqrt(Math.abs(delP.getEntry(j,j))) >= 3)
+		    if(Math.abs(delx.getEntry(j,0)) / Math.sqrt(Math.abs(delP.getEntry(j,j))) >= 3) //Hardcoded val, Mcreynolds Consistency
 		    {
 			currSC.McReynoldsConsistencyPass = false;
 		    }
@@ -898,7 +898,6 @@ public final class MultiTargetEstimation
 	    {
 	    	residentSpaceObjects.get(objNum).get(0).fromCAR = false;
 	    	currSC.McReynoldsConsistencyPass = false;
-	    	System.out.println("Add code to merge remaining hypotheses");
 	    	break;
 	    	//TODO Merge remaining hypotheses here
 	    }
@@ -1112,8 +1111,8 @@ public final class MultiTargetEstimation
 		
 		TimeStampedPVCoordinates stationCoords = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(date, odCfg.propFrame);
 		
-		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 3000.0, 5, 500.0 ,26000000, 26500000, 0.01, combinedMeas).getCAR(); //ASTRIA Test Case
-		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 10000.0, 10.0, 10000.0 ,17000000, 37000000, 0.05, combinedMeas).getCAR(); //Simulated Test Case
+		//ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 3000.0, 5, 500.0 ,26000000, 26500000, 0.01, combinedMeas).getCAR(); //ASTRIA Test Case  //Hardcoded Vals
+		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, stationCoords, 10000.0, 10.0, 10000.0 ,17000000, 37000000, 0.05, combinedMeas).getCAR(); //Simulated Test Case //Hardcoded Vals
 		
 		System.out.println(CARGaussians.size());
 		ArrayList<Hypothesis> objectHypotheses= new ArrayList<Hypothesis>();
@@ -1174,7 +1173,7 @@ public final class MultiTargetEstimation
 		
 		TimeStampedPVCoordinates stationCoords = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(date, odCfg.propFrame);
 		
-		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, stationCoords, 5e-6, 5e-6, 5e-6 ,17000000, 37000000, 0.1, combinedMeas).getCAR(); // Simulated Range CAR Case
+		ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, stationCoords, 5e-6, 5e-6, 5e-6 ,17000000, 37000000, 0.1, combinedMeas).getCAR(); // Simulated Range CAR Case  //Hardcoded Vals
 				
 		System.out.println(CARGaussians.size());
 		ArrayList<Hypothesis> objectHypotheses= new ArrayList<Hypothesis>();
