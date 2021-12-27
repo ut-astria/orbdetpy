@@ -1,9 +1,9 @@
-target/
 __pycache__/
-output/
 build/
 dist/
 orbdetpy.egg-info/
-*.pyc
-*.class
-
+orbdetpy/orekit-data/
+orbdetpy/target/
+*.json
+*.oem
+*.tdm
