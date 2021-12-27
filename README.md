@@ -82,8 +82,5 @@ Known Issues
 1. You might receive warnings from the Windows Defender Firewall on Microsoft
    Windows. Grant `orbdetpy` network access permissions.
 
-2. If you use the `multiprocessing` Python package, imports and calls into
-   `orbdetpy` must not span `multiprocessing` function calls. That is, `orbdetpy`
-   can be used in the parent process or the spawned child processes, but not both.
-   A workaround is to run the `orbdetpy` RPC server using `orbdetpy/start_server.sh`
-   in a separate terminal window before running your Python code.
+2. If you use `orbdetpy` with Python's `multiprocessing` package, call the function
+   `multiprocessing.set_start_method("spawn")` before other `multiprocessing` calls.
