@@ -1,6 +1,6 @@
 /*
  * ConversionService.java - Conversion service handler.
- * Copyright (C) 2019-2021 University of Texas
+ * Copyright (C) 2019-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -266,15 +266,10 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
     {
 	try
 	{
-	    boolean truncate = req.getArray(0) != 0.0;
+	    int precision = (int)req.getArray(0);
 	    ArrayList<String> utc = new ArrayList<String>(req.getArrayCount() - 1);
 	    for (int i = 1; i < req.getArrayCount(); i++)
-	    {
-		if (truncate)
-		    utc.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).toString(0, TimeScalesFactory.getUTC()));
-		else
-		    utc.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).toStringRfc3339(TimeScalesFactory.getUTC()));
-	    }
+		utc.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).toString(0, TimeScalesFactory.getUTC()).substring(0, 23));
 
 	    StringValue.Builder builder = StringValue.newBuilder().setValue(String.join(" ", utc));
 	    resp.onNext(builder.build());

@@ -1,5 +1,5 @@
 # test_conversion.py - Test conversion functions.
-# Copyright (C) 2020-2021 University of Texas
+# Copyright (C) 2020-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ from orbdetpy import Constant, Epoch, Frame, PositionAngle
 # TT <=> UTC
 now = datetime.now(timezone.utc).isoformat()
 print(f"J2000_EPOCH = {conv.get_UTC_string(0.0)}")
-print(f"""J2000_EPOCH => 2000-01-01T12:00:00Z = {conv.get_J2000_epoch_offset("2000-01-01T12:00:00Z")}s""")
+print(f"""J2000_EPOCH => 2000-01-01T12:00:00Z = {conv.get_J2000_epoch_offset("2000-01-01T12:00:00")}s""")
 print(f"""J2000_EPOCH => {now} (now) = {conv.get_J2000_epoch_offset(now)}s""")
 
 # Time difference between pairs of epochs
@@ -30,7 +30,7 @@ for key, val in vars(Epoch).items():
         print(f"J2000_EPOCH => {key} = {conv.get_epoch_difference(Epoch.J2000_EPOCH, val)}s")
 print()
 
-time = conv.get_J2000_epoch_offset("1998-08-10T23:10:00Z")
+time = conv.get_J2000_epoch_offset("1998-08-10T23:10:00")
 # Inertial GCRF state vector
 gcrf_pv = [-6045E3, -3490E3, 2500E3, -3.457E3, 6.618E3, 2.533E3]
 

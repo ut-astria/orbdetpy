@@ -27,5 +27,7 @@ service Estimation
 {
     rpc determineOrbit(DetermineOrbitInput) returns (EstimationOutputArray) {}
 
+    rpc multiTargetOD(MultiTargetInput) returns (MultiTargetOutput) {}
+
     rpc iodLaplace(AnglesInput) returns (DoubleArray) {}
 }

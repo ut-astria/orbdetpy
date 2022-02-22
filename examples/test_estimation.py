@@ -1,5 +1,5 @@
 # test_estimation.py - Run measurement simulation and OD tests.
-# Copyright (C) 2020-2021 University of Texas
+# Copyright (C) 2020-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,16 +59,16 @@ add_station(cfg, "Millstone", 0.7438, -1.2652, 100.0, fov_azimuth=-2.75, fov_ele
 
 # Uncomment mutually exclusive sections below to choose different measurements 
 # AZIMUTH and ELEVATION must be given
-cfg.measurements[MeasurementType.AZIMUTH].error[:] = [Constant.ARC_SECOND_TO_RAD]
-cfg.measurements[MeasurementType.ELEVATION].error[:] = [Constant.ARC_SECOND_TO_RAD]
+#cfg.measurements[MeasurementType.AZIMUTH].error[:] = [Constant.ARC_SECOND_TO_RAD]
+#cfg.measurements[MeasurementType.ELEVATION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 
 # You can provide RANGE+RANGE_RATE or RANGE alone or RANGE_RATE alone
 #cfg.measurements[MeasurementType.RANGE].error[:] = [10.0]
 #cfg.measurements[MeasurementType.RANGE_RATE].error[:] = [0.1]
 
 # RIGHT_ASCENSION and DECLINATION must be given
-#cfg.measurements[MeasurementType.RIGHT_ASCENSION].error[:] = [Constant.ARC_SECOND_TO_RAD]
-#cfg.measurements[MeasurementType.DECLINATION].error[:] = [Constant.ARC_SECOND_TO_RAD]
+cfg.measurements[MeasurementType.RIGHT_ASCENSION].error[:] = [Constant.ARC_SECOND_TO_RAD]
+cfg.measurements[MeasurementType.DECLINATION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 
 # Inertial position as measurement
 #cfg.measurements[MeasurementType.POSITION].error[:] = [100.0, 200.0, 300.0]
@@ -89,11 +89,11 @@ for i in range(5):
 meas.sort(key=lambda m: m.time)
 
 # Plot orbital elements from the simulation
-simulation_plot(meas, interactive=True)
+#simulation_plot(meas, interactive=True)
 
 # Export simulated measurements to a CCSDS TDM file
-with open("orbdetpy_sim.tdm", "w") as fp:
-    fp.write(export_TDM(cfg, meas, "DEBRIS"))
+#with open("orbdetpy_sim.tdm", "w") as fp:
+#    fp.write(export_TDM(cfg, meas, "DEBRIS"))
 
 # Perturb truth initial state before running OD
 cfg.prop_initial_state[:] = multivariate_normal(cfg.prop_initial_state, diag([1E6, 1E6, 1E6, 1E2, 1E2, 1E2]))
@@ -117,5 +117,5 @@ for f in fit:
 estimation_plot(cfg, meas, fit, interactive=True, estim_param=False)
 
 # Export ephemeris to a CCSDS OEM file
-with open("orbdetpy_fit.oem", "w") as fp:
-    fp.write(export_OEM(cfg, fit, "2021-001A", "DEBRIS"))
+#with open("orbdetpy_fit.oem", "w") as fp:
+#    fp.write(export_OEM(cfg, fit, "2021-001A", "DEBRIS"))

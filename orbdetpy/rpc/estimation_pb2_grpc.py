@@ -19,6 +19,11 @@ class EstimationStub(object):
                 request_serializer=messages__pb2.DetermineOrbitInput.SerializeToString,
                 response_deserializer=messages__pb2.EstimationOutputArray.FromString,
                 )
+        self.multiTargetOD = channel.unary_unary(
+                '/Estimation/multiTargetOD',
+                request_serializer=messages__pb2.MultiTargetInput.SerializeToString,
+                response_deserializer=messages__pb2.MultiTargetOutput.FromString,
+                )
         self.iodLaplace = channel.unary_unary(
                 '/Estimation/iodLaplace',
                 request_serializer=messages__pb2.AnglesInput.SerializeToString,
@@ -30,6 +35,12 @@ class EstimationServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def determineOrbit(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def multiTargetOD(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -48,6 +59,11 @@ def add_EstimationServicer_to_server(servicer, server):
                     servicer.determineOrbit,
                     request_deserializer=messages__pb2.DetermineOrbitInput.FromString,
                     response_serializer=messages__pb2.EstimationOutputArray.SerializeToString,
+            ),
+            'multiTargetOD': grpc.unary_unary_rpc_method_handler(
+                    servicer.multiTargetOD,
+                    request_deserializer=messages__pb2.MultiTargetInput.FromString,
+                    response_serializer=messages__pb2.MultiTargetOutput.SerializeToString,
             ),
             'iodLaplace': grpc.unary_unary_rpc_method_handler(
                     servicer.iodLaplace,
@@ -78,6 +94,23 @@ class Estimation(object):
         return grpc.experimental.unary_unary(request, target, '/Estimation/determineOrbit',
             messages__pb2.DetermineOrbitInput.SerializeToString,
             messages__pb2.EstimationOutputArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def multiTargetOD(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Estimation/multiTargetOD',
+            messages__pb2.MultiTargetInput.SerializeToString,
+            messages__pb2.MultiTargetOutput.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

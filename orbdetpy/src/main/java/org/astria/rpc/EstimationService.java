@@ -1,6 +1,6 @@
 /*
  * EstimationService.java - Estimation service handler.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.astria.Estimation;
 import org.astria.Measurements;
+import org.astria.MultiTargetEstimation;
 import org.astria.Settings;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -53,6 +54,43 @@ public final class EstimationService extends EstimationGrpc.EstimationImplBase
 	    Messages.EstimationOutputArray.Builder builder = Messages.EstimationOutputArray
 		.newBuilder().addAllArray(Tools.buildResponseFromOrbitDetermination(estOut));
 	    resp.onNext(builder.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
+    @Override public void multiTargetOD(Messages.MultiTargetInput req, StreamObserver<Messages.MultiTargetOutput> resp)
+    {
+	try
+	{
+	    ArrayList<Settings> cfgList = new ArrayList<Settings>(req.getConfigCount());
+	    for (int i = 0; i < req.getConfigCount(); i++)
+		cfgList.add(Tools.buildSettingsFromRequest(req.getConfig(i)));
+
+	    ArrayList<Measurements> obsList = new ArrayList<Measurements>(req.getMeasurementsCount());
+	    for (int i = 0; i < req.getMeasurementsCount(); i++)
+		obsList.add(Tools.buildMeasurementsFromRequest(req.getMeasurements(i).getArrayList(), cfgList.get(i)));
+
+	    MultiTargetEstimation.MultiTargetOutput multiOut = new MultiTargetEstimation(cfgList, obsList).multiTargetDetermineOrbit();
+	    Messages.MultiTargetOutput.Builder outer = Messages.MultiTargetOutput.newBuilder();
+	    for (ArrayList<Estimation.EstimationOutput> a: multiOut.estOutput)
+	    {
+		Messages.EstimationOutputArray.Builder inner = Messages.EstimationOutputArray
+		    .newBuilder().addAllArray(Tools.buildResponseFromOrbitDetermination(a));
+		outer = outer.addEstOutput(inner);
+	    }
+
+	    for (ArrayList<Integer> a: multiOut.associatedObs)
+	    {
+		Messages.IntegerArray.Builder inner = Messages.IntegerArray.newBuilder().addAllArray(a);
+		outer = outer.addAssociatedObs(inner);
+	    }
+
+	    outer = outer.addAllUnassociatedObs(multiOut.unassociatedObs);
+	    resp.onNext(outer.build());
 	    resp.onCompleted();
 	}
 	catch (Throwable exc)

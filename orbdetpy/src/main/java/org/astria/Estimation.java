@@ -1,6 +1,6 @@
 /*
  * Estimation.java - Implementation of estimation algorithms.
- * Copyright (C) 2018-2021 University of Texas
+ * Copyright (C) 2018-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,6 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.PVCoordinates;
 
@@ -85,8 +84,8 @@ public final class Estimation
 
     private ArrayList<EstimationOutput> estOutput;
 
-    public final static String[] DMC_ACC_ESTM = {"zDMCx", "zDMCy", "zDMCz"};
-    public final static String DMC_ACC_PROP = "DMCEstProp";
+    public final static String[] DMC_ACC_ESTM = {"DMC_ACC_X", "DMC_ACC_Y", "DMC_ACC_Z"};
+    public final static String DMC_ACC_PROP = "DMC_STATE";
 
     public Estimation(Settings odCfg, Measurements odObs)
     {
@@ -157,32 +156,13 @@ public final class Estimation
 	private void determineOrbit()
 	{
 	    final double[] x0 = odCfg.getInitialState();
+	    final CartesianOrbit orb0 = new CartesianOrbit(new PVCoordinates(new Vector3D(x0[0], x0[1], x0[2]), new Vector3D(x0[3], x0[4], x0[5])),
+							   odCfg.propInertialFrame, odCfg.propStart, Constants.EGM96_EARTH_MU);
 	    estmTime = odCfg.propStart;
 	    estmCovariance = odCfg.getInitialCovariance();
-	    final CartesianOrbit X0 = new CartesianOrbit(new PVCoordinates(new Vector3D(x0[0], x0[1], x0[2]), new Vector3D(x0[3], x0[4], x0[5])),
-							 odCfg.propInertialFrame, odCfg.propStart, Constants.EGM96_EARTH_MU);
 
-	    final PropagatorBuilder propBuilder = new PropagatorBuilder(
-		odCfg, X0, new DormandPrince853IntegratorBuilder(odCfg.integMinTimeStep,odCfg.integMaxTimeStep,1.0),PositionAngle.TRUE,10.0,false);
-	    propBuilder.setMass(odCfg.rsoMass);
-	    for (ForceModel fm: odCfg.forces)
-		propBuilder.addForceModel(fm);
-
-	    final ParameterDriversList plst = propBuilder.getPropagationParametersDrivers();
-	    for (Settings.Parameter ep: odCfg.parameters)
-	    {
-		ParameterDriver pdrv = new ParameterDriver(ep.name, ep.value, 1.0, ep.min, ep.max);
-		pdrv.setSelected(true);
-		plst.add(pdrv);
-	    }
-
-	    final AttitudeProvider attProv = odCfg.getAttitudeProvider();
-	    if (attProv != null)
-		propBuilder.setAttitudeProvider(attProv);
-
-	    final KalmanEstimatorBuilder builder = new KalmanEstimatorBuilder();
-	    builder.addPropagationConfiguration(propBuilder, this);
-	    final KalmanEstimator filter = builder.build();
+	    final PropagatorBuilder propBuilder = new PropagatorBuilder(odCfg, orb0, false);
+	    final KalmanEstimator filter = new KalmanEstimatorBuilder().addPropagationConfiguration(propBuilder, this).build();
 	    filter.setObserver(this);
 
 	    Propagator propagator = null;
@@ -196,13 +176,8 @@ public final class Estimation
 		final Measurements.Measurement thisObs = odObs.array[measIndex];
 		if (thisObs.values.length > 0)
 		{
-		    if (singleObject)
-			propagator = filter.estimationStep(thisObs.helpers[0])[0];
-		    else
-		    {
-			filter.estimationStep(thisObs.helpers[0]);
-			propagator = filter.estimationStep(thisObs.helpers[1])[0];
-		    }
+		    for (int i = 0; i < thisObs.helpers.length; i++)
+			propagator = filter.estimationStep(thisObs.helpers[i])[0];
 		    propBuilder.enableDMC = true;
 		}
 		else if ((odCfg.outputFlags & Settings.OUTPUT_PROP_COV) != 0)
@@ -463,10 +438,9 @@ public final class Estimation
 		for (int i = 0; i < numSigmas; i++)
 		{
 		    double[] pv = propSigma.getColumn(i);
-		    ssta[0] = new SpacecraftState(
-			new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
-					   odCfg.propInertialFrame, thisObs.time, Constants.EGM96_EARTH_MU),
-			propagator.getAttitude(thisObs.time, pv), odCfg.rsoMass);
+		    CartesianOrbit orb = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
+							    odCfg.propInertialFrame, thisObs.time, Constants.EGM96_EARTH_MU);
+		    ssta[0] = new SpacecraftState(orb, odCfg.rsoMass);
 
 		    if (singleObject)
 		    {
@@ -536,10 +510,9 @@ public final class Estimation
 			xhat = new ArrayRealVector(xhatPrev.add(odCfg.parameterMatrix.multiply(K).operate(error)));
 
 		    double[] pv = xhat.toArray();
-		    ssta[0] = new SpacecraftState(
-			new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
-					   odCfg.propInertialFrame, thisObs.time, Constants.EGM96_EARTH_MU),
-			propagator.getAttitude(thisObs.time, pv), odCfg.rsoMass);
+		    CartesianOrbit orb = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
+							    odCfg.propInertialFrame, thisObs.time, Constants.EGM96_EARTH_MU);
+		    ssta[0] = new SpacecraftState(orb, odCfg.rsoMass);
 
 		    if ((odCfg.outputFlags & Settings.OUTPUT_RESIDUALS) != 0)
 		    {

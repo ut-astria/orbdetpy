@@ -1,6 +1,6 @@
 /*
  * Measurements.java - Functions to parse OD measurement files.
- * Copyright (C) 2018-2021 University of Texas
+ * Copyright (C) 2018-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public final class Measurements
 {
-    public static class Measurement
+    public static class Measurement implements Comparable<Measurement>
     {
 	public AbsoluteDate time;
 	public String station;
@@ -55,43 +55,48 @@ public final class Measurements
 
 	public Measurement(Measurement src)
 	{
-	    this.time = src.time;
-	    this.station = src.station;
-	    this.values = src.values;
-	    this.angleRates = src.angleRates;
-	    this.trueState = src.trueState;
-	    this.helpers = src.helpers;
+	    time = src.time;
+	    station = src.station;
+	    values = src.values;
+	    angleRates = src.angleRates;
+	    trueState = src.trueState;
+	    helpers = src.helpers;
 	}
 
 	public Measurement(TimeStampedPVCoordinates pv, ArrayList<Double> extras)
 	{
-	    this.time = pv.getDate();
+	    time = pv.getDate();
 	    if (extras != null && extras.size() > 0)
-		this.trueState = new double[6 + extras.size()];
+		trueState = new double[6 + extras.size()];
 	    else
-		this.trueState = new double[6];
+		trueState = new double[6];
 	    double[] p = pv.getPosition().toArray();
 	    double[] v = pv.getVelocity().toArray();
-	    for (int i = 0; i < this.trueState.length; i++)
+	    for (int i = 0; i < trueState.length; i++)
 	    {
 		if (i < 3)
-		    this.trueState[i] = p[i];
+		    trueState[i] = p[i];
 		else if (i < 6)
-		    this.trueState[i] = v[i - 3];
+		    trueState[i] = v[i - 3];
 		else
-		    this.trueState[i] = extras.get(i - 6);
+		    trueState[i] = extras.get(i - 6);
 	    }
 	}
 
-	public void addHelper(ObservedMeasurement<?> om)
+	public void addHelper(ObservedMeasurement<?> m)
 	{
 	    if (helpers == null)
-		helpers = new ObservedMeasurement<?>[]{om};
+		helpers = new ObservedMeasurement<?>[]{m};
 	    else
 	    {
 		helpers = Arrays.copyOf(helpers, helpers.length + 1);
-		helpers[helpers.length - 1] = om;
+		helpers[helpers.length - 1] = m;
 	    }
+	}
+
+	@Override public int compareTo(Measurement m)
+	{
+	    return(time.compareTo(m.time));
 	}
     }
 
@@ -99,8 +104,6 @@ public final class Measurements
 
     public Measurements build(Settings odCfg)
     {
-	if (array.length == 0)
-	    throw(new RuntimeException("No measurements provided"));
 	Settings.Measurement cazim = odCfg.cfgMeasurements.get(Settings.MeasurementType.AZIMUTH);
 	Settings.Measurement celev = odCfg.cfgMeasurements.get(Settings.MeasurementType.ELEVATION);
 	Settings.Measurement crigh = odCfg.cfgMeasurements.get(Settings.MeasurementType.RIGHT_ASCENSION);

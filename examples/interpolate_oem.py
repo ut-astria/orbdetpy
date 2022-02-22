@@ -1,5 +1,5 @@
 # interpolate_oem.py - Interpolate CCSDS OEM files.
-# Copyright (C) 2020 University of Texas
+# Copyright (C) 2020-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,17 +77,13 @@ for l in lines:
     # Read and parse ephemeris entries
     if (body):
         toks = l.split()
-        if (toks[0] >= start_time):
+        if (toks[0][0].isnumeric() and ":" in toks[0]):
             utc.append(toks[0])
             states.append([float(t)*1000.0 for t in toks[1:]])
-        if (toks[0] >= final_time):
-            break
-
-# Bulk convert UTC timestamps to TT offsets 
-tt = get_J2000_epoch_offset(utc)
 
 # Interpolate ephemeris
-interpolation = interpolate_ephemeris(ref_frame, tt, states, degree, ref_frame, tt[0], tt[-1], step)
+interpolation = interpolate_ephemeris(ref_frame, get_J2000_epoch_offset(utc), states, degree, ref_frame,
+                                      get_J2000_epoch_offset(start_time), get_J2000_epoch_offset(final_time), step)
 
 # Export to OEM format and print to stdout
 print(export_OEM(configure(prop_inertial_frame=ref_frame), interpolation, obj_id, obj_name))

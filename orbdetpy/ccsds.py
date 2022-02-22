@@ -1,5 +1,5 @@
 # ccsds.py - CCSDS file format conversion functions.
-# Copyright (C) 2019-2021 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,12 +69,12 @@ META_STOP
                     estm_cov.append(f"\nEPOCH = {utc}")
                     for m in range(6):
                         n = (m**2 + m)//2
-                        estm_cov.append(" ".join((str(x/1E6) for x in o.estimated_covariance[n:m+n+1])))
+                        estm_cov.append(" ".join((str(x/1E6) for x in o.estimated_covariance[n:m + n + 1])))
                 if (is_estm and add_prop_cov and len(o.propagated_covariance) >= 21):
                     prop_cov.append(f"\nEPOCH = {utc}")
                     for m in range(6):
                         n = (m**2 + m)//2
-                        prop_cov.append(" ".join((str(x/1E6) for x in o.propagated_covariance[n:m+n+1])))
+                        prop_cov.append(" ".join((str(x/1E6) for x in o.propagated_covariance[n:m + n + 1])))
 
     oem_data = oem_header + "\n".join(eph_data)
     if (estm_cov):

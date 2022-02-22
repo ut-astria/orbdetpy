@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\016org.astria.rpcB\010MessagesP\000',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0emessages.proto\"!\n\x0cIntegerArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x05\x42\x02\x10\x01\" \n\x0b\x44oubleArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x01\x42\x02\x10\x01\",\n\rDouble2DArray\x12\x1b\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x0c.DoubleArray\"H\n\tParameter\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x0b\n\x03min\x18\x02 \x01(\x01\x12\x0b\n\x03max\x18\x03 \x01(\x01\x12\x12\n\nestimation\x18\x04 \x01(\x05\")\n\x05\x46\x61\x63\x65t\x12\x12\n\x06normal\x18\x01 \x03(\x01\x42\x02\x10\x01\x12\x0c\n\x04\x61rea\x18\x02 \x01(\x01\"\x7f\n\x08Maneuver\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x15\n\rtrigger_event\x18\x02 \x01(\x05\x12\x1a\n\x0etrigger_params\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x15\n\rmaneuver_type\x18\x04 \x01(\x05\x12\x1b\n\x0fmaneuver_params\x18\x05 \x03(\x01\x42\x02\x10\x01\"\xad\x01\n\x07Station\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x01\x12\x10\n\x04\x62ias\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0f\x62ias_estimation\x18\x05 \x01(\x05\x12\x13\n\x0b\x66ov_azimuth\x18\x06 \x01(\x01\x12\x15\n\rfov_elevation\x18\x07 \x01(\x01\x12\x14\n\x0c\x66ov_aperture\x18\x08 \x01(\x01\"8\n\x12MeasurementSetting\x12\x0f\n\x07two_way\x18\x01 \x01(\x08\x12\x11\n\x05\x65rror\x18\x02 \x03(\x01\x42\x02\x10\x01\"\x95\r\n\x08Settings\x12\x10\n\x08rso_mass\x18\x01 \x01(\x01\x12\x10\n\x08rso_area\x18\x02 \x01(\x01\x12\x1a\n\nrso_facets\x18\x03 \x03(\x0b\x32\x06.Facet\x12 \n\x14rso_solar_array_axis\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x1c\n\x14rso_solar_array_area\x18\x05 \x01(\x01\x12\x1d\n\x15rso_attitude_provider\x18\x06 \x01(\x05\x12\x1d\n\x11rso_spin_velocity\x18\x07 \x03(\x01\x42\x02\x10\x01\x12!\n\x15rso_spin_acceleration\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x16\n\x0egravity_degree\x18\t \x01(\x05\x12\x15\n\rgravity_order\x18\n \x01(\x05\x12\x1a\n\x12ocean_tides_degree\x18\x0b \x01(\x05\x12\x19\n\x11ocean_tides_order\x18\x0c \x01(\x05\x12\x16\n\x0ethird_body_sun\x18\r \x01(\x08\x12\x17\n\x0fthird_body_moon\x18\x0e \x01(\x08\x12\x17\n\x0fsolid_tides_sun\x18\x0f \x01(\x08\x12\x18\n\x10solid_tides_moon\x18\x10 \x01(\x08\x12\x12\n\ndrag_model\x18\x11 \x01(\x05\x12$\n\x10\x64rag_coefficient\x18\x12 \x01(\x0b\x32\n.Parameter\x12\'\n\x10\x64rag_MSISE_flags\x18\x13 \x03(\x0b\x32\r.IntegerArray\x12\x15\n\rdrag_exp_rho0\x18\x14 \x01(\x01\x12\x13\n\x0b\x64rag_exp_H0\x18\x15 \x01(\x01\x12\x17\n\x0f\x64rag_exp_Hscale\x18\x16 \x01(\x01\x12\x0e\n\x06rp_sun\x18\x17 \x01(\x08\x12\'\n\x13rp_coeff_reflection\x18\x18 \x01(\x0b\x32\n.Parameter\x12\x1b\n\x13rp_coeff_absorption\x18\x19 \x01(\x01\x12\x1c\n\tmaneuvers\x18\x1a \x03(\x0b\x32\t.Maneuver\x12\x12\n\nprop_start\x18\x1b \x01(\x01\x12\x10\n\x08prop_end\x18\x1c \x01(\x01\x12\x11\n\tprop_step\x18\x1d \x01(\x01\x12\x1e\n\x12prop_initial_state\x18\x1e \x03(\x01\x42\x02\x10\x01\x12\x18\n\x10prop_initial_TLE\x18\x1f \x03(\t\x12\x1b\n\x13prop_inertial_frame\x18  \x01(\t\x12\x1b\n\x13integ_min_time_step\x18! \x01(\x01\x12\x1b\n\x13integ_max_time_step\x18\" \x01(\x01\x12\x1b\n\x13integ_abs_tolerance\x18# \x01(\x01\x12\x1b\n\x13integ_rel_tolerance\x18$ \x01(\x01\x12\x18\n\x10sim_measurements\x18% \x01(\x08\x12)\n\x08stations\x18& \x03(\x0b\x32\x17.Settings.StationsEntry\x12\x31\n\x0cmeasurements\x18\' \x03(\x0b\x32\x1b.Settings.MeasurementsEntry\x12\x1c\n\x10geo_zone_lat_lon\x18( \x03(\x01\x42\x02\x10\x01\x12\x13\n\x0b\x65stm_filter\x18) \x01(\x05\x12\x1b\n\x0f\x65stm_covariance\x18* \x03(\x01\x42\x02\x10\x01\x12\x1e\n\x12\x65stm_process_noise\x18+ \x03(\x01\x42\x02\x10\x01\x12\x1a\n\x12\x65stm_DMC_corr_time\x18, \x01(\x01\x12\x1b\n\x13\x65stm_DMC_sigma_pert\x18- \x01(\x01\x12)\n\x15\x65stm_DMC_acceleration\x18. \x01(\x0b\x32\n.Parameter\x12\x1a\n\x12\x65stm_outlier_sigma\x18/ \x01(\x01\x12\x1b\n\x13\x65stm_outlier_warmup\x18\x30 \x01(\x05\x12 \n\x18\x65stm_smoother_iterations\x18\x31 \x01(\x05\x12\x18\n\x10\x65stm_enable_PDAF\x18\x32 \x01(\x08\x12\"\n\x1a\x65stm_detection_probability\x18\x33 \x01(\x01\x12\x1f\n\x17\x65stm_gating_probability\x18\x34 \x01(\x01\x12\x1d\n\x15\x65stm_gating_threshold\x18\x35 \x01(\x01\x12\x14\n\x0coutput_flags\x18\x36 \x01(\x05\x1a\x39\n\rStationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x17\n\x05value\x18\x02 \x01(\x0b\x32\x08.Station:\x02\x38\x01\x1aH\n\x11MeasurementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.MeasurementSetting:\x02\x38\x01\")\n\rSettingsArray\x12\x18\n\x05\x61rray\x18\x01 \x03(\x0b\x32\t.Settings\"q\n\x0bMeasurement\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x12\n\x06values\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0b\x61ngle_rates\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x16\n\ntrue_state\x18\x05 \x03(\x01\x42\x02\x10\x01\"/\n\x10MeasurementArray\x12\x1b\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x0c.Measurement\"6\n\x12Measurement2DArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.MeasurementArray\"T\n\x13\x44\x65termineOrbitInput\x12\x19\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\t.Settings\x12\"\n\x0cmeasurements\x18\x02 \x03(\x0b\x32\x0c.Measurement\"\xfe\x01\n\x10\x45stimationOutput\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x1b\n\x0f\x65stimated_state\x18\x03 \x03(\x01\x42\x02\x10\x01\x12!\n\x15propagated_covariance\x18\x04 \x03(\x01\x42\x02\x10\x01\x12!\n\x15innovation_covariance\x18\x05 \x03(\x01\x42\x02\x10\x01\x12 \n\x14\x65stimated_covariance\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x13\n\x07pre_fit\x18\x07 \x03(\x01\x42\x02\x10\x01\x12\x14\n\x08post_fit\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x13\x63lutter_probability\x18\t \x01(\x01\"9\n\x15\x45stimationOutputArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.EstimationOutput\"{\n\x13TransformFrameInput\x12\x11\n\tsrc_frame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x19\n\x03pva\x18\x03 \x03(\x0b\x32\x0c.DoubleArray\x12\x12\n\ndest_frame\x18\x04 \x01(\t\x12\x10\n\x08UTC_time\x18\x05 \x03(\t\"8\n\x0eImportTDMInput\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x13\n\x0b\x66ile_format\x18\x02 \x01(\x05\"\x8d\x01\n\x0b\x41nglesInput\x12\r\n\x05\x66rame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x10\n\x08latitude\x18\x03 \x01(\x01\x12\x11\n\tlongitude\x18\x04 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x05 \x01(\x01\x12\x12\n\x06\x61ngle1\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x12\n\x06\x61ngle2\x18\x07 \x03(\x01\x42\x02\x10\x01\"\xa1\x01\n\x19InterpolateEphemerisInput\x12\x14\n\x0csource_frame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x05\x65phem\x18\x03 \x03(\x0b\x32\x0c.DoubleArray\x12\x12\n\nnum_points\x18\x04 \x01(\x05\x12\x12\n\ndest_frame\x18\x05 \x01(\t\x12\x17\n\x0binterp_time\x18\x06 \x03(\x01\x42\x02\x10\x01\x42\x1c\n\x0eorg.astria.rpcB\x08MessagesP\x00\x62\x06proto3'
+  serialized_pb=b'\n\x0emessages.proto\"!\n\x0cIntegerArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x05\x42\x02\x10\x01\" \n\x0b\x44oubleArray\x12\x11\n\x05\x61rray\x18\x01 \x03(\x01\x42\x02\x10\x01\",\n\rDouble2DArray\x12\x1b\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x0c.DoubleArray\"H\n\tParameter\x12\r\n\x05value\x18\x01 \x01(\x01\x12\x0b\n\x03min\x18\x02 \x01(\x01\x12\x0b\n\x03max\x18\x03 \x01(\x01\x12\x12\n\nestimation\x18\x04 \x01(\x05\")\n\x05\x46\x61\x63\x65t\x12\x12\n\x06normal\x18\x01 \x03(\x01\x42\x02\x10\x01\x12\x0c\n\x04\x61rea\x18\x02 \x01(\x01\"\x7f\n\x08Maneuver\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x15\n\rtrigger_event\x18\x02 \x01(\x05\x12\x1a\n\x0etrigger_params\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x15\n\rmaneuver_type\x18\x04 \x01(\x05\x12\x1b\n\x0fmaneuver_params\x18\x05 \x03(\x01\x42\x02\x10\x01\"\xad\x01\n\x07Station\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x01\x12\x10\n\x04\x62ias\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0f\x62ias_estimation\x18\x05 \x01(\x05\x12\x13\n\x0b\x66ov_azimuth\x18\x06 \x01(\x01\x12\x15\n\rfov_elevation\x18\x07 \x01(\x01\x12\x14\n\x0c\x66ov_aperture\x18\x08 \x01(\x01\"8\n\x12MeasurementSetting\x12\x0f\n\x07two_way\x18\x01 \x01(\x08\x12\x11\n\x05\x65rror\x18\x02 \x03(\x01\x42\x02\x10\x01\"\x95\r\n\x08Settings\x12\x10\n\x08rso_mass\x18\x01 \x01(\x01\x12\x10\n\x08rso_area\x18\x02 \x01(\x01\x12\x1a\n\nrso_facets\x18\x03 \x03(\x0b\x32\x06.Facet\x12 \n\x14rso_solar_array_axis\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x1c\n\x14rso_solar_array_area\x18\x05 \x01(\x01\x12\x1d\n\x15rso_attitude_provider\x18\x06 \x01(\x05\x12\x1d\n\x11rso_spin_velocity\x18\x07 \x03(\x01\x42\x02\x10\x01\x12!\n\x15rso_spin_acceleration\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x16\n\x0egravity_degree\x18\t \x01(\x05\x12\x15\n\rgravity_order\x18\n \x01(\x05\x12\x1a\n\x12ocean_tides_degree\x18\x0b \x01(\x05\x12\x19\n\x11ocean_tides_order\x18\x0c \x01(\x05\x12\x16\n\x0ethird_body_sun\x18\r \x01(\x08\x12\x17\n\x0fthird_body_moon\x18\x0e \x01(\x08\x12\x17\n\x0fsolid_tides_sun\x18\x0f \x01(\x08\x12\x18\n\x10solid_tides_moon\x18\x10 \x01(\x08\x12\x12\n\ndrag_model\x18\x11 \x01(\x05\x12$\n\x10\x64rag_coefficient\x18\x12 \x01(\x0b\x32\n.Parameter\x12\'\n\x10\x64rag_MSISE_flags\x18\x13 \x03(\x0b\x32\r.IntegerArray\x12\x15\n\rdrag_exp_rho0\x18\x14 \x01(\x01\x12\x13\n\x0b\x64rag_exp_H0\x18\x15 \x01(\x01\x12\x17\n\x0f\x64rag_exp_Hscale\x18\x16 \x01(\x01\x12\x0e\n\x06rp_sun\x18\x17 \x01(\x08\x12\'\n\x13rp_coeff_reflection\x18\x18 \x01(\x0b\x32\n.Parameter\x12\x1b\n\x13rp_coeff_absorption\x18\x19 \x01(\x01\x12\x1c\n\tmaneuvers\x18\x1a \x03(\x0b\x32\t.Maneuver\x12\x12\n\nprop_start\x18\x1b \x01(\x01\x12\x10\n\x08prop_end\x18\x1c \x01(\x01\x12\x11\n\tprop_step\x18\x1d \x01(\x01\x12\x1e\n\x12prop_initial_state\x18\x1e \x03(\x01\x42\x02\x10\x01\x12\x18\n\x10prop_initial_TLE\x18\x1f \x03(\t\x12\x1b\n\x13prop_inertial_frame\x18  \x01(\t\x12\x1b\n\x13integ_min_time_step\x18! \x01(\x01\x12\x1b\n\x13integ_max_time_step\x18\" \x01(\x01\x12\x1b\n\x13integ_abs_tolerance\x18# \x01(\x01\x12\x1b\n\x13integ_rel_tolerance\x18$ \x01(\x01\x12\x18\n\x10sim_measurements\x18% \x01(\x08\x12)\n\x08stations\x18& \x03(\x0b\x32\x17.Settings.StationsEntry\x12\x31\n\x0cmeasurements\x18\' \x03(\x0b\x32\x1b.Settings.MeasurementsEntry\x12\x1c\n\x10geo_zone_lat_lon\x18( \x03(\x01\x42\x02\x10\x01\x12\x13\n\x0b\x65stm_filter\x18) \x01(\x05\x12\x1b\n\x0f\x65stm_covariance\x18* \x03(\x01\x42\x02\x10\x01\x12\x1e\n\x12\x65stm_process_noise\x18+ \x03(\x01\x42\x02\x10\x01\x12\x1a\n\x12\x65stm_DMC_corr_time\x18, \x01(\x01\x12\x1b\n\x13\x65stm_DMC_sigma_pert\x18- \x01(\x01\x12)\n\x15\x65stm_DMC_acceleration\x18. \x01(\x0b\x32\n.Parameter\x12\x1a\n\x12\x65stm_outlier_sigma\x18/ \x01(\x01\x12\x1b\n\x13\x65stm_outlier_warmup\x18\x30 \x01(\x05\x12 \n\x18\x65stm_smoother_iterations\x18\x31 \x01(\x05\x12\x18\n\x10\x65stm_enable_PDAF\x18\x32 \x01(\x08\x12\"\n\x1a\x65stm_detection_probability\x18\x33 \x01(\x01\x12\x1f\n\x17\x65stm_gating_probability\x18\x34 \x01(\x01\x12\x1d\n\x15\x65stm_gating_threshold\x18\x35 \x01(\x01\x12\x14\n\x0coutput_flags\x18\x36 \x01(\x05\x1a\x39\n\rStationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x17\n\x05value\x18\x02 \x01(\x0b\x32\x08.Station:\x02\x38\x01\x1aH\n\x11MeasurementsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\"\n\x05value\x18\x02 \x01(\x0b\x32\x13.MeasurementSetting:\x02\x38\x01\")\n\rSettingsArray\x12\x18\n\x05\x61rray\x18\x01 \x03(\x0b\x32\t.Settings\"q\n\x0bMeasurement\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x12\n\x06values\x18\x03 \x03(\x01\x42\x02\x10\x01\x12\x17\n\x0b\x61ngle_rates\x18\x04 \x03(\x01\x42\x02\x10\x01\x12\x16\n\ntrue_state\x18\x05 \x03(\x01\x42\x02\x10\x01\"/\n\x10MeasurementArray\x12\x1b\n\x05\x61rray\x18\x01 \x03(\x0b\x32\x0c.Measurement\"6\n\x12Measurement2DArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.MeasurementArray\"T\n\x13\x44\x65termineOrbitInput\x12\x19\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\t.Settings\x12\"\n\x0cmeasurements\x18\x02 \x03(\x0b\x32\x0c.Measurement\"\xfe\x01\n\x10\x45stimationOutput\x12\x0c\n\x04time\x18\x01 \x01(\x01\x12\x0f\n\x07station\x18\x02 \x01(\t\x12\x1b\n\x0f\x65stimated_state\x18\x03 \x03(\x01\x42\x02\x10\x01\x12!\n\x15propagated_covariance\x18\x04 \x03(\x01\x42\x02\x10\x01\x12!\n\x15innovation_covariance\x18\x05 \x03(\x01\x42\x02\x10\x01\x12 \n\x14\x65stimated_covariance\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x13\n\x07pre_fit\x18\x07 \x03(\x01\x42\x02\x10\x01\x12\x14\n\x08post_fit\x18\x08 \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x13\x63lutter_probability\x18\t \x01(\x01\"9\n\x15\x45stimationOutputArray\x12 \n\x05\x61rray\x18\x01 \x03(\x0b\x32\x11.EstimationOutput\"V\n\x10MultiTargetInput\x12\x19\n\x06\x63onfig\x18\x01 \x03(\x0b\x32\t.Settings\x12\'\n\x0cmeasurements\x18\x02 \x03(\x0b\x32\x11.MeasurementArray\"\x84\x01\n\x11MultiTargetOutput\x12*\n\nest_output\x18\x01 \x03(\x0b\x32\x16.EstimationOutputArray\x12%\n\x0e\x61ssociated_obs\x18\x02 \x03(\x0b\x32\r.IntegerArray\x12\x1c\n\x10unassociated_obs\x18\x03 \x03(\x05\x42\x02\x10\x01\"{\n\x13TransformFrameInput\x12\x11\n\tsrc_frame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x19\n\x03pva\x18\x03 \x03(\x0b\x32\x0c.DoubleArray\x12\x12\n\ndest_frame\x18\x04 \x01(\t\x12\x10\n\x08UTC_time\x18\x05 \x03(\t\"8\n\x0eImportTDMInput\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x13\n\x0b\x66ile_format\x18\x02 \x01(\x05\"\x8d\x01\n\x0b\x41nglesInput\x12\r\n\x05\x66rame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x10\n\x08latitude\x18\x03 \x01(\x01\x12\x11\n\tlongitude\x18\x04 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x05 \x01(\x01\x12\x12\n\x06\x61ngle1\x18\x06 \x03(\x01\x42\x02\x10\x01\x12\x12\n\x06\x61ngle2\x18\x07 \x03(\x01\x42\x02\x10\x01\"\xa1\x01\n\x19InterpolateEphemerisInput\x12\x14\n\x0csource_frame\x18\x01 \x01(\t\x12\x10\n\x04time\x18\x02 \x03(\x01\x42\x02\x10\x01\x12\x1b\n\x05\x65phem\x18\x03 \x03(\x0b\x32\x0c.DoubleArray\x12\x12\n\nnum_points\x18\x04 \x01(\x05\x12\x12\n\ndest_frame\x18\x05 \x01(\t\x12\x17\n\x0binterp_time\x18\x06 \x03(\x01\x42\x02\x10\x01\x42\x1c\n\x0eorg.astria.rpcB\x08MessagesP\x00\x62\x06proto3'
 )
 
 
@@ -1187,6 +1187,91 @@ _ESTIMATIONOUTPUTARRAY = _descriptor.Descriptor(
 )
 
 
+_MULTITARGETINPUT = _descriptor.Descriptor(
+  name='MultiTargetInput',
+  full_name='MultiTargetInput',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='config', full_name='MultiTargetInput.config', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='measurements', full_name='MultiTargetInput.measurements', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2966,
+  serialized_end=3052,
+)
+
+
+_MULTITARGETOUTPUT = _descriptor.Descriptor(
+  name='MultiTargetOutput',
+  full_name='MultiTargetOutput',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='est_output', full_name='MultiTargetOutput.est_output', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='associated_obs', full_name='MultiTargetOutput.associated_obs', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='unassociated_obs', full_name='MultiTargetOutput.unassociated_obs', index=2,
+      number=3, type=5, cpp_type=1, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=b'\020\001', file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=3055,
+  serialized_end=3187,
+)
+
+
 _TRANSFORMFRAMEINPUT = _descriptor.Descriptor(
   name='TransformFrameInput',
   full_name='TransformFrameInput',
@@ -1242,8 +1327,8 @@ _TRANSFORMFRAMEINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2966,
-  serialized_end=3089,
+  serialized_start=3189,
+  serialized_end=3312,
 )
 
 
@@ -1281,8 +1366,8 @@ _IMPORTTDMINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3091,
-  serialized_end=3147,
+  serialized_start=3314,
+  serialized_end=3370,
 )
 
 
@@ -1355,8 +1440,8 @@ _ANGLESINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3150,
-  serialized_end=3291,
+  serialized_start=3373,
+  serialized_end=3514,
 )
 
 
@@ -1422,8 +1507,8 @@ _INTERPOLATEEPHEMERISINPUT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3294,
-  serialized_end=3455,
+  serialized_start=3517,
+  serialized_end=3678,
 )
 
 _DOUBLE2DARRAY.fields_by_name['array'].message_type = _DOUBLEARRAY
@@ -1445,6 +1530,10 @@ _MEASUREMENT2DARRAY.fields_by_name['array'].message_type = _MEASUREMENTARRAY
 _DETERMINEORBITINPUT.fields_by_name['config'].message_type = _SETTINGS
 _DETERMINEORBITINPUT.fields_by_name['measurements'].message_type = _MEASUREMENT
 _ESTIMATIONOUTPUTARRAY.fields_by_name['array'].message_type = _ESTIMATIONOUTPUT
+_MULTITARGETINPUT.fields_by_name['config'].message_type = _SETTINGS
+_MULTITARGETINPUT.fields_by_name['measurements'].message_type = _MEASUREMENTARRAY
+_MULTITARGETOUTPUT.fields_by_name['est_output'].message_type = _ESTIMATIONOUTPUTARRAY
+_MULTITARGETOUTPUT.fields_by_name['associated_obs'].message_type = _INTEGERARRAY
 _TRANSFORMFRAMEINPUT.fields_by_name['pva'].message_type = _DOUBLEARRAY
 _INTERPOLATEEPHEMERISINPUT.fields_by_name['ephem'].message_type = _DOUBLEARRAY
 DESCRIPTOR.message_types_by_name['IntegerArray'] = _INTEGERARRAY
@@ -1463,6 +1552,8 @@ DESCRIPTOR.message_types_by_name['Measurement2DArray'] = _MEASUREMENT2DARRAY
 DESCRIPTOR.message_types_by_name['DetermineOrbitInput'] = _DETERMINEORBITINPUT
 DESCRIPTOR.message_types_by_name['EstimationOutput'] = _ESTIMATIONOUTPUT
 DESCRIPTOR.message_types_by_name['EstimationOutputArray'] = _ESTIMATIONOUTPUTARRAY
+DESCRIPTOR.message_types_by_name['MultiTargetInput'] = _MULTITARGETINPUT
+DESCRIPTOR.message_types_by_name['MultiTargetOutput'] = _MULTITARGETOUTPUT
 DESCRIPTOR.message_types_by_name['TransformFrameInput'] = _TRANSFORMFRAMEINPUT
 DESCRIPTOR.message_types_by_name['ImportTDMInput'] = _IMPORTTDMINPUT
 DESCRIPTOR.message_types_by_name['AnglesInput'] = _ANGLESINPUT
@@ -1597,6 +1688,20 @@ EstimationOutputArray = _reflection.GeneratedProtocolMessageType('EstimationOutp
   })
 _sym_db.RegisterMessage(EstimationOutputArray)
 
+MultiTargetInput = _reflection.GeneratedProtocolMessageType('MultiTargetInput', (_message.Message,), {
+  'DESCRIPTOR' : _MULTITARGETINPUT,
+  '__module__' : 'messages_pb2'
+  # @@protoc_insertion_point(class_scope:MultiTargetInput)
+  })
+_sym_db.RegisterMessage(MultiTargetInput)
+
+MultiTargetOutput = _reflection.GeneratedProtocolMessageType('MultiTargetOutput', (_message.Message,), {
+  'DESCRIPTOR' : _MULTITARGETOUTPUT,
+  '__module__' : 'messages_pb2'
+  # @@protoc_insertion_point(class_scope:MultiTargetOutput)
+  })
+_sym_db.RegisterMessage(MultiTargetOutput)
+
 TransformFrameInput = _reflection.GeneratedProtocolMessageType('TransformFrameInput', (_message.Message,), {
   'DESCRIPTOR' : _TRANSFORMFRAMEINPUT,
   '__module__' : 'messages_pb2'
@@ -1652,6 +1757,7 @@ _ESTIMATIONOUTPUT.fields_by_name['innovation_covariance']._options = None
 _ESTIMATIONOUTPUT.fields_by_name['estimated_covariance']._options = None
 _ESTIMATIONOUTPUT.fields_by_name['pre_fit']._options = None
 _ESTIMATIONOUTPUT.fields_by_name['post_fit']._options = None
+_MULTITARGETOUTPUT.fields_by_name['unassociated_obs']._options = None
 _TRANSFORMFRAMEINPUT.fields_by_name['time']._options = None
 _ANGLESINPUT.fields_by_name['time']._options = None
 _ANGLESINPUT.fields_by_name['angle1']._options = None
