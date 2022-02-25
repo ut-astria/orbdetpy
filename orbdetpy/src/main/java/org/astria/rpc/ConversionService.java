@@ -239,7 +239,8 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 		else
 		    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
 		List<Double> pva = req.getPva(i).getArrayList();
-		PVCoordinates pvc = new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)), new Vector3D(pva.get(3), pva.get(4), pva.get(5)));
+		PVCoordinates pvc = new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
+						      new Vector3D(pva.get(3), pva.get(4), pva.get(5)));
 		KeplerianOrbit orb = new KeplerianOrbit(pvc, srcFrame, time, Constants.EGM96_EARTH_MU);
 
 		Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder()
@@ -266,10 +267,13 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
     {
 	try
 	{
-	    int precision = (int)req.getArray(0);
+	    int digits = (int)req.getArray(0);
 	    ArrayList<String> utc = new ArrayList<String>(req.getArrayCount() - 1);
 	    for (int i = 1; i < req.getArrayCount(); i++)
-		utc.add(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).toString(0, TimeScalesFactory.getUTC()).substring(0, 23));
+	    {
+		String str = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).getComponents(TimeScalesFactory.getUTC()).toString(60, digits);
+		utc.add(str.substring(0, str.indexOf("+")));
+	    }
 
 	    StringValue.Builder builder = StringValue.newBuilder().setValue(String.join(" ", utc));
 	    resp.onNext(builder.build());

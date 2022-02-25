@@ -21,7 +21,7 @@ from orbdetpy.estimation import multi_target_OD
 from orbdetpy.propagation import propagate_orbits
 from orbdetpy.plotting.estimation import plot as estimation_plot
 
-t0, t1 = get_J2000_epoch_offset(("2019-07-10T23:30:00Z", "2019-07-11T00:00:00Z"))
+t0, t1 = get_J2000_epoch_offset(("2019-07-10T23:30:00", "2019-07-11T00:00:00"))
 cfg_all = [configure(prop_start=t0, prop_end=t1, prop_step=60.0, sim_measurements=True, drag_model=DragModel.UNDEFINED,
                      ocean_tides_degree=-1, ocean_tides_order=-1, solid_tides_sun=False, solid_tides_moon=False, 
                      estm_DMC_corr_time=0.0, estm_DMC_sigma_pert=0.0, estm_process_noise=[1E-10]*6,
