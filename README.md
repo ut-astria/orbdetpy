@@ -22,6 +22,8 @@ filter to estimate unmodeled accelerations.
 Installation
 ------------
 
+If you have docker installed and wish to use a pre-built environment head to the docker section in this README.
+
 1. Install Java SE 11 (11.0.10) from <https://www.oracle.com/javadownload>.
    Set the `JAVA_HOME` environment variable to the Java installation
    folder. The `java` executable must be added to the system path.
@@ -52,6 +54,21 @@ Development
    `mvn -e package`
 
 3. Run `pip install -e ./` from the top-level folder containing `setup.py`.
+
+Docker
+------
+
+1. Build the docker image on a machine that has docker installed and go to the root folder of this repository where the `Dockerfile` is and run, `docker build --build-arg ORBDETPY_VERSION=2.0.7 -t orbdetpy:2.0.7 .`
+
+2. Run *orbdetpy:2.0.7* image in a daemon state: `docker run -it --rm orbdetpy:2.0.7 bash`
+
+3. Next we will activate the python environment and run a test to determine a successful docker image build
+
+```bash
+cd && . env_orbdetpy/bin/activate && python orbdetpy/examples/test_estimation.py
+```
+
+4. From here, you can either develop in orbdetpy or build scripts and test in this pre-built environment
 
 Examples
 --------
