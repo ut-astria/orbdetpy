@@ -3,6 +3,7 @@
 # source: utilities.proto
 """Generated protocol buffer code."""
 from google.protobuf import descriptor as _descriptor
+from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
@@ -14,66 +15,15 @@ _sym_db = _symbol_database.Default()
 import orbdetpy.rpc.messages_pb2 as messages__pb2
 
 
-DESCRIPTOR = _descriptor.FileDescriptor(
-  name='utilities.proto',
-  package='',
-  syntax='proto3',
-  serialized_options=b'\n\016org.astria.rpcB\020UtilitiesRequestP\000',
-  create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0futilities.proto\x1a\x0emessages.proto2\xbd\x01\n\tUtilities\x12\x33\n\timportTDM\x12\x0f.ImportTDMInput\x1a\x13.Measurement2DArray\"\x00\x12G\n\x14interpolateEphemeris\x12\x1a.InterpolateEphemerisInput\x1a\x11.MeasurementArray\"\x00\x12\x32\n\ngetDensity\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x42$\n\x0eorg.astria.rpcB\x10UtilitiesRequestP\x00\x62\x06proto3'
-  ,
-  dependencies=[messages__pb2.DESCRIPTOR,])
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0futilities.proto\x1a\x0emessages.proto2\xfd\x01\n\tUtilities\x12>\n\timportSP3\x12\x1a.InterpolateEphemerisInput\x1a\x13.Measurement2DArray\"\x00\x12\x33\n\timportTDM\x12\x0f.ImportTDMInput\x1a\x13.Measurement2DArray\"\x00\x12G\n\x14interpolateEphemeris\x12\x1a.InterpolateEphemerisInput\x1a\x11.MeasurementArray\"\x00\x12\x32\n\ngetDensity\x12\x14.TransformFrameInput\x1a\x0c.DoubleArray\"\x00\x42$\n\x0eorg.astria.rpcB\x10UtilitiesRequestP\x00\x62\x06proto3')
 
 
 
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
+_UTILITIES = DESCRIPTOR.services_by_name['Utilities']
+if _descriptor._USE_C_DESCRIPTORS == False:
 
-
-DESCRIPTOR._options = None
-
-_UTILITIES = _descriptor.ServiceDescriptor(
-  name='Utilities',
-  full_name='Utilities',
-  file=DESCRIPTOR,
-  index=0,
-  serialized_options=None,
-  create_key=_descriptor._internal_create_key,
-  serialized_start=36,
-  serialized_end=225,
-  methods=[
-  _descriptor.MethodDescriptor(
-    name='importTDM',
-    full_name='Utilities.importTDM',
-    index=0,
-    containing_service=None,
-    input_type=messages__pb2._IMPORTTDMINPUT,
-    output_type=messages__pb2._MEASUREMENT2DARRAY,
-    serialized_options=None,
-    create_key=_descriptor._internal_create_key,
-  ),
-  _descriptor.MethodDescriptor(
-    name='interpolateEphemeris',
-    full_name='Utilities.interpolateEphemeris',
-    index=1,
-    containing_service=None,
-    input_type=messages__pb2._INTERPOLATEEPHEMERISINPUT,
-    output_type=messages__pb2._MEASUREMENTARRAY,
-    serialized_options=None,
-    create_key=_descriptor._internal_create_key,
-  ),
-  _descriptor.MethodDescriptor(
-    name='getDensity',
-    full_name='Utilities.getDensity',
-    index=2,
-    containing_service=None,
-    input_type=messages__pb2._TRANSFORMFRAMEINPUT,
-    output_type=messages__pb2._DOUBLEARRAY,
-    serialized_options=None,
-    create_key=_descriptor._internal_create_key,
-  ),
-])
-_sym_db.RegisterServiceDescriptor(_UTILITIES)
-
-DESCRIPTOR.services_by_name['Utilities'] = _UTILITIES
-
+  DESCRIPTOR._options = None
+  DESCRIPTOR._serialized_options = b'\n\016org.astria.rpcB\020UtilitiesRequestP\000'
+  _UTILITIES._serialized_start=36
+  _UTILITIES._serialized_end=289
 # @@protoc_insertion_point(module_scope)

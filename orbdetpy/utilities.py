@@ -1,5 +1,5 @@
 # utilities.py - Various utilities.
-# Copyright (C) 2020-2021 University of Texas
+# Copyright (C) 2020-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,23 @@ from numpy import arange
 from orbdetpy.rpc.messages_pb2 import DoubleArray, InterpolateEphemerisInput, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
 from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
+
+def import_SP3(file_name: str, dest_frame: int, times: List[float]):
+    """Import ephemerides from SP3 file.
+
+    Parameters
+    ----------
+    file_name : Fully qualified SP3 file name.
+    dest_frame : Destination reference frame; a constant from Frame.
+    times : List of times to propagate to; each a TT offset from J2000 epoch [s].
+
+    Returns
+    -------
+    Imported ephemerides.
+    """
+
+    resp = _utilities_stub.importSP3(InterpolateEphemerisInput(source_frame=file_name, dest_frame=dest_frame, interp_time=times))
+    return(resp.array)
 
 def interpolate_ephemeris(source_frame: int, times: List[float], states, num_points: int,
                           dest_frame: int, interp_start: float, interp_end: float, step_size: float):

@@ -3,6 +3,7 @@
 # source: estimation.proto
 """Generated protocol buffer code."""
 from google.protobuf import descriptor as _descriptor
+from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
@@ -14,66 +15,15 @@ _sym_db = _symbol_database.Default()
 import orbdetpy.rpc.messages_pb2 as messages__pb2
 
 
-DESCRIPTOR = _descriptor.FileDescriptor(
-  name='estimation.proto',
-  package='',
-  syntax='proto3',
-  serialized_options=b'\n\016org.astria.rpcB\021EstimationRequestP\000',
-  create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x10\x65stimation.proto\x1a\x0emessages.proto2\xb4\x01\n\nEstimation\x12@\n\x0e\x64\x65termineOrbit\x12\x14.DetermineOrbitInput\x1a\x16.EstimationOutputArray\"\x00\x12\x38\n\rmultiTargetOD\x12\x11.MultiTargetInput\x1a\x12.MultiTargetOutput\"\x00\x12*\n\niodLaplace\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x45stimationRequestP\x00\x62\x06proto3'
-  ,
-  dependencies=[messages__pb2.DESCRIPTOR,])
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x65stimation.proto\x1a\x0emessages.proto2\xb4\x01\n\nEstimation\x12@\n\x0e\x64\x65termineOrbit\x12\x14.DetermineOrbitInput\x1a\x16.EstimationOutputArray\"\x00\x12\x38\n\rmultiTargetOD\x12\x11.MultiTargetInput\x1a\x12.MultiTargetOutput\"\x00\x12*\n\niodLaplace\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x45stimationRequestP\x00\x62\x06proto3')
 
 
 
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
+_ESTIMATION = DESCRIPTOR.services_by_name['Estimation']
+if _descriptor._USE_C_DESCRIPTORS == False:
 
-
-DESCRIPTOR._options = None
-
-_ESTIMATION = _descriptor.ServiceDescriptor(
-  name='Estimation',
-  full_name='Estimation',
-  file=DESCRIPTOR,
-  index=0,
-  serialized_options=None,
-  create_key=_descriptor._internal_create_key,
-  serialized_start=37,
-  serialized_end=217,
-  methods=[
-  _descriptor.MethodDescriptor(
-    name='determineOrbit',
-    full_name='Estimation.determineOrbit',
-    index=0,
-    containing_service=None,
-    input_type=messages__pb2._DETERMINEORBITINPUT,
-    output_type=messages__pb2._ESTIMATIONOUTPUTARRAY,
-    serialized_options=None,
-    create_key=_descriptor._internal_create_key,
-  ),
-  _descriptor.MethodDescriptor(
-    name='multiTargetOD',
-    full_name='Estimation.multiTargetOD',
-    index=1,
-    containing_service=None,
-    input_type=messages__pb2._MULTITARGETINPUT,
-    output_type=messages__pb2._MULTITARGETOUTPUT,
-    serialized_options=None,
-    create_key=_descriptor._internal_create_key,
-  ),
-  _descriptor.MethodDescriptor(
-    name='iodLaplace',
-    full_name='Estimation.iodLaplace',
-    index=2,
-    containing_service=None,
-    input_type=messages__pb2._ANGLESINPUT,
-    output_type=messages__pb2._DOUBLEARRAY,
-    serialized_options=None,
-    create_key=_descriptor._internal_create_key,
-  ),
-])
-_sym_db.RegisterServiceDescriptor(_ESTIMATION)
-
-DESCRIPTOR.services_by_name['Estimation'] = _ESTIMATION
-
+  DESCRIPTOR._options = None
+  DESCRIPTOR._serialized_options = b'\n\016org.astria.rpcB\021EstimationRequestP\000'
+  _ESTIMATION._serialized_start=37
+  _ESTIMATION._serialized_end=217
 # @@protoc_insertion_point(module_scope)

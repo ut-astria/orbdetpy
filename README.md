@@ -1,5 +1,5 @@
-orbdetpy is a Python library for orbit determination. It is a thin
-Python wrapper for our Java estimation tools and Orekit <http://www.orekit.org/>.
+**orbdetpy** is a Python orbit determination library. It wraps our Java
+estimation tools and Orekit <http://www.orekit.org>.
 
 Features
 --------
@@ -22,7 +22,8 @@ filter to estimate unmodeled accelerations.
 Installation
 ------------
 
-If you have docker installed and wish to use a pre-built environment head to the docker section in this README.
+If you have docker installed and wish to use a pre-built environment refer to the
+[Docker](#docker) section in this README.
 
 1. Install Java SE 11 (11.0.10) from <https://www.oracle.com/javadownload>.
    Set the `JAVA_HOME` environment variable to the Java installation
@@ -55,10 +56,11 @@ Development
 
 3. Run `pip install -e ./` from the top-level folder containing `setup.py`.
 
-Docker
+# Docker
 ------
 
-1. Build the docker image on a machine that has docker installed and go to the root folder of this repository where the `Dockerfile` is and run, `docker build --build-arg ORBDETPY_VERSION=2.0.7 -t orbdetpy:2.0.7 .`
+1. Build the docker image on a machine that has docker installed and go to the root folder of this repository
+   where the `Dockerfile` is and run, `docker build --build-arg ORBDETPY_VERSION=2.0.7 -t orbdetpy:2.0.7 .`
 
 2. Run *orbdetpy:2.0.7* image in a daemon state: `docker run -it --rm orbdetpy:2.0.7 bash`
 

@@ -1,6 +1,6 @@
 /*
  * UtilitiesService.java - Utilities service handler.
- * Copyright (C) 2019-2021 University of Texas
+ * Copyright (C) 2019-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ package org.astria.rpc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
@@ -32,13 +33,17 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.files.sp3.SP3;
+import org.orekit.files.sp3.SP3Parser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.time.AbsoluteDate;
@@ -49,6 +54,37 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
 {
+    @Override public void importSP3(Messages.InterpolateEphemerisInput req, StreamObserver<Messages.Measurement2DArray> resp)
+    {
+	try
+	{
+	    SP3 parser = new SP3Parser().parse(new DataSource(req.getSourceFrame()));
+	    Frame toFrame = FramesFactory.getFrame(Predefined.valueOf(req.getDestFrame()));
+	    Messages.Measurement2DArray.Builder outer = Messages.Measurement2DArray.newBuilder();
+	    for (Map.Entry<String, SP3.SP3Ephemeris> keyVal: parser.getSatellites().entrySet())
+	    {
+		BoundedPropagator prop = keyVal.getValue().getPropagator();
+		ArrayList<Measurements.Measurement> mlist = new ArrayList<Measurements.Measurement>(req.getInterpTimeCount());
+		for (int i = 0; i < req.getInterpTimeCount(); i++)
+		{
+		    Measurements.Measurement meas = new Measurements.Measurement(
+			prop.getPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpTime(i)), toFrame), null);
+		    meas.station = keyVal.getKey();
+		    mlist.add(meas);
+		}
+		Messages.MeasurementArray.Builder inner = Messages.MeasurementArray.newBuilder()
+		    .addAllArray(Tools.buildResponseFromMeasurements(mlist));
+		outer = outer.addArray(inner);
+	    }
+	    resp.onNext(outer.build());
+	    resp.onCompleted();
+	}
+	catch (Throwable exc)
+	{
+	    resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+	}
+    }
+
     @Override public void importTDM(Messages.ImportTDMInput req, StreamObserver<Messages.Measurement2DArray> resp)
     {
 	try

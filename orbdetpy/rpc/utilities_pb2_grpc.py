@@ -14,6 +14,11 @@ class UtilitiesStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.importSP3 = channel.unary_unary(
+                '/Utilities/importSP3',
+                request_serializer=messages__pb2.InterpolateEphemerisInput.SerializeToString,
+                response_deserializer=messages__pb2.Measurement2DArray.FromString,
+                )
         self.importTDM = channel.unary_unary(
                 '/Utilities/importTDM',
                 request_serializer=messages__pb2.ImportTDMInput.SerializeToString,
@@ -33,6 +38,12 @@ class UtilitiesStub(object):
 
 class UtilitiesServicer(object):
     """Missing associated documentation comment in .proto file."""
+
+    def importSP3(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def importTDM(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -55,6 +66,11 @@ class UtilitiesServicer(object):
 
 def add_UtilitiesServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'importSP3': grpc.unary_unary_rpc_method_handler(
+                    servicer.importSP3,
+                    request_deserializer=messages__pb2.InterpolateEphemerisInput.FromString,
+                    response_serializer=messages__pb2.Measurement2DArray.SerializeToString,
+            ),
             'importTDM': grpc.unary_unary_rpc_method_handler(
                     servicer.importTDM,
                     request_deserializer=messages__pb2.ImportTDMInput.FromString,
@@ -79,6 +95,23 @@ def add_UtilitiesServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class Utilities(object):
     """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def importSP3(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Utilities/importSP3',
+            messages__pb2.InterpolateEphemerisInput.SerializeToString,
+            messages__pb2.Measurement2DArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def importTDM(request,
