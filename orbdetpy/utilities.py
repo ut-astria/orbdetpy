@@ -31,7 +31,7 @@ def import_SP3(file_name: str, dest_frame: int, times: List[float]):
 
     Returns
     -------
-    Imported ephemerides.
+    Ephemerides in a Measurement2DArray object.
     """
 
     resp = _utilities_stub.importSP3(InterpolateEphemerisInput(source_frame=file_name, dest_frame=dest_frame, interp_time=times))
@@ -92,6 +92,5 @@ def get_density(drag_model: int, time: float, lla: List[float])->List[float]:
             UTC_time=time, pva=[DoubleArray(array=x) for x in lla], dest_frame=str(drag_model)))
     return(resp.array)
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("DoubleArray", "InterpolateEphemerisInput")}
+if (__name__ != "__main__"):
     _utilities_stub = UtilitiesStub(RemoteServer.channel())

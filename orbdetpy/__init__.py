@@ -339,9 +339,7 @@ def build_measurement(time: float, station_name: str, values: List[float], angle
 
     return(Measurement(time=time, station=station_name, values=values, angle_rates=angle_rates))
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("Facet", "Maneuver", "Measurement", "Parameter", "Settings",
-                                   "Station", "TDMFileFormat", "rpc", "version")}
+if (__name__ != "__main__"):
     _root_dir = path.dirname(path.abspath(path.realpath(__file__)))
     _libs_dir = path.join(_root_dir, "target")
     _jar_file = path.join(_libs_dir, "orbdetpy-server-{}.jar".format(__version__))

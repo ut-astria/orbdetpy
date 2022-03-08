@@ -1,5 +1,5 @@
 # astro_data.py - Update Orekit astrodynamics data files.
-# Copyright (C) 2019-2021 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -74,5 +74,5 @@ def update_data()->None:
         except Exception as exc:
             print(exc)
 
-if (__name__ == '__main__'):
+if (__name__ == "__main__"):
     update_data()

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>orbdetpy.conversion API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -75,13 +75,13 @@ anom_type : Anomaly angle type; a constant from PositionAngle. Give a list for b
 <p>Offset in TT from J2000 epoch [s] or list of offsets.</p></div>
 </dd>
 <dt id="orbdetpy.conversion.get_UTC_string"><code class="name flex">
-<span>def <span class="ident">get_UTC_string</span></span>(<span>j2000_offset: float, truncate: bool = True) ‑> str</span>
+<span>def <span class="ident">get_UTC_string</span></span>(<span>j2000_offset: float, precision: int = 3) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Get ISO-8601 formatted UTC string corresponding to TT offset.</p>
 <h2 id="parameters">Parameters</h2>
 <p>j2000_offset : Offset in TT from J2000 epoch [s] or list of offsets.
-truncate : Truncate to milliseconds level accuracy if True (default).</p>
+precision : Desired precision. Defaults to 3, i.e. milliseconds.</p>
 <h2 id="returns">Returns</h2>
 <p>ISO-8601 formatted UTC string or list of strings.</p></div>
 </dd>
@@ -106,15 +106,36 @@ to_epoch : To epoch; a value from the Epoch enumeration.</p>
 <h2 id="returns">Returns</h2>
 <p>Inertial-&gt;LVLH frame rotation matrix.</p></div>
 </dd>
+<dt id="orbdetpy.conversion.lla_to_pos"><code class="name flex">
+<span>def <span class="ident">lla_to_pos</span></span>(<span>time: float, lla: List[float]) ‑> List[float]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert WGS-84 lat/lon/alt to Cartesian position.</p>
+<h2 id="parameters">Parameters</h2>
+<p>time : Offset in TT from J2000 epoch [s]. Give a list for bulk conversions.
+lla : WGS-84 latitude, longitude, altitude. Provide a list of lists for bulk conversions.</p>
+<h2 id="returns">Returns</h2>
+<p>ITRF geocentric Cartesian position [m].</p></div>
+</dd>
+<dt id="orbdetpy.conversion.ltr_to_matrix"><code class="name flex">
+<span>def <span class="ident">ltr_to_matrix</span></span>(<span>lower_triangle: List[float]) ‑> List[List[float]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Construct a symmetric matrix from its lower triangle.</p>
+<h2 id="parameters">Parameters</h2>
+<p>lower_triangle : Lower triangle of a symmetric matrix in row-major order.</p>
+<h2 id="returns">Returns</h2>
+<p>Symmetric matrix as a list of lists or None on error.</p></div>
+</dd>
 <dt id="orbdetpy.conversion.pos_to_lla"><code class="name flex">
 <span>def <span class="ident">pos_to_lla</span></span>(<span>frame: int, time: float, pos: List[float]) ‑> List[float]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Convert an inertial position to WGS-84 lat/lon/alt.</p>
+<div class="desc"><p>Convert a Cartesian position to WGS-84 lat/lon/alt.</p>
 <h2 id="parameters">Parameters</h2>
-<p>frame : Inertial reference frame; a constant from Frame.
+<p>frame : Position reference frame; a constant from Frame.
 time : Offset in TT from J2000 epoch [s]. Give a list for bulk conversions.
-pos : Inertial position vector. Provide a list of lists for bulk conversions.</p>
+pos : Position vector [m]. Provide a list of lists for bulk conversions.</p>
 <h2 id="returns">Returns</h2>
 <p>WGS-84 latitude [rad], longitude [rad], altitude [m].</p></div>
 </dd>
@@ -168,6 +189,153 @@ alt : Observer height above WGS-84 reference ellipsoid [m].</p>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="orbdetpy.conversion.AnglesInput"><code class="flex name class">
+<span>class <span class="ident">AnglesInput</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.conversion.AnglesInput.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.conversion.AnglesInput.altitude"><code class="name">var <span class="ident">altitude</span></code></dt>
+<dd>
+<div class="desc"><p>Field AnglesInput.altitude</p></div>
+</dd>
+<dt id="orbdetpy.conversion.AnglesInput.angle1"><code class="name">var <span class="ident">angle1</span></code></dt>
+<dd>
+<div class="desc"><p>Field AnglesInput.angle1</p></div>
+</dd>
+<dt id="orbdetpy.conversion.AnglesInput.angle2"><code class="name">var <span class="ident">angle2</span></code></dt>
+<dd>
+<div class="desc"><p>Field AnglesInput.angle2</p></div>
+</dd>
+<dt id="orbdetpy.conversion.AnglesInput.frame"><code class="name">var <span class="ident">frame</span></code></dt>
+<dd>
+<div class="desc"><p>Field AnglesInput.frame</p></div>
+</dd>
+<dt id="orbdetpy.conversion.AnglesInput.latitude"><code class="name">var <span class="ident">latitude</span></code></dt>
+<dd>
+<div class="desc"><p>Field AnglesInput.latitude</p></div>
+</dd>
+<dt id="orbdetpy.conversion.AnglesInput.longitude"><code class="name">var <span class="ident">longitude</span></code></dt>
+<dd>
+<div class="desc"><p>Field AnglesInput.longitude</p></div>
+</dd>
+<dt id="orbdetpy.conversion.AnglesInput.time"><code class="name">var <span class="ident">time</span></code></dt>
+<dd>
+<div class="desc"><p>Field AnglesInput.time</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.conversion.DoubleArray"><code class="flex name class">
+<span>class <span class="ident">DoubleArray</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.conversion.DoubleArray.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.conversion.DoubleArray.array"><code class="name">var <span class="ident">array</span></code></dt>
+<dd>
+<div class="desc"><p>Field DoubleArray.array</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.conversion.IntegerArray"><code class="flex name class">
+<span>class <span class="ident">IntegerArray</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.conversion.IntegerArray.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.conversion.IntegerArray.array"><code class="name">var <span class="ident">array</span></code></dt>
+<dd>
+<div class="desc"><p>Field IntegerArray.array</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.conversion.TransformFrameInput"><code class="flex name class">
+<span>class <span class="ident">TransformFrameInput</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.conversion.TransformFrameInput.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.conversion.TransformFrameInput.UTC_time"><code class="name">var <span class="ident">UTC_time</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.UTC_time</p></div>
+</dd>
+<dt id="orbdetpy.conversion.TransformFrameInput.dest_frame"><code class="name">var <span class="ident">dest_frame</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.dest_frame</p></div>
+</dd>
+<dt id="orbdetpy.conversion.TransformFrameInput.pva"><code class="name">var <span class="ident">pva</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.pva</p></div>
+</dd>
+<dt id="orbdetpy.conversion.TransformFrameInput.src_frame"><code class="name">var <span class="ident">src_frame</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.src_frame</p></div>
+</dd>
+<dt id="orbdetpy.conversion.TransformFrameInput.time"><code class="name">var <span class="ident">time</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.time</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -189,17 +357,35 @@ alt : Observer height above WGS-84 reference ellipsoid [m].</p>
 <li><code><a title="orbdetpy.conversion.get_UTC_string" href="#orbdetpy.conversion.get_UTC_string">get_UTC_string</a></code></li>
 <li><code><a title="orbdetpy.conversion.get_epoch_difference" href="#orbdetpy.conversion.get_epoch_difference">get_epoch_difference</a></code></li>
 <li><code><a title="orbdetpy.conversion.get_lvlh_rotation" href="#orbdetpy.conversion.get_lvlh_rotation">get_lvlh_rotation</a></code></li>
+<li><code><a title="orbdetpy.conversion.lla_to_pos" href="#orbdetpy.conversion.lla_to_pos">lla_to_pos</a></code></li>
+<li><code><a title="orbdetpy.conversion.ltr_to_matrix" href="#orbdetpy.conversion.ltr_to_matrix">ltr_to_matrix</a></code></li>
 <li><code><a title="orbdetpy.conversion.pos_to_lla" href="#orbdetpy.conversion.pos_to_lla">pos_to_lla</a></code></li>
 <li><code><a title="orbdetpy.conversion.pv_to_elem" href="#orbdetpy.conversion.pv_to_elem">pv_to_elem</a></code></li>
 <li><code><a title="orbdetpy.conversion.radec_to_azel" href="#orbdetpy.conversion.radec_to_azel">radec_to_azel</a></code></li>
 <li><code><a title="orbdetpy.conversion.transform_frame" href="#orbdetpy.conversion.transform_frame">transform_frame</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="orbdetpy.conversion.AnglesInput" href="#orbdetpy.conversion.AnglesInput">AnglesInput</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.conversion.DoubleArray" href="#orbdetpy.conversion.DoubleArray">DoubleArray</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.conversion.IntegerArray" href="#orbdetpy.conversion.IntegerArray">IntegerArray</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.conversion.TransformFrameInput" href="#orbdetpy.conversion.TransformFrameInput">TransformFrameInput</a></code></h4>
+</li>
+</ul>
+</li>
 </ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>

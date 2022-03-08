@@ -154,12 +154,10 @@ def import_TDM(file_name: str, file_format: int):
 
     Returns
     -------
-    Measurements object.
+    Tracking data in a Measurement2DArray object.
     """
 
-    resp = _ccsds_stub.importTDM(ImportTDMInput(file_name=file_name, file_format=file_format))
-    return(resp.array)
+    return(_ccsds_stub.importTDM(ImportTDMInput(file_name=file_name, file_format=file_format)).array)
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("ImportTDMInput", "Settings")}
+if (__name__ != "__main__"):
     _ccsds_stub = UtilitiesStub(RemoteServer.channel())

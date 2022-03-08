@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>orbdetpy.plotting API documentation</title>
-<meta name="description" content="" />
+<title>orbdetpy.rpc.estimation_pb2_grpc API documentation</title>
+<meta name="description" content="Client and server classes corresponding to protobuf-defined services." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -19,28 +19,97 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>orbdetpy.plotting</code></h1>
+<h1 class="title">Module <code>orbdetpy.rpc.estimation_pb2_grpc</code></h1>
 </header>
 <section id="section-intro">
+<p>Client and server classes corresponding to protobuf-defined services.</p>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt><code class="name"><a title="orbdetpy.plotting.estimation" href="estimation.html">orbdetpy.plotting.estimation</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="orbdetpy.plotting.simulation" href="simulation.html">orbdetpy.plotting.simulation</a></code></dt>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.add_EstimationServicer_to_server"><code class="name flex">
+<span>def <span class="ident">add_EstimationServicer_to_server</span></span>(<span>servicer, server)</span>
+</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 </dl>
 </section>
 <section>
-</section>
-<section>
-</section>
-<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.Estimation"><code class="flex name class">
+<span>class <span class="ident">Estimation</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Missing associated documentation comment in .proto file.</p></div>
+<h3>Static methods</h3>
+<dl>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.Estimation.determineOrbit"><code class="name flex">
+<span>def <span class="ident">determineOrbit</span></span>(<span>request, target, options=(), channel_credentials=None, call_credentials=None, insecure=False, compression=None, wait_for_ready=None, timeout=None, metadata=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.Estimation.iodLaplace"><code class="name flex">
+<span>def <span class="ident">iodLaplace</span></span>(<span>request, target, options=(), channel_credentials=None, call_credentials=None, insecure=False, compression=None, wait_for_ready=None, timeout=None, metadata=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.Estimation.multiTargetOD"><code class="name flex">
+<span>def <span class="ident">multiTargetOD</span></span>(<span>request, target, options=(), channel_credentials=None, call_credentials=None, insecure=False, compression=None, wait_for_ready=None, timeout=None, metadata=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer"><code class="flex name class">
+<span>class <span class="ident">EstimationServicer</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Missing associated documentation comment in .proto file.</p></div>
+<h3>Methods</h3>
+<dl>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer.determineOrbit"><code class="name flex">
+<span>def <span class="ident">determineOrbit</span></span>(<span>self, request, context)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Missing associated documentation comment in .proto file.</p></div>
+</dd>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer.iodLaplace"><code class="name flex">
+<span>def <span class="ident">iodLaplace</span></span>(<span>self, request, context)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Missing associated documentation comment in .proto file.</p></div>
+</dd>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer.multiTargetOD"><code class="name flex">
+<span>def <span class="ident">multiTargetOD</span></span>(<span>self, request, context)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Missing associated documentation comment in .proto file.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.rpc.estimation_pb2_grpc.EstimationStub"><code class="flex name class">
+<span>class <span class="ident">EstimationStub</span></span>
+<span>(</span><span>channel)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Missing associated documentation comment in .proto file.</p>
+<p>Constructor.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>channel</code></strong></dt>
+<dd>A grpc.Channel.</dd>
+</dl></div>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -51,13 +120,35 @@
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="orbdetpy" href="../index.html">orbdetpy</a></code></li>
+<li><code><a title="orbdetpy.rpc" href="index.html">orbdetpy.rpc</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="orbdetpy.rpc.estimation_pb2_grpc.add_EstimationServicer_to_server" href="#orbdetpy.rpc.estimation_pb2_grpc.add_EstimationServicer_to_server">add_EstimationServicer_to_server</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li><code><a title="orbdetpy.plotting.estimation" href="estimation.html">orbdetpy.plotting.estimation</a></code></li>
-<li><code><a title="orbdetpy.plotting.simulation" href="simulation.html">orbdetpy.plotting.simulation</a></code></li>
+<li>
+<h4><code><a title="orbdetpy.rpc.estimation_pb2_grpc.Estimation" href="#orbdetpy.rpc.estimation_pb2_grpc.Estimation">Estimation</a></code></h4>
+<ul class="">
+<li><code><a title="orbdetpy.rpc.estimation_pb2_grpc.Estimation.determineOrbit" href="#orbdetpy.rpc.estimation_pb2_grpc.Estimation.determineOrbit">determineOrbit</a></code></li>
+<li><code><a title="orbdetpy.rpc.estimation_pb2_grpc.Estimation.iodLaplace" href="#orbdetpy.rpc.estimation_pb2_grpc.Estimation.iodLaplace">iodLaplace</a></code></li>
+<li><code><a title="orbdetpy.rpc.estimation_pb2_grpc.Estimation.multiTargetOD" href="#orbdetpy.rpc.estimation_pb2_grpc.Estimation.multiTargetOD">multiTargetOD</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer" href="#orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer">EstimationServicer</a></code></h4>
+<ul class="">
+<li><code><a title="orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer.determineOrbit" href="#orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer.determineOrbit">determineOrbit</a></code></li>
+<li><code><a title="orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer.iodLaplace" href="#orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer.iodLaplace">iodLaplace</a></code></li>
+<li><code><a title="orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer.multiTargetOD" href="#orbdetpy.rpc.estimation_pb2_grpc.EstimationServicer.multiTargetOD">multiTargetOD</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="orbdetpy.rpc.estimation_pb2_grpc.EstimationStub" href="#orbdetpy.rpc.estimation_pb2_grpc.EstimationStub">EstimationStub</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

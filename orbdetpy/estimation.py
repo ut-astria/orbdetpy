@@ -87,6 +87,5 @@ def iod_laplace(frame: int, lat: float, lon: float, alt: float, time: Tuple[floa
                                                    longitude=lon, altitude=alt, frame=frame))
     return(resp.array)
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("AnglesInput", "DetermineOrbitInput", "Settings")}
+if (__name__ != "__main__"):
     _estimation_stub = EstimationStub(RemoteServer.channel())

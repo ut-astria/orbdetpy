@@ -293,6 +293,5 @@ def ltr_to_matrix(lower_triangle: List[float])->List[List[float]]:
         return(matrix)
     return(None)
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("AnglesInput", "DoubleArray", "IntegerArray", "TransformFrameInput")}
+if (__name__ != "__main__"):
     _conversion_stub = ConversionStub(RemoteServer.channel())

@@ -1,5 +1,5 @@
 # estimation.py - Plot orbit determination results.
-# Copyright (C) 2018-2021 University of Texas
+# Copyright (C) 2018-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -223,6 +223,3 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
         plt.show()
     plt.close("all")
     return(outfiles)
-
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("Settings", )}

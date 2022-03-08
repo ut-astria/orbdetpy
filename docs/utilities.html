@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>orbdetpy.utilities API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -30,26 +30,167 @@
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="orbdetpy.utilities.get_density"><code class="name flex">
+<span>def <span class="ident">get_density</span></span>(<span>drag_model: int, time: float, lla: List[float]) ‑> List[float]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate atmospheric neutral density.</p>
+<h2 id="parameters">Parameters</h2>
+<p>drag_model : Atmospheric drag model; a constant from DragModel.
+time : Offset in TT from J2000 epoch [s]. Give a list for bulk calculations.
+lla : WGS-84 latitude, longitude, altitude. Give a list of lists for bulk calculations.</p>
+<h2 id="returns">Returns</h2>
+<p>Atmospheric neutral density [kg/m^3] at the specified coordinates.</p></div>
+</dd>
+<dt id="orbdetpy.utilities.import_SP3"><code class="name flex">
+<span>def <span class="ident">import_SP3</span></span>(<span>file_name: str, dest_frame: int, times: List[float])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Import ephemerides from SP3 file.</p>
+<h2 id="parameters">Parameters</h2>
+<p>file_name : Fully qualified SP3 file name.
+dest_frame : Destination reference frame; a constant from Frame.
+times : List of times to propagate to; each a TT offset from J2000 epoch [s].</p>
+<h2 id="returns">Returns</h2>
+<p>Ephemerides in a Measurement2DArray object.</p></div>
+</dd>
 <dt id="orbdetpy.utilities.interpolate_ephemeris"><code class="name flex">
 <span>def <span class="ident">interpolate_ephemeris</span></span>(<span>source_frame: int, times: List[float], states, num_points: int, dest_frame: int, interp_start: float, interp_end: float, step_size: float)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Interpolates the given state vectors.</p>
+<div class="desc"><p>Interpolate the given state vectors.</p>
 <h2 id="parameters">Parameters</h2>
 <p>source_frame : Source reference frame; a constant from Frame.
 times : Times of state vectors; each a TT offset from J2000 epoch [s].
 states : State vectors to interpolate.
-num_points : Number of states to use for interpolation.
+num_points : Number of points to use for interpolation = order + 1.
 dest_frame : Destination reference frame; a constant from Frame.
-interp_start : Interpolation start time.
-interp_end : Interpolation end time.
-step_size : Interpolation step size [s].</p>
+interp_start : Interpolation start time or list of arbitrary time instants.
+interp_end : Interpolation end time; ignored if interp_start is a list.
+step_size : Interpolation step size [s]; ignored if interp_start is a list.</p>
 <h2 id="returns">Returns</h2>
 <p>Interpolated times and state vectors.</p></div>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="orbdetpy.utilities.DoubleArray"><code class="flex name class">
+<span>class <span class="ident">DoubleArray</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.utilities.DoubleArray.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.utilities.DoubleArray.array"><code class="name">var <span class="ident">array</span></code></dt>
+<dd>
+<div class="desc"><p>Field DoubleArray.array</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.utilities.InterpolateEphemerisInput"><code class="flex name class">
+<span>class <span class="ident">InterpolateEphemerisInput</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.utilities.InterpolateEphemerisInput.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.utilities.InterpolateEphemerisInput.dest_frame"><code class="name">var <span class="ident">dest_frame</span></code></dt>
+<dd>
+<div class="desc"><p>Field InterpolateEphemerisInput.dest_frame</p></div>
+</dd>
+<dt id="orbdetpy.utilities.InterpolateEphemerisInput.ephem"><code class="name">var <span class="ident">ephem</span></code></dt>
+<dd>
+<div class="desc"><p>Field InterpolateEphemerisInput.ephem</p></div>
+</dd>
+<dt id="orbdetpy.utilities.InterpolateEphemerisInput.interp_time"><code class="name">var <span class="ident">interp_time</span></code></dt>
+<dd>
+<div class="desc"><p>Field InterpolateEphemerisInput.interp_time</p></div>
+</dd>
+<dt id="orbdetpy.utilities.InterpolateEphemerisInput.num_points"><code class="name">var <span class="ident">num_points</span></code></dt>
+<dd>
+<div class="desc"><p>Field InterpolateEphemerisInput.num_points</p></div>
+</dd>
+<dt id="orbdetpy.utilities.InterpolateEphemerisInput.source_frame"><code class="name">var <span class="ident">source_frame</span></code></dt>
+<dd>
+<div class="desc"><p>Field InterpolateEphemerisInput.source_frame</p></div>
+</dd>
+<dt id="orbdetpy.utilities.InterpolateEphemerisInput.time"><code class="name">var <span class="ident">time</span></code></dt>
+<dd>
+<div class="desc"><p>Field InterpolateEphemerisInput.time</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.utilities.TransformFrameInput"><code class="flex name class">
+<span>class <span class="ident">TransformFrameInput</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.utilities.TransformFrameInput.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.utilities.TransformFrameInput.UTC_time"><code class="name">var <span class="ident">UTC_time</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.UTC_time</p></div>
+</dd>
+<dt id="orbdetpy.utilities.TransformFrameInput.dest_frame"><code class="name">var <span class="ident">dest_frame</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.dest_frame</p></div>
+</dd>
+<dt id="orbdetpy.utilities.TransformFrameInput.pva"><code class="name">var <span class="ident">pva</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.pva</p></div>
+</dd>
+<dt id="orbdetpy.utilities.TransformFrameInput.src_frame"><code class="name">var <span class="ident">src_frame</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.src_frame</p></div>
+</dd>
+<dt id="orbdetpy.utilities.TransformFrameInput.time"><code class="name">var <span class="ident">time</span></code></dt>
+<dd>
+<div class="desc"><p>Field TransformFrameInput.time</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -65,14 +206,29 @@ step_size : Interpolation step size [s].</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="orbdetpy.utilities.get_density" href="#orbdetpy.utilities.get_density">get_density</a></code></li>
+<li><code><a title="orbdetpy.utilities.import_SP3" href="#orbdetpy.utilities.import_SP3">import_SP3</a></code></li>
 <li><code><a title="orbdetpy.utilities.interpolate_ephemeris" href="#orbdetpy.utilities.interpolate_ephemeris">interpolate_ephemeris</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="orbdetpy.utilities.DoubleArray" href="#orbdetpy.utilities.DoubleArray">DoubleArray</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.utilities.InterpolateEphemerisInput" href="#orbdetpy.utilities.InterpolateEphemerisInput">InterpolateEphemerisInput</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.utilities.TransformFrameInput" href="#orbdetpy.utilities.TransformFrameInput">TransformFrameInput</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>
