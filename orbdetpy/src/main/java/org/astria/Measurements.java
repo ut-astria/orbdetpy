@@ -40,7 +40,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public final class Measurements
 {
-    public static class Measurement implements Comparable<Measurement>
+    public static class Measurement
     {
 	public AbsoluteDate time;
 	public String station;
@@ -94,9 +94,10 @@ public final class Measurements
 	    }
 	}
 
-	@Override public int compareTo(Measurement m)
+	@Override public boolean equals(Object o)
 	{
-	    return(time.compareTo(m.time));
+	    Measurement m = (Measurement)o;
+	    return(time.equals(m.time) && station.equals(m.station));
 	}
     }
 

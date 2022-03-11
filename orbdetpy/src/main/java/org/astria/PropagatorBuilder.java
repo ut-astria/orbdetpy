@@ -56,7 +56,8 @@ public final class PropagatorBuilder extends NumericalPropagatorBuilder
 	AttitudeProvider attProv = odCfg.getAttitudeProvider();
 	if (attProv != null)
 	    setAttitudeProvider(attProv);
-	addAdditionalEquations(new DMCDerivatives());
+	if (odCfg.estmDMCCorrTime > 0.0 && odCfg.estmDMCSigmaPert > 0.0)
+	    addAdditionalEquations(new DMCDerivatives());
     }
 
     @Override public NumericalPropagator buildPropagator(double[] par)
