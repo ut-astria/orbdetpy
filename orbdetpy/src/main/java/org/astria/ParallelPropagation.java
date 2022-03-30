@@ -1,6 +1,6 @@
 /*
  * ParallelPropagation.java - Multiple object propagation functions.
- * Copyright (C) 2018-2021 University of Texas
+ * Copyright (C) 2018-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -256,7 +256,7 @@ public final class ParallelPropagation
 		    if (name == Settings.MeasurementType.RANGE)
 		    {
 			Range obs = new Range(gst, val.twoWay, pvc.getDate(), 0.0, 0.0, 1.0, obsSat);
-			obs.addModifier(new Bias<Range>(biasRange, new double[]{rand.nextGaussian()*val.error[0]+bias[0]},
+			obs.addModifier(new Bias<Range>(biasRange, new double[]{rand.nextGaussian()*val.error[0] + bias[0]},
 							oneOnes, oneNegInf, onePosInf));
 			if (clone.values == null)
 			    clone.values = new double[simCfg.cfgMeasurements.size()];
@@ -265,28 +265,36 @@ public final class ParallelPropagation
 		    else if (name == Settings.MeasurementType.RANGE_RATE)
 		    {
 			RangeRate obs = new RangeRate(gst, pvc.getDate(), 0.0, 0.0, 1.0, val.twoWay, obsSat);
-			obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{rand.nextGaussian()*val.error[0]+bias[bias.length-1]},
+			obs.addModifier(new Bias<RangeRate>(biasRangeRate, new double[]{rand.nextGaussian()*val.error[0] + bias[bias.length - 1]},
 							    oneOnes, oneNegInf, onePosInf));
 			if (clone.values == null)
 			    clone.values = new double[simCfg.cfgMeasurements.size()];
-			clone.values[clone.values.length-1] = obs.estimate(0, 0, ssStates).getEstimatedValue()[0];
+			clone.values[clone.values.length - 1] = obs.estimate(0, 0, ssStates).getEstimatedValue()[0];
 		    }
 		    else if (name == Settings.MeasurementType.RIGHT_ASCENSION || name == Settings.MeasurementType.DECLINATION)
 		    {
 			AngularRaDec obs = new AngularRaDec(gst, simCfg.propInertialFrame, pvc.getDate(), twoZeros, twoZeros, twoOnes, obsSat);
-			obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[]{rand.nextGaussian()*val.error[0]+bias[0],
-										       rand.nextGaussian()*val.error[0]+bias[1]},
-				twoOnes, twoNegInf, twoPosInf));
+			obs.addModifier(new Bias<AngularRaDec>(biasRaDec, new double[]{rand.nextGaussian()*val.error[0] + bias[0],
+				    rand.nextGaussian()*val.error[0] + bias[1]}, twoOnes, twoNegInf, twoPosInf));
 			clone.values = obs.estimate(0, 0, ssStates).getEstimatedValue();
+			TimeStampedPVCoordinates gsPvc = gst.getBaseFrame().getPVCoordinates(pvc.getDate(), simCfg.propInertialFrame);
+			Vector3D gsPos = gsPvc.getPosition(), gsVel = gsPvc.getVelocity();
+			TimeStampedPVCoordinates ltSat = pvc.shiftedBy(-obs.signalTimeOfFlight(pvc, gsPos, pvc.getDate()));
+			Vector3D ltPos = ltSat.getPosition(), ltVel = ltSat.getVelocity();
+			double[] dpv = {ltPos.getX() - gsPos.getX(), ltPos.getY() - gsPos.getY(), ltPos.getZ() - gsPos.getZ(),
+			    ltVel.getX() - gsVel.getX(), ltVel.getY() - gsVel.getY(), ltVel.getZ() - gsVel.getZ()};
+			double range = Math.sqrt(dpv[0]*dpv[0] + dpv[1]*dpv[1] + dpv[2]*dpv[2]);
+			double rrate = (dpv[0]*dpv[3] + dpv[1]*dpv[4] + dpv[2]*dpv[5])/range;
+			clone.angleRates = new double[]{(dpv[4]*dpv[0] - dpv[3]*dpv[1])/(dpv[0]*dpv[0] + dpv[1]*dpv[1]),
+			    (dpv[5] - rrate*dpv[2]/range)/Math.sqrt(dpv[0]*dpv[0] + dpv[1]*dpv[1])};
 			break;
 		    }
 		    else if (name == Settings.MeasurementType.AZIMUTH || name == Settings.MeasurementType.ELEVATION)
 		    {
 			AngularAzEl obs = new AngularAzEl(gst, pvc.getDate(), twoZeros, twoZeros, twoOnes, obsSat);
 			obs.addModifier(new AngularRadioRefractionModifier(new EarthITU453AtmosphereRefraction(jsn.altitude)));
-			obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{rand.nextGaussian()*val.error[0]+bias[0],
-										     rand.nextGaussian()*val.error[0]+bias[1]},
-				twoOnes, twoNegInf, twoPosInf));
+			obs.addModifier(new Bias<AngularAzEl>(biasAzEl, new double[]{rand.nextGaussian()*val.error[0] + bias[0],
+				    rand.nextGaussian()*val.error[0] + bias[1]}, twoOnes, twoNegInf, twoPosInf));
 			clone.values = obs.estimate(0, 0, ssStates).getEstimatedValue();
 			break;
 		    }

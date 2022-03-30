@@ -3,10 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>orbdetpy API documentation</title>
-<meta name="description" content="orbdetpy is a Python library for orbit determination. It is a thin
-Python wrapper for our Java estimation tools and Orekit &lt;http://www.orekit.org/&gt; …" />
+<meta name="description" content="**orbdetpy** is a Python orbit determination library …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,9 +22,8 @@ Python wrapper for our Java estimation tools and Orekit &lt;http://www.orekit.or
 <h1 class="title">Package <code>orbdetpy</code></h1>
 </header>
 <section id="section-intro">
-<p>orbdetpy is a Python library for orbit determination. It is a thin
-Python wrapper for our Java estimation tools and Orekit <a href="http://www.orekit.org/">http://www.orekit.org/</a>.</p>
-<h2 id="features">Features</h2>
+<p><strong>orbdetpy</strong> is a Python orbit determination library.</p>
+<h1 id="features">Features</h1>
 <p>Dynamics in orbdetpy can be configured with:</p>
 <ol>
 <li>EGM96 gravity field up to degree and order 360.</li>
@@ -36,58 +34,63 @@ Python wrapper for our Java estimation tools and Orekit <a href="http://www.orek
 <li>Third body perturbations from the Sun and Moon.</li>
 <li>Satellite box-wing models and maneuvers.</li>
 </ol>
-<p>Range, range-rate, angles, and inertial state measurements are supported.
-Filtering can be done with our Unscented Kalman Filter or Orekit's Extended
-Kalman Filter. Dynamic Model Compensation (DMC) can be used with either
-filter to estimate unmodeled accelerations.</p>
-<h2 id="installation">Installation</h2>
+<p>Range, range-rate, angles, and inertial state measurements are supported. Filtering can be done with an EKF, UKF, or Batch Least Squares. Dynamic Model Compensation (DMC) can be used to estimate unmodeled accelerations.</p>
+<h1 id="installation">Installation</h1>
+<p>If you have docker installed and wish to use a pre-built environment refer to the <a href="#docker">Docker</a> section in this README.</p>
 <ol>
 <li>
-<p>Install Java SE 11 (11.0.10) from <a href="https://www.oracle.com/javadownload">https://www.oracle.com/javadownload</a>.
-Set the <code>JAVA_HOME</code> environment variable to the Java installation
-folder. The <code>java</code> executable must be added to the system path.</p>
+<p>Install Java SE 11 (11.0.10) from <a href="https://www.oracle.com/javadownload">https://www.oracle.com/javadownload</a>. Set the <code>JAVA_HOME</code> environment variable to the Java installation folder. The <code>java</code> executable must be added to the system path.</p>
 </li>
 <li>
-<p>Install Python 3.8.0 or higher and run <code>pip install <a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code> to install
-orbdetpy and other package dependencies.</p>
+<p>Install Python 3.8.0 or higher and run <code>pip install <a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code> to install orbdetpy and other package dependencies.</p>
 </li>
 <li>
-<p>Update the astrodynamics data under <code>orbdetpy/orekit-data</code> periodically by
-running the following. You will need <code>root</code> privileges on some systems.</p>
+<p>Update the astrodynamics data under <code>orbdetpy/orekit-data</code> periodically by running the following. You will need <code>root</code> privileges on some systems.</p>
 </li>
 </ol>
 <p><code>python -c "from orbdetpy.astro_data import update_data; update_data();"</code></p>
-<h2 id="development">Development</h2>
+<h1 id="development">Development</h1>
 <ol>
 <li>
-<p>Download and extract <a href="https://github.com/ut-astria/orbdetpy/releases/download/2.0.5/orekit-data.tar.gz">https://github.com/ut-astria/orbdetpy/releases/download/2.0.5/orekit-data.tar.gz</a>
-under the <code>orbdetpy/</code> sub-folder.</p>
+<p>Download and extract <a href="https://github.com/ut-astria/orbdetpy/releases/download/2.1.0/orekit-data.tar.gz">https://github.com/ut-astria/orbdetpy/releases/download/2.1.0/orekit-data.tar.gz</a> under the <code>orbdetpy/</code> sub-folder.</p>
 </li>
 <li>
-<p>Developers will need Apache Maven 3+ to build the Java library. Build
-using the following from the <code>orbdetpy/</code> sub-folder, where <code>os_cpu_type</code> is
-<code>linux-x86_64</code>, <code>linux-x86_32</code>, <code>windows-x86_64</code>, <code>windows-x86_32</code>,
-<code>osx-x86_64</code>, or <code>osx-x86_32</code> depending on your CPU and OS:</p>
+<p>Developers will need Apache Maven 3+ to build the Java library. Build using the following from the <code>orbdetpy/</code> sub-folder, where <code>os_cpu_type</code> is <code>linux-x86_64</code>, <code>linux-x86_32</code>, <code>windows-x86_64</code>, <code>windows-x86_32</code>, <code>osx-x86_64</code>, or <code>osx-x86_32</code> depending on your CPU and OS:</p>
 </li>
 </ol>
 <p><code>mvn -e -Dos.detected.classifier=os_cpu_type package</code></p>
 <p>The command-line is simpler on Intel/AMD 64-bit Linux:</p>
 <p><code>mvn -e package</code></p>
-<h2 id="examples">Examples</h2>
+<ol>
+<li>Run <code>pip install -e ./</code> from the top-level folder containing <code>setup.py</code>.</li>
+</ol>
+<h1 id="docker">Docker</h1>
 <ol>
 <li>
-<p><code>fit_radec.py</code> : Run OD with real angles measurements. Also demonstrates
-the Laplace IOD method for estimating an initial state vector.</p>
+<p>Build the docker image on a machine that has docker installed and go to the root folder of this repository where the <code>Dockerfile</code> is and run, <code>docker build --build-arg ORBDETPY_VERSION=2.0.7 -t orbdetpy:2.0.7 .</code></p>
 </li>
 <li>
-<p><code>interpolate_oem.py</code> : Command-line tool for interpolating state vectors
-from CCSDS OEM ephemeris files. OEM files are available for download at
-<a href="http://astria.tacc.utexas.edu/AstriaGraph">http://astria.tacc.utexas.edu/AstriaGraph</a>.</p>
+<p>Run <em>orbdetpy:2.0.7</em> image in a daemon state: <code>docker run -it --rm orbdetpy:2.0.7 bash</code></p>
 </li>
 <li>
-<p><code>predict_passes.py</code> : Predict satellite passes for ground stations or
-geographic regions using TLEs. Current elements may be obtained from
-sites such as <a href="http://www.celestrak.com">http://www.celestrak.com</a>.</p>
+<p>Next we will activate the python environment and run a test to determine a successful docker image build</p>
+</li>
+</ol>
+<pre><code class="language-bash">cd &amp;&amp; . env_orbdetpy/bin/activate &amp;&amp; python orbdetpy/examples/test_estimation.py
+</code></pre>
+<ol>
+<li>From here, you can either develop in orbdetpy or build scripts and test in this pre-built environment</li>
+</ol>
+<h1 id="examples">Examples</h1>
+<ol>
+<li>
+<p><code>fit_radec.py</code> : Run OD with real angles measurements. Also demonstrates the Laplace IOD method for estimating an initial state vector.</p>
+</li>
+<li>
+<p><code>interpolate_oem.py</code> : Command-line tool for interpolating state vectors from CCSDS OEM ephemeris files. OEM files are available for download at <a href="http://astria.tacc.utexas.edu/AstriaGraph">http://astria.tacc.utexas.edu/AstriaGraph</a>.</p>
+</li>
+<li>
+<p><code>predict_passes.py</code> : Predict satellite passes for ground stations or geographic regions using TLEs. Current elements may be obtained from sites such as <a href="http://www.celestrak.com">http://www.celestrak.com</a>.</p>
 </li>
 <li>
 <p><code>propagate_tle.py</code> : Propagate TLEs given by command-line arguments.</p>
@@ -96,25 +99,19 @@ sites such as <a href="http://www.celestrak.com">http://www.celestrak.com</a>.</
 <p><code>test_conversion.py</code> : Test reference frame and other conversion functions.</p>
 </li>
 <li>
-<p><code>test_estimation.py</code> : Demonstrates measurement simulation and orbit
-determination functions.</p>
+<p><code>test_estimation.py</code> : Demonstrates measurement simulation and orbit determination functions.</p>
 </li>
 <li>
 <p><code>test_interpolation.py</code> : Interpolate state vectors.</p>
 </li>
 </ol>
-<h2 id="known-issues">Known Issues</h2>
+<h1 id="known-issues">Known Issues</h1>
 <ol>
 <li>
-<p>You might receive warnings from the Windows Defender Firewall on Microsoft
-Windows. Grant <code><a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code> network access permissions.</p>
+<p>Give orbdetpy network access permissions if you get warnings from the Microsoft Windows Firewall. </p>
 </li>
 <li>
-<p>If you use the <code>multiprocessing</code> Python package, imports and calls into
-<code><a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code> must not span <code>multiprocessing</code> function calls. That is, <code><a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code>
-can be used in the parent process or the spawned child processes, but not both.
-A workaround is to run the <code><a title="orbdetpy" href="#orbdetpy">orbdetpy</a></code> RPC server using <code>orbdetpy/start_server.sh</code>
-in a separate terminal window before running your Python code.</p>
+<p>If you use orbdetpy with Python's <code>multiprocessing</code> package, call the function <code>multiprocessing.set_start_method("spawn")</code> before other <code>multiprocessing</code> calls.</p>
 </li>
 </ol>
 </section>
@@ -145,7 +142,15 @@ in a separate terminal window before running your Python code.</p>
 <dd>
 <div class="desc"></div>
 </dd>
+<dt><code class="name"><a title="orbdetpy.rpc" href="rpc/index.html">orbdetpy.rpc</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt><code class="name"><a title="orbdetpy.utilities" href="utilities.html">orbdetpy.utilities</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="orbdetpy.version" href="version.html">orbdetpy.version</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -167,7 +172,7 @@ normal : Facet unit outward normal vector in the spacecraft's co-moving LVLH fra
 area : Facet area [m^2].</p>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>Added Facet object</code></dt>
+<dt><code>Added <a title="orbdetpy.Facet" href="#orbdetpy.Facet">Facet</a> object</code></dt>
 <dd>&nbsp;</dd>
 </dl></div>
 </dd>
@@ -206,14 +211,15 @@ bias_estimation : Constant from EstimationType.</p>
 <p>Added Station object.</p></div>
 </dd>
 <dt id="orbdetpy.build_measurement"><code class="name flex">
-<span>def <span class="ident">build_measurement</span></span>(<span>time: float, station_name: str, values: List[float]) ‑> messages_pb2.Measurement</span>
+<span>def <span class="ident">build_measurement</span></span>(<span>time: float, station_name: str, values: List[float], angle_rates: Optional[List[float]] = None) ‑> messages_pb2.Measurement</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Build Measurement object from observed or simulated data.</p>
 <h2 id="parameters">Parameters</h2>
 <p>time : Measurement time; TT offset from J2000 epoch [s].
 station_name : Station name.
-values : Measurement data corresponding to types configured in Settings object.</p>
+values : Measurement data corresponding to types configured in Settings object.
+angle_rates : Optional time rates of angle measurements [rad/s].</p>
 <h2 id="returns">Returns</h2>
 <p>Measurement object.</p></div>
 </dd>
@@ -226,16 +232,6 @@ values : Measurement data corresponding to types configured in Settings object.<
 <p>**kwargs : Keyword arguments for non-default parameters.</p>
 <h2 id="returns">Returns</h2>
 <p>Settings object initialized with defaults and given values.</p></div>
-</dd>
-<dt id="orbdetpy.ltr_to_matrix"><code class="name flex">
-<span>def <span class="ident">ltr_to_matrix</span></span>(<span>lower_triangle: List[float]) ‑> List[List[float]]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Construct a symmetric matrix from its lower triangle.</p>
-<h2 id="parameters">Parameters</h2>
-<p>lower_triangle : Lower triangle of a symmetric matrix in row-major order.</p>
-<h2 id="returns">Returns</h2>
-<p>Symmetric matrix as a list of lists or None on error.</p></div>
 </dd>
 </dl>
 </section>
@@ -415,6 +411,36 @@ values : Measurement data corresponding to types configured in Settings object.<
 </dd>
 </dl>
 </dd>
+<dt id="orbdetpy.Facet"><code class="flex name class">
+<span>class <span class="ident">Facet</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Facet.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.Facet.area"><code class="name">var <span class="ident">area</span></code></dt>
+<dd>
+<div class="desc"><p>Field Facet.area</p></div>
+</dd>
+<dt id="orbdetpy.Facet.normal"><code class="name">var <span class="ident">normal</span></code></dt>
+<dd>
+<div class="desc"><p>Field Facet.normal</p></div>
+</dd>
+</dl>
+</dd>
 <dt id="orbdetpy.Filter"><code class="flex name class">
 <span>class <span class="ident">Filter</span></span>
 </code></dt>
@@ -422,6 +448,10 @@ values : Measurement data corresponding to types configured in Settings object.<
 <div class="desc"><p>Estimation filters.</p></div>
 <h3>Class variables</h3>
 <dl>
+<dt id="orbdetpy.Filter.BATCH_LEAST_SQUARES"><code class="name">var <span class="ident">BATCH_LEAST_SQUARES</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="orbdetpy.Filter.EXTENDED_KALMAN"><code class="name">var <span class="ident">EXTENDED_KALMAN</span></code></dt>
 <dd>
 <div class="desc"></div>
@@ -645,6 +675,48 @@ values : Measurement data corresponding to types configured in Settings object.<
 </dd>
 </dl>
 </dd>
+<dt id="orbdetpy.Maneuver"><code class="flex name class">
+<span>class <span class="ident">Maneuver</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Maneuver.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.Maneuver.maneuver_params"><code class="name">var <span class="ident">maneuver_params</span></code></dt>
+<dd>
+<div class="desc"><p>Field Maneuver.maneuver_params</p></div>
+</dd>
+<dt id="orbdetpy.Maneuver.maneuver_type"><code class="name">var <span class="ident">maneuver_type</span></code></dt>
+<dd>
+<div class="desc"><p>Field Maneuver.maneuver_type</p></div>
+</dd>
+<dt id="orbdetpy.Maneuver.time"><code class="name">var <span class="ident">time</span></code></dt>
+<dd>
+<div class="desc"><p>Field Maneuver.time</p></div>
+</dd>
+<dt id="orbdetpy.Maneuver.trigger_event"><code class="name">var <span class="ident">trigger_event</span></code></dt>
+<dd>
+<div class="desc"><p>Field Maneuver.trigger_event</p></div>
+</dd>
+<dt id="orbdetpy.Maneuver.trigger_params"><code class="name">var <span class="ident">trigger_params</span></code></dt>
+<dd>
+<div class="desc"><p>Field Maneuver.trigger_params</p></div>
+</dd>
+</dl>
+</dd>
 <dt id="orbdetpy.ManeuverTrigger"><code class="flex name class">
 <span>class <span class="ident">ManeuverTrigger</span></span>
 </code></dt>
@@ -660,7 +732,23 @@ values : Measurement data corresponding to types configured in Settings object.<
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="orbdetpy.ManeuverTrigger.LATITUDE_CROSSING"><code class="name">var <span class="ident">LATITUDE_CROSSING</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverTrigger.LATITUDE_EXTREMUM"><code class="name">var <span class="ident">LATITUDE_EXTREMUM</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="orbdetpy.ManeuverTrigger.LONGITUDE_CROSSING"><code class="name">var <span class="ident">LONGITUDE_CROSSING</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverTrigger.LONGITUDE_EXTREMUM"><code class="name">var <span class="ident">LONGITUDE_EXTREMUM</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ManeuverTrigger.NODE_CROSSING"><code class="name">var <span class="ident">NODE_CROSSING</span></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -723,6 +811,48 @@ values : Measurement data corresponding to types configured in Settings object.<
 </dd>
 </dl>
 </dd>
+<dt id="orbdetpy.Measurement"><code class="flex name class">
+<span>class <span class="ident">Measurement</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Measurement.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.Measurement.angle_rates"><code class="name">var <span class="ident">angle_rates</span></code></dt>
+<dd>
+<div class="desc"><p>Field Measurement.angle_rates</p></div>
+</dd>
+<dt id="orbdetpy.Measurement.station"><code class="name">var <span class="ident">station</span></code></dt>
+<dd>
+<div class="desc"><p>Field Measurement.station</p></div>
+</dd>
+<dt id="orbdetpy.Measurement.time"><code class="name">var <span class="ident">time</span></code></dt>
+<dd>
+<div class="desc"><p>Field Measurement.time</p></div>
+</dd>
+<dt id="orbdetpy.Measurement.true_state"><code class="name">var <span class="ident">true_state</span></code></dt>
+<dd>
+<div class="desc"><p>Field Measurement.true_state</p></div>
+</dd>
+<dt id="orbdetpy.Measurement.values"><code class="name">var <span class="ident">values</span></code></dt>
+<dd>
+<div class="desc"><p>Field Measurement.values</p></div>
+</dd>
+</dl>
+</dd>
 <dt id="orbdetpy.MeasurementType"><code class="flex name class">
 <span>class <span class="ident">MeasurementType</span></span>
 </code></dt>
@@ -775,6 +905,10 @@ values : Measurement data corresponding to types configured in Settings object.<
 <dd>
 <div class="desc"></div>
 </dd>
+<dt id="orbdetpy.OutputFlag.OUTPUT_ECLIPSE"><code class="name">var <span class="ident">OUTPUT_ECLIPSE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
 <dt id="orbdetpy.OutputFlag.OUTPUT_ESTM_COV"><code class="name">var <span class="ident">OUTPUT_ESTM_COV</span></code></dt>
 <dd>
 <div class="desc"></div>
@@ -790,6 +924,44 @@ values : Measurement data corresponding to types configured in Settings object.<
 <dt id="orbdetpy.OutputFlag.OUTPUT_RESIDUALS"><code class="name">var <span class="ident">OUTPUT_RESIDUALS</span></code></dt>
 <dd>
 <div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.Parameter"><code class="flex name class">
+<span>class <span class="ident">Parameter</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Parameter.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.Parameter.estimation"><code class="name">var <span class="ident">estimation</span></code></dt>
+<dd>
+<div class="desc"><p>Field Parameter.estimation</p></div>
+</dd>
+<dt id="orbdetpy.Parameter.max"><code class="name">var <span class="ident">max</span></code></dt>
+<dd>
+<div class="desc"><p>Field Parameter.max</p></div>
+</dd>
+<dt id="orbdetpy.Parameter.min"><code class="name">var <span class="ident">min</span></code></dt>
+<dd>
+<div class="desc"><p>Field Parameter.min</p></div>
+</dd>
+<dt id="orbdetpy.Parameter.value"><code class="name">var <span class="ident">value</span></code></dt>
+<dd>
+<div class="desc"><p>Field Parameter.value</p></div>
 </dd>
 </dl>
 </dd>
@@ -814,6 +986,323 @@ values : Measurement data corresponding to types configured in Settings object.<
 </dd>
 </dl>
 </dd>
+<dt id="orbdetpy.Settings"><code class="flex name class">
+<span>class <span class="ident">Settings</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Settings.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.Settings.MeasurementsEntry"><code class="name">var <span class="ident">MeasurementsEntry</span></code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+</dd>
+<dt id="orbdetpy.Settings.StationsEntry"><code class="name">var <span class="ident">StationsEntry</span></code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.Settings.drag_MSISE_flags"><code class="name">var <span class="ident">drag_MSISE_flags</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_MSISE_flags</p></div>
+</dd>
+<dt id="orbdetpy.Settings.drag_coefficient"><code class="name">var <span class="ident">drag_coefficient</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_coefficient</p></div>
+</dd>
+<dt id="orbdetpy.Settings.drag_exp_H0"><code class="name">var <span class="ident">drag_exp_H0</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_exp_H0</p></div>
+</dd>
+<dt id="orbdetpy.Settings.drag_exp_Hscale"><code class="name">var <span class="ident">drag_exp_Hscale</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_exp_Hscale</p></div>
+</dd>
+<dt id="orbdetpy.Settings.drag_exp_rho0"><code class="name">var <span class="ident">drag_exp_rho0</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_exp_rho0</p></div>
+</dd>
+<dt id="orbdetpy.Settings.drag_model"><code class="name">var <span class="ident">drag_model</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_model</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_DMC_acceleration"><code class="name">var <span class="ident">estm_DMC_acceleration</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_DMC_acceleration</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_DMC_corr_time"><code class="name">var <span class="ident">estm_DMC_corr_time</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_DMC_corr_time</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_DMC_sigma_pert"><code class="name">var <span class="ident">estm_DMC_sigma_pert</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_DMC_sigma_pert</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_covariance"><code class="name">var <span class="ident">estm_covariance</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_covariance</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_detection_probability"><code class="name">var <span class="ident">estm_detection_probability</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_detection_probability</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_filter"><code class="name">var <span class="ident">estm_filter</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_filter</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_gating_probability"><code class="name">var <span class="ident">estm_gating_probability</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_gating_probability</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_gating_threshold"><code class="name">var <span class="ident">estm_gating_threshold</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_gating_threshold</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_outlier_sigma"><code class="name">var <span class="ident">estm_outlier_sigma</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_outlier_sigma</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_outlier_warmup"><code class="name">var <span class="ident">estm_outlier_warmup</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_outlier_warmup</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_process_noise"><code class="name">var <span class="ident">estm_process_noise</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_process_noise</p></div>
+</dd>
+<dt id="orbdetpy.Settings.estm_smoother_iterations"><code class="name">var <span class="ident">estm_smoother_iterations</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_smoother_iterations</p></div>
+</dd>
+<dt id="orbdetpy.Settings.geo_zone_lat_lon"><code class="name">var <span class="ident">geo_zone_lat_lon</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.geo_zone_lat_lon</p></div>
+</dd>
+<dt id="orbdetpy.Settings.gravity_degree"><code class="name">var <span class="ident">gravity_degree</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.gravity_degree</p></div>
+</dd>
+<dt id="orbdetpy.Settings.gravity_order"><code class="name">var <span class="ident">gravity_order</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.gravity_order</p></div>
+</dd>
+<dt id="orbdetpy.Settings.integ_abs_tolerance"><code class="name">var <span class="ident">integ_abs_tolerance</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.integ_abs_tolerance</p></div>
+</dd>
+<dt id="orbdetpy.Settings.integ_max_time_step"><code class="name">var <span class="ident">integ_max_time_step</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.integ_max_time_step</p></div>
+</dd>
+<dt id="orbdetpy.Settings.integ_min_time_step"><code class="name">var <span class="ident">integ_min_time_step</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.integ_min_time_step</p></div>
+</dd>
+<dt id="orbdetpy.Settings.integ_rel_tolerance"><code class="name">var <span class="ident">integ_rel_tolerance</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.integ_rel_tolerance</p></div>
+</dd>
+<dt id="orbdetpy.Settings.maneuvers"><code class="name">var <span class="ident">maneuvers</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.maneuvers</p></div>
+</dd>
+<dt id="orbdetpy.Settings.measurements"><code class="name">var <span class="ident">measurements</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.measurements</p></div>
+</dd>
+<dt id="orbdetpy.Settings.ocean_tides_degree"><code class="name">var <span class="ident">ocean_tides_degree</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.ocean_tides_degree</p></div>
+</dd>
+<dt id="orbdetpy.Settings.ocean_tides_order"><code class="name">var <span class="ident">ocean_tides_order</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.ocean_tides_order</p></div>
+</dd>
+<dt id="orbdetpy.Settings.output_flags"><code class="name">var <span class="ident">output_flags</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.output_flags</p></div>
+</dd>
+<dt id="orbdetpy.Settings.prop_end"><code class="name">var <span class="ident">prop_end</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_end</p></div>
+</dd>
+<dt id="orbdetpy.Settings.prop_inertial_frame"><code class="name">var <span class="ident">prop_inertial_frame</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_inertial_frame</p></div>
+</dd>
+<dt id="orbdetpy.Settings.prop_initial_TLE"><code class="name">var <span class="ident">prop_initial_TLE</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_initial_TLE</p></div>
+</dd>
+<dt id="orbdetpy.Settings.prop_initial_state"><code class="name">var <span class="ident">prop_initial_state</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_initial_state</p></div>
+</dd>
+<dt id="orbdetpy.Settings.prop_start"><code class="name">var <span class="ident">prop_start</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_start</p></div>
+</dd>
+<dt id="orbdetpy.Settings.prop_step"><code class="name">var <span class="ident">prop_step</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_step</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rp_coeff_absorption"><code class="name">var <span class="ident">rp_coeff_absorption</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rp_coeff_absorption</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rp_coeff_reflection"><code class="name">var <span class="ident">rp_coeff_reflection</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rp_coeff_reflection</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rp_sun"><code class="name">var <span class="ident">rp_sun</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rp_sun</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rso_area"><code class="name">var <span class="ident">rso_area</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_area</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rso_attitude_provider"><code class="name">var <span class="ident">rso_attitude_provider</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_attitude_provider</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rso_facets"><code class="name">var <span class="ident">rso_facets</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_facets</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rso_mass"><code class="name">var <span class="ident">rso_mass</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_mass</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rso_solar_array_area"><code class="name">var <span class="ident">rso_solar_array_area</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_solar_array_area</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rso_solar_array_axis"><code class="name">var <span class="ident">rso_solar_array_axis</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_solar_array_axis</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rso_spin_acceleration"><code class="name">var <span class="ident">rso_spin_acceleration</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_spin_acceleration</p></div>
+</dd>
+<dt id="orbdetpy.Settings.rso_spin_velocity"><code class="name">var <span class="ident">rso_spin_velocity</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_spin_velocity</p></div>
+</dd>
+<dt id="orbdetpy.Settings.sim_measurements"><code class="name">var <span class="ident">sim_measurements</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.sim_measurements</p></div>
+</dd>
+<dt id="orbdetpy.Settings.solid_tides_moon"><code class="name">var <span class="ident">solid_tides_moon</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.solid_tides_moon</p></div>
+</dd>
+<dt id="orbdetpy.Settings.solid_tides_sun"><code class="name">var <span class="ident">solid_tides_sun</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.solid_tides_sun</p></div>
+</dd>
+<dt id="orbdetpy.Settings.stations"><code class="name">var <span class="ident">stations</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.stations</p></div>
+</dd>
+<dt id="orbdetpy.Settings.third_body_moon"><code class="name">var <span class="ident">third_body_moon</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.third_body_moon</p></div>
+</dd>
+<dt id="orbdetpy.Settings.third_body_sun"><code class="name">var <span class="ident">third_body_sun</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.third_body_sun</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.Station"><code class="flex name class">
+<span>class <span class="ident">Station</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.Station.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.Station.altitude"><code class="name">var <span class="ident">altitude</span></code></dt>
+<dd>
+<div class="desc"><p>Field Station.altitude</p></div>
+</dd>
+<dt id="orbdetpy.Station.bias"><code class="name">var <span class="ident">bias</span></code></dt>
+<dd>
+<div class="desc"><p>Field Station.bias</p></div>
+</dd>
+<dt id="orbdetpy.Station.bias_estimation"><code class="name">var <span class="ident">bias_estimation</span></code></dt>
+<dd>
+<div class="desc"><p>Field Station.bias_estimation</p></div>
+</dd>
+<dt id="orbdetpy.Station.fov_aperture"><code class="name">var <span class="ident">fov_aperture</span></code></dt>
+<dd>
+<div class="desc"><p>Field Station.fov_aperture</p></div>
+</dd>
+<dt id="orbdetpy.Station.fov_azimuth"><code class="name">var <span class="ident">fov_azimuth</span></code></dt>
+<dd>
+<div class="desc"><p>Field Station.fov_azimuth</p></div>
+</dd>
+<dt id="orbdetpy.Station.fov_elevation"><code class="name">var <span class="ident">fov_elevation</span></code></dt>
+<dd>
+<div class="desc"><p>Field Station.fov_elevation</p></div>
+</dd>
+<dt id="orbdetpy.Station.latitude"><code class="name">var <span class="ident">latitude</span></code></dt>
+<dd>
+<div class="desc"><p>Field Station.latitude</p></div>
+</dd>
+<dt id="orbdetpy.Station.longitude"><code class="name">var <span class="ident">longitude</span></code></dt>
+<dd>
+<div class="desc"><p>Field Station.longitude</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.TDMFileFormat"><code class="flex name class">
+<span>class <span class="ident">TDMFileFormat</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>CCSDS TDM file formats.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.TDMFileFormat.KEYVALUE"><code class="name">var <span class="ident">KEYVALUE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.TDMFileFormat.UNKNOWN"><code class="name">var <span class="ident">UNKNOWN</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.TDMFileFormat.XML"><code class="name">var <span class="ident">XML</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
 </dl>
 </section>
 </article>
@@ -824,6 +1313,7 @@ values : Measurement data corresponding to types configured in Settings object.<
 <li><a href="#features">Features</a></li>
 <li><a href="#installation">Installation</a></li>
 <li><a href="#development">Development</a></li>
+<li><a href="#docker">Docker</a></li>
 <li><a href="#examples">Examples</a></li>
 <li><a href="#known-issues">Known Issues</a></li>
 </ul>
@@ -837,17 +1327,18 @@ values : Measurement data corresponding to types configured in Settings object.<
 <li><code><a title="orbdetpy.estimation" href="estimation.html">orbdetpy.estimation</a></code></li>
 <li><code><a title="orbdetpy.plotting" href="plotting/index.html">orbdetpy.plotting</a></code></li>
 <li><code><a title="orbdetpy.propagation" href="propagation.html">orbdetpy.propagation</a></code></li>
+<li><code><a title="orbdetpy.rpc" href="rpc/index.html">orbdetpy.rpc</a></code></li>
 <li><code><a title="orbdetpy.utilities" href="utilities.html">orbdetpy.utilities</a></code></li>
+<li><code><a title="orbdetpy.version" href="version.html">orbdetpy.version</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="orbdetpy.add_facet" href="#orbdetpy.add_facet">add_facet</a></code></li>
 <li><code><a title="orbdetpy.add_maneuver" href="#orbdetpy.add_maneuver">add_maneuver</a></code></li>
 <li><code><a title="orbdetpy.add_station" href="#orbdetpy.add_station">add_station</a></code></li>
 <li><code><a title="orbdetpy.build_measurement" href="#orbdetpy.build_measurement">build_measurement</a></code></li>
 <li><code><a title="orbdetpy.configure" href="#orbdetpy.configure">configure</a></code></li>
-<li><code><a title="orbdetpy.ltr_to_matrix" href="#orbdetpy.ltr_to_matrix">ltr_to_matrix</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -868,10 +1359,16 @@ values : Measurement data corresponding to types configured in Settings object.<
 <h4><code><a title="orbdetpy.EstimationType" href="#orbdetpy.EstimationType">EstimationType</a></code></h4>
 </li>
 <li>
+<h4><code><a title="orbdetpy.Facet" href="#orbdetpy.Facet">Facet</a></code></h4>
+</li>
+<li>
 <h4><code><a title="orbdetpy.Filter" href="#orbdetpy.Filter">Filter</a></code></h4>
 </li>
 <li>
 <h4><code><a title="orbdetpy.Frame" href="#orbdetpy.Frame">Frame</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.Maneuver" href="#orbdetpy.Maneuver">Maneuver</a></code></h4>
 </li>
 <li>
 <h4><code><a title="orbdetpy.ManeuverTrigger" href="#orbdetpy.ManeuverTrigger">ManeuverTrigger</a></code></h4>
@@ -880,13 +1377,28 @@ values : Measurement data corresponding to types configured in Settings object.<
 <h4><code><a title="orbdetpy.ManeuverType" href="#orbdetpy.ManeuverType">ManeuverType</a></code></h4>
 </li>
 <li>
+<h4><code><a title="orbdetpy.Measurement" href="#orbdetpy.Measurement">Measurement</a></code></h4>
+</li>
+<li>
 <h4><code><a title="orbdetpy.MeasurementType" href="#orbdetpy.MeasurementType">MeasurementType</a></code></h4>
 </li>
 <li>
 <h4><code><a title="orbdetpy.OutputFlag" href="#orbdetpy.OutputFlag">OutputFlag</a></code></h4>
 </li>
 <li>
+<h4><code><a title="orbdetpy.Parameter" href="#orbdetpy.Parameter">Parameter</a></code></h4>
+</li>
+<li>
 <h4><code><a title="orbdetpy.PositionAngle" href="#orbdetpy.PositionAngle">PositionAngle</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.Settings" href="#orbdetpy.Settings">Settings</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.Station" href="#orbdetpy.Station">Station</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.TDMFileFormat" href="#orbdetpy.TDMFileFormat">TDMFileFormat</a></code></h4>
 </li>
 </ul>
 </li>
@@ -894,7 +1406,7 @@ values : Measurement data corresponding to types configured in Settings object.<
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>

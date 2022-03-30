@@ -1,5 +1,5 @@
 # propagation.py - Orbit propagation functions.
-# Copyright (C) 2019-2020 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,6 +34,5 @@ def propagate_orbits(cfg_list: List[Settings]):
     resp = _propagation_stub.propagate(SettingsArray(array=[p for p in cfg_list]))
     return(resp.array)
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("Settings", "SettingsArray")}
+if (__name__ != "__main__"):
     _propagation_stub = PropagationStub(RemoteServer.channel())

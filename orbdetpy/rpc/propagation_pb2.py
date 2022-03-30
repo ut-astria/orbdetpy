@@ -3,6 +3,7 @@
 # source: propagation.proto
 """Generated protocol buffer code."""
 from google.protobuf import descriptor as _descriptor
+from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
@@ -14,46 +15,15 @@ _sym_db = _symbol_database.Default()
 import orbdetpy.rpc.messages_pb2 as messages__pb2
 
 
-DESCRIPTOR = _descriptor.FileDescriptor(
-  name='propagation.proto',
-  package='',
-  syntax='proto3',
-  serialized_options=b'\n\016org.astria.rpcB\022PropagationRequestP\000',
-  create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x11propagation.proto\x1a\x0emessages.proto2A\n\x0bPropagation\x12\x32\n\tpropagate\x12\x0e.SettingsArray\x1a\x13.Measurement2DArray\"\x00\x42&\n\x0eorg.astria.rpcB\x12PropagationRequestP\x00\x62\x06proto3'
-  ,
-  dependencies=[messages__pb2.DESCRIPTOR,])
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11propagation.proto\x1a\x0emessages.proto2A\n\x0bPropagation\x12\x32\n\tpropagate\x12\x0e.SettingsArray\x1a\x13.Measurement2DArray\"\x00\x42&\n\x0eorg.astria.rpcB\x12PropagationRequestP\x00\x62\x06proto3')
 
 
 
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
+_PROPAGATION = DESCRIPTOR.services_by_name['Propagation']
+if _descriptor._USE_C_DESCRIPTORS == False:
 
-
-DESCRIPTOR._options = None
-
-_PROPAGATION = _descriptor.ServiceDescriptor(
-  name='Propagation',
-  full_name='Propagation',
-  file=DESCRIPTOR,
-  index=0,
-  serialized_options=None,
-  create_key=_descriptor._internal_create_key,
-  serialized_start=37,
-  serialized_end=102,
-  methods=[
-  _descriptor.MethodDescriptor(
-    name='propagate',
-    full_name='Propagation.propagate',
-    index=0,
-    containing_service=None,
-    input_type=messages__pb2._SETTINGSARRAY,
-    output_type=messages__pb2._MEASUREMENT2DARRAY,
-    serialized_options=None,
-    create_key=_descriptor._internal_create_key,
-  ),
-])
-_sym_db.RegisterServiceDescriptor(_PROPAGATION)
-
-DESCRIPTOR.services_by_name['Propagation'] = _PROPAGATION
-
+  DESCRIPTOR._options = None
+  DESCRIPTOR._serialized_options = b'\n\016org.astria.rpcB\022PropagationRequestP\000'
+  _PROPAGATION._serialized_start=37
+  _PROPAGATION._serialized_end=102
 # @@protoc_insertion_point(module_scope)

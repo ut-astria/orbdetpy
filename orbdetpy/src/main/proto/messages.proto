@@ -1,6 +1,6 @@
 /*
  * messages.proto - Message type declarations.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,12 @@ option java_outer_classname = "Messages";
 
 message IntegerArray
 {
-    repeated int32 array = 1 [packed = true];
+    repeated int32 array = 1 [packed=true];
 }
 
 message DoubleArray
 {
-    repeated double array = 1 [packed = true];
+    repeated double array = 1 [packed=true];
 }
 
 message Double2DArray
@@ -46,7 +46,7 @@ message Parameter
 
 message Facet
 {
-    repeated double normal = 1 [packed = true];
+    repeated double normal = 1 [packed=true];
     double area = 2;
 }
 
@@ -54,9 +54,9 @@ message Maneuver
 {
     double time = 1;
     int32 trigger_event = 2;
-    repeated double trigger_params = 3 [packed = true];
+    repeated double trigger_params = 3 [packed=true];
     int32 maneuver_type = 4;
-    repeated double maneuver_params = 5 [packed = true];
+    repeated double maneuver_params = 5 [packed=true];
 }
 
 message Station
@@ -64,7 +64,7 @@ message Station
     double latitude = 1;
     double longitude = 2;
     double altitude = 3;
-    repeated double bias = 4 [packed = true];
+    repeated double bias = 4 [packed=true];
     int32 bias_estimation = 5;
     double fov_azimuth = 6;
     double fov_elevation = 7;
@@ -74,7 +74,7 @@ message Station
 message MeasurementSetting
 {
     bool two_way = 1;
-    repeated double error = 2 [packed = true];
+    repeated double error = 2 [packed=true];
 }
 
 message Settings
@@ -82,11 +82,11 @@ message Settings
     double rso_mass = 1;
     double rso_area = 2;
     repeated Facet rso_facets = 3;
-    repeated double rso_solar_array_axis = 4 [packed = true];
+    repeated double rso_solar_array_axis = 4 [packed=true];
     double rso_solar_array_area = 5;
     int32 rso_attitude_provider = 6;
-    repeated double rso_spin_velocity = 7 [packed = true];
-    repeated double rso_spin_acceleration = 8 [packed = true];
+    repeated double rso_spin_velocity = 7 [packed=true];
+    repeated double rso_spin_acceleration = 8 [packed=true];
 
     int32 gravity_degree = 9;
     int32 gravity_order = 10;
@@ -113,7 +113,7 @@ message Settings
     double prop_start = 27;
     double prop_end = 28;
     double prop_step = 29;
-    repeated double prop_initial_state = 30 [packed = true];
+    repeated double prop_initial_state = 30 [packed=true];
     repeated string prop_initial_TLE = 31;
     string prop_inertial_frame = 32;
 
@@ -126,22 +126,21 @@ message Settings
 
     map<string, Station> stations = 38;
     map<int32, MeasurementSetting> measurements = 39;
-    repeated double geo_zone_lat_lon = 40 [packed = true];
+    repeated double geo_zone_lat_lon = 40 [packed=true];
 
     int32 estm_filter = 41;
-    repeated double estm_covariance = 42 [packed = true];
-    repeated double estm_process_noise = 43 [packed = true];
+    repeated double estm_covariance = 42 [packed=true];
+    repeated double estm_process_noise = 43 [packed=true];
     double estm_DMC_corr_time = 44;
     double estm_DMC_sigma_pert = 45;
     Parameter estm_DMC_acceleration = 46;
     double estm_outlier_sigma = 47;
     int32 estm_outlier_warmup = 48;
     int32 estm_smoother_iterations = 49;
-    bool estm_enable_PDAF = 50;
-    double estm_detection_probability = 51;
-    double estm_gating_probability = 52;
-    double estm_gating_threshold = 53;
-    int32 output_flags = 54;
+    double estm_detection_probability = 50;
+    double estm_gating_probability = 51;
+    double estm_gating_threshold = 52;
+    int32 output_flags = 53;
 }
 
 message SettingsArray
@@ -153,9 +152,9 @@ message Measurement
 {
     double time = 1;
     string station = 2;
-    repeated double values = 3 [packed = true];
-    repeated double angle_rates = 4 [packed = true];
-    repeated double true_state = 5 [packed = true];
+    repeated double values = 3 [packed=true];
+    repeated double angle_rates = 4 [packed=true];
+    repeated double true_state = 5 [packed=true];
 }
 
 message MeasurementArray
@@ -178,12 +177,12 @@ message EstimationOutput
 {
     double time = 1;
     string station = 2;
-    repeated double estimated_state  = 3 [packed = true];
-    repeated double propagated_covariance = 4 [packed = true];
-    repeated double innovation_covariance = 5 [packed = true];
-    repeated double estimated_covariance = 6 [packed = true];
-    repeated double pre_fit = 7 [packed = true];
-    repeated double post_fit = 8 [packed = true];
+    repeated double estimated_state  = 3 [packed=true];
+    repeated double propagated_covariance = 4 [packed=true];
+    repeated double innovation_covariance = 5 [packed=true];
+    repeated double estimated_covariance = 6 [packed=true];
+    repeated double pre_fit = 7 [packed=true];
+    repeated double post_fit = 8 [packed=true];
     double clutter_probability = 9;
 }
 
@@ -192,10 +191,23 @@ message EstimationOutputArray
     repeated EstimationOutput array = 1;
 }
 
+message MultiTargetInput
+{
+    repeated Settings config = 1;
+    repeated MeasurementArray measurements = 2;
+}
+ 
+message MultiTargetOutput
+{
+    repeated EstimationOutputArray est_output = 1;
+    repeated IntegerArray associated_obs = 2;
+    repeated int32 unassociated_obs = 3 [packed=true];
+}
+
 message TransformFrameInput
 {
     string src_frame = 1;
-    repeated double time = 2 [packed = true];
+    repeated double time = 2 [packed=true];
     repeated DoubleArray pva = 3;
     string dest_frame = 4;
     repeated string UTC_time = 5;
@@ -210,22 +222,20 @@ message ImportTDMInput
 message AnglesInput
 {
     string frame = 1;
-    repeated double time = 2 [packed = true];
+    repeated double time = 2 [packed=true];
     double latitude = 3;
     double longitude = 4;
     double altitude = 5;
-    repeated double angle1 = 6 [packed = true];
-    repeated double angle2 = 7 [packed = true];
+    repeated double angle1 = 6 [packed=true];
+    repeated double angle2 = 7 [packed=true];
 }
 
 message InterpolateEphemerisInput
 {
     string source_frame = 1;
-    repeated double time = 2 [packed = true];
+    repeated double time = 2 [packed=true];
     repeated DoubleArray ephem = 3;
     int32 num_points = 4;
     string dest_frame = 5;
-    double interp_start = 6;
-    double interp_end = 7;
-    double step_size = 8;
+    repeated double interp_time = 6 [packed=true];
 }

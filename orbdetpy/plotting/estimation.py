@@ -1,5 +1,5 @@
 # estimation.py - Plot orbit determination results.
-# Copyright (C) 2018-2021 University of Texas
+# Copyright (C) 2018-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,13 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import numpy
-from typing import List
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
+import numpy
 from orbdetpy import Constant, EstimationType, MeasurementType
-from orbdetpy.conversion import get_lvlh_rotation
+from orbdetpy.conversion import get_lvlh_rotation, get_UTC_string
 from orbdetpy.rpc.messages_pb2 import Settings
+from typing import List
 
 def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
          output_file_path: str=None, estim_param: bool=True)->List[str]:
@@ -72,7 +72,6 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
 
     diag_pos = [0, 2, 5, 9, 14, 20]
     tstamp,prefit,posfit,inocov,params,estmacc,estmcov,colors,state_err,state_cov = [],[],[],[],[],[],[],[],[],[]
-
     for i, o in zip(inp, out):
         tstamp.append(i.time)
         colors.append(cmap[o.station if len(o.station) else None])
@@ -94,18 +93,14 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
             else:
                 params.append(o.estimated_state[6:])
 
+    utc_time = get_UTC_string([tstamp[0], tstamp[-1]])
+    times = [(t - tstamp[0])/3600 for t in tstamp]
     pre = numpy.array(prefit)
     pos = numpy.array(posfit)
     cov = numpy.array(inocov)
     if (estim_param):
         par = numpy.array(params)
         estmacc = numpy.array(estmacc)
-
-    if (len(tstamp) > 0):
-        start = tstamp[0] if (tstamp[0] < tstamp[-1]) else tstamp[-1]
-        times = [(t - start)/3600 for t in tstamp]
-    else:
-        times = []
 
     angles = [MeasurementType.AZIMUTH, MeasurementType.ELEVATION, MeasurementType.RIGHT_ASCENSION, MeasurementType.DECLINATION]
     if (MeasurementType.POSITION in key):
@@ -128,7 +123,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
 
     outfiles = []
     plt.figure(0)
-    plt.suptitle("Pre-Fit Residuals")
+    plt.suptitle(f"Pre-Fit Residuals\n{utc_time[0]} to {utc_time[1]}")
     for i in range(pre.shape[-1]):
         if (MeasurementType.POSITION in key):
             plt.subplot(3, 1, order[i])
@@ -148,7 +143,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
         plt.savefig(outfiles[-1], format="png")
 
     plt.figure(1)
-    plt.suptitle("Post-Fit Residuals")
+    plt.suptitle(f"Post-Fit Residuals\n{utc_time[0]} to {utc_time[1]}")
     for i in range(pos.shape[-1]):
         if (MeasurementType.POSITION in key):
             plt.subplot(3, 1, order[i])
@@ -173,7 +168,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
         for i in range(par.shape[-1]):
             if (i == 0):
                 plt.figure(2)
-                plt.suptitle("Estimated Parameters")
+                plt.suptitle(f"Estimated Parameters\n{utc_time[0]} to {utc_time[1]}")
             plt.subplot(par.shape[1], 1, i + 1)
             plt.scatter(times, par[:,i], marker="o", s=7)
             plt.xlabel("Time [hr]")
@@ -188,7 +183,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
         if (dmcrun):
             lab = [r"Radial [$\frac{m}{s^2}$]", r"In-Track [$\frac{m}{s^2}$]", r"Cross-Track [$\frac{m}{s^2}$]"]
             plt.figure(3)
-            plt.suptitle("Estimated DMC Accelerations")
+            plt.suptitle(f"Estimated DMC Accelerations\n{utc_time[0]} to {utc_time[1]}")
             for i in range(3):
                 plt.subplot(3, 1, i+1)
                 if (len(estmacc) > 0):
@@ -209,7 +204,7 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
         units = ["m", "m", "m", "m/s", "m/s", "m/s"]
         ylabs = [r"$\Delta x$", r"$\Delta y$", r"$\Delta z$", r"$\Delta v_x$", r"$\Delta v_y$", r"$\Delta v_z$"]
         plt.figure(4)
-        plt.suptitle("Position and Velocity Errors")
+        plt.suptitle(f"Position and Velocity Errors\n{utc_time[0]} to {utc_time[1]}")
         for i in range(6):
             plt.subplot(3, 2, order[i])
             plt.scatter(times, state_err[:,i], color=colors, marker="o", s=7)
@@ -228,6 +223,3 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
         plt.show()
     plt.close("all")
     return(outfiles)
-
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("Settings", )}

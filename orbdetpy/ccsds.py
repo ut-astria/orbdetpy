@@ -1,5 +1,5 @@
 # ccsds.py - CCSDS file format conversion functions.
-# Copyright (C) 2019-2021 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 from orbdetpy import Constant, Frame, MeasurementType
 from orbdetpy.conversion import get_UTC_string
@@ -41,7 +41,7 @@ def export_OEM(cfg: Settings, obs, obj_id: str, obj_name: str, time_list: List[s
 
     utc_list = get_UTC_string((o.time for o in obs))
     oem_header = f"""CCSDS_OEM_VERS = 2.0
-CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")}
+CREATION_DATE = {datetime.now(timezone.utc).isoformat()}
 ORIGINATOR = UT-Austin
 
 META_START
@@ -50,8 +50,8 @@ OBJECT_ID = {obj_id}
 CENTER_NAME = EARTH
 REF_FRAME = {cfg.prop_inertial_frame}
 TIME_SYSTEM = UTC
-START_TIME = {time_list[0] if (time_list) else utc_list[0][:-1]}
-STOP_TIME = {time_list[-1] if (time_list) else utc_list[-1][:-1]}
+START_TIME = {time_list[0] if (time_list) else utc_list[0]}
+STOP_TIME = {time_list[-1] if (time_list) else utc_list[-1]}
 META_STOP
 
 """
@@ -60,7 +60,6 @@ META_STOP
     is_estm = hasattr(obs[0], "estimated_state") and hasattr(obs[0], "estimated_covariance") and hasattr(obs[0], "propagated_covariance")
     eph_key = "estimated_state" if (is_estm) else "true_state"
     for utc, o in zip(utc_list, obs):
-        utc = utc[:-1]
         if (o.time not in added):
             added.add(o.time)
             if (time_list is None or utc in time_list):
@@ -70,12 +69,12 @@ META_STOP
                     estm_cov.append(f"\nEPOCH = {utc}")
                     for m in range(6):
                         n = (m**2 + m)//2
-                        estm_cov.append(" ".join((str(x/1E6) for x in o.estimated_covariance[n:m+n+1])))
+                        estm_cov.append(" ".join((str(x/1E6) for x in o.estimated_covariance[n:m + n + 1])))
                 if (is_estm and add_prop_cov and len(o.propagated_covariance) >= 21):
                     prop_cov.append(f"\nEPOCH = {utc}")
                     for m in range(6):
                         n = (m**2 + m)//2
-                        prop_cov.append(" ".join((str(x/1E6) for x in o.propagated_covariance[n:m+n+1])))
+                        prop_cov.append(" ".join((str(x/1E6) for x in o.propagated_covariance[n:m + n + 1])))
 
     oem_data = oem_header + "\n".join(eph_data)
     if (estm_cov):
@@ -112,7 +111,7 @@ def export_TDM(cfg: Settings, obs, obj_id: str, station_list: List[str]=None)->s
 
     blocks = []
     tdm_header = f"""CCSDS_TDM_VERS = 1.0
-CREATION_DATE = {datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")}
+CREATION_DATE = {datetime.now(timezone.utc).isoformat()}
 ORIGINATOR = UT-Austin
 
 """
@@ -132,7 +131,6 @@ META_STOP
 """)
         blocks.append("DATA_START")
         for utc, o in zip(utc_list, obs):
-            utc = utc[:-1]
             if (o.station == sname):
                 if (MeasurementType.RANGE in miter or MeasurementType.RANGE_RATE in miter):
                     if (MeasurementType.RANGE in miter):
@@ -156,12 +154,10 @@ def import_TDM(file_name: str, file_format: int):
 
     Returns
     -------
-    Measurements object.
+    Tracking data in a Measurement2DArray object.
     """
 
-    resp = _ccsds_stub.importTDM(ImportTDMInput(file_name=file_name, file_format=file_format))
-    return(resp.array)
+    return(_ccsds_stub.importTDM(ImportTDMInput(file_name=file_name, file_format=file_format)).array)
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("ImportTDMInput", "Settings")}
+if (__name__ != "__main__"):
     _ccsds_stub = UtilitiesStub(RemoteServer.channel())

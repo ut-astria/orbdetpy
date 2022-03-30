@@ -1,5 +1,5 @@
 # __init__.py - orbdetpy package initialization.
-# Copyright (C) 2018-2021 University of Texas
+# Copyright (C) 2018-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 """
 
 from os import path, stat
-from math import pi, sqrt
+from math import pi
 from typing import List, Optional, Tuple
 from orbdetpy.version import __version__
 from orbdetpy.rpc.messages_pb2 import Facet, Maneuver, Measurement, Parameter, Settings, Station
@@ -235,8 +235,7 @@ def configure(**kwargs)->Settings:
                    integ_rel_tolerance=1E-12, output_flags=OutputFlag.OUTPUT_ESTM_COV|OutputFlag.OUTPUT_PROP_COV|OutputFlag.OUTPUT_INNO_COV|
                    OutputFlag.OUTPUT_RESIDUALS, estm_filter=Filter.UNSCENTED_KALMAN, estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
                    estm_DMC_acceleration=Parameter(value=0.0, min=-1E-3, max=1E-3, estimation=EstimationType.ESTIMATE),
-                   estm_smoother_iterations=10, estm_enable_PDAF=False, estm_detection_probability=0.99,
-                   estm_gating_probability=0.99, estm_gating_threshold=5.0)
+                   estm_smoother_iterations=3, estm_detection_probability=0.99, estm_gating_probability=0.99, estm_gating_threshold=5.0)
     for key, value in kwargs.items():
         attr = getattr(cfg, key)
         if (hasattr(attr, "CopyFrom")):
@@ -322,7 +321,7 @@ def add_station(cfg: Settings, name: str, latitude: float, longitude: float, alt
         cfg.stations[name].bias_estimation = bias_estimation
     return(cfg.stations[name])
 
-def build_measurement(time: float, station_name: str, values: List[float])->Measurement:
+def build_measurement(time: float, station_name: str, values: List[float], angle_rates: Optional[List[float]]=None)->Measurement:
     """Build Measurement object from observed or simulated data.
 
     Parameters
@@ -330,40 +329,16 @@ def build_measurement(time: float, station_name: str, values: List[float])->Meas
     time : Measurement time; TT offset from J2000 epoch [s].
     station_name : Station name.
     values : Measurement data corresponding to types configured in Settings object.
+    angle_rates : Optional time rates of angle measurements [rad/s].
 
     Returns
     -------
     Measurement object.
     """
 
-    return(Measurement(time=time, station=station_name, values=values))
+    return(Measurement(time=time, station=station_name, values=values, angle_rates=angle_rates))
 
-def ltr_to_matrix(lower_triangle: List[float])->List[List[float]]:
-    """Construct a symmetric matrix from its lower triangle.
-
-    Parameters
-    ----------
-    lower_triangle : Lower triangle of a symmetric matrix in row-major order.
-
-    Returns
-    -------
-    Symmetric matrix as a list of lists or None on error.
-    """
-
-    m = (sqrt(8*len(lower_triangle) + 1) - 1)/2
-    n = int(m)
-    if (m == n):
-        k, matrix = 0, [[0]*n for _ in range(n)]
-        for i in range(n):
-            for j in range(i+1):
-                matrix[i][j], matrix[j][i] = lower_triangle[k], lower_triangle[k]
-                k += 1
-        return(matrix)
-    return(None)
-
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("Facet", "Maneuver", "Measurement", "Parameter", "Settings",
-                                   "Station", "TDMFileFormat", "rpc", "version")}
+if (__name__ != "__main__"):
     _root_dir = path.dirname(path.abspath(path.realpath(__file__)))
     _libs_dir = path.join(_root_dir, "target")
     _jar_file = path.join(_libs_dir, "orbdetpy-server-{}.jar".format(__version__))

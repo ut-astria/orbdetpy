@@ -1,5 +1,5 @@
 # utilities.py - Various utilities.
-# Copyright (C) 2020-2021 University of Texas
+# Copyright (C) 2020-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import List
+from numpy import arange
 from orbdetpy.rpc.messages_pb2 import DoubleArray, InterpolateEphemerisInput, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
 from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
+
+def import_SP3(file_name: str, dest_frame: int, times: List[float]):
+    """Import ephemerides from SP3 file.
+
+    Parameters
+    ----------
+    file_name : Fully qualified SP3 file name.
+    dest_frame : Destination reference frame; a constant from Frame.
+    times : List of times to propagate to; each a TT offset from J2000 epoch [s].
+
+    Returns
+    -------
+    Ephemerides in a Measurement2DArray object.
+    """
+
+    resp = _utilities_stub.importSP3(InterpolateEphemerisInput(source_frame=file_name, dest_frame=dest_frame, interp_time=times))
+    return(resp.array)
 
 def interpolate_ephemeris(source_frame: int, times: List[float], states, num_points: int,
                           dest_frame: int, interp_start: float, interp_end: float, step_size: float):
@@ -28,20 +46,26 @@ def interpolate_ephemeris(source_frame: int, times: List[float], states, num_poi
     source_frame : Source reference frame; a constant from Frame.
     times : Times of state vectors; each a TT offset from J2000 epoch [s].
     states : State vectors to interpolate.
-    num_points : Number of states to use for interpolation.
+    num_points : Number of points to use for interpolation = order + 1.
     dest_frame : Destination reference frame; a constant from Frame.
-    interp_start : Interpolation start time.
-    interp_end : Interpolation end time.
-    step_size : Interpolation step size [s].
+    interp_start : Interpolation start time or list of arbitrary time instants.
+    interp_end : Interpolation end time; ignored if interp_start is a list.
+    step_size : Interpolation step size [s]; ignored if interp_start is a list.
 
     Returns
     -------
     Interpolated times and state vectors.
     """
 
+    if (isinstance(interp_start, float)):
+        tint = arange(interp_start, interp_end, step_size).tolist()
+        if (interp_end > tint[-1]):
+            tint.append(interp_end)
+    else:
+        tint = interp_start
     resp = _utilities_stub.interpolateEphemeris(InterpolateEphemerisInput(
         source_frame=source_frame, time=times, ephem=[DoubleArray(array=s) for s in states], num_points=num_points,
-        dest_frame=dest_frame, interp_start=interp_start, interp_end=interp_end, step_size=step_size))
+        dest_frame=dest_frame, interp_time=tint))
     return(resp.array)
 
 def get_density(drag_model: int, time: float, lla: List[float])->List[float]:
@@ -68,6 +92,5 @@ def get_density(drag_model: int, time: float, lla: List[float])->List[float]:
             UTC_time=time, pva=[DoubleArray(array=x) for x in lla], dest_frame=str(drag_model)))
     return(resp.array)
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("DoubleArray", "InterpolateEphemerisInput")}
+if (__name__ != "__main__"):
     _utilities_stub = UtilitiesStub(RemoteServer.channel())

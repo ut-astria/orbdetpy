@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
+<meta name="generator" content="pdoc 0.10.0" />
 <title>orbdetpy.ccsds API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -67,11 +67,286 @@ station_list : List of ground stations to include; None to include all.</p>
 <p>file_name : Fully qualified TDM file.
 file_format : Constant from TDMFileFormat.</p>
 <h2 id="returns">Returns</h2>
-<p>Measurements object.</p></div>
+<p>Tracking data in a Measurement2DArray object.</p></div>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="orbdetpy.ccsds.ImportTDMInput"><code class="flex name class">
+<span>class <span class="ident">ImportTDMInput</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.ccsds.ImportTDMInput.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.ccsds.ImportTDMInput.file_format"><code class="name">var <span class="ident">file_format</span></code></dt>
+<dd>
+<div class="desc"><p>Field ImportTDMInput.file_format</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.ImportTDMInput.file_name"><code class="name">var <span class="ident">file_name</span></code></dt>
+<dd>
+<div class="desc"><p>Field ImportTDMInput.file_name</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="orbdetpy.ccsds.Settings"><code class="flex name class">
+<span>class <span class="ident">Settings</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>google.protobuf.pyext._message.CMessage</li>
+<li>google.protobuf.message.Message</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="orbdetpy.ccsds.Settings.DESCRIPTOR"><code class="name">var <span class="ident">DESCRIPTOR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.MeasurementsEntry"><code class="name">var <span class="ident">MeasurementsEntry</span></code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.StationsEntry"><code class="name">var <span class="ident">StationsEntry</span></code></dt>
+<dd>
+<div class="desc"><p>A ProtocolMessage</p></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="orbdetpy.ccsds.Settings.drag_MSISE_flags"><code class="name">var <span class="ident">drag_MSISE_flags</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_MSISE_flags</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.drag_coefficient"><code class="name">var <span class="ident">drag_coefficient</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_coefficient</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.drag_exp_H0"><code class="name">var <span class="ident">drag_exp_H0</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_exp_H0</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.drag_exp_Hscale"><code class="name">var <span class="ident">drag_exp_Hscale</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_exp_Hscale</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.drag_exp_rho0"><code class="name">var <span class="ident">drag_exp_rho0</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_exp_rho0</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.drag_model"><code class="name">var <span class="ident">drag_model</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.drag_model</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_DMC_acceleration"><code class="name">var <span class="ident">estm_DMC_acceleration</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_DMC_acceleration</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_DMC_corr_time"><code class="name">var <span class="ident">estm_DMC_corr_time</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_DMC_corr_time</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_DMC_sigma_pert"><code class="name">var <span class="ident">estm_DMC_sigma_pert</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_DMC_sigma_pert</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_covariance"><code class="name">var <span class="ident">estm_covariance</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_covariance</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_detection_probability"><code class="name">var <span class="ident">estm_detection_probability</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_detection_probability</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_filter"><code class="name">var <span class="ident">estm_filter</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_filter</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_gating_probability"><code class="name">var <span class="ident">estm_gating_probability</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_gating_probability</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_gating_threshold"><code class="name">var <span class="ident">estm_gating_threshold</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_gating_threshold</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_outlier_sigma"><code class="name">var <span class="ident">estm_outlier_sigma</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_outlier_sigma</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_outlier_warmup"><code class="name">var <span class="ident">estm_outlier_warmup</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_outlier_warmup</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_process_noise"><code class="name">var <span class="ident">estm_process_noise</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_process_noise</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.estm_smoother_iterations"><code class="name">var <span class="ident">estm_smoother_iterations</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.estm_smoother_iterations</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.geo_zone_lat_lon"><code class="name">var <span class="ident">geo_zone_lat_lon</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.geo_zone_lat_lon</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.gravity_degree"><code class="name">var <span class="ident">gravity_degree</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.gravity_degree</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.gravity_order"><code class="name">var <span class="ident">gravity_order</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.gravity_order</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.integ_abs_tolerance"><code class="name">var <span class="ident">integ_abs_tolerance</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.integ_abs_tolerance</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.integ_max_time_step"><code class="name">var <span class="ident">integ_max_time_step</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.integ_max_time_step</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.integ_min_time_step"><code class="name">var <span class="ident">integ_min_time_step</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.integ_min_time_step</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.integ_rel_tolerance"><code class="name">var <span class="ident">integ_rel_tolerance</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.integ_rel_tolerance</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.maneuvers"><code class="name">var <span class="ident">maneuvers</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.maneuvers</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.measurements"><code class="name">var <span class="ident">measurements</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.measurements</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.ocean_tides_degree"><code class="name">var <span class="ident">ocean_tides_degree</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.ocean_tides_degree</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.ocean_tides_order"><code class="name">var <span class="ident">ocean_tides_order</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.ocean_tides_order</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.output_flags"><code class="name">var <span class="ident">output_flags</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.output_flags</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.prop_end"><code class="name">var <span class="ident">prop_end</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_end</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.prop_inertial_frame"><code class="name">var <span class="ident">prop_inertial_frame</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_inertial_frame</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.prop_initial_TLE"><code class="name">var <span class="ident">prop_initial_TLE</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_initial_TLE</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.prop_initial_state"><code class="name">var <span class="ident">prop_initial_state</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_initial_state</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.prop_start"><code class="name">var <span class="ident">prop_start</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_start</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.prop_step"><code class="name">var <span class="ident">prop_step</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.prop_step</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rp_coeff_absorption"><code class="name">var <span class="ident">rp_coeff_absorption</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rp_coeff_absorption</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rp_coeff_reflection"><code class="name">var <span class="ident">rp_coeff_reflection</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rp_coeff_reflection</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rp_sun"><code class="name">var <span class="ident">rp_sun</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rp_sun</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rso_area"><code class="name">var <span class="ident">rso_area</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_area</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rso_attitude_provider"><code class="name">var <span class="ident">rso_attitude_provider</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_attitude_provider</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rso_facets"><code class="name">var <span class="ident">rso_facets</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_facets</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rso_mass"><code class="name">var <span class="ident">rso_mass</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_mass</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rso_solar_array_area"><code class="name">var <span class="ident">rso_solar_array_area</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_solar_array_area</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rso_solar_array_axis"><code class="name">var <span class="ident">rso_solar_array_axis</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_solar_array_axis</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rso_spin_acceleration"><code class="name">var <span class="ident">rso_spin_acceleration</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_spin_acceleration</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.rso_spin_velocity"><code class="name">var <span class="ident">rso_spin_velocity</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.rso_spin_velocity</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.sim_measurements"><code class="name">var <span class="ident">sim_measurements</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.sim_measurements</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.solid_tides_moon"><code class="name">var <span class="ident">solid_tides_moon</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.solid_tides_moon</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.solid_tides_sun"><code class="name">var <span class="ident">solid_tides_sun</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.solid_tides_sun</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.stations"><code class="name">var <span class="ident">stations</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.stations</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.third_body_moon"><code class="name">var <span class="ident">third_body_moon</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.third_body_moon</p></div>
+</dd>
+<dt id="orbdetpy.ccsds.Settings.third_body_sun"><code class="name">var <span class="ident">third_body_sun</span></code></dt>
+<dd>
+<div class="desc"><p>Field Settings.third_body_sun</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -92,11 +367,21 @@ file_format : Constant from TDMFileFormat.</p>
 <li><code><a title="orbdetpy.ccsds.import_TDM" href="#orbdetpy.ccsds.import_TDM">import_TDM</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="orbdetpy.ccsds.ImportTDMInput" href="#orbdetpy.ccsds.ImportTDMInput">ImportTDMInput</a></code></h4>
+</li>
+<li>
+<h4><code><a title="orbdetpy.ccsds.Settings" href="#orbdetpy.ccsds.Settings">Settings</a></code></h4>
+</li>
+</ul>
+</li>
 </ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.10.0</a>.</p>
 </footer>
 </body>
 </html>

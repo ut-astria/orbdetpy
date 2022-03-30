@@ -1,5 +1,5 @@
 # astro_data.py - Update Orekit astrodynamics data files.
-# Copyright (C) 2019-2021 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@ import tarfile
 import requests
 from os import path, remove
 from orbdetpy import _root_dir, _data_dir
+from orbdetpy.version import __version__
 
 def format_weather(lines: str)->str:
     """Re-format space weather data into a more efficient form.
@@ -40,8 +41,8 @@ def update_data()->None:
     """
 
     if (not path.isdir(_data_dir)):
-        uri = "https://github.com/ut-astria/orbdetpy/releases/download/2.0.6/orekit-data.tar.gz"
-        print(f"Downloading {uri}")
+        uri = f"https://github.com/ut-astria/orbdetpy/releases/download/{__version__}/orekit-data.tar.gz"
+        print(f"{_data_dir} not found; downloading {uri}")
         resp = requests.get(uri, timeout=10.0, stream=True)
         if (resp.status_code == requests.codes.ok):
             tgz = path.join(_root_dir, "orekit-data.tar.gz")
@@ -54,13 +55,12 @@ def update_data()->None:
         else:
             print(f"HTTP error: {resp.status_code}")
 
-    updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
+    updates = [["https://maia.usno.navy.mil/ser7/finals.all",
                 path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
-               ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
+               ["https://maia.usno.navy.mil/ser7/finals2000A.all",
                 path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
-               ["http://astria.tacc.utexas.edu/AstriaGraph/SP_ephemeris/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None],
+               ["https://maia.usno.navy.mil/ser7/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None],
                ["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(_data_dir, "SpaceWeather.dat"), format_weather]]
-    # http://maia.usno.navy.mil/ser7
     for u in updates:
         print(f"Updating {u[1]}")
         try:
@@ -73,5 +73,5 @@ def update_data()->None:
         except Exception as exc:
             print(exc)
 
-if (__name__ == '__main__'):
+if (__name__ == "__main__"):
     update_data()

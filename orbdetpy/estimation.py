@@ -1,5 +1,5 @@
 # estimation.py - Orbit estimation functions.
-# Copyright (C) 2019-2020 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 from typing import List, Tuple
 from traceback import format_exc
 from orbdetpy.rpc.estimation_pb2_grpc import EstimationStub
-from orbdetpy.rpc.messages_pb2 import AnglesInput, DetermineOrbitInput, Settings
+from orbdetpy.rpc.messages_pb2 import AnglesInput, DetermineOrbitInput, MeasurementArray, MultiTargetInput, Settings
 from orbdetpy.rpc.server import RemoteServer
 
 def determine_orbit(config: List[Settings], meas):
@@ -26,7 +26,7 @@ def determine_orbit(config: List[Settings], meas):
     Parameters
     ----------
     config : List of Settings objects.
-    meas : List of measurements.
+    meas : List of list of Measurement objects.
 
     Returns
     -------
@@ -46,6 +46,28 @@ def determine_orbit(config: List[Settings], meas):
             fit_data = format_exc()
         od_output.append(fit_data)
     return(od_output)
+
+def multi_target_OD(config_list: List[Settings], meas_list):
+    """ Run multiple target orbit determination using CAR/MHF and JPDA.
+
+    Parameters
+    ----------
+    config_list : List of Settings objects.
+    meas_list : List of list of Measurement objects.
+
+    Returns
+    -------
+    Multiple target orbit determination results.
+    """
+
+    # Disable DMC because CAR-MHF currently only handles static process noise
+    for cfg in config_list:
+        cfg.estm_DMC_corr_time = 0.0
+        cfg.estm_DMC_sigma_pert = 0.0
+
+    resp = _estimation_stub.multiTargetOD(MultiTargetInput(
+        config=config_list, measurements=(MeasurementArray(array=m) for m in meas_list)))
+    return(resp)
 
 def iod_laplace(frame: int, lat: float, lon: float, alt: float, time: Tuple[float, float, float],
                 ra: Tuple[float, float, float], dec: Tuple[float, float, float])->List[float]:
@@ -70,6 +92,5 @@ def iod_laplace(frame: int, lat: float, lon: float, alt: float, time: Tuple[floa
                                                    longitude=lon, altitude=alt, frame=frame))
     return(resp.array)
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("AnglesInput", "DetermineOrbitInput", "Settings")}
+if (__name__ != "__main__"):
     _estimation_stub = EstimationStub(RemoteServer.channel())

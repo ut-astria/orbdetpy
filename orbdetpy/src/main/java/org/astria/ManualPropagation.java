@@ -1,6 +1,6 @@
 /*
  * ManualPropagation.java - Low level numerical state propagation.
- * Copyright (C) 2018-2021 University of Texas
+ * Copyright (C) 2018-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,60 +26,42 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.LofOffset;
+import org.hipparchus.util.FastMath;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
-public final class ManualPropagation implements PVCoordinatesProvider
+public final class ManualPropagation
 {
     private final Settings odCfg;
     private final int stateDim;
+    private boolean enableDMC;
+    private final int[] parPos;
 
     private final Task[] tasks;
     private CountDownLatch taskSignal;
     private double propStart;
     private double propFinal;
 
-    private final AttitudeProvider attProvider;
-    private final LofOffset lofFrame;
-    private AbsoluteDate savedTime;
-    private TimeStampedPVCoordinates savedPos;
-
-    private boolean enableDMC;
-    private final int[] posParameters;
-
     public ManualPropagation(Settings odCfg)
     {
 	this.odCfg = odCfg;
 	this.stateDim = odCfg.parameters.size() + 6;
-	this.tasks = new Task[2*stateDim];
-	for (int i = 0; i < tasks.length; i++)
-	    tasks[i] = new Task();
-
-	attProvider = odCfg.getAttitudeProvider();
-	lofFrame = new LofOffset(odCfg.propInertialFrame, LOFType.VVLH);
-
-	enableDMC = true;
-	posParameters = new int[odCfg.forces.size() + 3];
+	this.enableDMC = true;
+	this.parPos = new int[odCfg.forces.size() + 3];
 	for (int i = 0; i < odCfg.forces.size(); i++)
 	{
-	    posParameters[i] = -1;
+	    parPos[i] = -1;
 	    ForceModel fmod = odCfg.forces.get(i);
 	    double[] fpar = fmod.getParameters();
 	    for (int j = 0; j < odCfg.parameters.size(); j++)
 	    {
 		if (fmod.isSupported(odCfg.parameters.get(j).name))
-		    posParameters[i] = j + 6;
+		    parPos[i] = j + 6;
 	    }
 	}
 
@@ -87,71 +69,74 @@ public final class ManualPropagation implements PVCoordinatesProvider
 	{
 	    if (odCfg.parameters.get(i).name.equals(Estimation.DMC_ACC_ESTM[0]))
 	    {
-		posParameters[posParameters.length-3] = i+6;
-		posParameters[posParameters.length-2] = i+7;
-		posParameters[posParameters.length-1] = i+8;
+		parPos[parPos.length - 3] = i + 6;
+		parPos[parPos.length - 2] = i + 7;
+		parPos[parPos.length - 1] = i + 8;
 		break;
 	    }
 	}
+
+	int count = FastMath.min(2*stateDim, Runtime.getRuntime().availableProcessors());
+	int q = (2*stateDim)/count, r = (2*stateDim)%count;
+	this.tasks = new Task[count];
+	for (int i = 0; i < count; i++)
+	{
+	    if (i == 0)
+		tasks[i] = new Task((q + r)*stateDim);
+	    else
+		tasks[i] = new Task(q*stateDim);
+	}
     }
 
-    public Array2DRowRealMatrix propagate(double t0, Array2DRowRealMatrix inp,
-					  double t1, Array2DRowRealMatrix out, boolean enableDMC)
+    public Array2DRowRealMatrix propagate(double t0, Array2DRowRealMatrix inp, double t1, Array2DRowRealMatrix out, boolean enableDMC)
     {
 	propStart = t0;
 	propFinal = t1;
 	this.enableDMC = enableDMC;
-	taskSignal = new CountDownLatch(inp.getColumnDimension());
-	for (int i = 0; i < inp.getColumnDimension(); i++)
+	taskSignal = new CountDownLatch(tasks.length);
+	for (int i = 0, k = 0; i < tasks.length; i++)
 	{
-	    tasks[i].xStart = inp.getColumn(i);
+	    for (int j = 0; j < tasks[i].xStart.length/stateDim; j++, k++)
+		System.arraycopy(inp.getColumn(k), 0, tasks[i].xStart, j*stateDim, stateDim);
 	    DataManager.threadPool.execute(tasks[i]);
 	}
 
 	try
 	{
 	    if (!taskSignal.await(10L, TimeUnit.MINUTES))
-		throw(new RuntimeException("Propagation of UKF sigma points timed out"));
+		throw(new RuntimeException("UKF sigma point propagation timed out"));
 	}
 	catch (Exception exc)
 	{
 	    throw(new RuntimeException(exc));
 	}
 
-	for (int i = 0; i < inp.getColumnDimension(); i++)
+	for (int i = 0, k = 0; i < tasks.length; i++)
 	{
-	    if (tasks[i].xFinal != null)
-		out.setColumn(i, tasks[i].xFinal);
-	    else
+	    if (tasks[i].xFinal == null)
 		throw(new RuntimeException(tasks[i].exception));
+	    for (int j = 0; j < tasks[i].xFinal.length; j++)
+	    {
+		out.setEntry(j % stateDim, k, tasks[i].xFinal[j]);
+		if ((j + 1) % stateDim == 0)
+		    k++;
+	    }
 	}
 	return(out);
     }
 
-    public Attitude getAttitude(AbsoluteDate time, double[] X)
-    {
-	savedTime = new AbsoluteDate(time, 0.0);
-	savedPos = new TimeStampedPVCoordinates(time, new Vector3D(X[0], X[1], X[2]), new Vector3D(X[3], X[4], X[5]));
-	if (attProvider != null)
-	    return(attProvider.getAttitude(this, time, odCfg.propInertialFrame));
-	else
-	    return(lofFrame.getAttitude(this, time, odCfg.propInertialFrame));
-    }
-
-    @Override public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
-    {
-	return(odCfg.propInertialFrame.getTransformTo(frame, date).transformPVCoordinates(savedPos.shiftedBy(date.durationFrom(savedTime))));
-    }
-
-    private final class Task implements Runnable, OrdinaryDifferentialEquation
+    private final class Task implements OrdinaryDifferentialEquation, Runnable
     {
 	private final ODEIntegrator odeInt;
 	public double[] xStart;
+	public double[] xDeriv;
 	public double[] xFinal;
 	public Exception exception;
 
-	public Task()
+	public Task(int colSize)
 	{
+	    xStart = new double[colSize];
+	    xDeriv = new double[colSize];
 	    odeInt = new DormandPrince853Integrator(odCfg.integMinTimeStep, odCfg.integMaxTimeStep, odCfg.integAbsTolerance, odCfg.integRelTolerance);
 	}
 
@@ -175,44 +160,46 @@ public final class ManualPropagation implements PVCoordinatesProvider
 
 	@Override public int getDimension()
 	{
-	    return(stateDim);
+	    return(xStart.length);
 	}
 
 	@Override public double[] computeDerivatives(double t, double[] X)
 	{
-	    final double[] xDot = new double[stateDim];
-	    final AbsoluteDate tm = new AbsoluteDate(odCfg.propStart, t);
-	    final SpacecraftState ss = new SpacecraftState(new CartesianOrbit(new PVCoordinates(new Vector3D(X[0],X[1],X[2]), new Vector3D(X[3],X[4],X[5])),
-									      odCfg.propInertialFrame, tm, Constants.EGM96_EARTH_MU),
-							   getAttitude(tm, X), odCfg.rsoMass);
-
-	    Vector3D acc = Vector3D.ZERO;
-	    for (int j = 0; j < odCfg.forces.size(); j++)
+	    AbsoluteDate tm = new AbsoluteDate(odCfg.propStart, t);
+	    for (int i = 0; i < X.length; i += stateDim)
 	    {
-		ForceModel fmod = odCfg.forces.get(j);
-		double[] fpar = fmod.getParameters();
-		if (posParameters[j] != -1)
-		    fpar[0] = X[posParameters[j]];
-		acc = acc.add(fmod.acceleration(ss, fpar));
-	    }
+		CartesianOrbit orb = new CartesianOrbit(new PVCoordinates(new Vector3D(X[i], X[i+1], X[i+2]), new Vector3D(X[i+3], X[i+4], X[i+5])),
+							odCfg.propInertialFrame, tm, Constants.EGM96_EARTH_MU);
+		SpacecraftState ss = new SpacecraftState(orb, odCfg.rsoMass);
 
-	    double[] accArray = acc.toArray();
-	    xDot[0] = X[3];
-	    xDot[1] = X[4];
-	    xDot[2] = X[5];
-	    xDot[3] = accArray[0];
-	    xDot[4] = accArray[1];
-	    xDot[5] = accArray[2];
-	    if (enableDMC && odCfg.estmDMCCorrTime > 0.0 && odCfg.estmDMCSigmaPert > 0.0)
-	    {
-		xDot[3] += X[posParameters[posParameters.length-3]];
-		xDot[4] += X[posParameters[posParameters.length-2]];
-		xDot[5] += X[posParameters[posParameters.length-1]];
-		xDot[posParameters[posParameters.length-3]] = -X[posParameters[posParameters.length-3]]/odCfg.estmDMCCorrTime;
-		xDot[posParameters[posParameters.length-2]] = -X[posParameters[posParameters.length-2]]/odCfg.estmDMCCorrTime;
-		xDot[posParameters[posParameters.length-1]] = -X[posParameters[posParameters.length-1]]/odCfg.estmDMCCorrTime;
+		Vector3D acc = Vector3D.ZERO;
+		for (int j = 0; j < odCfg.forces.size(); j++)
+		{
+		    ForceModel fmod = odCfg.forces.get(j);
+		    double[] fpar = fmod.getParameters();
+		    if (parPos[j] != -1)
+			fpar[0] = X[i + parPos[j]];
+		    acc = acc.add(fmod.acceleration(ss, fpar));
+		}
+
+		double[] accArray = acc.toArray();
+		xDeriv[i] = X[i + 3];
+		xDeriv[i + 1] = X[i + 4];
+		xDeriv[i + 2] = X[i + 5];
+		xDeriv[i + 3] = accArray[0];
+		xDeriv[i + 4] = accArray[1];
+		xDeriv[i + 5] = accArray[2];
+		if (enableDMC && odCfg.estmDMCCorrTime > 0.0 && odCfg.estmDMCSigmaPert > 0.0)
+		{
+		    xDeriv[i + 3] += X[i + parPos[parPos.length - 3]];
+		    xDeriv[i + 4] += X[i + parPos[parPos.length - 2]];
+		    xDeriv[i + 5] += X[i + parPos[parPos.length - 1]];
+		    xDeriv[i + parPos[parPos.length - 3]] = -X[i + parPos[parPos.length - 3]]/odCfg.estmDMCCorrTime;
+		    xDeriv[i + parPos[parPos.length - 2]] = -X[i + parPos[parPos.length - 2]]/odCfg.estmDMCCorrTime;
+		    xDeriv[i + parPos[parPos.length - 1]] = -X[i + parPos[parPos.length - 1]]/odCfg.estmDMCCorrTime;
+		}
 	    }
-	    return(xDot);
+	    return(xDeriv);
 	}
     }
 }

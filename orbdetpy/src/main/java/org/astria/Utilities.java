@@ -22,10 +22,19 @@ import java.util.ArrayList;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataSource;
 import org.orekit.estimation.iod.IodGooding;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.files.ccsds.TDMFile;
-import org.orekit.files.ccsds.TDMParser;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.tdm.AngleType;
+import org.orekit.files.ccsds.ndm.tdm.Observation;
+import org.orekit.files.ccsds.ndm.tdm.ObservationsBlock;
+import org.orekit.files.ccsds.ndm.tdm.ObservationType;
+import org.orekit.files.ccsds.ndm.tdm.Tdm;
+import org.orekit.files.ccsds.ndm.tdm.TdmMetadata;
+import org.orekit.files.ccsds.ndm.tdm.TdmParser;
+import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.TopocentricFrame;
@@ -54,25 +63,28 @@ public final class Utilities
 	    gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], FramesFactory.getFrame(frame)).getPosition();
 	}
 
-	IodGooding good = new IodGooding(FramesFactory.getFrame(frame), Constants.EGM96_EARTH_MU);
-	KeplerianOrbit orb = good.estimate(gspos[0], gspos[1], gspos[2], los[0], time[0], los[1], time[1], los[2], time[2], rho1init, rho3init);
+	IodGooding good = new IodGooding(Constants.EGM96_EARTH_MU);
+	KeplerianOrbit orb = good.estimate(FramesFactory.getFrame(frame), gspos[0], gspos[1], gspos[2], los[0], time[0],
+					   los[1], time[1], los[2], time[2], rho1init, rho3init);
 	return(orb);
     }
 
-    public static ArrayList<ArrayList<Measurements.Measurement>> importTDM(String fileName, TDMParser.TDMFileFormat fileFormat)
+    public static ArrayList<ArrayList<Measurements.Measurement>> importTDM(String fileName, FileFormat fileFormat)
     {
 	Measurements.Measurement obj = null;
 	ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>();
-	TDMFile tdm = new TDMParser().withFileFormat(fileFormat).parse(fileName);
-	for (TDMFile.ObservationsBlock blk: tdm.getObservationsBlocks())
+	TdmParser parser = new ParserBuilder().buildTdmParser();
+	parser.reset(fileFormat);
+	for (Segment<TdmMetadata, ObservationsBlock> blk: parser.parseMessage(new DataSource(fileName)).getSegments())
 	{
 	    int i = 0;
-	    String atype = blk.getMetaData().getAngleType();
+	    AngleType atype = blk.getMetadata().getAngleType();
 	    ArrayList<Measurements.Measurement> mall = new ArrayList<Measurements.Measurement>();
-	    for (TDMFile.Observation obs: blk.getObservations())
+	    for (Observation obs: blk.getData().getObservations())
 	    {
-		String keyw = obs.getKeyword();
-		if (!(keyw.equals("RANGE") || keyw.equals("DOPPLER_INSTANTANEOUS") || keyw.equals("ANGLE_1") || keyw.equals("ANGLE_2")))
+		ObservationType keyw = obs.getType();
+		if (keyw != ObservationType.RANGE && keyw != ObservationType.DOPPLER_INSTANTANEOUS &&
+		    keyw != ObservationType.ANGLE_1 && keyw != ObservationType.ANGLE_2)
 		    continue;
 		if (i == 0)
 		{
@@ -82,23 +94,23 @@ public final class Utilities
 
 		if (atype == null)
 		{
-		    if (keyw.equals("RANGE"))
+		    if (keyw == ObservationType.RANGE)
 			obj.values[0] = obs.getMeasurement()*1000.0;
-		    else if (keyw.equals("DOPPLER_INSTANTANEOUS"))
+		    else if (keyw == ObservationType.DOPPLER_INSTANTANEOUS)
 			obj.values[1] = obs.getMeasurement()*1000.0;
 		}
-		else if (atype.equals("RADEC"))
+		else if (atype == AngleType.RADEC)
 		{
-		    if (keyw.equals("ANGLE_1"))
+		    if (keyw == ObservationType.ANGLE_1)
 			obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw.equals("ANGLE_2"))
+		    else if (keyw == ObservationType.ANGLE_2)
 			obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
 		}
-		else if (atype.equals("AZEL"))
+		else if (atype == AngleType.AZEL)
 		{
-		    if (keyw.equals("ANGLE_1"))
+		    if (keyw == ObservationType.ANGLE_1)
 			obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw.equals("ANGLE_2"))
+		    else if (keyw == ObservationType.ANGLE_2)
 			obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
 		}
 

@@ -14,11 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from math import acos, pi
-from numpy import array, cross, dot
-from numpy.linalg import norm
+from math import acos, pi, sqrt
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from numpy import array, cross, dot
+from numpy.linalg import norm
+from orbdetpy.conversion import get_UTC_string
 
 def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     """Plot simulated orbital elements, angular momenta, and specific energy.
@@ -34,8 +35,8 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     List of plot files if they were saved to disk.
     """
 
-    mu = 398600.4418
-    tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran = [],[],[],[],[],[],[],[],[],[]
+    mu, earth_equ_r = 398600.4418, 6378.1363
+    tstamp,hvec,hmag,ener,sma,ecc,inc,raan,argp,tran,period,altitude = [],[],[],[],[],[],[],[],[],[],[],[]
     for o in sim_data:
         if (hasattr(o, "true_state")):
             rv = [x/1000.0 for x in o.true_state[:6]]
@@ -72,17 +73,20 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
         raan.append(O)
         argp.append(w)
         tran.append(theta)
+        period.append(2.0*pi*sqrt(a**3/mu)/60.0)
+        altitude.append(rn - earth_equ_r)
 
     outfiles = []
     hvec = array(hvec)
+    utc_time = get_UTC_string([tstamp[0], tstamp[-1]])
     tim = [(t - tstamp[0])/3600 for t in tstamp]
 
     plt.figure(0)
-    plt.suptitle("Orbital Elements")
+    plt.suptitle(f"Orbital Elements\n{utc_time[0]} to {utc_time[1]}")
     for i in range(6):
         axis = plt.subplot(6, 1, i + 1)
         axis.ticklabel_format(useOffset=False)
-        plt.scatter(tim, (sma, ecc, inc, raan, argp, tran)[i], c="b", marker="o", s=7)
+        plt.scatter(tim, (sma, ecc, inc, raan, argp, tran)[i], c="b", marker="o", s=3)
         plt.xlabel("Time [hr]")
         plt.ylabel(("a [km]", "e", "i [deg]", r"$\Omega$ [deg]", r"$\omega$ [deg]", r"$\theta$ [deg]")[i])
     if (output_file_path):
@@ -90,11 +94,11 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
         plt.savefig(outfiles[-1], format="png")
 
     plt.figure(1)
-    plt.suptitle("Specific Angular Momentum & Energy")
+    plt.suptitle(f"Specific Angular Momentum and Energy\n{utc_time[0]} to {utc_time[1]}")
     for i in range(2):
         axis = plt.subplot(2, 1, i + 1)
         axis.ticklabel_format(useOffset=False)
-        plt.scatter(tim, (hmag, ener)[i], c="b", marker="o", s=7)
+        plt.scatter(tim, (hmag, ener)[i], c="b", marker="o", s=3)
         plt.xlabel("Time [hr]")
         plt.ylabel((r"h [$km^2/s$]", r"E [$km^2/s^2$]")[i])
     plt.tight_layout(rect=(0, 0.03, 1, 0.95))
@@ -103,10 +107,10 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
         plt.savefig(outfiles[-1], format="png")
 
     fig = plt.figure(2)
-    plt.suptitle("Specific Angular Momentum")
+    plt.suptitle(f"Specific Angular Momentum\n{utc_time[0]} to {utc_time[1]}")
     axis = fig.add_subplot(111, projection="3d")
     axis.ticklabel_format(useOffset=False)
-    axis.scatter(hvec[:,0], hvec[:,1], hvec[:,2], c="b", marker="o", s=7)
+    axis.scatter(hvec[:,0], hvec[:,1], hvec[:,2], c="b", marker="o", s=3)
     axis.grid(True)
     axis.set_xlabel(r"h(x) [$km^2/s$]")
     axis.set_ylabel(r"h(y) [$km^2/s$]")
@@ -114,6 +118,18 @@ def plot(sim_data, interactive: bool=False, output_file_path: str=None):
     plt.tight_layout(rect=(0, 0.03, 1, 0.95))
     if (output_file_path):
         outfiles.append(output_file_path + "_momentum_3D.png")
+        plt.savefig(outfiles[-1], format="png")
+
+    fig = plt.figure(3)
+    plt.suptitle(f"Gabbard Plot\n{utc_time[0]} to {utc_time[1]}")
+    plt.ticklabel_format(useOffset=False)
+    plt.scatter(period, altitude, c="b", marker="o", s=3)
+    plt.grid(True)
+    plt.xlabel("Time [min]")
+    plt.ylabel("Altitude [km]")
+    plt.tight_layout(rect=(0, 0.03, 1, 0.95))
+    if (output_file_path):
+        outfiles.append(output_file_path + "_gabbard.png")
         plt.savefig(outfiles[-1], format="png")
 
     if (interactive):

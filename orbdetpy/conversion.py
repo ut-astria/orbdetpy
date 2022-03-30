@@ -1,5 +1,5 @@
 # conversion.py - Various conversion functions.
-# Copyright (C) 2019-2021 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from numpy import array, cross, vstack
+from numpy import array, cross, sqrt, vstack
 from numpy.linalg import norm
 from typing import List, Tuple
 from google.protobuf.wrappers_pb2 import StringValue
@@ -223,13 +223,13 @@ def pv_to_elem(frame: int, time: float, pv: List[float])->List[float]:
         resp = _conversion_stub.convertPvToElem(TransformFrameInput(src_frame=frame, UTC_time=time, pva=[DoubleArray(array=x) for x in pv]))
     return(resp.array[0].array if (single) else resp.array)
 
-def get_UTC_string(j2000_offset: float, truncate: bool=True)->str:
+def get_UTC_string(j2000_offset: float, precision: int=3)->str:
     """Get ISO-8601 formatted UTC string corresponding to TT offset.
 
     Parameters
     ----------
     j2000_offset : Offset in TT from J2000 epoch [s] or list of offsets.
-    truncate : Truncate to milliseconds level accuracy if True (default).
+    precision : Desired precision. Defaults to 3, i.e. milliseconds.
 
     Returns
     -------
@@ -237,8 +237,8 @@ def get_UTC_string(j2000_offset: float, truncate: bool=True)->str:
     """
 
     if (isinstance(j2000_offset, float)):
-        return(_conversion_stub.getUTCString(DoubleArray(array=[float(truncate), j2000_offset])).value)
-    return(_conversion_stub.getUTCString(DoubleArray(array=[float(truncate), *j2000_offset])).value.split(" "))
+        return(_conversion_stub.getUTCString(DoubleArray(array=[float(precision), j2000_offset])).value)
+    return(_conversion_stub.getUTCString(DoubleArray(array=[float(precision), *j2000_offset])).value.split(" "))
 
 def get_J2000_epoch_offset(utc: str)->float:
     """Get TT offset corresponding to ISO-8601 formatted UTC string.
@@ -270,6 +270,28 @@ def get_epoch_difference(from_epoch: int, to_epoch: int)->str:
 
     return(_conversion_stub.getEpochDifference(IntegerArray(array=[from_epoch, to_epoch])).value)
 
-if (__name__ != '__main__'):
-    __pdoc__ = {m: False for m in ("AnglesInput", "DoubleArray", "IntegerArray", "TransformFrameInput")}
+def ltr_to_matrix(lower_triangle: List[float])->List[List[float]]:
+    """Construct a symmetric matrix from its lower triangle.
+
+    Parameters
+    ----------
+    lower_triangle : Lower triangle of a symmetric matrix in row-major order.
+
+    Returns
+    -------
+    Symmetric matrix as a list of lists or None on error.
+    """
+
+    m = (sqrt(8*len(lower_triangle) + 1) - 1)/2
+    n = int(m)
+    if (m == n):
+        k, matrix = 0, [[0]*n for _ in range(n)]
+        for i in range(n):
+            for j in range(i + 1):
+                matrix[i][j], matrix[j][i] = lower_triangle[k], lower_triangle[k]
+                k += 1
+        return(matrix)
+    return(None)
+
+if (__name__ != "__main__"):
     _conversion_stub = ConversionStub(RemoteServer.channel())

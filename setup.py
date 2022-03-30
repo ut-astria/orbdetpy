@@ -1,5 +1,5 @@
 # setup.py - PyPI installation builder.
-# Copyright (C) 2019-2021 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,23 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from os import path
 from setuptools import setup
-from distutils.util import convert_path
-from os import path, environ
 
-# Get the version number from the version path.
-version_dict = {}
-version_path = convert_path("orbdetpy/version.py")
-with open(version_path, "r") as ver_file:
-    exec(ver_file.read(), version_dict)
-
-# Get the long description from the README file.
-here = path.dirname(path.abspath(__file__))
-with open(path.join(here, "README.md"), "r") as a_file:
-    long_description = a_file.read()
-
-with open(path.join(here, "requirements.txt"), "r") as a_file:
-    requirements = a_file.read()
+root_dir, version = path.dirname(path.abspath(path.realpath(__file__))), {}
+with open(path.join(root_dir, "README.md"), "r") as fp:
+    long_description = fp.read()
+with open(path.join(root_dir, "requirements.txt"), "r") as fp:
+    requirements = fp.read()
+with open(path.join(root_dir, "orbdetpy", "version.py"), "r") as fp:
+    exec(fp.read(), version)
 
 CLASSIFIERS = ["Development Status :: 5 - Production/Stable",
                "Environment :: Console",
@@ -47,25 +40,17 @@ CLASSIFIERS = ["Development Status :: 5 - Production/Stable",
                "Topic :: Scientific/Engineering",
                "Topic :: Scientific/Engineering :: Astronomy",
                "Topic :: Utilities"]
-PROJECT_URLS = {"Documentation": "https://ut-astria.github.io/orbdetpy",
-                "Source": "https://github.com/ut-astria/orbdetpy",
+PROJECT_URLS = {"Documentation": "https://ut-astria.github.io/orbdetpy", "Source": "https://github.com/ut-astria/orbdetpy",
                 "Tracker": "https://github.com/ut-astria/orbdetpy/issues"}
-PACKAGE_DATA = {"orbdetpy": ["*.py", "orekit-data/*", "orekit-data/DE-430-ephemerides/*", "orekit-data/Earth-Orientation-Parameters/**/*",
-                             "orekit-data/Potential/*", "plotting/*.py", "rpc/*.py", "target/orbdetpy-server*.jar"]}
+PACKAGE_DATA = {"": ["requirements.txt", "setup.cfg", "setup.py"],
+                "docs": ["*.html", "plotting/*.html", "rpc/*.html"],
+                "examples": ["*.json", "*.py"],
+                "orbdetpy": ["*.py", "*.sh", "plotting/*.py", "rpc/*.py", f"""target/orbdetpy-server-{version["__version__"]}.jar""",
+                             "orekit-data/*", "orekit-data/**/*", "orekit-data/**/**/*"],
+                "tests": ["*.py", "*.txt"]}
 
-setup(name="orbdetpy",
-      packages=["orbdetpy"],
-      version=version_dict["__version__"],
-      description="Orbit determination routines for Python",
-      long_description=long_description,
-      long_description_content_type="text/markdown",
-      author="Shiva Iyer",
-      author_email="shiva.iyer@utexas.edu",
-      url="https://github.com/ut-astria/orbdetpy",
-      project_urls=PROJECT_URLS,
-      keywords=["orbit_determination utilities orbit space celestial_mechanics "
-                "astrodynamics estimation satellite_tracking pass_prediction"],
-      classifiers=CLASSIFIERS,
-      package_data=PACKAGE_DATA,
-      install_requires=requirements,
-      license="GPLv3+")
+setup(name="orbdetpy", packages=list(PACKAGE_DATA.keys()), version=version["__version__"], description="Orbit determination routines for Python",
+      long_description=long_description, long_description_content_type="text/markdown", author="Shiva Iyer",
+      author_email="shiva.iyer@utexas.edu", url="https://github.com/ut-astria/orbdetpy", project_urls=PROJECT_URLS,
+      keywords=["orbit_determination utilities orbit space celestial_mechanics astrodynamics estimation satellite_tracking pass_prediction"],
+      classifiers=CLASSIFIERS, package_data=PACKAGE_DATA, install_requires=requirements, license="GPLv3+")

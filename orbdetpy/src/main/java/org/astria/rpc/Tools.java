@@ -1,6 +1,6 @@
 /*
  * Tools.java - RPC utility functions.
- * Copyright (C) 2019-2021 University of Texas
+ * Copyright (C) 2019-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,7 +152,6 @@ public final class Tools
 	cfg.estmOutlierSigma = req.getEstmOutlierSigma();
 	cfg.estmOutlierWarmup = req.getEstmOutlierWarmup();
 	cfg.estmSmootherIterations = req.getEstmSmootherIterations();
-	cfg.estmEnablePDAF = req.getEstmEnablePDAF();
 	cfg.estmDetectionProbability = req.getEstmDetectionProbability();
 	cfg.estmGatingProbability = req.getEstmGatingProbability();
 	cfg.estmGatingThreshold = req.getEstmGatingThreshold();
