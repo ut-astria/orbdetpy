@@ -489,25 +489,8 @@ public final class Estimation
 		    RealVector error = rawMeas.subtract(yhatpre);
 		    RealMatrix invPyy = MatrixUtils.inverse(Pyy);
 		    RealMatrix K = Pxy.multiply(invPyy);
+		    xhat = new ArrayRealVector(xhatPrev.add(odCfg.parameterMatrix.multiply(K).operate(error)));
 		    P = Pprop.subtract(odCfg.parameterMatrix.multiply(K.multiply(Pyy.multiply(K.transpose()))));
-
-		    if (odCfg.estmEnablePDAF)
-		    {
-			double alpha = FastMath.exp(-0.5*error.dotProduct(invPyy.operate(error)));
-			double b = 2.0*(1.0-odCfg.estmGatingProbability*odCfg.estmDetectionProbability)*
-			    FastMath.sqrt(new CholeskyDecomposition(Pyy, 1E-6, 1E-16).getDeterminant())/
-			    (odCfg.estmDetectionProbability*odCfg.estmGatingThreshold);
-			odout.clutterProbability = b/(b + alpha);
-			xhat = new ArrayRealVector(xhatPrev.add(odCfg.parameterMatrix.multiply(K)
-								.operate(error.mapMultiply(1-odout.clutterProbability))));
-			RealMatrix yyt = error.outerProduct(error).scalarMultiply(
-			    odout.clutterProbability*(1-odout.clutterProbability));
-			P = Pprop.scalarMultiply(odout.clutterProbability).add(
-			    P.scalarMultiply(1-odout.clutterProbability)).add(
-				odCfg.parameterMatrix.multiply(K.multiply(yyt.multiply(K.transpose()))));
-		    }
-		    else
-			xhat = new ArrayRealVector(xhatPrev.add(odCfg.parameterMatrix.multiply(K).operate(error)));
 
 		    double[] pv = xhat.toArray();
 		    CartesianOrbit orb = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
@@ -525,7 +508,7 @@ public final class Estimation
 		    }
 
 		    if (odCfg.estmOutlierSigma > 0.0 &&	odCfg.estmOutlierWarmup > 0 && measIndex >= odCfg.estmOutlierWarmup &&
-			!odCfg.estmEnablePDAF && attempt == 0 && odout.postFit != null)
+			attempt == 0 && odout.postFit != null)
 		    {
 			int pos = 0;
 			boolean isOutlier = false;

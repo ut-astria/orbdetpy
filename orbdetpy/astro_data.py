@@ -55,13 +55,12 @@ def update_data()->None:
         else:
             print(f"HTTP error: {resp.status_code}")
 
-    updates = [["https://datacenter.iers.org/data/latestVersion/7_FINALS.ALL_IAU1980_V2013_017.txt",
+    updates = [["https://maia.usno.navy.mil/ser7/finals.all",
                 path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-1980", "finals.all"), None],
-               ["https://datacenter.iers.org/data/latestVersion/9_FINALS.ALL_IAU2000_V2013_019.txt",
+               ["https://maia.usno.navy.mil/ser7/finals2000A.all",
                 path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
-               ["http://astria.tacc.utexas.edu/AstriaGraph/SP_ephemeris/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None],
+               ["https://maia.usno.navy.mil/ser7/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None],
                ["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(_data_dir, "SpaceWeather.dat"), format_weather]]
-    # http://maia.usno.navy.mil/ser7
     for u in updates:
         print(f"Updating {u[1]}")
         try:

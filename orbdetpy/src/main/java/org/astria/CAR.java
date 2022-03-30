@@ -56,7 +56,7 @@ public class CAR
     }
 
     ArrayList <CARGaussianElement> gaussians = new ArrayList<CARGaussianElement>();
-	
+
     /*
      * Optical CAR
      * meas1 = RA
@@ -66,7 +66,7 @@ public class CAR
      * sigma1 = sigmaRange
      * sigma2 = sigmaRangeRate
      */
-	
+
     /*
      * Range CAR
      * meas1 = RA
@@ -76,7 +76,7 @@ public class CAR
      * sigma1 = sigmaRaRate
      * sigma2 = sigmaDecRate
      */
-	
+
     public CAR(double meas1, double meas2, double meas3, double meas4, TimeStampedPVCoordinates stationCoords, double sigma1,
 	       double sigma2, double gridSpacing, double amin, double amax, double emax, boolean combinedMeas)
     {
@@ -148,7 +148,7 @@ public class CAR
 			}
 		    }
 		}
-	
+
 		double P = c1*r2 + c2*r + c3;
 		double U = c4*r4 + c5*r3 + c6*r2 + c7*r + c8;
 		double a4 = c0;
@@ -560,17 +560,10 @@ public class CAR
 
 	double startArray[] = new double[abscissaMean.length]; 
 	Arrays.fill(startArray, 0.0);
-	LeastSquaresProblem problem = new LeastSquaresBuilder().
-	    start(startArray).
-	    model(model).
-	    target(binSizeRho).
-	    lazyEvaluation(false).
-	    maxEvaluations(10000).
-	    maxIterations(10000).
-	    parameterValidator(boundaries).
-	    build();
-		
+	LeastSquaresProblem problem = new LeastSquaresBuilder().start(startArray).model(model).target(binSizeRho).
+	    lazyEvaluation(false).maxEvaluations(10000).maxIterations(10000).parameterValidator(boundaries).build();
 	LeastSquaresOptimizer.Optimum optimum = new LevenbergMarquardtOptimizer().optimize(problem);
+
 	double[] weights = optimum.getPoint().toArray();
 	double weightSum = 0;
 	for (int i = 0; i < weights.length; i++)
@@ -670,9 +663,9 @@ public class CAR
     RealMatrix crossProduct(RealMatrix vect_A, RealMatrix vect_B) 
     { 
 	RealMatrix cross_P = new Array2DRowRealMatrix(3, 1);
-	cross_P.setEntry(0,0, vect_A.getEntry(1,0) * vect_B.getEntry(2,0) - vect_A.getEntry(2,0) * vect_B.getEntry(1,0)); 
-	cross_P.setEntry(1,0, vect_A.getEntry(2,0) * vect_B.getEntry(0,0) - vect_A.getEntry(0,0) * vect_B.getEntry(2,0)); 
-	cross_P.setEntry(2,0, vect_A.getEntry(0,0) * vect_B.getEntry(1,0) - vect_A.getEntry(1,0) * vect_B.getEntry(0,0)); 
+	cross_P.setEntry(0, 0, vect_A.getEntry(1,0)*vect_B.getEntry(2,0) - vect_A.getEntry(2, 0)*vect_B.getEntry(1, 0)); 
+	cross_P.setEntry(1, 0, vect_A.getEntry(2,0)*vect_B.getEntry(0,0) - vect_A.getEntry(0, 0)*vect_B.getEntry(2, 0)); 
+	cross_P.setEntry(2, 0, vect_A.getEntry(0,0)*vect_B.getEntry(1,0) - vect_A.getEntry(1, 0)*vect_B.getEntry(0, 0)); 
 	return(cross_P);
     }
 
@@ -698,10 +691,10 @@ public class CAR
 	{
 	    if (sigTemp > GMSplitLibrary[w])
 	    {
-		Jp_rr = w+1;
+		Jp_rr = w + 1;
 		break;
 	    }
-	    else if (w == (GMSplitLibrary.length-1))
+	    else if (w == GMSplitLibrary.length - 1)
 		Jp_rr = GMSplitLibrary.length;
 	}
 
@@ -711,7 +704,7 @@ public class CAR
 	{
 	    CARGaussianElement temp = new CARGaussianElement();
 	    temp.abscissaMean = abscissaMean;
-	    temp.ordinateMean = min_rr + (max_rr - min_rr) * (w + 1) / (Jp_rr + 1);
+	    temp.ordinateMean = min_rr + (max_rr - min_rr)*(w + 1)/(Jp_rr + 1);
 	    temp.ordinateStd = rangeRateSigma;
 	    temp.abscissaStd = rangeSigma;
 	    tempGaussians.add(temp);

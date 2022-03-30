@@ -137,11 +137,10 @@ message Settings
     double estm_outlier_sigma = 47;
     int32 estm_outlier_warmup = 48;
     int32 estm_smoother_iterations = 49;
-    bool estm_enable_PDAF = 50;
-    double estm_detection_probability = 51;
-    double estm_gating_probability = 52;
-    double estm_gating_threshold = 53;
-    int32 output_flags = 54;
+    double estm_detection_probability = 50;
+    double estm_gating_probability = 51;
+    double estm_gating_threshold = 52;
+    int32 output_flags = 53;
 }
 
 message SettingsArray

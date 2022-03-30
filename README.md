@@ -28,7 +28,7 @@ If you have docker installed and wish to use a pre-built environment refer to th
 
 # Development
 
-1. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.0.7/orekit-data.tar.gz> under the `orbdetpy/` sub-folder.
+1. Download and extract <https://github.com/ut-astria/orbdetpy/releases/download/2.1.0/orekit-data.tar.gz> under the `orbdetpy/` sub-folder.
 
 2. Developers will need Apache Maven 3+ to build the Java library. Build using the following from the `orbdetpy/` sub-folder, where `os_cpu_type` is `linux-x86_64`, `linux-x86_32`, `windows-x86_64`, `windows-x86_32`, `osx-x86_64`, or `osx-x86_32` depending on your CPU and OS:
 

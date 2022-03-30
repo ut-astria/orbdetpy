@@ -1,5 +1,5 @@
 # setup.py - PyPI installation builder.
-# Copyright (C) 2019-2021 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,9 +42,12 @@ CLASSIFIERS = ["Development Status :: 5 - Production/Stable",
                "Topic :: Utilities"]
 PROJECT_URLS = {"Documentation": "https://ut-astria.github.io/orbdetpy", "Source": "https://github.com/ut-astria/orbdetpy",
                 "Tracker": "https://github.com/ut-astria/orbdetpy/issues"}
-PACKAGE_DATA = {"": ["requirements.txt", "setup.cfg", "setup.py"], "docs": ["*.html", "plotting/*.html"], "examples": ["*.py"],
+PACKAGE_DATA = {"": ["requirements.txt", "setup.cfg", "setup.py"],
+                "docs": ["*.html", "plotting/*.html", "rpc/*.html"],
+                "examples": ["*.json", "*.py"],
                 "orbdetpy": ["*.py", "*.sh", "plotting/*.py", "rpc/*.py", f"""target/orbdetpy-server-{version["__version__"]}.jar""",
-                             "orekit-data/*", "orekit-data/**/*", "orekit-data/**/**/*"], "tests": ["*.py", "*.txt"]}
+                             "orekit-data/*", "orekit-data/**/*", "orekit-data/**/**/*"],
+                "tests": ["*.py", "*.txt"]}
 
 setup(name="orbdetpy", packages=list(PACKAGE_DATA.keys()), version=version["__version__"], description="Orbit determination routines for Python",
       long_description=long_description, long_description_content_type="text/markdown", author="Shiva Iyer",

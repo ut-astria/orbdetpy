@@ -1,6 +1,6 @@
 /*
  * Settings.java - Functions to parse OD configuration settings.
- * Copyright (C) 2018-2021 University of Texas
+ * Copyright (C) 2018-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -359,8 +359,7 @@ public final class Settings
     public Parameter estmDMCAcceleration = new Parameter("DMC", -1E-3, 1E-3, 0.0, EstimationType.ESTIMATE);
     public double estmOutlierSigma = 0.0;
     public int estmOutlierWarmup = 0;
-    public int estmSmootherIterations = 10;
-    public boolean estmEnablePDAF = false;
+    public int estmSmootherIterations = 3;
     public double estmDetectionProbability = 0.99;
     public double estmGatingProbability = 0.99;
     public double estmGatingThreshold = 5.0;
