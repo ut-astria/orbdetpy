@@ -2,7 +2,7 @@ FROM ubuntu:20.04
 
 # Use --build-arg #.#.# when building to use other version
 ARG JAVA_MAJOR_VERSION=11
-ARG ORBDETPY_VERSION=2.0.7
+ARG ORBDETPY_VERSION=2.1.0
 
 # Install orbdetpy dependencies
 RUN apt-get update && \
