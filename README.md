@@ -42,17 +42,17 @@ If you have docker installed and wish to use a pre-built environment refer to th
 
 # Docker
 
-1. Build the docker image on a machine that has docker installed and go to the root folder of this repository where the `Dockerfile` is and run, `docker build --build-arg ORBDETPY_VERSION=2.0.7 -t orbdetpy:2.0.7 .`
+1. Build the docker image on a machine that has docker installed. Go to the root folder of this repository where the `Dockerfile` is and run, `docker build --build-arg ORBDETPY_VERSION=2.1.0 -t orbdetpy:2.1.0 .`
 
-2. Run *orbdetpy:2.0.7* image in a daemon state: `docker run -it --rm orbdetpy:2.0.7 bash`
+2. Run the *orbdetpy:2.1.0* image in a daemon state: `docker run -it --rm orbdetpy:2.1.0 bash`
 
-3. Next we will activate the python environment and run a test to determine a successful docker image build
+3. Activate the python environment and run a test to determine a successful docker image build:
 
 ```bash
 cd && . env_orbdetpy/bin/activate && python orbdetpy/examples/test_estimation.py
 ```
 
-4. From here, you can either develop in orbdetpy or build scripts and test in this pre-built environment
+4. From here, you can either develop in orbdetpy or script and test in this pre-built environment.
 
 # Examples
 
