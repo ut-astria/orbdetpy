@@ -1,5 +1,5 @@
 # server.py - RPC server connection management.
-# Copyright (C) 2019-2021 University of Texas
+# Copyright (C) 2019-2022 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -68,5 +68,5 @@ class RemoteServer:
                 cls.rpc_channel.close()
             if (cls.rpc_server):
                 cls.rpc_server.terminate()
-        except Exception as exc:
+        except Exception as _:
             pass

@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import List, Tuple
-from traceback import format_exc
 from orbdetpy.rpc.estimation_pb2_grpc import EstimationStub
 from orbdetpy.rpc.messages_pb2 import AnglesInput, DetermineOrbitInput, MeasurementArray, MultiTargetInput, Settings
 from orbdetpy.rpc.server import RemoteServer
@@ -33,19 +32,12 @@ def determine_orbit(config: List[Settings], meas):
     Orbit determination results.
     """
 
-    od_output, requests = [], []
+    request = []
     for c, m in zip(config, meas):
         inp = DetermineOrbitInput(config=c)
         inp.measurements.extend(m)
-        requests.append(_estimation_stub.determineOrbit.future(inp))
-
-    for req in requests:
-        try:
-            fit_data = req.result().array
-        except Exception as exc:
-            fit_data = format_exc()
-        od_output.append(fit_data)
-    return(od_output)
+        request.append(_estimation_stub.determineOrbit.future(inp))
+    return([r.result().array for r in request])
 
 def multi_target_OD(config_list: List[Settings], meas_list):
     """ Run multiple target orbit determination using CAR/MHF and JPDA.

@@ -43,7 +43,7 @@ def update_data()->None:
     if (not path.isdir(_data_dir)):
         uri = f"https://github.com/ut-astria/orbdetpy/releases/download/{__version__}/orekit-data.tar.gz"
         print(f"{_data_dir} not found; downloading {uri}")
-        resp = requests.get(uri, timeout=10.0, stream=True)
+        resp = requests.get(uri, timeout=60.0, stream=True)
         if (resp.status_code == requests.codes.ok):
             tgz = path.join(_root_dir, "orekit-data.tar.gz")
             with open(tgz, "wb") as fp:
@@ -63,15 +63,12 @@ def update_data()->None:
                ["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(_data_dir, "SpaceWeather.dat"), format_weather]]
     for u in updates:
         print(f"Updating {u[1]}")
-        try:
-            resp = requests.get(u[0], timeout=10.0)
-            if (resp.status_code == requests.codes.ok):
-                with open(u[1], "w") as fp:
-                    fp.write(u[2](resp.text) if (u[2]) else resp.text)
-            else:
-                print(f"HTTP error: {resp.status_code}")
-        except Exception as exc:
-            print(exc)
+        resp = requests.get(u[0], timeout=60.0)
+        if (resp.status_code == requests.codes.ok):
+            with open(u[1], "w") as fp:
+                fp.write(u[2](resp.text) if (u[2]) else resp.text)
+        else:
+            print(f"HTTP error: {resp.status_code}")
 
 if (__name__ == "__main__"):
     update_data()
