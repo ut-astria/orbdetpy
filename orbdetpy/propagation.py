@@ -31,8 +31,7 @@ def propagate_orbits(cfg_list: List[Settings]):
     Propagated state vectors and simulated measurements.
     """
 
-    resp = _propagation_stub.propagate(SettingsArray(array=[p for p in cfg_list]))
-    return(resp.array)
+    return(_propagation_stub.propagate(SettingsArray(array=[p for p in cfg_list])).array)
 
 if (__name__ != "__main__"):
     _propagation_stub = PropagationStub(RemoteServer.channel())

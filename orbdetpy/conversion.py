@@ -89,9 +89,8 @@ def azel_to_radec(time: float, az: float, el: float, lat: float, lon: float, alt
     Right Ascension and Declination.
     """
 
-    resp = _conversion_stub.convertAzElToRaDec(AnglesInput(time=[time], angle1=[az], angle2=[el],
-                                                           latitude=lat, longitude=lon, altitude=alt, frame=frame))
-    return(resp.array)
+    return(_conversion_stub.convertAzElToRaDec(AnglesInput(time=[time], angle1=[az], angle2=[el],
+                                                           latitude=lat, longitude=lon, altitude=alt, frame=frame)).array)
 
 def radec_to_azel(frame: int, time: float, ra: float, dec: float, lat: float, lon: float, alt: float)->Tuple[float, float]:
     """Convert Right Ascension/Declination to Azimuth/Elevation.
@@ -111,9 +110,8 @@ def radec_to_azel(frame: int, time: float, ra: float, dec: float, lat: float, lo
     Azimuth and Elevation.
     """
 
-    resp = _conversion_stub.convertRaDecToAzEl(AnglesInput(time=[time], angle1=[ra], angle2=[dec],
-                                                           latitude=lat, longitude=lon, altitude=alt, frame=frame))
-    return(resp.array)
+    return(_conversion_stub.convertRaDecToAzEl(AnglesInput(time=[time], angle1=[ra], angle2=[dec],
+                                                           latitude=lat, longitude=lon, altitude=alt, frame=frame)).array)
 
 def lla_to_pos(time: float, lla: List[float])->List[float]:
     """Convert WGS-84 lat/lon/alt to Cartesian position.

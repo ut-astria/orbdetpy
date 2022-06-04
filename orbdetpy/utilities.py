@@ -34,8 +34,7 @@ def import_SP3(file_name: str, dest_frame: int, times: List[float]):
     Ephemerides in a Measurement2DArray object.
     """
 
-    resp = _utilities_stub.importSP3(InterpolateEphemerisInput(source_frame=file_name, dest_frame=dest_frame, interp_time=times))
-    return(resp.array)
+    return(_utilities_stub.importSP3(InterpolateEphemerisInput(source_frame=file_name, dest_frame=dest_frame, interp_time=times)).array)
 
 def interpolate_ephemeris(source_frame: int, times: List[float], states, num_points: int,
                           dest_frame: int, interp_start: float, interp_end: float, step_size: float):
@@ -63,6 +62,7 @@ def interpolate_ephemeris(source_frame: int, times: List[float], states, num_poi
             tint.append(interp_end)
     else:
         tint = interp_start
+
     resp = _utilities_stub.interpolateEphemeris(InterpolateEphemerisInput(
         source_frame=source_frame, time=times, ephem=[DoubleArray(array=s) for s in states], num_points=num_points,
         dest_frame=dest_frame, interp_time=tint))
@@ -84,6 +84,7 @@ def get_density(drag_model: int, time: float, lla: List[float])->List[float]:
 
     if (isinstance(time, float) or isinstance(time, str)):
         time, lla = [time], [lla]
+
     if (isinstance(time[0], float)):
         resp = _utilities_stub.getDensity(TransformFrameInput(
             time=time, pva=[DoubleArray(array=x) for x in lla], dest_frame=str(drag_model)))

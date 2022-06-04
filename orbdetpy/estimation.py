@@ -57,9 +57,7 @@ def multi_target_OD(config_list: List[Settings], meas_list):
         cfg.estm_DMC_corr_time = 0.0
         cfg.estm_DMC_sigma_pert = 0.0
 
-    resp = _estimation_stub.multiTargetOD(MultiTargetInput(
-        config=config_list, measurements=(MeasurementArray(array=m) for m in meas_list)))
-    return(resp)
+    return(_estimation_stub.multiTargetOD(MultiTargetInput(config=config_list, measurements=(MeasurementArray(array=m) for m in meas_list))))
 
 def iod_laplace(frame: int, lat: float, lon: float, alt: float, time: Tuple[float, float, float],
                 ra: Tuple[float, float, float], dec: Tuple[float, float, float])->List[float]:
@@ -80,9 +78,8 @@ def iod_laplace(frame: int, lat: float, lon: float, alt: float, time: Tuple[floa
     Position and velocity estimate at time t2.
     """
 
-    resp = _estimation_stub.iodLaplace(AnglesInput(time=time, angle1=ra, angle2=dec, latitude=lat,
-                                                   longitude=lon, altitude=alt, frame=frame))
-    return(resp.array)
+    return(_estimation_stub.iodLaplace(AnglesInput(time=time, angle1=ra, angle2=dec, latitude=lat,
+                                                   longitude=lon, altitude=alt, frame=frame)).array)
 
 if (__name__ != "__main__"):
     _estimation_stub = EstimationStub(RemoteServer.channel())
