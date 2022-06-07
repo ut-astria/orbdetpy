@@ -1,6 +1,6 @@
 /*
  * Utilities.java - Various utility functions.
- * Copyright (C) 2019-2020 University of Texas
+ * Copyright (C) 2019-2022 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,81 +49,81 @@ public final class Utilities
     }
 
     public static KeplerianOrbit iodGooding(double[] gslat, double[] gslon, double[] gsalt, Predefined frame, double[] tm,
-					    double[] ra, double[] dec, double rho1init, double rho3init)
+                                            double[] ra, double[] dec, double rho1init, double rho3init)
     {
-	Vector3D[] los = new Vector3D[3];
-	Vector3D[] gspos = new Vector3D[3];
-	AbsoluteDate[] time = new AbsoluteDate[3];
-	for (int i = 0; i < 3; i++)
-	{
-	    los[i] = new Vector3D(FastMath.cos(dec[i])*FastMath.cos(ra[i]), FastMath.cos(dec[i])*FastMath.sin(ra[i]), FastMath.sin(dec[i]));
-	    time[i] = AbsoluteDate.J2000_EPOCH.shiftedBy(tm[i]);
-	    GroundStation sta = new GroundStation(
-		new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(gslat[i], gslon[i], gsalt[i]), Integer.toString(i)));
-	    gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], FramesFactory.getFrame(frame)).getPosition();
-	}
+        Vector3D[] los = new Vector3D[3];
+        Vector3D[] gspos = new Vector3D[3];
+        AbsoluteDate[] time = new AbsoluteDate[3];
+        for (int i = 0; i < 3; i++)
+        {
+            los[i] = new Vector3D(FastMath.cos(dec[i])*FastMath.cos(ra[i]), FastMath.cos(dec[i])*FastMath.sin(ra[i]), FastMath.sin(dec[i]));
+            time[i] = AbsoluteDate.J2000_EPOCH.shiftedBy(tm[i]);
+            GroundStation sta = new GroundStation(
+                new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(gslat[i], gslon[i], gsalt[i]), Integer.toString(i)));
+            gspos[i] = sta.getBaseFrame().getPVCoordinates(time[i], FramesFactory.getFrame(frame)).getPosition();
+        }
 
-	IodGooding good = new IodGooding(Constants.EGM96_EARTH_MU);
-	KeplerianOrbit orb = good.estimate(FramesFactory.getFrame(frame), gspos[0], gspos[1], gspos[2], los[0], time[0],
-					   los[1], time[1], los[2], time[2], rho1init, rho3init);
-	return(orb);
+        IodGooding good = new IodGooding(Constants.EGM96_EARTH_MU);
+        KeplerianOrbit orb = good.estimate(FramesFactory.getFrame(frame), gspos[0], gspos[1], gspos[2], los[0], time[0],
+                                           los[1], time[1], los[2], time[2], rho1init, rho3init);
+        return(orb);
     }
 
     public static ArrayList<ArrayList<Measurements.Measurement>> importTDM(String fileName, FileFormat fileFormat)
     {
-	Measurements.Measurement obj = null;
-	ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>();
-	TdmParser parser = new ParserBuilder().buildTdmParser();
-	parser.reset(fileFormat);
-	for (Segment<TdmMetadata, ObservationsBlock> blk: parser.parseMessage(new DataSource(fileName)).getSegments())
-	{
-	    int i = 0;
-	    AngleType atype = blk.getMetadata().getAngleType();
-	    ArrayList<Measurements.Measurement> mall = new ArrayList<Measurements.Measurement>();
-	    for (Observation obs: blk.getData().getObservations())
-	    {
-		ObservationType keyw = obs.getType();
-		if (keyw != ObservationType.RANGE && keyw != ObservationType.DOPPLER_INSTANTANEOUS &&
-		    keyw != ObservationType.ANGLE_1 && keyw != ObservationType.ANGLE_2)
-		    continue;
-		if (i == 0)
-		{
-		    obj = new Measurements.Measurement();
-		    obj.values = new double[2];
-		}
+        Measurements.Measurement obj = null;
+        ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>();
+        TdmParser parser = new ParserBuilder().buildTdmParser();
+        parser.reset(fileFormat);
+        for (Segment<TdmMetadata, ObservationsBlock> blk: parser.parseMessage(new DataSource(fileName)).getSegments())
+        {
+            int i = 0;
+            AngleType atype = blk.getMetadata().getAngleType();
+            ArrayList<Measurements.Measurement> mall = new ArrayList<Measurements.Measurement>();
+            for (Observation obs: blk.getData().getObservations())
+            {
+                ObservationType keyw = obs.getType();
+                if (keyw != ObservationType.RANGE && keyw != ObservationType.DOPPLER_INSTANTANEOUS &&
+                    keyw != ObservationType.ANGLE_1 && keyw != ObservationType.ANGLE_2)
+                    continue;
+                if (i == 0)
+                {
+                    obj = new Measurements.Measurement();
+                    obj.values = new double[2];
+                }
 
-		if (atype == null)
-		{
-		    if (keyw == ObservationType.RANGE)
-			obj.values[0] = obs.getMeasurement()*1000.0;
-		    else if (keyw == ObservationType.DOPPLER_INSTANTANEOUS)
-			obj.values[1] = obs.getMeasurement()*1000.0;
-		}
-		else if (atype == AngleType.RADEC)
-		{
-		    if (keyw == ObservationType.ANGLE_1)
-			obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw == ObservationType.ANGLE_2)
-			obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
-		}
-		else if (atype == AngleType.AZEL)
-		{
-		    if (keyw == ObservationType.ANGLE_1)
-			obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
-		    else if (keyw == ObservationType.ANGLE_2)
-			obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
-		}
+                if (atype == null)
+                {
+                    if (keyw == ObservationType.RANGE)
+                        obj.values[0] = obs.getMeasurement()*1000.0;
+                    else if (keyw == ObservationType.DOPPLER_INSTANTANEOUS)
+                        obj.values[1] = obs.getMeasurement()*1000.0;
+                }
+                else if (atype == AngleType.RADEC)
+                {
+                    if (keyw == ObservationType.ANGLE_1)
+                        obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
+                    else if (keyw == ObservationType.ANGLE_2)
+                        obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
+                }
+                else if (atype == AngleType.AZEL)
+                {
+                    if (keyw == ObservationType.ANGLE_1)
+                        obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
+                    else if (keyw == ObservationType.ANGLE_2)
+                        obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
+                }
 
-		if (++i == 2)
-		{
-		    i = 0;
-		    obj.time = obs.getEpoch();
-		    mall.add(obj);
-		}
-	    }
-	    output.add(mall);
-	}
+                if (++i == 2)
+                {
+                    i = 0;
+                    obj.time = obs.getEpoch();
+                    mall.add(obj);
+                }
+            }
+            output.add(mall);
+        }
 
-	return(output);
+        return(output);
     }
 }
