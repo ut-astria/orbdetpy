@@ -71,20 +71,23 @@ public final class Utilities
 
     public static ArrayList<ArrayList<Measurements.Measurement>> importTDM(String fileName, FileFormat fileFormat)
     {
-        Measurements.Measurement obj = null;
-        ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>();
         TdmParser parser = new ParserBuilder().buildTdmParser();
         parser.reset(fileFormat);
+
+        Measurements.Measurement obj = null;
+        ArrayList<ArrayList<Measurements.Measurement>> output = new ArrayList<ArrayList<Measurements.Measurement>>();
+
         for (Segment<TdmMetadata, ObservationsBlock> blk: parser.parseMessage(new DataSource(fileName)).getSegments())
         {
             int i = 0;
-            AngleType atype = blk.getMetadata().getAngleType();
-            ArrayList<Measurements.Measurement> mall = new ArrayList<Measurements.Measurement>();
+            AngleType angleType = blk.getMetadata().getAngleType();
+            ArrayList<Measurements.Measurement> allMeas = new ArrayList<Measurements.Measurement>();
+
             for (Observation obs: blk.getData().getObservations())
             {
-                ObservationType keyw = obs.getType();
-                if (keyw != ObservationType.RANGE && keyw != ObservationType.DOPPLER_INSTANTANEOUS &&
-                    keyw != ObservationType.ANGLE_1 && keyw != ObservationType.ANGLE_2)
+                ObservationType key = obs.getType();
+                if (key != ObservationType.RANGE && key != ObservationType.DOPPLER_INSTANTANEOUS &&
+                    key != ObservationType.ANGLE_1 && key != ObservationType.ANGLE_2)
                     continue;
                 if (i == 0)
                 {
@@ -92,36 +95,36 @@ public final class Utilities
                     obj.values = new double[2];
                 }
 
-                if (atype == null)
+                if (angleType == null)
                 {
-                    if (keyw == ObservationType.RANGE)
-                        obj.values[0] = obs.getMeasurement()*1000.0;
-                    else if (keyw == ObservationType.DOPPLER_INSTANTANEOUS)
-                        obj.values[1] = obs.getMeasurement()*1000.0;
+                    if (key == ObservationType.RANGE)
+                        obj.values[0] = obs.getMeasurement();
+                    else if (key == ObservationType.DOPPLER_INSTANTANEOUS)
+                        obj.values[1] = obs.getMeasurement();
                 }
-                else if (atype == AngleType.RADEC)
+                else if (angleType == AngleType.RADEC)
                 {
-                    if (keyw == ObservationType.ANGLE_1)
-                        obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
-                    else if (keyw == ObservationType.ANGLE_2)
-                        obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
+                    if (key == ObservationType.ANGLE_1)
+                        obj.values[0] = obs.getMeasurement();
+                    else if (key == ObservationType.ANGLE_2)
+                        obj.values[1] = obs.getMeasurement();
                 }
-                else if (atype == AngleType.AZEL)
+                else if (angleType == AngleType.AZEL)
                 {
-                    if (keyw == ObservationType.ANGLE_1)
-                        obj.values[0] = obs.getMeasurement()*FastMath.PI/180.0;
-                    else if (keyw == ObservationType.ANGLE_2)
-                        obj.values[1] = obs.getMeasurement()*FastMath.PI/180.0;
+                    if (key == ObservationType.ANGLE_1)
+                        obj.values[0] = obs.getMeasurement();
+                    else if (key == ObservationType.ANGLE_2)
+                        obj.values[1] = obs.getMeasurement();
                 }
 
                 if (++i == 2)
                 {
                     i = 0;
                     obj.time = obs.getEpoch();
-                    mall.add(obj);
+                    allMeas.add(obj);
                 }
             }
-            output.add(mall);
+            output.add(allMeas);
         }
 
         return(output);
