@@ -733,7 +733,7 @@ public final class MultiTargetEstimation
             RealMatrix covarTemp = new DiagonalMatrix(numStates);
             ArrayList<Hypothesis> objectHypotheses = new ArrayList<Hypothesis>();
 
-            ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, station, 10000.0, 10.0, 10000.0,
+            ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, station, 100000.0, 100.0, 10000.0,
                                                                       17000000, 37000000, 0.05, singleObject).getCAR();
             for (int i = 0; i < CARGaussians.size(); i++)
             {

@@ -58,27 +58,17 @@ public class CAR
     ArrayList <CARGaussianElement> gaussians = new ArrayList<CARGaussianElement>();
 
     /*
-     * Optical CAR
-     * meas1 = RA
-     * meas2 = Dec
-     * meas3 = RaRate
-     * meas4 = DecRate
-     * sigma1 = sigmaRange
-     * sigma2 = sigmaRangeRate
-     */
-
-    /*
-     * Range CAR
-     * meas1 = RA
-     * meas2 = Dec
-     * meas3 = Range
-     * meas4 = RangeRate
-     * sigma1 = sigmaRaRate
-     * sigma2 = sigmaDecRate
+     * Optical CAR (isRaDec == true):
+     *     meas1, meas2, meas3, meas4 = RA, Dec, RARate, DecRate
+     *     sigma1, sigma2 = sigmaRange, sigmaRangeRate
+     *
+     * Range CAR (isRaDec == false):
+     *     meas1, meas2, meas3, meas4 = RA, Dec, Range, RangeRate
+     *     sigma1, sigma2 = sigmaRARate, sigmaDecRate
      */
 
     public CAR(double meas1, double meas2, double meas3, double meas4, TimeStampedPVCoordinates stationCoords, double sigma1,
-               double sigma2, double gridSpacing, double amin, double amax, double emax, boolean combinedMeas)
+               double sigma2, double gridSpacing, double amin, double amax, double emax, boolean isRaDec)
     {
         RealMatrix q = new Array2DRowRealMatrix(stationCoords.getPosition().toArray());
         RealMatrix q_d = new Array2DRowRealMatrix(stationCoords.getVelocity().toArray());
@@ -90,7 +80,7 @@ public class CAR
         double w4 = Math.pow(q_d.getFrobeniusNorm(), 2);
         double w5 = 2*dotProduct(q, u_p);
 
-        if (combinedMeas)
+        if (isRaDec)
         {
             double w2 = Math.pow(meas3, 2)*Math.pow(Math.cos(meas2),2) + Math.pow(meas4, 2);
             double w3 = 2*meas3*dotProduct(q_d, u_a) + 2*meas4*dotProduct(q_d, u_d);
