@@ -95,17 +95,6 @@ public final class MultiTargetEstimation
         private HashMap<String, Integer> biasPos;
         private ManualPropagation propagator;
 
-        // myEdit begin - yet to test the below piece if defining below variables here so that can be used inside
-        // generateOpticalHypotheses and generateRadarHypotheses functions
-        // ========================== YET TO TEST ==========================================
-//        private double sigma1 = odCfg.hyp_sigma1;
-//        private double sigma2 = odCfg.hyp_sigma2;
-//        private double gridSpacing = odCfg.hyp_grid_spacing;
-//        private double smaMin = odCfg.hyp_sma_min;
-//        private double smaMax = odCfg.hyp_sma_max;
-//        private double eccMax = odCfg.hyp_ecc_max;
-        // ========================== YET TO TEST ==========================================
-
         private class SmootherTimeStep
         {
             RealMatrix Ppre;
@@ -737,14 +726,6 @@ public final class MultiTargetEstimation
             RealVector meanTemp = new ArrayRealVector(numStates);
             RealMatrix covarTemp = new DiagonalMatrix(numStates);
             ArrayList<Hypothesis> objectHypotheses = new ArrayList<Hypothesis>();
-
-            System.out.println("printing from MTE.java - generateOpticalHypotheses");
-            System.out.println("sigma1: " + odCfg.hyp_sigma1);
-            System.out.println("sigma2: " + odCfg.hyp_sigma2);
-            System.out.println("grid spacing: " + odCfg.hyp_grid_spacing);
-            System.out.println("sma min: " + odCfg.hyp_sma_min);
-            System.out.println("sma max: " + odCfg.hyp_sma_max);
-            System.out.println("ecc max: " + odCfg.hyp_ecc_max);
 
             ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, station,
                     odCfg.hyp_sigma1, odCfg.hyp_sigma2, odCfg.hyp_grid_spacing, odCfg.hyp_sma_min,

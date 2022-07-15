@@ -51,14 +51,6 @@ else:
     cfg[0].hyp_sma_max = 26500001
     cfg[0].hyp_ecc_max = 0.01
 
-
-print("printing params from python side")
-print("=============================================================")
-print("sig1: ", cfg[0].hyp_sigma1, "\t sig2: ", cfg[0].hyp_sigma2)
-print("spacing: ", cfg[0].hyp_grid_spacing)
-print(f"amin:{cfg[0].hyp_sma_min}\t amax: {cfg[0].hyp_sma_max}\t ecc max.: {cfg[0].hyp_ecc_max}")
-print("=============================================================")
-
 cfg[0].measurements[MeasurementType.RIGHT_ASCENSION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 cfg[0].measurements[MeasurementType.DECLINATION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 
