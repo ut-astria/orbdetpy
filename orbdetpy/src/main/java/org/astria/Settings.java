@@ -18,10 +18,6 @@
 
 package org.astria;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.spherical.twod.S2Point;
@@ -30,11 +26,7 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.BodyCenterPointing;
-import org.orekit.attitudes.FixedRate;
-import org.orekit.attitudes.NadirPointing;
+import org.orekit.attitudes.*;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.measurements.GroundStation;
@@ -43,23 +35,14 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.forces.gravity.NewtonianAttraction;
-import org.orekit.forces.gravity.OceanTides;
-import org.orekit.forces.gravity.SolidTides;
-import org.orekit.forces.gravity.ThirdBodyAttraction;
+import org.orekit.forces.gravity.*;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.LocalOrbitalFrame;
-import org.orekit.frames.LOFType;
-import org.orekit.frames.Predefined;
-import org.orekit.frames.TopocentricFrame;
+import org.orekit.frames.*;
 import org.orekit.geometry.fov.CircularFieldOfView;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -71,23 +54,18 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.events.ApsideDetector;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EclipseDetector;
-import org.orekit.propagation.events.ElevationDetector;
-import org.orekit.propagation.events.GeographicZoneDetector;
-import org.orekit.propagation.events.GroundFieldOfViewDetector;
-import org.orekit.propagation.events.LatitudeCrossingDetector;
-import org.orekit.propagation.events.LatitudeExtremumDetector;
-import org.orekit.propagation.events.LongitudeCrossingDetector;
-import org.orekit.propagation.events.LongitudeExtremumDetector;
-import org.orekit.propagation.events.NodeDetector;
+import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class Settings
 {
@@ -365,6 +343,13 @@ public final class Settings
     public double estmGatingThreshold = 5.0;
     public int outputFlags = OUTPUT_ESTM_COV | OUTPUT_PROP_COV | OUTPUT_INNO_COV | OUTPUT_RESIDUALS;
 
+    public double hyp_sigma1 = 2000; //myEdit for generating CAR Hypothesis - some random value
+    public double hyp_sigma2 = 55;  // myEdit: newly added for generating CAR hypotheses
+    public double hyp_grid_spacing = 56;  // myEdit: newly added for generating CAR hypotheses
+    public double hyp_sma_min = 57;  // myEdit: newly added for generating CAR hypotheses
+    public double hyp_sma_max = 58;  // myEdit: newly added for generating CAR hypotheses
+    public double hyp_ecc_max = 59;  // myEdit: newly added for generating CAR hypotheses
+
     protected Atmosphere atmModel;
     protected HashMap<String, GroundStation> stations;
     protected ArrayList<ForceModel> forces;
@@ -509,7 +494,7 @@ public final class Settings
             if (cfgStations == null || cfgMeasurements == null || estmFilter != Filter.UNSCENTED_KALMAN)
                 continue;
 
-            MeasurementType[] measNames = cfgMeasurements.keySet().toArray(new Settings.MeasurementType[0]);
+            MeasurementType[] measNames = cfgMeasurements.keySet().toArray(new MeasurementType[0]);
             Arrays.sort(measNames);
             for (Map.Entry<String, Station> skv: cfgStations.entrySet())
             {
@@ -606,7 +591,7 @@ public final class Settings
                                                                                                     new Vector3D(X0[3], X0[4], X0[5])),
                                                                                   propInertialFrame, propStart, Constants.EGM96_EARTH_MU));
             LocalOrbitalFrame lof = new LocalOrbitalFrame(propInertialFrame, LOFType.VVLH, prop, "");
-            att = new FixedRate(new org.orekit.attitudes.Attitude(propStart, lof, Rotation.IDENTITY,
+            att = new FixedRate(new Attitude(propStart, lof, Rotation.IDENTITY,
                                                                   new Vector3D(rsoSpinVelocity[0], rsoSpinVelocity[1], rsoSpinVelocity[2]),
                                                                   new Vector3D(rsoSpinAcceleration[0], rsoSpinAcceleration[1], rsoSpinAcceleration[2])));
             break;

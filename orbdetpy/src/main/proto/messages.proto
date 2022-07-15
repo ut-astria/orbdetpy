@@ -141,6 +141,14 @@ message Settings
     double estm_gating_probability = 51;
     double estm_gating_threshold = 52;
     int32 output_flags = 53;
+
+    // NOTE: Below belongs to CAR
+    double hyp_sigma1 = 54;  // myEdit: newly added for generating CAR hypotheses
+    double hyp_sigma2 = 55;  // myEdit: newly added for generating CAR hypotheses
+    double hyp_grid_spacing = 56;  // myEdit: newly added for generating CAR hypotheses
+    double hyp_sma_min = 57;  // myEdit: newly added for generating CAR hypotheses
+    double hyp_sma_max = 58;  // myEdit: newly added for generating CAR hypotheses
+    double hyp_ecc_max = 59;  // myEdit: newly added for generating CAR hypotheses
 }
 
 message SettingsArray

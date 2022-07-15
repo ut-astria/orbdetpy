@@ -18,20 +18,21 @@
 
 package org.astria.rpc;
 
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.astria.Estimation;
 import org.astria.Measurements;
 import org.astria.Settings;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 public final class Tools
 {
@@ -156,6 +157,15 @@ public final class Tools
         cfg.estmGatingProbability = req.getEstmGatingProbability();
         cfg.estmGatingThreshold = req.getEstmGatingThreshold();
         cfg.outputFlags = req.getOutputFlags();
+
+        //myEdit below - new for CAR hypotheses
+        cfg.hyp_sigma1 = req.getHypSigma1(); //myEdit - new for CAR hypotheses
+        cfg.hyp_sigma2 = req.getHypSigma2();
+        cfg.hyp_grid_spacing = req.getHypGridSpacing();
+        cfg.hyp_sma_min = req.getHypSmaMin();
+        cfg.hyp_sma_max = req.getHypSmaMax();
+        cfg.hyp_ecc_max = req.getHypEccMax();
+
         return(cfg.build());
     }
 

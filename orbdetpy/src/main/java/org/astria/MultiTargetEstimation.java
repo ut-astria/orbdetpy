@@ -18,29 +18,22 @@
 
 package org.astria;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import org.hipparchus.distribution.continuous.ChiSquaredDistribution;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.ArrayRealVector;
-import org.hipparchus.linear.CholeskyDecomposition;
-import org.hipparchus.linear.DiagonalMatrix;
-import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
+import org.hipparchus.linear.*;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.Range;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public final class MultiTargetEstimation
 {
@@ -101,6 +94,17 @@ public final class MultiTargetEstimation
         private int numStates, numSigmas;
         private HashMap<String, Integer> biasPos;
         private ManualPropagation propagator;
+
+        // myEdit begin - yet to test the below piece if defining below variables here so that can be used inside
+        // generateOpticalHypotheses and generateRadarHypotheses functions
+        // ========================== YET TO TEST ==========================================
+//        private double sigma1 = odCfg.hyp_sigma1;
+//        private double sigma2 = odCfg.hyp_sigma2;
+//        private double gridSpacing = odCfg.hyp_grid_spacing;
+//        private double smaMin = odCfg.hyp_sma_min;
+//        private double smaMax = odCfg.hyp_sma_max;
+//        private double eccMax = odCfg.hyp_ecc_max;
+        // ========================== YET TO TEST ==========================================
 
         private class SmootherTimeStep
         {
@@ -727,14 +731,26 @@ public final class MultiTargetEstimation
                                                                 double sigmaDec, double sigmaDecd)
         {
             double[] x0 = odCfg.getInitialState();
+
             double RA = obs.values[0], RA_d = obs.angleRates[0], Dec = obs.values[1], Dec_d = obs.angleRates[1];
             TimeStampedPVCoordinates station = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(obs.time, odCfg.propInertialFrame);
             RealVector meanTemp = new ArrayRealVector(numStates);
             RealMatrix covarTemp = new DiagonalMatrix(numStates);
             ArrayList<Hypothesis> objectHypotheses = new ArrayList<Hypothesis>();
 
-            ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, station, 100000.0, 100.0, 10000.0,
-                                                                      17000000, 37000000, 0.05, singleObject).getCAR();
+            System.out.println("printing from MTE.java - generateOpticalHypotheses");
+            System.out.println("sigma1: " + odCfg.hyp_sigma1);
+            System.out.println("sigma2: " + odCfg.hyp_sigma2);
+            System.out.println("grid spacing: " + odCfg.hyp_grid_spacing);
+            System.out.println("sma min: " + odCfg.hyp_sma_min);
+            System.out.println("sma max: " + odCfg.hyp_sma_max);
+            System.out.println("ecc max: " + odCfg.hyp_ecc_max);
+
+            ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, station,
+                    odCfg.hyp_sigma1, odCfg.hyp_sigma2, odCfg.hyp_grid_spacing, odCfg.hyp_sma_min,
+                    odCfg.hyp_sma_max, odCfg.hyp_ecc_max, singleObject).getCAR();
+
+
             for (int i = 0; i < CARGaussians.size(); i++)
             {
                 if (CARGaussians.get(i).ordinateStd < 0)
@@ -776,13 +792,19 @@ public final class MultiTargetEstimation
         {
             double[] x0 = odCfg.getInitialState();
             double range = obs.values[0], rangeRate = obs.values[1], ra = obs.angleRates[0], dec = obs.angleRates[1];
+
+
             TimeStampedPVCoordinates station = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(obs.time, odCfg.propInertialFrame);
             RealVector meanTemp = new ArrayRealVector(numStates);
             RealMatrix covarTemp = new DiagonalMatrix(numStates);
             ArrayList<Hypothesis> objectHypotheses = new ArrayList<Hypothesis>();
 
-            ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, station, 5E-6, 5E-6, 5E-6,
-                                                                      17000000, 37000000, 0.1, singleObject).getCAR();
+
+            ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, station,
+                    odCfg.hyp_sigma1, odCfg.hyp_sigma2, odCfg.hyp_grid_spacing, odCfg.hyp_sma_min,
+                    odCfg.hyp_sma_max, odCfg.hyp_ecc_max, singleObject).getCAR();
+
+
             for (int i = 0; i < CARGaussians.size(); i++)
             {
                 if (CARGaussians.get(i).ordinateStd < 0)
