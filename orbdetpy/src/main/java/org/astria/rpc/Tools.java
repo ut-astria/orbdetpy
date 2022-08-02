@@ -20,7 +20,6 @@ package org.astria.rpc;
 
 import org.astria.Estimation;
 import org.astria.Measurements;
-import org.astria.ReadSP3;
 import org.astria.Settings;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
@@ -229,22 +228,6 @@ public final class Tools
                 builder = builder.addAllPostFit(DoubleStream.of(ein.postFit).boxed().collect(Collectors.toList()));
             if (ein.clutterProbability != null)
                 builder = builder.setClutterProbability(ein.clutterProbability);
-            output.add(builder.build());
-        }
-
-        return(output);
-    }
-
-    public static ArrayList<Messages.SP3outputMeas> buildResponseFromSP3(ArrayList<ReadSP3.SP3OutputMeasJava> sp3outlist) {
-
-        ArrayList<Messages.SP3outputMeas> output = new  ArrayList<>(sp3outlist.size());
-        for (ReadSP3.SP3OutputMeasJava min: sp3outlist)
-        {
-            Messages.SP3outputMeas.Builder builder = Messages.SP3outputMeas.newBuilder();
-            builder = builder.setTime(min.time.durationFrom(AbsoluteDate.J2000_EPOCH));
-            builder = builder.setStation(min.station);
-            builder = builder.addAllValues(DoubleStream.of(min.values).boxed().collect(Collectors.toList()));
-            builder = builder.addAllTrueState(DoubleStream.of(min.trueState).boxed().collect(Collectors.toList()));
             output.add(builder.build());
         }
 

@@ -24,7 +24,11 @@ import java.util.Map;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import org.astria.*;
+import org.astria.Measurements;
+import org.astria.MSISEInputs;
+import org.astria.Settings;
+import org.astria.Utilities;
+import org.astria.WAM;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -163,23 +167,6 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
                 builder = builder.addArray(atmosphere.getDensity(time, pos, earth.getFrame()));
             }
             resp.onNext(builder.build());
-            resp.onCompleted();
-        }
-        catch (Throwable exc)
-        {
-            resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
-        }
-    }
-
-    @Override public void importSP3wcorr(Messages.ImportSP3corrInput req, StreamObserver<Messages.ImportSP3corrOutputArray> resp) {
-        try
-        {
-
-            ArrayList<ReadSP3.SP3OutputMeasJava> output_from_java = ReadSP3.ReadSP3(req.getTdmFileName(),
-                    req.getSp3CFileName(), req.getOutFilePath() ,req.getCorrOn());
-
-            Messages.ImportSP3corrOutputArray.Builder outer = Messages.ImportSP3corrOutputArray.newBuilder().addAllArray(Tools.buildResponseFromSP3(output_from_java));
-            resp.onNext(outer.build());
             resp.onCompleted();
         }
         catch (Throwable exc)
