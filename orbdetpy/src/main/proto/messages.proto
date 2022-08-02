@@ -247,3 +247,25 @@ message InterpolateEphemerisInput
     string dest_frame = 5;
     repeated double interp_time = 6 [packed=true];
 }
+
+message ImportSP3corrInput
+{
+    string tdm_file_name = 1;
+    string sp3c_file_name = 2;
+    string out_file_path = 3;
+    bool corr_on = 4;
+
+}
+
+message SP3outputMeas
+{
+    double time = 1;
+    string station = 2;
+    repeated double values = 3 [packed=true];
+    repeated double true_state = 5 [packed=true];
+}
+
+message ImportSP3corrOutputArray
+{
+    repeated SP3outputMeas array = 1;
+}

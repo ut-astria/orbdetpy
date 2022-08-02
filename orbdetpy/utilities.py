@@ -19,6 +19,8 @@ from numpy import arange
 from orbdetpy.rpc.messages_pb2 import DoubleArray, InterpolateEphemerisInput, TransformFrameInput
 from orbdetpy.rpc.server import RemoteServer
 from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
+from orbdetpy.rpc.messages_pb2 import ImportSP3corrInput
+
 
 def import_SP3(file_name: str, dest_frame: int, times: List[float]):
     """Import ephemerides from SP3 file.
@@ -35,6 +37,12 @@ def import_SP3(file_name: str, dest_frame: int, times: List[float]):
     """
 
     return(_utilities_stub.importSP3(InterpolateEphemerisInput(source_frame=file_name, dest_frame=dest_frame, interp_time=times)).array)
+
+
+def importSP3wcorr(tdmfilename: str, sp3filename: str, outfilepath: str, corr_on: bool):
+
+    return (_utilities_stub.importSP3wcorr(ImportSP3corrInput(tdm_file_name=tdmfilename, sp3c_file_name=sp3filename, out_file_path=outfilepath, corr_on = corr_on)).array)
+
 
 def interpolate_ephemeris(source_frame: int, times: List[float], states, num_points: int,
                           dest_frame: int, interp_start: float, interp_end: float, step_size: float):
