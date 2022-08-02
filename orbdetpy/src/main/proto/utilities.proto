@@ -32,4 +32,6 @@ service Utilities
     rpc interpolateEphemeris(InterpolateEphemerisInput) returns (MeasurementArray) {}
 
     rpc getDensity(TransformFrameInput) returns (DoubleArray) {}
+
+    rpc importSP3wcorr(ImportSP3corrInput) returns (ImportSP3corrOutputArray) {} //myEdit - testing for test 7
 }

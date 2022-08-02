@@ -34,6 +34,11 @@ class UtilitiesStub(object):
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
                 response_deserializer=messages__pb2.DoubleArray.FromString,
                 )
+        self.importSP3wcorr = channel.unary_unary(
+                '/Utilities/importSP3wcorr',
+                request_serializer=messages__pb2.ImportSP3corrInput.SerializeToString,
+                response_deserializer=messages__pb2.ImportSP3corrOutputArray.FromString,
+                )
 
 
 class UtilitiesServicer(object):
@@ -63,6 +68,12 @@ class UtilitiesServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def importSP3wcorr(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_UtilitiesServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -85,6 +96,11 @@ def add_UtilitiesServicer_to_server(servicer, server):
                     servicer.getDensity,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
                     response_serializer=messages__pb2.DoubleArray.SerializeToString,
+            ),
+            'importSP3wcorr': grpc.unary_unary_rpc_method_handler(
+                    servicer.importSP3wcorr,
+                    request_deserializer=messages__pb2.ImportSP3corrInput.FromString,
+                    response_serializer=messages__pb2.ImportSP3corrOutputArray.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -161,5 +177,22 @@ class Utilities(object):
         return grpc.experimental.unary_unary(request, target, '/Utilities/getDensity',
             messages__pb2.TransformFrameInput.SerializeToString,
             messages__pb2.DoubleArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def importSP3wcorr(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Utilities/importSP3wcorr',
+            messages__pb2.ImportSP3corrInput.SerializeToString,
+            messages__pb2.ImportSP3corrOutputArray.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
