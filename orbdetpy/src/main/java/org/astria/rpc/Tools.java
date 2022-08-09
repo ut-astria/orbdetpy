@@ -157,6 +157,7 @@ public final class Tools
         cfg.estmDetectionProbability = req.getEstmDetectionProbability();
         cfg.estmGatingProbability = req.getEstmGatingProbability();
         cfg.estmGatingThreshold = req.getEstmGatingThreshold();
+        cfg.estmEnableCARMHF = req.getEstmEnableCARMHF();
         cfg.outputFlags = req.getOutputFlags();
 
         //myEdit below - new for CAR hypotheses

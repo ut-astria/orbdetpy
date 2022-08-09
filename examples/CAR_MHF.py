@@ -29,10 +29,11 @@ cfg = [configure(prop_start=get_J2000_epoch_offset("2020-09-16T08:27:22.099"), r
                  solid_tides_sun=False, solid_tides_moon=False,
                  drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.UNDEFINED),
                  rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.UNDEFINED),
-                 estm_process_noise=(1E-10,) * 6, estm_covariance=(25E6, 25E6, 25E6, 1E2, 1E2, 1E2))]
+                 estm_process_noise=(1E-10,) * 6, estm_covariance=(25E6, 25E6, 25E6, 1E2, 1E2, 1E2),
+                 estm_enable_CAR_MHF=True)]
 
 # myEdit: newly added for generating CAR hypotheses
-test_params = 1     # ON - Shiva's default (existing) params OFF - MR's Astrianet case params
+test_params = 0     # ON - Shiva's default (existing) params OFF - MR's Astrianet case params
 # 100000.0, 100.0, 10000.0, 17000000, 37000000, 0.05   // Shiva's newly set params for time
 # 3000.0, 5, 500.0 ,26000000, 26500000, 0.01            // MRs params for Astrianet case
 
@@ -63,7 +64,10 @@ meas_obj = [[build_measurement(get_J2000_epoch_offset(m[0]), "NMSkies", m[1:3], 
 
 fit_data = multi_target_OD(cfg, meas_obj)
 
+print(f"# Unassociated observations: {len(fit_data.unassociated_obs)}")
+
 print(f"Unassociated observations: {fit_data.unassociated_obs}")
+
 for obs, fit in zip(fit_data.associated_obs, fit_data.est_output):
     assoc = [meas_obj[0][idx] for idx in obs.array]
     if (len(assoc) > 0):

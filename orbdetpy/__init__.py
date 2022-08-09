@@ -235,7 +235,15 @@ def configure(**kwargs)->Settings:
                    integ_rel_tolerance=1E-12, output_flags=OutputFlag.OUTPUT_ESTM_COV|OutputFlag.OUTPUT_PROP_COV|OutputFlag.OUTPUT_INNO_COV|
                    OutputFlag.OUTPUT_RESIDUALS, estm_filter=Filter.UNSCENTED_KALMAN, estm_DMC_corr_time=40.0, estm_DMC_sigma_pert=5E-9,
                    estm_DMC_acceleration=Parameter(value=0.0, min=-1E-3, max=1E-3, estimation=EstimationType.ESTIMATE),
-                   estm_smoother_iterations=3, estm_detection_probability=0.99, estm_gating_probability=0.99, estm_gating_threshold=5.0)
+                   estm_smoother_iterations=3, estm_detection_probability=0.99, estm_gating_probability=0.99,
+                   estm_gating_threshold=5.0,
+                   estm_enable_CAR_MHF=False,
+                   hyp_sigma1=2001,
+                   hyp_sigma2=2001,
+                   hyp_grid_spacing=10,
+                   hyp_sma_min=1000,
+                   hyp_sma_max=2000,
+                   hyp_ecc_max=0.5)
     for key, value in kwargs.items():
         attr = getattr(cfg, key)
         if (hasattr(attr, "CopyFrom")):

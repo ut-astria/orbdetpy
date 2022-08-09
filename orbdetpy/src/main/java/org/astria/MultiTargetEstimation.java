@@ -202,6 +202,7 @@ public final class MultiTargetEstimation
         {
             numStates = odCfg.parameters.size() + 6;
             numSigmas = 2*numStates;
+            boolean enableCAR = odCfg.estmEnableCARMHF;
             boolean activateCAR = false;
             AbsoluteDate tm = odCfg.propStart;
             final double weight = 0.5/numStates;
@@ -693,8 +694,12 @@ public final class MultiTargetEstimation
                         break;
                     if (rsoChoices.size() == 0)
                     {
-                        smoothIter = -1;
-                        activateCAR = true;
+                        if (enableCAR == true) {
+                            smoothIter = -1;
+                            activateCAR = true;
+                        }
+                        else
+                            break;
                     }
                 }
             }
