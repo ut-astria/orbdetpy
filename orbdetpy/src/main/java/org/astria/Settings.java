@@ -341,6 +341,7 @@ public final class Settings
     public double estmDetectionProbability = 0.99;
     public double estmGatingProbability = 0.99;
     public double estmGatingThreshold = 5.0;
+    public boolean estmEnableCARMHF = false;
     public int outputFlags = OUTPUT_ESTM_COV | OUTPUT_PROP_COV | OUTPUT_INNO_COV | OUTPUT_RESIDUALS;
 
     public double hyp_sigma1 = 2000; //myEdit for generating CAR Hypothesis - some random value
