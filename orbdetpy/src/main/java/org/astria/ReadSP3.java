@@ -39,6 +39,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 
 public final class ReadSP3
@@ -71,8 +72,9 @@ public final class ReadSP3
     {
 
         File filename = new File(tdmFileName);
-        String basetdmfilename = filename.getName().split("\\.")[0];
-        outFilePath = outFilePath + basetdmfilename + ".json";
+        String basetdmfilename = filename.getName().split(Pattern.quote("."))[0];
+        String sep = System.getProperty("file.separator");
+        outFilePath = outFilePath + sep + basetdmfilename + ".json";
 
         ArrayList<SP3OutputMeasJava> sp3corr_list = new ArrayList<SP3OutputMeasJava>();
 
@@ -85,9 +87,38 @@ public final class ReadSP3
         HashMap<String, String> NORAD2PRN = new HashMap<String, String>();
 
 
+        NORAD2PRN.put("11036A","G01");
+        NORAD2PRN.put("04045A","G02");
+        NORAD2PRN.put("14068A","G03");
         NORAD2PRN.put("18109A","G04");
-        NORAD2PRN.put("00040A","G28");
+        NORAD2PRN.put("09043A","G05");
+        NORAD2PRN.put("14026A","G06");
+        NORAD2PRN.put("08012A","G07");
+        NORAD2PRN.put("15033A","G08");
+        NORAD2PRN.put("14045A","G09");
+        NORAD2PRN.put("15062A","G10");
+        NORAD2PRN.put("21054A","G11");
+        NORAD2PRN.put("06052A","G12");
+        NORAD2PRN.put("97035A","G13");
+        NORAD2PRN.put("20078A","G14");
+        NORAD2PRN.put("07047A","G15");
         NORAD2PRN.put("03005A","G16");
+        NORAD2PRN.put("05038A","G17");
+        NORAD2PRN.put("19056A","G18");
+        NORAD2PRN.put("04009A","G19");
+        NORAD2PRN.put("00025A","G20");
+        NORAD2PRN.put("03010A","G21");
+        NORAD2PRN.put("00071A","G22");
+        NORAD2PRN.put("20041A","G23");
+        NORAD2PRN.put("12053A","G24");
+        NORAD2PRN.put("10022A","G25");
+        NORAD2PRN.put("15013A","G26");
+        NORAD2PRN.put("13023A","G27");
+        NORAD2PRN.put("00040A","G28");
+        NORAD2PRN.put("07062A","G29");
+        NORAD2PRN.put("14008A","G30");
+        NORAD2PRN.put("06042A","G31");
+        NORAD2PRN.put("16007A","G32");
 
 
         //Station lookup, station coords in degrees

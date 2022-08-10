@@ -40,7 +40,19 @@ def import_SP3(file_name: str, dest_frame: int, times: List[float]):
 
 
 def importSP3wcorr(tdmfilename: str, sp3filename: str, outfilepath: str, corr_on: bool):
+    """Import ephemerides from SP3c file. Can apply corrections to measurements from TDM.
 
+    Parameters
+    ----------
+    tdm_file_name : Fully qualified TDM file name (real-data). (.tdm)
+    sp3c_file_name : Fully qualified SP3c file name corresponding to TDM file. (.EPH_M)
+    out_file_path : File path to save corrected measurements as a JSON file (dir)
+    corr_on : Apply corrections like LightTime, Aberration
+
+    Returns
+    -------
+    Ephemerides, Corrected Measurements in ImportSP3corrOutputArray object.
+    """
     return (_utilities_stub.importSP3wcorr(ImportSP3corrInput(tdm_file_name=tdmfilename, sp3c_file_name=sp3filename, out_file_path=outfilepath, corr_on = corr_on)).array)
 
 
