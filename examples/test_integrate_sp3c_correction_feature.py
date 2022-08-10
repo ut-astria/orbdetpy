@@ -20,13 +20,20 @@ if final_testing:
 
 
 turn_on_corr = 1
-sp3corr_out = importSP3wcorr(tdmfilename=input_tdm_filename, sp3filename=input_sp3c_filename, outfilepath=test_output_data_dir, corr_on=turn_on_corr)
-print("len of output: ", len(sp3corr_out), "type: ", type(sp3corr_out))
+sp3corr_out = importSP3wcorr(tdmfilename=input_tdm_filename, sp3filename=input_sp3c_filename,
+                             outfilepath=test_output_data_dir, corr_on=turn_on_corr)
+
+output = list(sp3corr_out)
+for line in output[:3]:
+    print(get_UTC_string(line.time), line.values, line.true_state)
+
+
+print("len of output: ", len(sp3corr_out))
 print(get_UTC_string(sp3corr_out[0].time))
+# Get GPS state from sp3c file
 print(sp3corr_out[0].true_state)
+# Get corrected RA/Dec for TDM measurements
+print(sp3corr_out[0].values)
 print(get_UTC_string(sp3corr_out[-1].time))
 print(sp3corr_out[-1].true_state)
 
-
-# Write code to post process corrections - statistical analysis before vs after
-# Compute mean and std-dev of diff_RA, diff_Dec, & its plot vs time
