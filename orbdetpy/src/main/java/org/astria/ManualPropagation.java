@@ -94,6 +94,7 @@ public final class ManualPropagation
         propFinal = t1;
         this.enableDMC = enableDMC;
         taskSignal = new CountDownLatch(tasks.length);
+
         for (int i = 0, k = 0; i < tasks.length; i++)
         {
             for (int j = 0; j < tasks[i].xStart.length/stateDim; j++, k++)
@@ -163,23 +164,23 @@ public final class ManualPropagation
             return(xStart.length);
         }
 
-        @Override public double[] computeDerivatives(double t, double[] X)
+        @Override public double[] computeDerivatives(double time, double[] X)
         {
-            AbsoluteDate tm = new AbsoluteDate(odCfg.propStart, t);
+            AbsoluteDate timeAd = odCfg.propStart.shiftedBy(time);
             for (int i = 0; i < X.length; i += stateDim)
             {
                 CartesianOrbit orb = new CartesianOrbit(new PVCoordinates(new Vector3D(X[i], X[i+1], X[i+2]), new Vector3D(X[i+3], X[i+4], X[i+5])),
-                                                        odCfg.propInertialFrame, tm, Constants.EGM96_EARTH_MU);
-                SpacecraftState ss = new SpacecraftState(orb, odCfg.rsoMass);
+                                                        odCfg.propInertialFrame, timeAd, Constants.EGM96_EARTH_MU);
+                SpacecraftState scState = new SpacecraftState(orb, odCfg.rsoMass);
 
                 Vector3D acc = Vector3D.ZERO;
                 for (int j = 0; j < odCfg.forces.size(); j++)
                 {
-                    ForceModel fmod = odCfg.forces.get(j);
-                    double[] fpar = fmod.getParameters();
+                    ForceModel model = odCfg.forces.get(j);
+                    double[] param = model.getParameters();
                     if (parPos[j] != -1)
-                        fpar[0] = X[i + parPos[j]];
-                    acc = acc.add(fmod.acceleration(ss, fpar));
+                        param[0] = X[i + parPos[j]];
+                    acc = acc.add(model.acceleration(scState, param));
                 }
 
                 double[] accArray = acc.toArray();

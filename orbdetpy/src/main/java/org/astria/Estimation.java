@@ -367,7 +367,6 @@ public final class Estimation
             final int numStates = odCfg.parameters.size() + 6;
             final int numSigmas = 2*numStates;
             final double weight = 0.5/numStates;
-            final SpacecraftState[] ssta = new SpacecraftState[1];
             final ManualPropagation propagator = new ManualPropagation(odCfg);
             RealMatrix P = odCfg.getInitialCovariance();
             final Array2DRowRealMatrix sigma = new Array2DRowRealMatrix(numStates, numSigmas);
@@ -379,6 +378,13 @@ public final class Estimation
             RealVector xhatPrev = new ArrayRealVector(xInitial);
             final double[] noiseMult = new double[measSize];
             Arrays.fill(noiseMult, 1.0);
+
+            CartesianOrbit orb0 = new CartesianOrbit(
+                new PVCoordinates(new Vector3D(xInitial[0], xInitial[1], xInitial[2]), new Vector3D(xInitial[3], xInitial[4], xInitial[5])),
+                odCfg.propInertialFrame, odCfg.propStart, Constants.EGM96_EARTH_MU);
+            SpacecraftState[] scState = {new SpacecraftState(orb0, odCfg.rsoMass)};
+            for (ForceModel model: odCfg.forces)
+                model.init(scState[0], odObs.array[odObs.array.length - 1].time);
 
             for (int measIndex = 0; measIndex < odObs.array.length; measIndex++)
             {
@@ -440,20 +446,20 @@ public final class Estimation
                     double[] pv = propSigma.getColumn(i);
                     CartesianOrbit orb = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
                                                             odCfg.propInertialFrame, thisObs.time, Constants.EGM96_EARTH_MU);
-                    ssta[0] = new SpacecraftState(orb, odCfg.rsoMass);
+                    scState[0] = new SpacecraftState(orb, odCfg.rsoMass);
 
                     if (singleObject)
                     {
-                        double[] fitv = thisObs.helpers[0].estimate(0, 0, ssta).getEstimatedValue();
+                        double[] fitv = thisObs.helpers[0].estimate(0, 0, scState).getEstimatedValue();
                         estimMeas.setColumn(i, fitv);
                         if (rawMeas == null)
                             rawMeas = new ArrayRealVector(thisObs.values);
                     }
                     else
                     {
-                        double[] fitv = thisObs.helpers[0].estimate(0, 0, ssta).getEstimatedValue();
+                        double[] fitv = thisObs.helpers[0].estimate(0, 0, scState).getEstimatedValue();
                         estimMeas.setEntry(0, i, fitv[0]);
-                        fitv = thisObs.helpers[1].estimate(0, 0, ssta).getEstimatedValue();
+                        fitv = thisObs.helpers[1].estimate(0, 0, scState).getEstimatedValue();
                         estimMeas.setEntry(1, i, fitv[0]);
                         if (rawMeas == null)
                             rawMeas = new ArrayRealVector(thisObs.values);
@@ -495,16 +501,16 @@ public final class Estimation
                     double[] pv = xhat.toArray();
                     CartesianOrbit orb = new CartesianOrbit(new PVCoordinates(new Vector3D(pv[0], pv[1], pv[2]), new Vector3D(pv[3], pv[4], pv[5])),
                                                             odCfg.propInertialFrame, thisObs.time, Constants.EGM96_EARTH_MU);
-                    ssta[0] = new SpacecraftState(orb, odCfg.rsoMass);
+                    scState[0] = new SpacecraftState(orb, odCfg.rsoMass);
 
                     if ((odCfg.outputFlags & Settings.OUTPUT_RESIDUALS) != 0)
                     {
                         odout.preFit = yhatpre.toArray();
                         if (singleObject)
-                            odout.postFit = thisObs.helpers[0].estimate(0, 0, ssta).getEstimatedValue();
+                            odout.postFit = thisObs.helpers[0].estimate(0, 0, scState).getEstimatedValue();
                         else
-                            odout.postFit = new double[]{thisObs.helpers[0].estimate(0, 0, ssta).getEstimatedValue()[0],
-                                thisObs.helpers[1].estimate(0, 0, ssta).getEstimatedValue()[0]};
+                            odout.postFit = new double[]{thisObs.helpers[0].estimate(0, 0, scState).getEstimatedValue()[0],
+                                thisObs.helpers[1].estimate(0, 0, scState).getEstimatedValue()[0]};
                     }
 
                     if (odCfg.estmOutlierSigma > 0.0 &&	odCfg.estmOutlierWarmup > 0 && measIndex >= odCfg.estmOutlierWarmup &&
