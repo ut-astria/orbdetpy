@@ -26,7 +26,7 @@ from orbdetpy.plotting.estimation import plot as estimation_plot
 from orbdetpy.plotting.simulation import plot as simulation_plot
 
 # Set up configuration for measurement generation
-cfg = configure(prop_start=get_J2000_epoch_offset("2019-05-01T00:00:00"),
+cfg = configure(rso_mass=2500.0, prop_start=get_J2000_epoch_offset("2019-05-01T00:00:00"),
                 prop_initial_state=[-23183898.259, 35170229.755, 43425.075, -2566.938, -1692.19, 138.948],
                 prop_end=get_J2000_epoch_offset("2019-05-01T01:00:00"), prop_step=300.0, sim_measurements=True)
 
@@ -47,7 +47,7 @@ cfg = configure(prop_start=get_J2000_epoch_offset("2019-05-01T00:00:00"),
 
 # Uncomment to add a maneuver
 #add_maneuver(cfg, get_J2000_epoch_offset("2019-05-01T00:10:00"), ManeuverTrigger.DATE_TIME,
-#             None, ManeuverType.CONSTANT_THRUST, [*Constant.MINUS_J, 30, 100, 250])
+#             None, ManeuverType.CONSTANT_THRUST, [*Constant.MINUS_J, 600, 0.01, 2500])
 
 # ManeuverType.*_CHANGE maneuvers take a single "delta" argument representing change in the
 # corresponding element; values are in meters for distances and radians for angles
