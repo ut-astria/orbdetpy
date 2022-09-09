@@ -30,17 +30,17 @@ config = [configure(prop_start=t0, prop_end=t1, prop_step=60.0, prop_initial_sta
                     drag_model=DragModel.UNDEFINED, ocean_tides_degree=-1, ocean_tides_order=-1, solid_tides_sun=False, solid_tides_moon=False,
                     drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.UNDEFINED),
                     rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.UNDEFINED),
-                    sim_measurements=True, estm_process_noise=noise, estm_covariance=cov),
+                    sim_measurements=True, estm_process_noise=noise, estm_covariance=cov, estm_DMC_corr_time=0.0, estm_DMC_sigma_pert=0.0),
           configure(prop_start=t0, prop_end=t1, prop_step=60.0, prop_initial_state=(-20000000, 0, 0, -100, -4464.3029, 0),
                     drag_model=DragModel.UNDEFINED, ocean_tides_degree=-1, ocean_tides_order=-1, solid_tides_sun=False, solid_tides_moon=False,
                     drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.UNDEFINED),
                     rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.UNDEFINED),
-                    sim_measurements=True, estm_process_noise=noise, estm_covariance=cov),
+                    sim_measurements=True, estm_process_noise=noise, estm_covariance=cov, estm_DMC_corr_time=0.0, estm_DMC_sigma_pert=0.0),
           configure(prop_start=t0, prop_end=t1, prop_step=60.0, prop_initial_state=(-20000000, -20000, -20000, -100, -4464.3029, 0),
                     drag_model=DragModel.UNDEFINED, ocean_tides_degree=-1, ocean_tides_order=-1, solid_tides_sun=False, solid_tides_moon=False,
                     drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.UNDEFINED),
                     rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.UNDEFINED),
-                    sim_measurements=True, estm_process_noise=noise, estm_covariance=cov)]
+                    sim_measurements=True, estm_process_noise=noise, estm_covariance=cov, estm_DMC_corr_time=0.0, estm_DMC_sigma_pert=0.0)]
 
 # Simulate RA and dec
 for cfg in config:

@@ -52,11 +52,6 @@ def multi_target_OD(config_list: List[Settings], meas_list):
     Multiple target orbit determination results.
     """
 
-    # Disable DMC because CAR-MHF currently only handles static process noise
-    for cfg in config_list:
-        cfg.estm_DMC_corr_time = 0.0
-        cfg.estm_DMC_sigma_pert = 0.0
-
     return(_estimation_stub.multiTargetOD(MultiTargetInput(config=config_list, measurements=(MeasurementArray(array=m) for m in meas_list))))
 
 def iod_laplace(frame: int, lat: float, lon: float, alt: float, time: Tuple[float, float, float],

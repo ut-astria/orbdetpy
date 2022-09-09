@@ -27,7 +27,8 @@ config = [configure(prop_start=get_J2000_epoch_offset("2020-09-16T08:27:22.099")
                     drag_model=DragModel.UNDEFINED, ocean_tides_degree=-1, ocean_tides_order=-1, solid_tides_sun=False, solid_tides_moon=False,
                     drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.UNDEFINED),
                     rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.UNDEFINED),
-                    estm_process_noise=(1E-10,)*6, estm_covariance=(25E6, 25E6, 25E6, 1E2, 1E2, 1E2))]
+                    estm_process_noise=(1E-10,)*6, estm_covariance=(25E6, 25E6, 25E6, 1E2, 1E2, 1E2),
+                    estm_DMC_corr_time=0.0, estm_DMC_sigma_pert=0.0)]
 config[0].measurements[MeasurementType.RIGHT_ASCENSION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 config[0].measurements[MeasurementType.DECLINATION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 add_station(config[0], "NMSkies", 0.57426665348, -1.84183820339, 2225.04)
