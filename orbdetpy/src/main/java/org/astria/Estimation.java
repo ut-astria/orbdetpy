@@ -361,7 +361,6 @@ public final class Estimation
                 }
             }
 
-            boolean enableDMC = false;
             final double[] xInitial = odCfg.getInitialState();
             AbsoluteDate startTime = odCfg.propStart;
             final int numStates = odCfg.parameters.size() + 6;
@@ -414,7 +413,7 @@ public final class Estimation
 
                 if (stepFinal - stepStart > 1.0E-6)
                 {
-                    propagator.propagate(stepStart, sigma, stepFinal, propSigma, enableDMC);
+                    propagator.propagate(stepStart, sigma, stepFinal, propSigma, measIndex > 0);
                     sigma.setSubMatrix(propSigma.getData(), 0, 0);
                 }
                 else
@@ -439,7 +438,6 @@ public final class Estimation
                     continue;
                 }
 
-                enableDMC = true;
                 RealVector rawMeas = null, biasCorrection = null;
                 for (int i = 0; i < numSigmas; i++)
                 {

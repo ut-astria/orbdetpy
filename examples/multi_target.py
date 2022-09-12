@@ -15,32 +15,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-from orbdetpy import configure, add_station, Constant, DragModel, EstimationType, MeasurementType
+from orbdetpy import configure, add_station, Constant, MeasurementType
 from orbdetpy.conversion import get_J2000_epoch_offset
 from orbdetpy.estimation import multi_target_OD
 from orbdetpy.propagation import propagate_orbits
 from orbdetpy.plotting.estimation import plot
 from orbdetpy.rpc.messages_pb2 import Parameter
 
-noise = (1E-10,)*6
-cov = (25E6, 25E6, 25E6, 1E2, 1E2, 1E2)
 t0, t1 = get_J2000_epoch_offset(("2019-07-10T23:30:00", "2019-07-11T00:00:00"))
 
 config = [configure(prop_start=t0, prop_end=t1, prop_step=60.0, prop_initial_state=(-20000151.1484, 21900.3443, 0.2039, 0, -4464.9556, 0),
-                    drag_model=DragModel.UNDEFINED, ocean_tides_degree=-1, ocean_tides_order=-1, solid_tides_sun=False, solid_tides_moon=False,
-                    drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.UNDEFINED),
-                    rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.UNDEFINED),
-                    sim_measurements=True, estm_process_noise=noise, estm_covariance=cov, estm_DMC_corr_time=0.0, estm_DMC_sigma_pert=0.0),
+                    sim_measurements=True),
           configure(prop_start=t0, prop_end=t1, prop_step=60.0, prop_initial_state=(-20000000, 0, 0, -100, -4464.3029, 0),
-                    drag_model=DragModel.UNDEFINED, ocean_tides_degree=-1, ocean_tides_order=-1, solid_tides_sun=False, solid_tides_moon=False,
-                    drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.UNDEFINED),
-                    rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.UNDEFINED),
-                    sim_measurements=True, estm_process_noise=noise, estm_covariance=cov, estm_DMC_corr_time=0.0, estm_DMC_sigma_pert=0.0),
+                    sim_measurements=True),
           configure(prop_start=t0, prop_end=t1, prop_step=60.0, prop_initial_state=(-20000000, -20000, -20000, -100, -4464.3029, 0),
-                    drag_model=DragModel.UNDEFINED, ocean_tides_degree=-1, ocean_tides_order=-1, solid_tides_sun=False, solid_tides_moon=False,
-                    drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.UNDEFINED),
-                    rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.UNDEFINED),
-                    sim_measurements=True, estm_process_noise=noise, estm_covariance=cov, estm_DMC_corr_time=0.0, estm_DMC_sigma_pert=0.0)]
+                    sim_measurements=True)]
 for cfg in config:
     add_station(cfg, "Arecibo", 0.3202, -1.1651, 497.0)
     add_station(cfg, "Kaena", 0.08683, -2.5872, 460.0)

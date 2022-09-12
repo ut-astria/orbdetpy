@@ -15,20 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-from orbdetpy import configure, add_station, build_measurement, DragModel, EstimationType, MeasurementType, Constant
+from orbdetpy import configure, add_station, build_measurement, MeasurementType, Constant
 from orbdetpy.conversion import get_J2000_epoch_offset
 from orbdetpy.estimation import multi_target_OD
 from orbdetpy.plotting.estimation import plot
-from orbdetpy.rpc.messages_pb2 import Parameter
 import os
 
 config = [configure(prop_start=get_J2000_epoch_offset("2020-09-16T08:27:22.099"), rso_mass=2000.0, rso_area=20.0,
-                    prop_initial_state=(1.7307E7, -2745771.4791, 2.0497E7, -896.8248, 3482.0158, 1274.9837),
-                    drag_model=DragModel.UNDEFINED, ocean_tides_degree=-1, ocean_tides_order=-1, solid_tides_sun=False, solid_tides_moon=False,
-                    drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.UNDEFINED),
-                    rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.UNDEFINED),
-                    estm_process_noise=(1E-10,)*6, estm_covariance=(25E6, 25E6, 25E6, 1E2, 1E2, 1E2),
-                    estm_DMC_corr_time=0.0, estm_DMC_sigma_pert=0.0)]
+                    prop_initial_state=(1.7307E7, -2745771.4791, 2.0497E7, -896.8248, 3482.0158, 1274.9837))]
 config[0].measurements[MeasurementType.RIGHT_ASCENSION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 config[0].measurements[MeasurementType.DECLINATION].error[:] = [Constant.ARC_SECOND_TO_RAD]
 add_station(config[0], "NMSkies", 0.57426665348, -1.84183820339, 2225.04)

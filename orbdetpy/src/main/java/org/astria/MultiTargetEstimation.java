@@ -356,7 +356,7 @@ public final class MultiTargetEstimation
                             {
                                 try
                                 {
-                                    propagator.propagate(stepStart, currSC.sigma, stepEnd, currSC.propSigma, false);
+                                    propagator.propagate(stepStart, currSC.sigma, stepEnd, currSC.propSigma, measIndex > 0);
                                 }
                                 catch (RuntimeException e)
                                 {
@@ -729,8 +729,8 @@ public final class MultiTargetEstimation
             double[] x0 = odCfg.getInitialState();
             double RA = obs.values[0], RA_d = obs.angleRates[0], Dec = obs.values[1], Dec_d = obs.angleRates[1];
             TimeStampedPVCoordinates station = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(obs.time, odCfg.propInertialFrame);
-            RealVector meanTemp = new ArrayRealVector(numStates);
-            RealMatrix covarTemp = new DiagonalMatrix(numStates);
+            RealVector meanTemp = new ArrayRealVector(x0);
+            RealMatrix covarTemp = new DiagonalMatrix(odCfg.estmCovariance);
             ArrayList<Hypothesis> objectHypotheses = new ArrayList<Hypothesis>();
 
             ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(RA, Dec, RA_d, Dec_d, station, 100000.0, 100.0, 10000.0,
@@ -744,16 +744,6 @@ public final class MultiTargetEstimation
                 covarTemp.setEntry(0, 0, Math.pow(CARGaussians.get(i).abscissaStd, 2));	covarTemp.setEntry(1, 1, sigmaRA);
                 covarTemp.setEntry(2, 2, sigmaDec); covarTemp.setEntry(3, 3, Math.pow(CARGaussians.get(i).ordinateStd, 2));
                 covarTemp.setEntry(4, 4, sigmaRAd); covarTemp.setEntry(5, 5, sigmaDecd);
-                if (numStates >= 7)
-                {
-                    meanTemp.setEntry(6, x0[6]);
-                    covarTemp.setEntry(6, 6, Math.pow(odCfg.estmCovariance[6], 2));
-                    if (numStates >= 8)
-                    {
-                        meanTemp.setEntry(7, x0[7]);
-                        covarTemp.setEntry(7, 7, Math.pow(odCfg.estmCovariance[7], 2));
-                    }
-                }
 
                 Array2DRowRealMatrix sigma = generateSigmaPoints(meanTemp, covarTemp);
                 for (int j = 0; j < numSigmas; j++)
@@ -777,8 +767,8 @@ public final class MultiTargetEstimation
             double[] x0 = odCfg.getInitialState();
             double range = obs.values[0], rangeRate = obs.values[1], ra = obs.angleRates[0], dec = obs.angleRates[1];
             TimeStampedPVCoordinates station = odCfg.stations.get(obs.station).getBaseFrame().getPVCoordinates(obs.time, odCfg.propInertialFrame);
-            RealVector meanTemp = new ArrayRealVector(numStates);
-            RealMatrix covarTemp = new DiagonalMatrix(numStates);
+            RealVector meanTemp = new ArrayRealVector(x0);
+            RealMatrix covarTemp = new DiagonalMatrix(odCfg.estmCovariance);
             ArrayList<Hypothesis> objectHypotheses = new ArrayList<Hypothesis>();
 
             ArrayList <CAR.CARGaussianElement> CARGaussians = new CAR(ra, dec, range, rangeRate, station, 5E-6, 5E-6, 5E-6,
@@ -792,16 +782,6 @@ public final class MultiTargetEstimation
                 covarTemp.setEntry(0, 0, sigmaRange); covarTemp.setEntry(1, 1, sigmaRA); covarTemp.setEntry(2, 2, sigmaDec);
                 covarTemp.setEntry(3, 3, sigmaRR); covarTemp.setEntry(4, 4, Math.pow(CARGaussians.get(i).abscissaStd, 2));
                 covarTemp.setEntry(5, 5, Math.pow(CARGaussians.get(i).ordinateStd, 2));
-                if (numStates >= 7)
-                {
-                    meanTemp.setEntry(6, x0[6]);
-                    covarTemp.setEntry(6, 6, Math.pow(odCfg.estmCovariance[6], 2));
-                    if (numStates >= 8)
-                    {
-                        meanTemp.setEntry(7, x0[7]);
-                        covarTemp.setEntry(7, 7, Math.pow(odCfg.estmCovariance[7], 2));
-                    }
-                }
 
                 Array2DRowRealMatrix sigma = generateSigmaPoints(meanTemp, covarTemp);
                 for (int j = 0; j < numSigmas; j++)
@@ -915,12 +895,9 @@ public final class MultiTargetEstimation
             Vector3D vel = new Vector3D(1, topoVel, 1, odCfg.stations.get(stat).getBaseFrame().
                                         getPVCoordinates(date, odCfg.propInertialFrame).getVelocity());
 
-            if (rRaDec.getDimension() >= 8)
-                return(new double[] {pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(),
-                                     rRaDec.getEntry(6), rRaDec.getEntry(7)});
-            if (rRaDec.getDimension() >= 7)
-                return(new double[] {pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ(), rRaDec.getEntry(6)});
-            return(new double[] {pos.getX(), pos.getY(), pos.getZ(), vel.getX(), vel.getY(), vel.getZ()});
+            double[] cart = rRaDec.toArray();
+            cart[0] = pos.getX(); cart[1] = pos.getY(); cart[2] = pos.getZ(); cart[3] = vel.getX(); cart[4] = vel.getY(); cart[5] = vel.getZ();
+            return(cart);
         }
 
         private RealVector quadCheck(RealVector measurement, RealVector state)
