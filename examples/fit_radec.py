@@ -91,10 +91,6 @@ for o in real_obs:
 
 # Run OD. Fitting single object and hence the [0]
 fit = determine_orbit([config], [meas_obj])[0]
-# Check for estimation errors
-if (isinstance(fit, str)):
-    print(fit)
-    exit(1)
 
 for f in fit:
     # print(f) to dump pre-fits/post-fits/covariances

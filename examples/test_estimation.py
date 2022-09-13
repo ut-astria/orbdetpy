@@ -104,10 +104,6 @@ cfg.estm_covariance[:] = [1E6, 1E6, 1E6, 1E2, 1E2, 1E2, 1.00, 0.25, 1E-6, 1E-6, 
 
 # Run OD on simulated measurements
 fit = determine_orbit([cfg], [meas])[0]
-# Check for estimation errors
-if (isinstance(fit, str)):
-    print(fit)
-    exit(1)
 
 for f in fit:
     # print(f) to dump pre-fits/post-fits/covariances
