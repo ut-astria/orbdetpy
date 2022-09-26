@@ -371,7 +371,6 @@ public final class Estimation
             final Array2DRowRealMatrix sigma = new Array2DRowRealMatrix(numStates, numSigmas);
             final Array2DRowRealMatrix propSigma = new Array2DRowRealMatrix(numStates, numSigmas);
             final Array2DRowRealMatrix estimMeas = new Array2DRowRealMatrix(measSize, numSigmas);
-            final RealMatrix psdCorr = MatrixUtils.createRealIdentityMatrix(P.getRowDimension()).scalarMultiply(1.0E-6);
             RealMatrix Pprop = null;
             ArrayRealVector xhat = new ArrayRealVector(xInitial);
             RealVector xhatPrev = new ArrayRealVector(xInitial);
@@ -394,7 +393,7 @@ public final class Estimation
                 final double stepFinal = thisObs.time.durationFrom(odCfg.propStart);
                 final RealMatrix Ptemp = P.scalarMultiply(numStates);
                 final RealMatrix sqrtP = new CholeskyDecomposition(
-                    Ptemp.add(Ptemp.transpose()).scalarMultiply(0.5).add(psdCorr), 1E-6, 1E-16).getL();
+                    Ptemp.add(Ptemp.transpose()).scalarMultiply(0.5), 1E-6, 1E-16).getL();
 
                 for (int i = 0; i < numStates; i++)
                 {
