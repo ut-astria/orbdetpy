@@ -28,6 +28,8 @@ service Conversion
 {
     rpc transformFrame(TransformFrameInput) returns (Double2DArray) {}
 
+    rpc transformFrameCov(TransformFrameInput) returns (Double2DArray) {}
+
     rpc convertAzElToRaDec(AnglesInput) returns (DoubleArray) {}
 
     rpc convertRaDecToAzEl(AnglesInput) returns (DoubleArray) {}

@@ -20,6 +20,11 @@ class ConversionStub(object):
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
                 response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
+        self.transformFrameCov = channel.unary_unary(
+                '/Conversion/transformFrameCov',
+                request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
+                )
         self.convertAzElToRaDec = channel.unary_unary(
                 '/Conversion/convertAzElToRaDec',
                 request_serializer=messages__pb2.AnglesInput.SerializeToString,
@@ -71,6 +76,12 @@ class ConversionServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def transformFrame(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def transformFrameCov(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -135,6 +146,11 @@ def add_ConversionServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'transformFrame': grpc.unary_unary_rpc_method_handler(
                     servicer.transformFrame,
+                    request_deserializer=messages__pb2.TransformFrameInput.FromString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
+            ),
+            'transformFrameCov': grpc.unary_unary_rpc_method_handler(
+                    servicer.transformFrameCov,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
                     response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
@@ -205,6 +221,23 @@ class Conversion(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/transformFrame',
+            messages__pb2.TransformFrameInput.SerializeToString,
+            messages__pb2.Double2DArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def transformFrameCov(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Conversion/transformFrameCov',
             messages__pb2.TransformFrameInput.SerializeToString,
             messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
