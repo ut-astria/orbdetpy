@@ -60,6 +60,11 @@ class ConversionStub(object):
                 request_serializer=messages__pb2.DoubleArray.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
                 )
+        self.getTTString = channel.unary_unary(
+                '/Conversion/getTTString',
+                request_serializer=messages__pb2.DoubleArray.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+                )
         self.getJ2000EpochOffset = channel.unary_unary(
                 '/Conversion/getJ2000EpochOffset',
                 request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
@@ -129,6 +134,12 @@ class ConversionServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def getTTString(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def getJ2000EpochOffset(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -186,6 +197,11 @@ def add_ConversionServicer_to_server(servicer, server):
             ),
             'getUTCString': grpc.unary_unary_rpc_method_handler(
                     servicer.getUTCString,
+                    request_deserializer=messages__pb2.DoubleArray.FromString,
+                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+            ),
+            'getTTString': grpc.unary_unary_rpc_method_handler(
+                    servicer.getTTString,
                     request_deserializer=messages__pb2.DoubleArray.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             ),
@@ -357,6 +373,23 @@ class Conversion(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/getUTCString',
+            messages__pb2.DoubleArray.SerializeToString,
+            google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getTTString(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Conversion/getTTString',
             messages__pb2.DoubleArray.SerializeToString,
             google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
             options, channel_credentials,

@@ -15,7 +15,7 @@ from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb
 import orbdetpy.rpc.messages_pb2 as messages__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x63onversion.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x0emessages.proto2\x9f\x05\n\nConversion\x12\x38\n\x0etransformFrame\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12;\n\x11transformFrameCov\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x32\n\x12\x63onvertAzElToRaDec\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x32\n\x12\x63onvertRaDecToAzEl\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x39\n\x0f\x63onvertLLAToPos\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertPosToLLA\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertElemToPv\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertPvToElem\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12<\n\x0cgetUTCString\x12\x0c.DoubleArray\x1a\x1c.google.protobuf.StringValue\"\x00\x12\x43\n\x13getJ2000EpochOffset\x12\x1c.google.protobuf.StringValue\x1a\x0c.DoubleArray\"\x00\x12\x43\n\x12getEpochDifference\x12\r.IntegerArray\x1a\x1c.google.protobuf.DoubleValue\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x43onversionRequestP\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x63onversion.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x0emessages.proto2\xdc\x05\n\nConversion\x12\x38\n\x0etransformFrame\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12;\n\x11transformFrameCov\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x32\n\x12\x63onvertAzElToRaDec\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x32\n\x12\x63onvertRaDecToAzEl\x12\x0c.AnglesInput\x1a\x0c.DoubleArray\"\x00\x12\x39\n\x0f\x63onvertLLAToPos\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertPosToLLA\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertElemToPv\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12\x39\n\x0f\x63onvertPvToElem\x12\x14.TransformFrameInput\x1a\x0e.Double2DArray\"\x00\x12<\n\x0cgetUTCString\x12\x0c.DoubleArray\x1a\x1c.google.protobuf.StringValue\"\x00\x12;\n\x0bgetTTString\x12\x0c.DoubleArray\x1a\x1c.google.protobuf.StringValue\"\x00\x12\x43\n\x13getJ2000EpochOffset\x12\x1c.google.protobuf.StringValue\x1a\x0c.DoubleArray\"\x00\x12\x43\n\x12getEpochDifference\x12\r.IntegerArray\x1a\x1c.google.protobuf.DoubleValue\"\x00\x42%\n\x0eorg.astria.rpcB\x11\x43onversionRequestP\x00\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'conversion_pb2', globals())
@@ -24,5 +24,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'\n\016org.astria.rpcB\021ConversionRequestP\000'
   _CONVERSION._serialized_start=69
-  _CONVERSION._serialized_end=740
+  _CONVERSION._serialized_end=801
 # @@protoc_insertion_point(module_scope)

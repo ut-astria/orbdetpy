@@ -266,6 +266,22 @@ def get_UTC_string(j2000_offset: float, precision: int=3)->str:
         return(_conversion_stub.getUTCString(DoubleArray(array=[float(precision), j2000_offset])).value)
     return(_conversion_stub.getUTCString(DoubleArray(array=[float(precision), *j2000_offset])).value.split(" "))
 
+def get_TT_string(j2000_offset: float, precision: int=3)->str:
+    """Get ISO-8601 formatted UTC string corresponding to TT offset.
+
+    Parameters
+    ----------
+    j2000_offset : Offset in TT from J2000 epoch [s] or list of offsets.
+    precision : Desired precision. Defaults to 3, i.e. milliseconds.
+
+    Returns
+    -------
+    ISO-8601 formatted UTC string or list of strings.
+    """
+
+    if (isinstance(j2000_offset, float)):
+        return(_conversion_stub.getTTString(DoubleArray(array=[float(precision), j2000_offset])).value)
+    return(_conversion_stub.getTTString(DoubleArray(array=[float(precision), *j2000_offset])).value.split(" "))
 def get_J2000_epoch_offset(utc: str)->float:
     """Get TT offset corresponding to ISO-8601 formatted UTC string.
 

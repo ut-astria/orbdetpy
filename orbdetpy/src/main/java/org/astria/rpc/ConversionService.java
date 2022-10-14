@@ -57,25 +57,26 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
 
             for (int i = 0; i < req.getPvaCount(); i++)
             {
-//                if (stringTime)
-//                    time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
-//                else
-//                    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
-                if (stringTime) {
-                    System.out.println("got a string UTC time as input: "+ req.getUTCTime(i));
+                if (stringTime)
                     time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
-
-                }
-                else {
-                    System.out.println("got a J2000 offset time as input: "+ req.getTime(i));
+                else
                     time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
-                }
-                System.out.println("size of input from conv service: " + req.getPva(i).getArrayList().size());
+//                if (stringTime) {
+//                    System.out.println("got a string UTC time as input: "+ req.getUTCTime(i));
+//                    time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
+//
+//                }
+//                else {
+//                    System.out.println("got a J2000 offset time as input: "+ req.getTime(i));
+//                    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
+//                }
+                //System.out.println("size of input from conv service: " + req.getPva(i).getArrayList().size());
                 double[] pva = Conversion.transformFrame(srcFrame, time, req.getPva(i).getArrayList(), destFrame);
 
                 Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder();
                 for (int j = 0; j < pva.length; j++)
                     inner = inner.addArray(pva[j]);
+                // BUG - My edit - remove below 2 lines
 //                if (stringTime)
 //                    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
                 outer = outer.addArray(inner.build());
@@ -295,6 +296,27 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
         }
     }
 
+    @Override public void getTTString(Messages.DoubleArray req, StreamObserver<StringValue> resp)
+    {
+        try
+        {
+            int digits = (int)req.getArray(0);
+            ArrayList<String> tt = new ArrayList<String>(req.getArrayCount() - 1);
+            for (int i = 1; i < req.getArrayCount(); i++)
+            {
+                String str = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getArray(i)).getComponents(TimeScalesFactory.getTT()).toString(60, digits);
+                tt.add(str.substring(0, str.indexOf("+")));
+            }
+
+            StringValue.Builder builder = StringValue.newBuilder().setValue(String.join(" ", tt));
+            resp.onNext(builder.build());
+            resp.onCompleted();
+        }
+        catch (Throwable exc)
+        {
+            resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+        }
+    }
     @Override public void getJ2000EpochOffset(StringValue req, StreamObserver<Messages.DoubleArray> resp)
     {
         try
@@ -339,24 +361,24 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
             for (int i = 0; i < req.getPvaCount(); i++)
             {
                 if (stringTime) {
-                    System.out.println("got a string UTC time as input: "+ req.getUTCTime(i));
+                    //System.out.println("got a string UTC time as input: "+ req.getUTCTime(i));
                     time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
 
                 }
                 else {
-                    System.out.println("got a J2000 offset time as input: "+ req.getTime(i));
+                    //System.out.println("got a J2000 offset time as input: "+ req.getTime(i));
                     time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
                 }
 
-                System.out.println("printing time from Conv.Service.java: " + time.toString());
+                //System.out.println("printing time from Conv.Service.java: " + time.toString());
                 double[] cov = Conversion.transformFrameCov(srcFrame, time, req.getPva(i).getArrayList(), destFrame);
 
 
                 Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder();
                 for (int j = 0; j < cov.length; j++)
                     inner = inner.addArray(cov[j]);
-                if (stringTime)
-                    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
+//                if (stringTime)
+//                    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
                 outer = outer.addArray(inner.build());
             }
             resp.onNext(outer.build());
