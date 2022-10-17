@@ -8,3 +8,5 @@ orbdetpy/target/
 *.oem
 *.tdm
 emergent_2022_work
+df_nn_work
+monet_data_baseline_od

@@ -61,24 +61,13 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
                     time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
                 else
                     time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
-//                if (stringTime) {
-//                    System.out.println("got a string UTC time as input: "+ req.getUTCTime(i));
-//                    time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
-//
-//                }
-//                else {
-//                    System.out.println("got a J2000 offset time as input: "+ req.getTime(i));
-//                    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
-//                }
-                //System.out.println("size of input from conv service: " + req.getPva(i).getArrayList().size());
                 double[] pva = Conversion.transformFrame(srcFrame, time, req.getPva(i).getArrayList(), destFrame);
 
                 Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder();
                 for (int j = 0; j < pva.length; j++)
                     inner = inner.addArray(pva[j]);
-                // BUG - My edit - remove below 2 lines
-//                if (stringTime)
-//                    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
+                if (stringTime)
+                    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
                 outer = outer.addArray(inner.build());
             }
             resp.onNext(outer.build());
@@ -334,6 +323,45 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
         }
     }
 
+    @Override public void getMJDEpochOffset(StringValue req, StreamObserver<Messages.DoubleArray> resp)
+    {
+        try
+        {
+            Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
+            for (String time: req.getValue().split(" ", 0))
+                builder = builder.addArray(new AbsoluteDate(DateTimeComponents.parseDateTime(time),
+                        TimeScalesFactory.getUTC()).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH));
+            resp.onNext(builder.build());
+            resp.onCompleted();
+        }
+        catch (Throwable exc)
+        {
+            resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+        }
+    }
+
+    @Override public void getUTCStringforMJD(Messages.DoubleArray req, StreamObserver<StringValue> resp)
+    {
+        try
+        {
+            int digits = (int)req.getArray(0);
+            ArrayList<String> utc = new ArrayList<String>(req.getArrayCount() - 1);
+            for (int i = 1; i < req.getArrayCount(); i++)
+            {
+                String str = AbsoluteDate.MODIFIED_JULIAN_EPOCH.shiftedBy(req.getArray(i)).getComponents(TimeScalesFactory.getUTC()).toString(60, digits);
+                utc.add(str.substring(0, str.indexOf("+")));
+            }
+
+            StringValue.Builder builder = StringValue.newBuilder().setValue(String.join(" ", utc));
+            resp.onNext(builder.build());
+            resp.onCompleted();
+        }
+        catch (Throwable exc)
+        {
+            resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+        }
+    }
+
     @Override public void getEpochDifference(Messages.IntegerArray req, StreamObserver<DoubleValue> resp)
     {
         try
@@ -377,8 +405,50 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
                 Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder();
                 for (int j = 0; j < cov.length; j++)
                     inner = inner.addArray(cov[j]);
-//                if (stringTime)
-//                    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
+                if (stringTime)
+                    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
+                outer = outer.addArray(inner.build());
+            }
+            resp.onNext(outer.build());
+            resp.onCompleted();
+        }
+        catch (Throwable exc)
+        {
+            resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+        }
+    }
+
+    @Override public void transformFrameCovMethod2(Messages.TransformFrameInput req, StreamObserver<Messages.Double2DArray> resp)
+    {
+        try
+        {
+            AbsoluteDate time;
+            boolean stringTime = req.getUTCTimeCount() > 0;
+            Predefined srcFrame = Predefined.valueOf(req.getSrcFrame());
+            Predefined destFrame = Predefined.valueOf(req.getDestFrame());
+            Messages.Double2DArray.Builder outer = Messages.Double2DArray.newBuilder();
+
+            for (int i = 0; i < req.getPvaCount(); i++)
+            {
+                if (stringTime) {
+                    //System.out.println("got a string UTC time as input: "+ req.getUTCTime(i));
+                    time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
+
+                }
+                else {
+                    //System.out.println("got a J2000 offset time as input: "+ req.getTime(i));
+                    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
+                }
+
+                //System.out.println("printing time from Conv.Service.java: " + time.toString());
+                double[] cov = Conversion.transformFrameCovMethod2(srcFrame, time, req.getPva(i).getArrayList(), destFrame);
+
+
+                Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder();
+                for (int j = 0; j < cov.length; j++)
+                    inner = inner.addArray(cov[j]);
+                if (stringTime)
+                    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
                 outer = outer.addArray(inner.build());
             }
             resp.onNext(outer.build());

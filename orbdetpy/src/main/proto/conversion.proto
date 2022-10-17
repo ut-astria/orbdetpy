@@ -30,6 +30,8 @@ service Conversion
 
     rpc transformFrameCov(TransformFrameInput) returns (Double2DArray) {}
 
+    rpc transformFrameCovMethod2(TransformFrameInput) returns (Double2DArray) {}
+
     rpc convertAzElToRaDec(AnglesInput) returns (DoubleArray) {}
 
     rpc convertRaDecToAzEl(AnglesInput) returns (DoubleArray) {}
@@ -47,6 +49,10 @@ service Conversion
     rpc getTTString(DoubleArray) returns (google.protobuf.StringValue) {}
 
     rpc getJ2000EpochOffset(google.protobuf.StringValue) returns (DoubleArray) {}
+
+    rpc getMJDEpochOffset(google.protobuf.StringValue) returns (DoubleArray) {}
+
+    rpc getUTCStringforMJD(DoubleArray) returns (google.protobuf.StringValue) {}
 
     rpc getEpochDifference(IntegerArray) returns (google.protobuf.DoubleValue) {}
 }
