@@ -17,7 +17,7 @@
 from datetime import datetime, timezone
 from typing import List
 from orbdetpy import Constant, Frame, MeasurementType
-from orbdetpy.conversion import get_UTC_string
+from orbdetpy.conversion import get_UTC_string, get_TT_string
 from orbdetpy.rpc.messages_pb2 import ImportTDMInput, Settings
 from orbdetpy.rpc.server import RemoteServer
 from orbdetpy.rpc.utilities_pb2_grpc import UtilitiesStub
@@ -83,6 +83,66 @@ META_STOP
         oem_data += "\n\nCOMMENT Propagated covariance\nCOVARIANCE_START" + "\n".join(prop_cov) + "\nCOVARIANCE_STOP"
     return(oem_data)
 
+def export_OEM_TT(cfg: Settings, obs, obj_id: str, obj_name: str, time_list: List[str]=None, add_prop_cov: bool=False)->str:
+    """Export ephemerides in CCSDS OEM format.
+
+    Parameters
+    ----------
+    cfg : Settings object.
+    obs : Measurements or estimation results to export.
+    obj_id : Object identifier.
+    obj_name : Object name.
+    time_list : Limit output to TT times specified; default is to output everything.
+    add_prop_cov : Include propagated covariances if True; default is False.
+
+    Returns
+    -------
+    Ephemerides in OEM format.
+    """
+
+    tt_list = get_TT_string((o.time for o in obs))
+    oem_header = f"""CCSDS_OEM_VERS = 2.0
+CREATION_DATE = {datetime.now(timezone.utc).isoformat()}
+ORIGINATOR = UT-Austin
+
+META_START
+OBJECT_NAME = {obj_name}
+OBJECT_ID = {obj_id}
+CENTER_NAME = EARTH
+REF_FRAME = {cfg.prop_inertial_frame}
+TIME_SYSTEM = TT
+START_TIME = {time_list[0] if (time_list) else tt_list[0]}
+STOP_TIME = {time_list[-1] if (time_list) else tt_list[-1]}
+META_STOP
+
+"""
+
+    eph_data, estm_cov, prop_cov, added  = [], [], [], set()
+    is_estm = hasattr(obs[0], "estimated_state") and hasattr(obs[0], "estimated_covariance") and hasattr(obs[0], "propagated_covariance")
+    eph_key = "estimated_state" if (is_estm) else "true_state"
+    for tt, o in zip(tt_list, obs):
+        if (o.time not in added):
+            added.add(o.time)
+            if (time_list is None or tt in time_list):
+                X = [x/1000.0 for x in getattr(o, eph_key)[:6]]  # From m to km version
+                eph_data.append(f"{tt} {X[0]} {X[1]} {X[2]} {X[3]} {X[4]} {X[5]}")
+                if (is_estm and len(o.estimated_covariance) >= 21):
+                    estm_cov.append(f"\nEPOCH = {tt}")
+                    for m in range(6):
+                        n = (m**2 + m)//2
+                        estm_cov.append(" ".join((str(x/1E6) for x in o.estimated_covariance[n:m + n + 1]))) # From m to km version
+                if (is_estm and add_prop_cov and len(o.propagated_covariance) >= 21):
+                    prop_cov.append(f"\nEPOCH = {tt}")
+                    for m in range(6):
+                        n = (m**2 + m)//2
+                        prop_cov.append(" ".join((str(x/1E6) for x in o.propagated_covariance[n:m + n + 1]))) # From m to km version
+
+    oem_data = oem_header + "\n".join(eph_data)
+    if (estm_cov):
+        oem_data += "\n\nCOMMENT Updated covariance\nCOVARIANCE_START" + "\n".join(estm_cov) + "\nCOVARIANCE_STOP"
+    if (prop_cov):
+        oem_data += "\n\nCOMMENT Propagated covariance\nCOVARIANCE_START" + "\n".join(prop_cov) + "\nCOVARIANCE_STOP"
+    return(oem_data)
 def export_TDM(cfg: Settings, obs, obj_id: str, station_list: List[str]=None)->str:
     """Export tracking data in CCSDS TDM format.
 

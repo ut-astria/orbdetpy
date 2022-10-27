@@ -309,6 +309,7 @@ public final class Conversion
         // METHOD 2 - BELOW
         // Jacobian from ITRF to J2000 at date
         final double[][] jacJ2000ToIcrf = new double[6][6];
+        //src_frame.getTransformTo(dest_frame, oemDate).getRotation()
         src_frame.getTransformTo(dest_frame, oemDate).getJacobian(CartesianDerivativesFilter.USE_PV, jacJ2000ToIcrf);
 
         // Covariance transformation, using Hipparchus RealMatrix class to perform the multiplication

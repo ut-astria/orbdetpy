@@ -306,7 +306,7 @@ def get_TT_string(j2000_offset: float, precision: int=3)->str:
 
     Returns
     -------
-    ISO-8601 formatted UTC string or list of strings.
+    ISO-8601 formatted TT string or list of strings.
     """
 
     if (isinstance(j2000_offset, float)):
