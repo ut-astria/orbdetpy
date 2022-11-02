@@ -42,8 +42,6 @@ public final class Conversion
     public static double[] transformFrame(Predefined srcFrame, AbsoluteDate time, List<Double> pva, Predefined destFrame)
     {
         Transform xfm = FramesFactory.getFrame(srcFrame).getTransformTo(FramesFactory.getFrame(destFrame), time);
-        System.out.println("time from conv.java: " + time);
-        System.out.println("size of input: " + pva.size());
         if (pva.size() == 3)
             return(xfm.transformPosition(new Vector3D(pva.get(0), pva.get(1), pva.get(2))).toArray());
         else if (pva.size() == 6)
@@ -308,32 +306,31 @@ public final class Conversion
 
         // METHOD 2 - BELOW
         // Jacobian from ITRF to J2000 at date
-        final double[][] jacJ2000ToIcrf = new double[6][6];
-        //src_frame.getTransformTo(dest_frame, oemDate).getRotation()
-        src_frame.getTransformTo(dest_frame, oemDate).getJacobian(CartesianDerivativesFilter.USE_PV, jacJ2000ToIcrf);
+        double[][] jacJ2000ToIcrf = new double[6][6];
+        jacJ2000ToIcrf = src_frame.getTransformTo(dest_frame, oemDate).getRotation().getMatrix();
+
+        System.out.println("printing test rotation matrix & sending same to python");
+        for (double[] row : jacJ2000ToIcrf) {
+            System.out.println(Arrays.toString(row));
+        }
+
+
 
         // Covariance transformation, using Hipparchus RealMatrix class to perform the multiplication
         final RealMatrix jJ2000ToIcrf = MatrixUtils.createRealMatrix(jacJ2000ToIcrf);
 
-        // pJ2000 contains the covariance matrix in J2000
-        final RealMatrix pIcrf = jJ2000ToIcrf.multiply(pJ2000.multiplyTransposed(jJ2000ToIcrf));
-        double[][] matPIcrf = pIcrf.getData();
-
-        if (testPrintCovMat) {
-            System.out.println("printing cov in ICRF frame");
-            for (double[] row : matPIcrf) {
-                System.out.println(Arrays.toString(row));
-            }
-        }
 
         // Convert covariance matrix to LTR - below fn from Estimation.java
-        int m = pIcrf.getRowDimension();
+        // NEW: Sending the rotation matrix to python side
+        int m = jJ2000ToIcrf.getRowDimension();
         double[] out_cov = new double[(int)(0.5*m*(m+1))];
         for (int i = 0, k = 0; i < m; i++)
         {
             for (int j = 0; j <= i; j++)
-                out_cov[k++] = pIcrf.getEntry(i, j);
+                out_cov[k++] = jJ2000ToIcrf.getEntry(i, j);
         }
         return(out_cov);
+
+
     }
 }

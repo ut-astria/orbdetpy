@@ -133,6 +133,8 @@ def plot(cfg: Settings, measurements, orbit_fit, interactive: bool=False,
             plt.subplot(pre.shape[-1], 1, i + 1)
         plt.scatter(times, pre[:,i], color=colors, marker="o", s=7)
         plt.legend(handles=patches, loc="best")
+        plt.plot(times, -cov[:,i], "-r")
+        plt.plot(times,  cov[:,i], "-r")
         plt.xlabel("Time [hr]")
         plt.ylabel(f"{ylabs[i]} [{units[i]}]")
         plt.grid(True)

@@ -7,6 +7,10 @@ orbdetpy/target/
 *.json
 *.oem
 *.tdm
-emergent_2022_work
-df_nn_work
-monet_data_baseline_od
+examples/fit_radec.py
+examples/test_conversion.py
+examples/test_estimation.py
+examples/test_interpolation.py
+examples/multi_target.py
+examples/multi_target_radar.py
+examples/MOD_2023
