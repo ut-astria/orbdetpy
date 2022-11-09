@@ -418,45 +418,4 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
         }
     }
 
-    @Override public void transformFrameCovMethod2(Messages.TransformFrameInput req, StreamObserver<Messages.Double2DArray> resp)
-    {
-        try
-        {
-            AbsoluteDate time;
-            boolean stringTime = req.getUTCTimeCount() > 0;
-            Predefined srcFrame = Predefined.valueOf(req.getSrcFrame());
-            Predefined destFrame = Predefined.valueOf(req.getDestFrame());
-            Messages.Double2DArray.Builder outer = Messages.Double2DArray.newBuilder();
-
-            for (int i = 0; i < req.getPvaCount(); i++)
-            {
-                if (stringTime) {
-                    //System.out.println("got a string UTC time as input: "+ req.getUTCTime(i));
-                    time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
-
-                }
-                else {
-                    //System.out.println("got a J2000 offset time as input: "+ req.getTime(i));
-                    time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
-                }
-
-                //System.out.println("printing time from Conv.Service.java: " + time.toString());
-                double[] cov = Conversion.transformFrameCovMethod2(srcFrame, time, req.getPva(i).getArrayList(), destFrame);
-
-
-                Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder();
-                for (int j = 0; j < cov.length; j++)
-                    inner = inner.addArray(cov[j]);
-                if (stringTime)
-                    inner = inner.addArray(time.durationFrom(AbsoluteDate.J2000_EPOCH));
-                outer = outer.addArray(inner.build());
-            }
-            resp.onNext(outer.build());
-            resp.onCompleted();
-        }
-        catch (Throwable exc)
-        {
-            resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
-        }
-    }
 }

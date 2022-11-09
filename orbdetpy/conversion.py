@@ -58,12 +58,12 @@ def transform_frame_cov(src_frame: int, time: float, cov: List[float], dest_fram
     ----------
     src_frame : Source reference frame; a constant from Frame.
     time : Offset in TT from J2000 epoch [s]. Give a list for bulk transforms.
-    cov : Modified - would be LTR covariance
+    cov :  LTR covariance
     dest_frame : Destination reference frame; a constant from Frame.
 
     Returns
     -------
-    Covariance matrix transformed to the destination frame.
+    Covariance matrix (LTR) transformed to the destination frame.
     """
 
     if (isinstance(time, float) or isinstance(time, str)):
@@ -76,34 +76,6 @@ def transform_frame_cov(src_frame: int, time: float, cov: List[float], dest_fram
             src_frame=src_frame, time=time, pva=[DoubleArray(array=x) for x in cov], dest_frame=dest_frame))
     else:
         resp = _conversion_stub.transformFrameCov(TransformFrameInput(
-            src_frame=src_frame, UTC_time=time, pva=[DoubleArray(array=x) for x in cov], dest_frame=dest_frame))
-    return(resp.array[0].array if (single) else resp.array)
-
-def transform_frame_cov_method_2(src_frame: int, time: float, cov: List[float], dest_frame: int)->List[float]:
-    """Transform a covariance matrix from one frame to another. METHOD 2
-
-    Parameters
-    ----------
-    src_frame : Source reference frame; a constant from Frame.
-    time : Offset in TT from J2000 epoch [s]. Give a list for bulk transforms.
-    cov : Modified - would be LTR covariance
-    dest_frame : Destination reference frame; a constant from Frame.
-
-    Returns
-    -------
-    Covariance matrix transformed to the destination frame.
-    """
-
-    if (isinstance(time, float) or isinstance(time, str)):
-        single, time, cov = True, [time], [cov]
-    else:
-        single = False
-
-    if (isinstance(time[0], float)):
-        resp = _conversion_stub.transformFrameCovMethod2(TransformFrameInput(
-            src_frame=src_frame, time=time, pva=[DoubleArray(array=x) for x in cov], dest_frame=dest_frame))
-    else:
-        resp = _conversion_stub.transformFrameCovMethod2(TransformFrameInput(
             src_frame=src_frame, UTC_time=time, pva=[DoubleArray(array=x) for x in cov], dest_frame=dest_frame))
     return(resp.array[0].array if (single) else resp.array)
 
