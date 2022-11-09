@@ -51,6 +51,34 @@ def transform_frame(src_frame: int, time: float, pva: List[float], dest_frame: i
             src_frame=src_frame, UTC_time=time, pva=[DoubleArray(array=x) for x in pva], dest_frame=dest_frame))
     return(resp.array[0].array if (single) else resp.array)
 
+def transform_frame_cov(src_frame: int, time: float, cov: List[float], dest_frame: int)->List[float]:
+    """Transform a covariance matrix from one frame to another.
+
+    Parameters
+    ----------
+    src_frame : Source reference frame; a constant from Frame.
+    time : Offset in TT from J2000 epoch [s]. Give a list for bulk transforms.
+    cov :  LTR covariance
+    dest_frame : Destination reference frame; a constant from Frame.
+
+    Returns
+    -------
+    Covariance matrix (LTR) transformed to the destination frame.
+    """
+
+    if (isinstance(time, float) or isinstance(time, str)):
+        single, time, cov = True, [time], [cov]
+    else:
+        single = False
+
+    if (isinstance(time[0], float)):
+        resp = _conversion_stub.transformFrameCov(TransformFrameInput(
+            src_frame=src_frame, time=time, pva=[DoubleArray(array=x) for x in cov], dest_frame=dest_frame))
+    else:
+        resp = _conversion_stub.transformFrameCov(TransformFrameInput(
+            src_frame=src_frame, UTC_time=time, pva=[DoubleArray(array=x) for x in cov], dest_frame=dest_frame))
+    return(resp.array[0].array if (single) else resp.array)
+
 def get_lvlh_rotation(state: List[float])->array:
     """Construct the inertial->LVLH rotation matrix.
 
@@ -238,6 +266,22 @@ def get_UTC_string(j2000_offset: float, precision: int=3)->str:
         return(_conversion_stub.getUTCString(DoubleArray(array=[float(precision), j2000_offset])).value)
     return(_conversion_stub.getUTCString(DoubleArray(array=[float(precision), *j2000_offset])).value.split(" "))
 
+def get_TT_string(j2000_offset: float, precision: int=3)->str:
+    """Get ISO-8601 formatted UTC string corresponding to TT offset.
+
+    Parameters
+    ----------
+    j2000_offset : Offset in TT from J2000 epoch [s] or list of offsets.
+    precision : Desired precision. Defaults to 3, i.e. milliseconds.
+
+    Returns
+    -------
+    ISO-8601 formatted TT string or list of strings.
+    """
+
+    if (isinstance(j2000_offset, float)):
+        return(_conversion_stub.getTTString(DoubleArray(array=[float(precision), j2000_offset])).value)
+    return(_conversion_stub.getTTString(DoubleArray(array=[float(precision), *j2000_offset])).value.split(" "))
 def get_J2000_epoch_offset(utc: str)->float:
     """Get TT offset corresponding to ISO-8601 formatted UTC string.
 
@@ -253,6 +297,37 @@ def get_J2000_epoch_offset(utc: str)->float:
     resp = _conversion_stub.getJ2000EpochOffset(StringValue(value=utc if isinstance(utc, str) else " ".join(utc)))
     return(resp.array[0] if (len(resp.array) == 1) else resp.array)
 
+def get_MJD_epoch_offset(utc: str)->float:
+    """Get TT offset corresponding to ISO-8601 formatted UTC string.
+
+    Parameters
+    ----------
+    utc : ISO-8601 formatted UTC string or list of strings.
+
+    Returns
+    -------
+    Offset in TT from MJD epoch [s] or list of offsets.
+    """
+
+    resp = _conversion_stub.getMJDEpochOffset(StringValue(value=utc if isinstance(utc, str) else " ".join(utc)))
+    return(resp.array[0] if (len(resp.array) == 1) else resp.array)
+
+def get_UTC_string_for_MJD(mjd_offset: float, precision: int=3)->str:
+    """Get ISO-8601 formatted UTC string corresponding to TT offset.
+
+    Parameters
+    ----------
+    mjd_offset : Offset in TT from MJD epoch [s] or list of offsets.
+    precision : Desired precision. Defaults to 3, i.e. milliseconds.
+
+    Returns
+    -------
+    ISO-8601 formatted UTC string or list of strings.
+    """
+
+    if (isinstance(mjd_offset, float)):
+        return(_conversion_stub.getUTCStringforMJD(DoubleArray(array=[float(precision), mjd_offset])).value)
+    return(_conversion_stub.getUTCStringforMJD(DoubleArray(array=[float(precision), *mjd_offset])).value.split(" "))
 def get_epoch_difference(from_epoch: int, to_epoch: int)->str:
     """Get the constant time difference between two epochs.
 

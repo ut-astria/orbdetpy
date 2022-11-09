@@ -20,6 +20,16 @@ class ConversionStub(object):
                 request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
                 response_deserializer=messages__pb2.Double2DArray.FromString,
                 )
+        self.transformFrameCov = channel.unary_unary(
+                '/Conversion/transformFrameCov',
+                request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
+                )
+        self.transformFrameCovMethod2 = channel.unary_unary(
+                '/Conversion/transformFrameCovMethod2',
+                request_serializer=messages__pb2.TransformFrameInput.SerializeToString,
+                response_deserializer=messages__pb2.Double2DArray.FromString,
+                )
         self.convertAzElToRaDec = channel.unary_unary(
                 '/Conversion/convertAzElToRaDec',
                 request_serializer=messages__pb2.AnglesInput.SerializeToString,
@@ -55,10 +65,25 @@ class ConversionStub(object):
                 request_serializer=messages__pb2.DoubleArray.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
                 )
+        self.getTTString = channel.unary_unary(
+                '/Conversion/getTTString',
+                request_serializer=messages__pb2.DoubleArray.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+                )
         self.getJ2000EpochOffset = channel.unary_unary(
                 '/Conversion/getJ2000EpochOffset',
                 request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
                 response_deserializer=messages__pb2.DoubleArray.FromString,
+                )
+        self.getMJDEpochOffset = channel.unary_unary(
+                '/Conversion/getMJDEpochOffset',
+                request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+                response_deserializer=messages__pb2.DoubleArray.FromString,
+                )
+        self.getUTCStringforMJD = channel.unary_unary(
+                '/Conversion/getUTCStringforMJD',
+                request_serializer=messages__pb2.DoubleArray.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
                 )
         self.getEpochDifference = channel.unary_unary(
                 '/Conversion/getEpochDifference',
@@ -71,6 +96,18 @@ class ConversionServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def transformFrame(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def transformFrameCov(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def transformFrameCovMethod2(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -118,7 +155,25 @@ class ConversionServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def getTTString(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def getJ2000EpochOffset(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def getMJDEpochOffset(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def getUTCStringforMJD(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -135,6 +190,16 @@ def add_ConversionServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'transformFrame': grpc.unary_unary_rpc_method_handler(
                     servicer.transformFrame,
+                    request_deserializer=messages__pb2.TransformFrameInput.FromString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
+            ),
+            'transformFrameCov': grpc.unary_unary_rpc_method_handler(
+                    servicer.transformFrameCov,
+                    request_deserializer=messages__pb2.TransformFrameInput.FromString,
+                    response_serializer=messages__pb2.Double2DArray.SerializeToString,
+            ),
+            'transformFrameCovMethod2': grpc.unary_unary_rpc_method_handler(
+                    servicer.transformFrameCovMethod2,
                     request_deserializer=messages__pb2.TransformFrameInput.FromString,
                     response_serializer=messages__pb2.Double2DArray.SerializeToString,
             ),
@@ -173,10 +238,25 @@ def add_ConversionServicer_to_server(servicer, server):
                     request_deserializer=messages__pb2.DoubleArray.FromString,
                     response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             ),
+            'getTTString': grpc.unary_unary_rpc_method_handler(
+                    servicer.getTTString,
+                    request_deserializer=messages__pb2.DoubleArray.FromString,
+                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+            ),
             'getJ2000EpochOffset': grpc.unary_unary_rpc_method_handler(
                     servicer.getJ2000EpochOffset,
                     request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
                     response_serializer=messages__pb2.DoubleArray.SerializeToString,
+            ),
+            'getMJDEpochOffset': grpc.unary_unary_rpc_method_handler(
+                    servicer.getMJDEpochOffset,
+                    request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+                    response_serializer=messages__pb2.DoubleArray.SerializeToString,
+            ),
+            'getUTCStringforMJD': grpc.unary_unary_rpc_method_handler(
+                    servicer.getUTCStringforMJD,
+                    request_deserializer=messages__pb2.DoubleArray.FromString,
+                    response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             ),
             'getEpochDifference': grpc.unary_unary_rpc_method_handler(
                     servicer.getEpochDifference,
@@ -205,6 +285,40 @@ class Conversion(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Conversion/transformFrame',
+            messages__pb2.TransformFrameInput.SerializeToString,
+            messages__pb2.Double2DArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def transformFrameCov(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Conversion/transformFrameCov',
+            messages__pb2.TransformFrameInput.SerializeToString,
+            messages__pb2.Double2DArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def transformFrameCovMethod2(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Conversion/transformFrameCovMethod2',
             messages__pb2.TransformFrameInput.SerializeToString,
             messages__pb2.Double2DArray.FromString,
             options, channel_credentials,
@@ -330,6 +444,23 @@ class Conversion(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def getTTString(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Conversion/getTTString',
+            messages__pb2.DoubleArray.SerializeToString,
+            google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def getJ2000EpochOffset(request,
             target,
             options=(),
@@ -343,6 +474,40 @@ class Conversion(object):
         return grpc.experimental.unary_unary(request, target, '/Conversion/getJ2000EpochOffset',
             google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
             messages__pb2.DoubleArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getMJDEpochOffset(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Conversion/getMJDEpochOffset',
+            google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+            messages__pb2.DoubleArray.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def getUTCStringforMJD(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Conversion/getUTCStringforMJD',
+            messages__pb2.DoubleArray.SerializeToString,
+            google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

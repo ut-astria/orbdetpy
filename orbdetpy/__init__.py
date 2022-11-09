@@ -226,10 +226,14 @@ def configure(**kwargs)->Settings:
     Settings object initialized with defaults and given values.
     """
 
-    cfg = Settings(rso_mass=5.0, rso_area=0.1, gravity_degree=20, gravity_order=20, ocean_tides_degree=20, ocean_tides_order=20,
-                   third_body_sun=True, third_body_moon=True, solid_tides_sun=True, solid_tides_moon=True, drag_model=DragModel.MSISE2000,
+    cfg = Settings(rso_mass=5.0, rso_area=0.1, gravity_degree=20, gravity_order=20,
+                   ocean_tides_degree=20, ocean_tides_order=20,
+                   third_body_sun=True, third_body_moon=True,
+                   solid_tides_sun=True, solid_tides_moon=True,
+                   drag_model=DragModel.MSISE2000,
                    drag_coefficient=Parameter(value=2.0, min=1.0, max=3.0, estimation=EstimationType.ESTIMATE),
-                   drag_exp_rho0=3.614E-13, drag_exp_H0=700000.0, drag_exp_Hscale=88667.0, rp_sun=True,
+                   drag_exp_rho0=3.614E-13, drag_exp_H0=700000.0, drag_exp_Hscale=88667.0,
+                   rp_sun=True,
                    rp_coeff_reflection=Parameter(value=1.5, min=1.0, max=2.0, estimation=EstimationType.ESTIMATE),
                    prop_inertial_frame=Frame.GCRF, integ_min_time_step=1E-3, integ_max_time_step=300.0, integ_abs_tolerance=1E-14,
                    integ_rel_tolerance=1E-12, output_flags=OutputFlag.OUTPUT_ESTM_COV|OutputFlag.OUTPUT_PROP_COV|OutputFlag.OUTPUT_INNO_COV|

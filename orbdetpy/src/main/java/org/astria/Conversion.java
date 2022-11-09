@@ -18,17 +18,20 @@
 
 package org.astria;
 
+import java.util.Arrays;
 import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Predefined;
-import org.orekit.frames.TopocentricFrame;
-import org.orekit.frames.Transform;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.frames.*;
+import org.orekit.time.*;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 
 public final class Conversion
 {
@@ -82,4 +85,63 @@ public final class Conversion
         return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[0], xyz[1]), FastMath.PI),
                             FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))});
     }
+
+
+    //myEdit to transform covariance from given frame to ICRF
+    public static double[] transformFrameCov(Predefined srcFrame, AbsoluteDate time, List<Double> cov, Predefined destFrame)
+    {
+        // About BEGIN
+        // Input:  time, covariance matrix, input frame, destination frame and
+        // Output: cov. LTR in dest. frame
+        // About END
+
+
+        final AbsoluteDate oemDate = time;
+
+        // Form covariance matrix from python input
+        double[][] cov_mat = new double[6][6];
+        for (int i = 0, k = 0; i < 6; i++)
+        {
+            for (int j = 0; j < i + 1; j++, k++)
+            {
+                double value = cov.get(k);
+                cov_mat[i][j] = value;
+                cov_mat[j][i] = value;
+            }
+        }
+
+        // pJ2000 contains the input covariance matrix in J2000
+        final RealMatrix pJ2000 = MatrixUtils.createRealMatrix(cov_mat);
+
+
+        //  Frames definition
+        Frame src_frame = FramesFactory.getFrame(srcFrame);  //EME2000
+        Frame dest_frame = FramesFactory.getFrame(destFrame); //ICRF
+
+
+        // METHOD 2 - BELOW
+        // Jacobian from ITRF to J2000 at date
+        double[][] jacJ2000ToIcrf = new double[6][6];
+        jacJ2000ToIcrf = src_frame.getTransformTo(dest_frame, oemDate).getRotation().getMatrix();
+
+        final RealMatrix jJ2000ToIcrf = MatrixUtils.createRealIdentityMatrix(6);
+        // Set Rotation matrix (3 by 3) into 6 by 6 identity matrix to form 6 by 6 rotation matrix
+        jJ2000ToIcrf.setSubMatrix(jacJ2000ToIcrf, 0,0);
+        jJ2000ToIcrf.setSubMatrix(jacJ2000ToIcrf, 3,3);
+
+        // Covariance transformation
+        // pJ2000 contains the covariance matrix in J2000
+        final RealMatrix pIcrf = jJ2000ToIcrf.multiply(pJ2000.multiplyTransposed(jJ2000ToIcrf));
+
+        // Convert covariance matrix to LTR - below fn from Estimation.java
+        int m = pIcrf.getRowDimension();
+        double[] out_cov = new double[(int)(0.5*m*(m+1))];
+        for (int i = 0, k = 0; i < m; i++)
+        {
+            for (int j = 0; j <= i; j++)
+                out_cov[k++] = pIcrf.getEntry(i, j);
+        }
+        return(out_cov);
+    }
+
 }
