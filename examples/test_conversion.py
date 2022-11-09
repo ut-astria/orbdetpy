@@ -17,8 +17,6 @@
 from datetime import datetime, timezone
 import orbdetpy.conversion as conv
 from orbdetpy import Constant, Epoch, Frame, PositionAngle
-import numpy as np
-from numpy.linalg import norm
 
 # TT <=> UTC
 now = datetime.now(timezone.utc).isoformat()
@@ -41,19 +39,6 @@ itrf_pv = conv.transform_frame(Frame.GCRF, time, gcrf_pv, Frame.ITRF_CIO_CONV_20
 print("GCRF=>ITRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s".format(*itrf_pv))
 print("ITRF=>GCRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s\n".format(
     *conv.transform_frame(Frame.ITRF_CIO_CONV_2010_ACCURATE_EOP, time, itrf_pv, Frame.GCRF)))
-
-print("converting from GCRF to ICRF")
-icrf_pv = conv.transform_frame(Frame.GCRF, time, gcrf_pv, Frame.ICRF)
-print("GCRF=>ICRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s".format(*icrf_pv))
-print("ICRF=>GCRF: {:.2f}m, {:.2f}m, {:.2f}m, {:.2f}m/s, {:.2f}m/s, {:.2f}m/s\n".format(
-    *conv.transform_frame(Frame.ICRF, time, icrf_pv, Frame.GCRF)))
-
-print("pos norm icrf: ", norm(np.array(icrf_pv[:3])))
-print("vel norm icrf: ", norm(np.array(icrf_pv[3:])))
-print("pos norm gcrf: ", norm(np.array(gcrf_pv[:3])))
-print("vel norm gcrf: ", norm(np.array(gcrf_pv[3:])))
-exit()
-
 
 # Position => Lat/Lon/Alt
 lla = conv.pos_to_lla(Frame.GCRF, time, gcrf_pv[:3])

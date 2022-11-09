@@ -97,4 +97,4 @@ for f in fit:
     print(get_UTC_string(f.time), f.station, f.estimated_state[:6])
 
 # Plot OD results
-plot(config, meas_obj, fit, interactive=True, estim_param=True)
+plot(config, meas_obj, fit, interactive=True, estim_param=False)

@@ -100,7 +100,7 @@ cfg.prop_initial_state[:] = multivariate_normal(cfg.prop_initial_state, diag([1E
 # Use Filter.EXTENDED_KALMAN for the EKF
 cfg.estm_filter = Filter.UNSCENTED_KALMAN
 # Set the initial covariance; diagonal entries for the estimated state vector and parameters 
-cfg.estm_covariance[:] = [1E6, 1E6, 1E6, 1E2, 1E2, 1E2, 1.00, 0.25] #, 1E-6, 1E-6, 1E-6]
+cfg.estm_covariance[:] = [1E6, 1E6, 1E6, 1E2, 1E2, 1E2, 1.00, 0.25, 1E-6, 1E-6, 1E-6]
 
 # Run OD on simulated measurements
 fit = determine_orbit([cfg], [meas])[0]
