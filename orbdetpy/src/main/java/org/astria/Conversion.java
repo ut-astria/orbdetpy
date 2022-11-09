@@ -194,7 +194,7 @@ public final class Conversion
         double[][] matPIcrf = pIcrf.getData();
 
         if (testPrintCovMat) {
-            System.out.println("printing cov in ICRF frame");
+            System.out.println("printing cov in ICRF frame - METHOD 1 - JAVA");
             for (double[] row : matPIcrf) {
                 System.out.println(Arrays.toString(row));
             }
@@ -291,13 +291,6 @@ public final class Conversion
         // pJ2000 contains the covariance matrix in J2000
         final RealMatrix pJ2000 = MatrixUtils.createRealMatrix(cov_mat);
 
-        if (testPrintCovMat) {
-            System.out.println("printing input covariance built NOW");
-            System.out.println("==========================================");
-            for (double[] row : cov_mat) {
-                System.out.println(Arrays.toString(row));
-            }
-        }
 
         //  Frames definition
         Frame src_frame = FramesFactory.getFrame(srcFrame);  //EME2000
@@ -309,28 +302,31 @@ public final class Conversion
         double[][] jacJ2000ToIcrf = new double[6][6];
         jacJ2000ToIcrf = src_frame.getTransformTo(dest_frame, oemDate).getRotation().getMatrix();
 
-        System.out.println("printing test rotation matrix & sending same to python");
-        for (double[] row : jacJ2000ToIcrf) {
-            System.out.println(Arrays.toString(row));
+        final RealMatrix jJ2000ToIcrf = MatrixUtils.createRealIdentityMatrix(6);
+        // Set Rotation matrix (3 by 3) into 6 by 6 identity matrix to form 6 by 6 rotation matrix
+        jJ2000ToIcrf.setSubMatrix(jacJ2000ToIcrf, 0,0);
+        jJ2000ToIcrf.setSubMatrix(jacJ2000ToIcrf, 3,3);
+
+        // Covariance transformation
+        // pJ2000 contains the covariance matrix in J2000
+        final RealMatrix pIcrf = jJ2000ToIcrf.multiply(pJ2000.multiplyTransposed(jJ2000ToIcrf));
+        double[][] matPIcrf = pIcrf.getData();
+
+        if (testPrintCovMat) {
+            System.out.println("printing cov in ICRF frame - METHOD 2 - JAVA");
+            for (double[] row : matPIcrf) {
+                System.out.println(Arrays.toString(row));
+            }
         }
 
-
-
-        // Covariance transformation, using Hipparchus RealMatrix class to perform the multiplication
-        final RealMatrix jJ2000ToIcrf = MatrixUtils.createRealMatrix(jacJ2000ToIcrf);
-
-
         // Convert covariance matrix to LTR - below fn from Estimation.java
-        // NEW: Sending the rotation matrix to python side
-        int m = jJ2000ToIcrf.getRowDimension();
+        int m = pIcrf.getRowDimension();
         double[] out_cov = new double[(int)(0.5*m*(m+1))];
         for (int i = 0, k = 0; i < m; i++)
         {
             for (int j = 0; j <= i; j++)
-                out_cov[k++] = jJ2000ToIcrf.getEntry(i, j);
+                out_cov[k++] = pIcrf.getEntry(i, j);
         }
         return(out_cov);
-
-
     }
 }

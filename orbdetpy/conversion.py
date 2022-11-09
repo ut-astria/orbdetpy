@@ -58,8 +58,7 @@ def transform_frame_cov(src_frame: int, time: float, cov: List[float], dest_fram
     ----------
     src_frame : Source reference frame; a constant from Frame.
     time : Offset in TT from J2000 epoch [s]. Give a list for bulk transforms.
-    pva : State vector to transform, can be pos or pos+vel or pos+vel+acc. Provide a
-          list of lists for bulk frame transforms. - Modified - would be LTR covariance
+    cov : Modified - would be LTR covariance
     dest_frame : Destination reference frame; a constant from Frame.
 
     Returns
@@ -87,8 +86,7 @@ def transform_frame_cov_method_2(src_frame: int, time: float, cov: List[float], 
     ----------
     src_frame : Source reference frame; a constant from Frame.
     time : Offset in TT from J2000 epoch [s]. Give a list for bulk transforms.
-    pva : State vector to transform, can be pos or pos+vel or pos+vel+acc. Provide a
-          list of lists for bulk frame transforms. - Modified - would be LTR covariance
+    cov : Modified - would be LTR covariance
     dest_frame : Destination reference frame; a constant from Frame.
 
     Returns
