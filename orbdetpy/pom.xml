@@ -7,7 +7,7 @@
 
   <properties>
     <application.main.class>org.astria.rpc.RPCServer</application.main.class>
-    <os.detected.classifier>windows-x86_64</os.detected.classifier>
+    <os.detected.classifier>linux-x86_64</os.detected.classifier>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <grpc.version>1.47.0</grpc.version>
