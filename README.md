@@ -22,9 +22,11 @@ If you have docker installed and wish to use a pre-built environment refer to th
 
 2. Install Python 3.8.0 or higher and run `pip install orbdetpy` to install orbdetpy and other package dependencies.
 
-3. Update the astrodynamics data under `orbdetpy/orekit-data` periodically by running the following. You will need `root` privileges on some systems.
+3. Update astrodynamics data under `orbdetpy/orekit-data` periodically by running the following. You will need `root` privileges on some systems.
 
    `python -c "from orbdetpy.astro_data import update_data; update_data();"`
+
+   You can instead provide a fully qualified path in the `ORBDETPY_DATA_DIR` environment variable to use a different folder for data files and to avoid issues with folder write permissions.
 
 # Development
 
