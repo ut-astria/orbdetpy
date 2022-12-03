@@ -690,7 +690,7 @@ public final class Settings
             for (int i = 0; i <= geoZoneLatLon.length - 2; i += 2)
                 vertices[(int)(i/2)] = new S2Point(geoZoneLatLon[i+1], 0.5*FastMath.PI - geoZoneLatLon[i]);
             SphericalPolygonsSet set = new SphericalPolygonsSet(1E-10, vertices);
-            GeographicZoneDetector detector = new GeographicZoneDetector(DataManager.earthShape, set, FastMath.toRadians(0.5));
+            GeographicZoneDetector detector = new GeographicZoneDetector(15.0, 1E-3, DataManager.earthShape, set, FastMath.toRadians(0.5));
             EventHandler<GeographicZoneDetector> handler = new EventHandling<GeographicZoneDetector>(
                 ManeuverType.UNDEFINED, 0, EventHandling.GEO_ZONE_NAME, detector.g(initialState) < 0.0);
             prop.addEventDetector(detector.withHandler(handler));
@@ -699,7 +699,8 @@ public final class Settings
 
         if ((outputFlags & Settings.OUTPUT_ECLIPSE) != 0)
         {
-            EclipseDetector detector = new EclipseDetector(CelestialBodyFactory.getSun(), 695700E3, DataManager.earthShape);
+            EclipseDetector detector = new EclipseDetector(CelestialBodyFactory.getSun(), 695700E3, DataManager.earthShape)
+                .withMaxCheck(15.0).withThreshold(1E-3);
             EventHandler<EclipseDetector> handler = new EventHandling<EclipseDetector>(
                 ManeuverType.UNDEFINED, 0, EventHandling.UMBRA, detector.g(initialState) < 0.0);
             prop.addEventDetector(detector.withHandler(handler));
@@ -717,7 +718,7 @@ public final class Settings
                 Station stn = kv.getValue();
                 if (stn.fovAperture <= 1E-6)
                 {
-                    ElevationDetector detector = new ElevationDetector(stations.get(kv.getKey()).getBaseFrame())
+                    ElevationDetector detector = new ElevationDetector(15.0, 1E-3, stations.get(kv.getKey()).getBaseFrame())
                         .withRefraction(new EarthITU453AtmosphereRefraction(stn.altitude)).withConstantElevation(FastMath.toRadians(5.0));
                     EventHandler<ElevationDetector> handler = new EventHandling<ElevationDetector>(
                         ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) > 0.0);
@@ -729,7 +730,8 @@ public final class Settings
                     Vector3D center = new Vector3D(FastMath.cos(stn.fovElevation)*FastMath.sin(stn.fovAzimuth),
                                                    FastMath.cos(stn.fovElevation)*FastMath.cos(stn.fovAzimuth), FastMath.sin(stn.fovElevation));
                     CircularFieldOfView fov = new CircularFieldOfView(center, 0.5*stn.fovAperture, 1E-6);
-                    GroundFieldOfViewDetector detector = new GroundFieldOfViewDetector(stations.get(kv.getKey()).getBaseFrame(), fov);
+                    GroundFieldOfViewDetector detector = new GroundFieldOfViewDetector(stations.get(kv.getKey()).getBaseFrame(), fov)
+                        .withMaxCheck(15.0).withThreshold(1E-3);
                     EventHandler<GroundFieldOfViewDetector> handler = new EventHandling<GroundFieldOfViewDetector>(
                         ManeuverType.UNDEFINED, 0, kv.getKey(), detector.g(initialState) < 0.0);
                     prop.addEventDetector(detector.withHandler(handler));

@@ -102,7 +102,7 @@ public final class ParallelPropagation
                     (stepEnd.get(i) != null && stepEnd.get(i).equals(cfg.propEnd)))
                 {
                     double dt = cfg.propEnd.durationFrom(state.getDate());
-                    if (dt != 0.0)
+                    if (FastMath.abs(dt) > 1E-6)
                     {
                         if (cfg.propStep > 0.0)
                             stepEnd.set(i, state.getDate().shiftedBy(FastMath.min(dt, cfg.propStep)));
