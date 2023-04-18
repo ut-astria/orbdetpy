@@ -80,22 +80,15 @@ public final class Conversion
     {
         TopocentricFrame toframe = new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(lat, lon, alt), "gs");
         Transform xfm = FramesFactory.getFrame(frame).getTransformTo(toframe, time);
-        Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra), FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));
+        Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra), FastMath.cos(dec)*FastMath.sin(ra),
+                                                          FastMath.sin(dec)));
         double[] xyz = toVec.toArray();
         return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[0], xyz[1]), FastMath.PI),
                             FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))});
     }
 
-
-    //myEdit to transform covariance from given frame to ICRF
     public static double[] transformFrameCov(Predefined srcFrame, AbsoluteDate time, List<Double> cov, Predefined destFrame)
     {
-        // About BEGIN
-        // Input:  time, covariance matrix, input frame, destination frame and
-        // Output: cov. LTR in dest. frame
-        // About END
-
-
         final AbsoluteDate oemDate = time;
 
         // Form covariance matrix from python input
@@ -113,11 +106,9 @@ public final class Conversion
         // pJ2000 contains the input covariance matrix in J2000
         final RealMatrix pJ2000 = MatrixUtils.createRealMatrix(cov_mat);
 
-
         //  Frames definition
         Frame src_frame = FramesFactory.getFrame(srcFrame);  //EME2000
         Frame dest_frame = FramesFactory.getFrame(destFrame); //ICRF
-
 
         // METHOD 2 - BELOW
         // Jacobian from ITRF to J2000 at date
@@ -141,6 +132,7 @@ public final class Conversion
             for (int j = 0; j <= i; j++)
                 out_cov[k++] = pIcrf.getEntry(i, j);
         }
+
         return(out_cov);
     }
 }

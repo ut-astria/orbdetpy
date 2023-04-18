@@ -128,7 +128,8 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase
                 output.add(new Measurements.Measurement(
                                interpolator.getPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpTime(i)), toFrame), null));
 
-            Messages.MeasurementArray.Builder builder = Messages.MeasurementArray.newBuilder().addAllArray(Tools.buildResponseFromMeasurements(output));
+            Messages.MeasurementArray.Builder builder =
+                Messages.MeasurementArray.newBuilder().addAllArray(Tools.buildResponseFromMeasurements(output));
             resp.onNext(builder.build());
             resp.onCompleted();
         }

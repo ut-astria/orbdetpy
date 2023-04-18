@@ -1,6 +1,6 @@
 /*
  * ConversionService.java - Conversion service handler.
- * Copyright (C) 2019-2022 University of Texas
+ * Copyright (C) 2019-2023 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,8 +83,9 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
     {
         try
         {
-            double[] raDec = Conversion.convertAzElToRaDec(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0)), req.getAngle1(0), req.getAngle2(0),
-                                                           req.getLatitude(), req.getLongitude(), req.getAltitude(), Predefined.valueOf(req.getFrame()));
+            double[] raDec = Conversion.convertAzElToRaDec(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0)), req.getAngle1(0),
+                                                           req.getAngle2(0), req.getLatitude(), req.getLongitude(), req.getAltitude(),
+                                                           Predefined.valueOf(req.getFrame()));
             Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
             for (int i = 0; i < raDec.length; i++)
                 builder = builder.addArray(raDec[i]);
@@ -102,7 +103,8 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
         try
         {
             double[] azEl = Conversion.convertRaDecToAzEl(Predefined.valueOf(req.getFrame()), AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(0)),
-                                                          req.getAngle1(0), req.getAngle2(0), req.getLatitude(), req.getLongitude(), req.getAltitude());
+                                                          req.getAngle1(0), req.getAngle2(0), req.getLatitude(), req.getLongitude(),
+                                                          req.getAltitude());
             Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
             for (int i = 0; i < azEl.length; i++)
                 builder = builder.addArray(azEl[i]);
@@ -306,14 +308,17 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
             resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
         }
     }
+
     @Override public void getJ2000EpochOffset(StringValue req, StreamObserver<Messages.DoubleArray> resp)
     {
         try
         {
             Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
             for (String time: req.getValue().split(" ", 0))
+            {
                 builder = builder.addArray(new AbsoluteDate(DateTimeComponents.parseDateTime(time),
                                                             TimeScalesFactory.getUTC()).durationFrom(AbsoluteDate.J2000_EPOCH));
+            }
             resp.onNext(builder.build());
             resp.onCompleted();
         }
@@ -348,7 +353,8 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
             ArrayList<String> utc = new ArrayList<String>(req.getArrayCount() - 1);
             for (int i = 1; i < req.getArrayCount(); i++)
             {
-                String str = AbsoluteDate.MODIFIED_JULIAN_EPOCH.shiftedBy(req.getArray(i)).getComponents(TimeScalesFactory.getUTC()).toString(60, digits);
+                String str = AbsoluteDate.MODIFIED_JULIAN_EPOCH.shiftedBy(req.getArray(i)).getComponents(
+                    TimeScalesFactory.getUTC()).toString(60, digits);
                 utc.add(str.substring(0, str.indexOf("+")));
             }
 
@@ -376,6 +382,7 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
             resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
         }
     }
+
     @Override public void transformFrameCov(Messages.TransformFrameInput req, StreamObserver<Messages.Double2DArray> resp)
     {
         try
@@ -389,18 +396,12 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
             for (int i = 0; i < req.getPvaCount(); i++)
             {
                 if (stringTime) {
-                    //System.out.println("got a string UTC time as input: "+ req.getUTCTime(i));
                     time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)), TimeScalesFactory.getUTC());
-
-                }
-                else {
-                    //System.out.println("got a J2000 offset time as input: "+ req.getTime(i));
+                } else {
                     time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
                 }
 
-                //System.out.println("printing time from Conv.Service.java: " + time.toString());
                 double[] cov = Conversion.transformFrameCov(srcFrame, time, req.getPva(i).getArrayList(), destFrame);
-
 
                 Messages.DoubleArray.Builder inner = Messages.DoubleArray.newBuilder();
                 for (int j = 0; j < cov.length; j++)
@@ -417,5 +418,4 @@ public final class ConversionService extends ConversionGrpc.ConversionImplBase
             resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
         }
     }
-
 }

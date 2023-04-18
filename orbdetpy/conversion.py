@@ -1,5 +1,5 @@
 # conversion.py - Various conversion functions.
-# Copyright (C) 2019-2022 University of Texas
+# Copyright (C) 2019-2023 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -282,6 +282,7 @@ def get_TT_string(j2000_offset: float, precision: int=3)->str:
     if (isinstance(j2000_offset, float)):
         return(_conversion_stub.getTTString(DoubleArray(array=[float(precision), j2000_offset])).value)
     return(_conversion_stub.getTTString(DoubleArray(array=[float(precision), *j2000_offset])).value.split(" "))
+
 def get_J2000_epoch_offset(utc: str)->float:
     """Get TT offset corresponding to ISO-8601 formatted UTC string.
 
@@ -328,6 +329,7 @@ def get_UTC_string_for_MJD(mjd_offset: float, precision: int=3)->str:
     if (isinstance(mjd_offset, float)):
         return(_conversion_stub.getUTCStringforMJD(DoubleArray(array=[float(precision), mjd_offset])).value)
     return(_conversion_stub.getUTCStringforMJD(DoubleArray(array=[float(precision), *mjd_offset])).value.split(" "))
+
 def get_epoch_difference(from_epoch: int, to_epoch: int)->str:
     """Get the constant time difference between two epochs.
 
