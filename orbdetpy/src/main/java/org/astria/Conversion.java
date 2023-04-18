@@ -33,106 +33,100 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-public final class Conversion
-{
-    private Conversion()
-    {
-    }
+public final class Conversion {
+	private Conversion() {
+	}
 
-    public static double[] transformFrame(Predefined srcFrame, AbsoluteDate time, List<Double> pva, Predefined destFrame)
-    {
-        Transform xfm = FramesFactory.getFrame(srcFrame).getTransformTo(FramesFactory.getFrame(destFrame), time);
-        if (pva.size() == 3)
-            return(xfm.transformPosition(new Vector3D(pva.get(0), pva.get(1), pva.get(2))).toArray());
-        else if (pva.size() == 6)
-        {
-            PVCoordinates toPv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
-                                                                              new Vector3D(pva.get(3), pva.get(4), pva.get(5))));
-            double[] p = toPv.getPosition().toArray();
-            double[] v = toPv.getVelocity().toArray();
-            return(new double[]{p[0], p[1], p[2], v[0], v[1], v[2]});
-        }
-        else
-        {
-            PVCoordinates toPv = xfm.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
-                                                                              new Vector3D(pva.get(3), pva.get(4), pva.get(5)),
-                                                                              new Vector3D(pva.get(6), pva.get(7), pva.get(8))));
-            double[] p = toPv.getPosition().toArray();
-            double[] v = toPv.getVelocity().toArray();
-            double[] a = toPv.getAcceleration().toArray();
-            return(new double[]{p[0], p[1], p[2], v[0], v[1], v[2], a[0], a[1], a[2]});
-        }
-    }
+	public static double[] transformFrame(Predefined srcFrame, AbsoluteDate time, List<Double> pva,
+			Predefined destFrame) {
+		Transform xfm = FramesFactory.getFrame(srcFrame).getTransformTo(FramesFactory.getFrame(destFrame), time);
+		if (pva.size() == 3)
+			return (xfm.transformPosition(new Vector3D(pva.get(0), pva.get(1), pva.get(2))).toArray());
+		else if (pva.size() == 6) {
+			PVCoordinates toPv = xfm
+					.transformPVCoordinates(new PVCoordinates(new Vector3D(pva.get(0), pva.get(1), pva.get(2)),
+							new Vector3D(pva.get(3), pva.get(4), pva.get(5))));
+			double[] p = toPv.getPosition().toArray();
+			double[] v = toPv.getVelocity().toArray();
+			return (new double[]{p[0], p[1], p[2], v[0], v[1], v[2]});
+		} else {
+			PVCoordinates toPv = xfm.transformPVCoordinates(new PVCoordinates(
+					new Vector3D(pva.get(0), pva.get(1), pva.get(2)), new Vector3D(pva.get(3), pva.get(4), pva.get(5)),
+					new Vector3D(pva.get(6), pva.get(7), pva.get(8))));
+			double[] p = toPv.getPosition().toArray();
+			double[] v = toPv.getVelocity().toArray();
+			double[] a = toPv.getAcceleration().toArray();
+			return (new double[]{p[0], p[1], p[2], v[0], v[1], v[2], a[0], a[1], a[2]});
+		}
+	}
 
-    public static double[] convertAzElToRaDec(AbsoluteDate time, double az, double el, double lat,
-                                              double lon, double alt, Predefined frame)
-    {
-        TopocentricFrame fromFrame = new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(lat, lon, alt), "gs");
-        Transform xfm = fromFrame.getTransformTo(FramesFactory.getFrame(frame), time);
-        Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(el)*FastMath.sin(az), FastMath.cos(el)*FastMath.cos(az), FastMath.sin(el)));
-        double[] xyz = toVec.toArray();
-        return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[1], xyz[0]), FastMath.PI),
-                            FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))});
-    }
+	public static double[] convertAzElToRaDec(AbsoluteDate time, double az, double el, double lat, double lon,
+			double alt, Predefined frame) {
+		TopocentricFrame fromFrame = new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(lat, lon, alt),
+				"gs");
+		Transform xfm = fromFrame.getTransformTo(FramesFactory.getFrame(frame), time);
+		Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(el) * FastMath.sin(az),
+				FastMath.cos(el) * FastMath.cos(az), FastMath.sin(el)));
+		double[] xyz = toVec.toArray();
+		return (new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[1], xyz[0]), FastMath.PI),
+				FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1]))});
+	}
 
-    public static double[] convertRaDecToAzEl(Predefined frame, AbsoluteDate time, double ra, double dec,
-                                              double lat, double lon, double alt)
-    {
-        TopocentricFrame toframe = new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(lat, lon, alt), "gs");
-        Transform xfm = FramesFactory.getFrame(frame).getTransformTo(toframe, time);
-        Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra), FastMath.cos(dec)*FastMath.sin(ra),
-                                                          FastMath.sin(dec)));
-        double[] xyz = toVec.toArray();
-        return(new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[0], xyz[1]), FastMath.PI),
-                            FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]))});
-    }
+	public static double[] convertRaDecToAzEl(Predefined frame, AbsoluteDate time, double ra, double dec, double lat,
+			double lon, double alt) {
+		TopocentricFrame toframe = new TopocentricFrame(DataManager.earthShape, new GeodeticPoint(lat, lon, alt), "gs");
+		Transform xfm = FramesFactory.getFrame(frame).getTransformTo(toframe, time);
+		Vector3D toVec = xfm.transformVector(new Vector3D(FastMath.cos(dec) * FastMath.cos(ra),
+				FastMath.cos(dec) * FastMath.sin(ra), FastMath.sin(dec)));
+		double[] xyz = toVec.toArray();
+		return (new double[]{MathUtils.normalizeAngle(FastMath.atan2(xyz[0], xyz[1]), FastMath.PI),
+				FastMath.atan2(xyz[2], FastMath.sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1]))});
+	}
 
-    public static double[] transformFrameCov(Predefined srcFrame, AbsoluteDate time, List<Double> cov, Predefined destFrame)
-    {
-        final AbsoluteDate oemDate = time;
+	public static double[] transformFrameCov(Predefined srcFrame, AbsoluteDate time, List<Double> cov,
+			Predefined destFrame) {
+		final AbsoluteDate oemDate = time;
 
-        // Form covariance matrix from python input
-        double[][] cov_mat = new double[6][6];
-        for (int i = 0, k = 0; i < 6; i++)
-        {
-            for (int j = 0; j < i + 1; j++, k++)
-            {
-                double value = cov.get(k);
-                cov_mat[i][j] = value;
-                cov_mat[j][i] = value;
-            }
-        }
+		// Form covariance matrix from python input
+		double[][] cov_mat = new double[6][6];
+		for (int i = 0, k = 0; i < 6; i++) {
+			for (int j = 0; j < i + 1; j++, k++) {
+				double value = cov.get(k);
+				cov_mat[i][j] = value;
+				cov_mat[j][i] = value;
+			}
+		}
 
-        // pJ2000 contains the input covariance matrix in J2000
-        final RealMatrix pJ2000 = MatrixUtils.createRealMatrix(cov_mat);
+		// pJ2000 contains the input covariance matrix in J2000
+		final RealMatrix pJ2000 = MatrixUtils.createRealMatrix(cov_mat);
 
-        //  Frames definition
-        Frame src_frame = FramesFactory.getFrame(srcFrame);  //EME2000
-        Frame dest_frame = FramesFactory.getFrame(destFrame); //ICRF
+		// Frames definition
+		Frame src_frame = FramesFactory.getFrame(srcFrame); // EME2000
+		Frame dest_frame = FramesFactory.getFrame(destFrame); // ICRF
 
-        // METHOD 2 - BELOW
-        // Jacobian from ITRF to J2000 at date
-        double[][] jacJ2000ToIcrf = new double[6][6];
-        jacJ2000ToIcrf = src_frame.getTransformTo(dest_frame, oemDate).getRotation().getMatrix();
+		// METHOD 2 - BELOW
+		// Jacobian from ITRF to J2000 at date
+		double[][] jacJ2000ToIcrf = new double[6][6];
+		jacJ2000ToIcrf = src_frame.getTransformTo(dest_frame, oemDate).getRotation().getMatrix();
 
-        final RealMatrix jJ2000ToIcrf = MatrixUtils.createRealIdentityMatrix(6);
-        // Set Rotation matrix (3 by 3) into 6 by 6 identity matrix to form 6 by 6 rotation matrix
-        jJ2000ToIcrf.setSubMatrix(jacJ2000ToIcrf, 0,0);
-        jJ2000ToIcrf.setSubMatrix(jacJ2000ToIcrf, 3,3);
+		final RealMatrix jJ2000ToIcrf = MatrixUtils.createRealIdentityMatrix(6);
+		// Set Rotation matrix (3 by 3) into 6 by 6 identity matrix to form 6 by 6
+		// rotation matrix
+		jJ2000ToIcrf.setSubMatrix(jacJ2000ToIcrf, 0, 0);
+		jJ2000ToIcrf.setSubMatrix(jacJ2000ToIcrf, 3, 3);
 
-        // Covariance transformation
-        // pJ2000 contains the covariance matrix in J2000
-        final RealMatrix pIcrf = jJ2000ToIcrf.multiply(pJ2000.multiplyTransposed(jJ2000ToIcrf));
+		// Covariance transformation
+		// pJ2000 contains the covariance matrix in J2000
+		final RealMatrix pIcrf = jJ2000ToIcrf.multiply(pJ2000.multiplyTransposed(jJ2000ToIcrf));
 
-        // Convert covariance matrix to LTR - below fn from Estimation.java
-        int m = pIcrf.getRowDimension();
-        double[] out_cov = new double[(int)(0.5*m*(m+1))];
-        for (int i = 0, k = 0; i < m; i++)
-        {
-            for (int j = 0; j <= i; j++)
-                out_cov[k++] = pIcrf.getEntry(i, j);
-        }
+		// Convert covariance matrix to LTR - below fn from Estimation.java
+		int m = pIcrf.getRowDimension();
+		double[] out_cov = new double[(int) (0.5 * m * (m + 1))];
+		for (int i = 0, k = 0; i < m; i++) {
+			for (int j = 0; j <= i; j++)
+				out_cov[k++] = pIcrf.getEntry(i, j);
+		}
 
-        return(out_cov);
-    }
+		return (out_cov);
+	}
 }

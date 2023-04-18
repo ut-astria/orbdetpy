@@ -22,13 +22,14 @@
     <protoc.version>3.21.12</protoc.version>
     <protoc.java.version>1.52.1</protoc.java.version>
     <slf4j.version>2.0.6</slf4j.version>
+    <code.formatter.version>2.22.0</code.formatter.version>
   </properties>
 
   <repositories>
     <repository>
-        <id>unidata-all</id>
-        <name>Unidata</name>
-        <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
+      <id>unidata-all</id>
+      <name>Unidata</name>
+      <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
     </repository>
   </repositories>
 
@@ -177,6 +178,22 @@
         <version>${maven.javadoc.version}</version>
         <configuration>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>net.revelc.code.formatter</groupId>
+        <artifactId>formatter-maven-plugin</artifactId>
+        <version>${code.formatter.version}</version>
+        <configuration>
+          <configFile>${project.basedir}/src/etc/google-code-style.xml</configFile>
+        </configuration>
+        <executions>
+          <execution>
+            <id>format</id>
+            <goals>
+              <goal>format</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

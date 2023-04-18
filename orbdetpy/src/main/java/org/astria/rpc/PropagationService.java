@@ -1,6 +1,6 @@
 /*
  * PropagationService.java - Propagation service handler.
- * Copyright (C) 2019-2022 University of Texas
+ * Copyright (C) 2019-2023 University of Texas
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,31 +26,26 @@ import org.astria.Measurements;
 import org.astria.ParallelPropagation;
 import org.astria.Settings;
 
-public final class PropagationService extends PropagationGrpc.PropagationImplBase
-{
-    @Override public void propagate(Messages.SettingsArray req, StreamObserver<Messages.Measurement2DArray> resp)
-    {
-        try
-        {
-            ArrayList<Settings> cfgObjs = new ArrayList<Settings>(req.getArrayCount());
-            for (int i = 0; i < req.getArrayCount(); i++)
-                cfgObjs.add(Tools.buildSettingsFromRequest(req.getArray(i)));
+public final class PropagationService extends PropagationGrpc.PropagationImplBase {
+	@Override
+	public void propagate(Messages.SettingsArray req, StreamObserver<Messages.Measurement2DArray> resp) {
+		try {
+			ArrayList<Settings> cfgObjs = new ArrayList<Settings>(req.getArrayCount());
+			for (int i = 0; i < req.getArrayCount(); i++)
+				cfgObjs.add(Tools.buildSettingsFromRequest(req.getArray(i)));
 
-            ArrayList<ArrayList<Measurements.Measurement>> propOut = new ParallelPropagation(cfgObjs).propagate();
+			ArrayList<ArrayList<Measurements.Measurement>> propOut = new ParallelPropagation(cfgObjs).propagate();
 
-            Messages.Measurement2DArray.Builder outer = Messages.Measurement2DArray.newBuilder();
-            for (ArrayList<Measurements.Measurement> p: propOut)
-            {
-                Messages.MeasurementArray.Builder inner = Messages.MeasurementArray.newBuilder()
-                    .addAllArray(Tools.buildResponseFromMeasurements(p));
-                outer = outer.addArray(inner);
-            }
-            resp.onNext(outer.build());
-            resp.onCompleted();
-        }
-        catch (Throwable exc)
-        {
-            resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
-        }
-    }
+			Messages.Measurement2DArray.Builder outer = Messages.Measurement2DArray.newBuilder();
+			for (ArrayList<Measurements.Measurement> p : propOut) {
+				Messages.MeasurementArray.Builder inner = Messages.MeasurementArray.newBuilder()
+						.addAllArray(Tools.buildResponseFromMeasurements(p));
+				outer = outer.addArray(inner);
+			}
+			resp.onNext(outer.build());
+			resp.onCompleted();
+		} catch (Throwable exc) {
+			resp.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(Tools.getStackTrace(exc))));
+		}
+	}
 }
