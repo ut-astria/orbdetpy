@@ -1,5 +1,5 @@
 # utilities.py - Various utilities.
-# Copyright (C) 2020-2022 University of Texas
+# Copyright (C) 2020-2023 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ def import_SP3(file_name: str, dest_frame: int, times: List[float]):
     return(_utilities_stub.importSP3(InterpolateEphemerisInput(source_frame=file_name, dest_frame=dest_frame, interp_time=times)).array)
 
 def interpolate_ephemeris(source_frame: int, times: List[float], states, num_points: int,
-                          dest_frame: int, interp_start: float, interp_end: float, step_size: float):
+                          dest_frame: int, interp_start: float, interp_end: float, step_size: float, interp_method: int=0):
     """Interpolate the given state vectors.
 
     Parameters
@@ -50,6 +50,7 @@ def interpolate_ephemeris(source_frame: int, times: List[float], states, num_poi
     interp_start : Interpolation start time or list of arbitrary time instants.
     interp_end : Interpolation end time; ignored if interp_start is a list.
     step_size : Interpolation step size [s]; ignored if interp_start is a list.
+    interp_method : Interpolation method to use; 0 or 1.
 
     Returns
     -------
@@ -65,7 +66,7 @@ def interpolate_ephemeris(source_frame: int, times: List[float], states, num_poi
 
     resp = _utilities_stub.interpolateEphemeris(InterpolateEphemerisInput(
         source_frame=source_frame, time=times, ephem=[DoubleArray(array=s) for s in states], num_points=num_points,
-        dest_frame=dest_frame, interp_time=tint))
+        dest_frame=dest_frame, interp_time=tint, interp_method=interp_method))
     return(resp.array)
 
 def get_density(drag_model: int, time: float, lla: List[float])->List[float]:

@@ -1,5 +1,5 @@
 # CAR_MHF.py - Test CAR-MHF with real telescope measurements.
-# Copyright (C) 2021-2022 University of Texas
+# Copyright (C) 2021-2023 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

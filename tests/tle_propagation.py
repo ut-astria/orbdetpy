@@ -1,6 +1,6 @@
 # tle_propagation.py - Validate TLE propagation with the test cases
 # in the paper "Revisiting Spacetrack Report #3" by Vallado et al.
-# Copyright (C) 2021 University of Texas
+# Copyright (C) 2021-2023 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

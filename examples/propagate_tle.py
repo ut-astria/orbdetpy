@@ -1,5 +1,5 @@
 # propagate_tle.py - Propagate many TLEs in parallel.
-# Copyright (C) 2019-2021 University of Texas
+# Copyright (C) 2019-2023 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

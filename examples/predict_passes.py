@@ -1,5 +1,5 @@
 # predict_passes.py - Predict satellite passes for ground stations.
-# Copyright (C) 2020-2021 University of Texas
+# Copyright (C) 2020-2023 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

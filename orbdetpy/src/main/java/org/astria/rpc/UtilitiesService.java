@@ -49,6 +49,7 @@ import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -59,10 +60,12 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase {
 			SP3 parser = new SP3Parser().parse(new DataSource(req.getSourceFrame()));
 			Frame toFrame = FramesFactory.getFrame(Predefined.valueOf(req.getDestFrame()));
 			Messages.Measurement2DArray.Builder outer = Messages.Measurement2DArray.newBuilder();
+
 			for (Map.Entry<String, SP3.SP3Ephemeris> keyVal : parser.getSatellites().entrySet()) {
 				BoundedPropagator prop = keyVal.getValue().getPropagator();
 				ArrayList<Measurements.Measurement> mlist = new ArrayList<Measurements.Measurement>(
 						req.getInterpTimeCount());
+
 				for (int i = 0; i < req.getInterpTimeCount(); i++) {
 					Measurements.Measurement meas = new Measurements.Measurement(
 							prop.getPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpTime(i)), toFrame),
@@ -70,10 +73,12 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase {
 					meas.station = keyVal.getKey();
 					mlist.add(meas);
 				}
+
 				Messages.MeasurementArray.Builder inner = Messages.MeasurementArray.newBuilder()
 						.addAllArray(Tools.buildResponseFromMeasurements(mlist));
 				outer = outer.addArray(inner);
 			}
+
 			resp.onNext(outer.build());
 			resp.onCompleted();
 		} catch (Throwable exc) {
@@ -87,11 +92,13 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase {
 			ArrayList<ArrayList<Measurements.Measurement>> mlist = Utilities.importTDM(req.getFileName(),
 					FileFormat.values()[req.getFileFormat()]);
 			Messages.Measurement2DArray.Builder outer = Messages.Measurement2DArray.newBuilder();
+
 			for (ArrayList<Measurements.Measurement> m : mlist) {
 				Messages.MeasurementArray.Builder inner = Messages.MeasurementArray.newBuilder()
 						.addAllArray(Tools.buildResponseFromMeasurements(m));
 				outer = outer.addArray(inner);
 			}
+
 			resp.onNext(outer.build());
 			resp.onCompleted();
 		} catch (Throwable exc) {
@@ -103,23 +110,40 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase {
 	public void interpolateEphemeris(Messages.InterpolateEphemerisInput req,
 			StreamObserver<Messages.MeasurementArray> resp) {
 		try {
+			ArrayList states = new ArrayList(req.getTimeCount());
 			Frame fromFrame = FramesFactory.getFrame(Predefined.valueOf(req.getSourceFrame()));
 			Frame toFrame = FramesFactory.getFrame(Predefined.valueOf(req.getDestFrame()));
-			ArrayList<SpacecraftState> states = new ArrayList<SpacecraftState>(req.getTimeCount());
+
 			for (int i = 0; i < req.getTimeCount(); i++) {
 				List<Double> pv = req.getEphem(i).getArrayList();
-				TimeStampedPVCoordinates tspv = new TimeStampedPVCoordinates(
+				TimeStampedPVCoordinates tsPv = new TimeStampedPVCoordinates(
 						AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i)),
 						new Vector3D(pv.get(0), pv.get(1), pv.get(2)), new Vector3D(pv.get(3), pv.get(4), pv.get(5)));
-				states.add(new SpacecraftState(new CartesianOrbit(tspv, fromFrame, Constants.EGM96_EARTH_MU)));
+
+				if (req.getInterpMethod() == 0) {
+					states.add(new SpacecraftState(new CartesianOrbit(tsPv, fromFrame, Constants.EGM96_EARTH_MU)));
+				} else {
+					states.add(tsPv);
+				}
 			}
 
-			Ephemeris interpolator = new Ephemeris(states, req.getNumPoints());
 			ArrayList<Measurements.Measurement> output = new ArrayList<Measurements.Measurement>(
 					req.getInterpTimeCount());
-			for (int i = 0; i < req.getInterpTimeCount(); i++)
-				output.add(new Measurements.Measurement(interpolator
-						.getPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpTime(i)), toFrame), null));
+
+			if (req.getInterpMethod() == 0) {
+				Ephemeris interpolator = new Ephemeris(states, req.getNumPoints());
+
+				for (int i = 0; i < req.getInterpTimeCount(); i++) {
+					AbsoluteDate tm = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpTime(i));
+					output.add(new Measurements.Measurement(interpolator.getPVCoordinates(tm, toFrame), null));
+				}
+			} else {
+				for (int i = 0; i < req.getInterpTimeCount(); i++) {
+					AbsoluteDate tm = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpTime(i));
+					output.add(new Measurements.Measurement(
+							TimeStampedPVCoordinates.interpolate(tm, CartesianDerivativesFilter.USE_PV, states), null));
+				}
+			}
 
 			Messages.MeasurementArray.Builder builder = Messages.MeasurementArray.newBuilder()
 					.addAllArray(Tools.buildResponseFromMeasurements(output));
@@ -135,29 +159,33 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase {
 		try {
 			Atmosphere atmosphere;
 			AbsoluteDate time = null;
-			Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
 			Settings.DragModel drag = Settings.DragModel.values()[Integer.parseInt(req.getDestFrame())];
 			OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
 					Constants.WGS84_EARTH_FLATTENING,
 					FramesFactory.getFrame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP));
-			if (drag == Settings.DragModel.MSISE2000)
+			Messages.DoubleArray.Builder builder = Messages.DoubleArray.newBuilder();
+
+			if (drag == Settings.DragModel.MSISE2000) {
 				atmosphere = new NRLMSISE00(MSISEInputs.getInstance(), CelestialBodyFactory.getSun(), earth);
-			else if (drag == Settings.DragModel.WAM)
+			} else if (drag == Settings.DragModel.WAM) {
 				atmosphere = WAM.getInstance();
-			else
+			} else {
 				throw (new RuntimeException("Invalid atmospheric drag model"));
+			}
 
 			for (int i = 0; i < req.getPvaCount(); i++) {
-				if (i < req.getUTCTimeCount())
+				if (i < req.getUTCTimeCount()) {
 					time = new AbsoluteDate(DateTimeComponents.parseDateTime(req.getUTCTime(i)),
 							TimeScalesFactory.getUTC());
-				else if (i < req.getTimeCount())
+				} else if (i < req.getTimeCount()) {
 					time = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getTime(i));
+				}
 
 				Messages.DoubleArray lla = req.getPva(i);
 				Vector3D pos = earth.transform(new GeodeticPoint(lla.getArray(0), lla.getArray(1), lla.getArray(2)));
 				builder = builder.addArray(atmosphere.getDensity(time, pos, earth.getFrame()));
 			}
+
 			resp.onNext(builder.build());
 			resp.onCompleted();
 		} catch (Throwable exc) {

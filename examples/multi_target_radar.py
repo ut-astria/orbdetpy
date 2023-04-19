@@ -1,5 +1,5 @@
 # multi_target_radar.py - Test multiple target OD.
-# Copyright (C) 2021-2022 University of Texas
+# Copyright (C) 2021-2023 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

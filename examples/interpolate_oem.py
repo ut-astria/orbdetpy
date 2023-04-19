@@ -1,5 +1,5 @@
 # interpolate_oem.py - Interpolate CCSDS OEM files.
-# Copyright (C) 2020-2022 University of Texas
+# Copyright (C) 2020-2023 University of Texas
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
