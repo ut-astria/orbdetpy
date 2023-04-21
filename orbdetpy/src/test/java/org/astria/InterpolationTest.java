@@ -72,21 +72,21 @@ public class InterpolationTest {
 				index = -index - 2;
 			}
 
-			pv = TimeStampedPVCoordinates.interpolate(time, CartesianDerivativesFilter.USE_PV,
+			pv = TimeStampedPVCoordinates.interpolate(time, CartesianDerivativesFilter.USE_P,
 					oemStates.subList(index - 2, index + 3));
 			pos = pv.getPosition();
 			vel = pv.getVelocity();
 			System.out.println("TimeStampedPVCoordinates interpolator " + Arrays.toString(pos.toArray()) + " "
 					+ Arrays.toString(vel.toArray()));
 
-			ArrayList<SpacecraftState> ss = new ArrayList<SpacecraftState>(5);
+			ArrayList<SpacecraftState> ss = new ArrayList<SpacecraftState>(3);
 
-			for (int i = index - 2; i <= index + 2; i++) {
+			for (int i = index - 1; i <= index + 1; i++) {
 				ss.add(new SpacecraftState(
 						new CartesianOrbit(oemStates.get(i), FramesFactory.getEME2000(), Constants.EGM96_EARTH_MU)));
 			}
 
-			Ephemeris ephemeris = new Ephemeris(ss, 5);
+			Ephemeris ephemeris = new Ephemeris(ss, 3);
 			pv = ephemeris.getPVCoordinates(time, FramesFactory.getEME2000());
 			pos = pv.getPosition();
 			vel = pv.getVelocity();
