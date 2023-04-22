@@ -26,14 +26,12 @@ parser.add_argument("oem-file", help="CCSDS OEM file", type=argparse.FileType("r
 parser.add_argument("step-size", help="step size [sec]", type=float)
 parser.add_argument("--start-time", help="interpolation start time", default="file-start")
 parser.add_argument("--end-time", help="interpolation end time", default="file-end")
-parser.add_argument("--polynomial-degree", help="interpolating polynomial degree", type=int, default=5)
 if (len(sys.argv) == 1):
     parser.print_help()
     exit(1)
 
 args = parser.parse_args()
 step = getattr(args, "step-size")
-degree = args.polynomial_degree
 
 # Read OEM file, skipping over blank lines and comments
 lines = [l for l in getattr(args, "oem-file").read().splitlines() if (len(l) > 0 and not l.startswith("COMMENT"))]
@@ -82,8 +80,8 @@ for l in lines:
             states.append([float(t)*1000.0 for t in toks[1:]])
 
 # Interpolate ephemeris
-interpolation = interpolate_ephemeris(ref_frame, get_J2000_epoch_offset(utc), states, degree, ref_frame,
-                                      get_J2000_epoch_offset(start_time), get_J2000_epoch_offset(final_time), step)
+interpolation = interpolate_ephemeris(ref_frame, get_J2000_epoch_offset(utc), states, ref_frame, get_J2000_epoch_offset(start_time),
+                                      get_J2000_epoch_offset(final_time), step)
 
 # Export to OEM format and print to stdout
 print(export_OEM(configure(prop_inertial_frame=ref_frame), interpolation, obj_id, obj_name))

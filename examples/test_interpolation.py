@@ -30,5 +30,5 @@ for o in propagate_orbits([cfg])[0].array:
     states.append(o.true_state)
 
 # Interpolate over the same period at 1 minute intervals
-for i in interpolate_ephemeris(Frame.GCRF, times, states, 5, Frame.GCRF, cfg.prop_start, cfg.prop_end, 60.0):
+for i in interpolate_ephemeris(Frame.GCRF, times, states, Frame.GCRF, cfg.prop_start, cfg.prop_end, 60.0):
     print(get_UTC_string(i.time), i.true_state)

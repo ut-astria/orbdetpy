@@ -36,8 +36,8 @@ def import_SP3(file_name: str, dest_frame: int, times: List[float]):
 
     return(_utilities_stub.importSP3(InterpolateEphemerisInput(source_frame=file_name, dest_frame=dest_frame, interp_time=times)).array)
 
-def interpolate_ephemeris(source_frame: int, times: List[float], states, num_points: int,
-                          dest_frame: int, interp_start: float, interp_end: float, step_size: float, interp_method: int=0):
+def interpolate_ephemeris(source_frame: int, times: List[float], states, dest_frame: int, interp_start: float, interp_end: float,
+                          step_size: float, interp_method: int=0):
     """Interpolate the given state vectors.
 
     Parameters
@@ -45,7 +45,6 @@ def interpolate_ephemeris(source_frame: int, times: List[float], states, num_poi
     source_frame : Source reference frame; a constant from Frame.
     times : Times of state vectors; each a TT offset from J2000 epoch [s].
     states : State vectors to interpolate.
-    num_points : Number of points to use for interpolation = order + 1.
     dest_frame : Destination reference frame; a constant from Frame.
     interp_start : Interpolation start time or list of arbitrary time instants.
     interp_end : Interpolation end time; ignored if interp_start is a list.
@@ -65,7 +64,7 @@ def interpolate_ephemeris(source_frame: int, times: List[float], states, num_poi
         tint = interp_start
 
     resp = _utilities_stub.interpolateEphemeris(InterpolateEphemerisInput(
-        source_frame=source_frame, time=times, ephem=[DoubleArray(array=s) for s in states], num_points=num_points,
+        source_frame=source_frame, time=times, ephem=[DoubleArray(array=s) for s in states],
         dest_frame=dest_frame, interp_time=tint, interp_method=interp_method))
     return(resp.array)
 

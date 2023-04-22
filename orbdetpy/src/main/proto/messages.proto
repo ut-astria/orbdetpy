@@ -235,8 +235,7 @@ message InterpolateEphemerisInput
     string source_frame = 1;
     repeated double time = 2 [packed=true];
     repeated DoubleArray ephem = 3;
-    int32 num_points = 4;
-    string dest_frame = 5;
-    repeated double interp_time = 6 [packed=true];
-    int32 interp_method = 7;
+    string dest_frame = 4;
+    repeated double interp_time = 5 [packed=true];
+    int32 interp_method = 6;
 }
