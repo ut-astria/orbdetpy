@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.astria.DataManager;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -67,21 +68,26 @@ public class InterpolationTest {
 				oemTimes[i] = oemStates.get(i).getDate();
 			}
 
-			int index = Arrays.binarySearch(oemTimes, time);
-			if (index < 0) {
-				index = -index - 2;
+			int idx0 = Arrays.binarySearch(oemTimes, time);
+			if (idx0 < 0) {
+				idx0 = -idx0 - 4;
+			} else if (idx0 > 0) {
+				idx0 = idx0 - 2;
 			}
 
+			idx0 = FastMath.max(idx0, 0);
+			int idx1 = FastMath.min(idx0 + 5, oemTimes.length);
+
 			pv = TimeStampedPVCoordinates.interpolate(time, CartesianDerivativesFilter.USE_P,
-					oemStates.subList(index - 2, index + 3));
+					oemStates.subList(idx0, idx1));
 			pos = pv.getPosition();
 			vel = pv.getVelocity();
 			System.out.println("TimeStampedPVCoordinates interpolator " + Arrays.toString(pos.toArray()) + " "
 					+ Arrays.toString(vel.toArray()));
 
-			ArrayList<SpacecraftState> ss = new ArrayList<SpacecraftState>(3);
+			ArrayList<SpacecraftState> ss = new ArrayList<SpacecraftState>();
 
-			for (int i = index - 1; i <= index + 1; i++) {
+			for (int i = idx0 + 1; i < idx1 - 1; i++) {
 				ss.add(new SpacecraftState(
 						new CartesianOrbit(oemStates.get(i), FramesFactory.getEME2000(), Constants.EGM96_EARTH_MU)));
 			}

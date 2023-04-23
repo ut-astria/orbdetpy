@@ -44,10 +44,12 @@ def update_data()->None:
         uri = f"https://github.com/ut-astria/orbdetpy/releases/download/{__version__}/orekit-data.tar.gz"
         print(f"{_data_dir} not found; downloading {uri}")
         resp = requests.get(uri, timeout=60.0, stream=True)
+
         if (resp.status_code == requests.codes.ok):
             tgz = path.join(_root_dir, "orekit-data.tar.gz")
             with open(tgz, "wb") as fp:
                 fp.write(resp.raw.read())
+
             tar = tarfile.open(tgz, "r:gz")
             tar.extractall()
             tar.close()
@@ -61,14 +63,19 @@ def update_data()->None:
                 path.join(_data_dir, "Earth-Orientation-Parameters", "IAU-2000", "finals2000A.all"), None],
                ["https://maia.usno.navy.mil/ser7/tai-utc.dat", path.join(_data_dir, "tai-utc.dat"), None],
                ["http://www.celestrak.com/SpaceData/SW-All.txt", path.join(_data_dir, "SpaceWeather.dat"), format_weather]]
+
     for u in updates:
-        print(f"Updating {u[1]}")
-        resp = requests.get(u[0], timeout=60.0)
-        if (resp.status_code == requests.codes.ok):
-            with open(u[1], "w") as fp:
-                fp.write(u[2](resp.text) if (u[2]) else resp.text)
-        else:
-            print(f"HTTP error: {resp.status_code}")
+        try:
+            print(f"Updating {u[1]}")
+            resp = requests.get(u[0], timeout=60.0)
+
+            if (resp.status_code == requests.codes.ok):
+                with open(u[1], "w") as fp:
+                    fp.write(u[2](resp.text) if (u[2]) else resp.text)
+            else:
+                print(f"HTTP error: {resp.status_code}")
+        except Exception as exc:
+            print(exc)
 
 if (__name__ == "__main__"):
     update_data()
