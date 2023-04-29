@@ -169,14 +169,20 @@ public final class UtilitiesService extends UtilitiesGrpc.UtilitiesImplBase {
 					AbsoluteDate tm = AbsoluteDate.J2000_EPOCH.shiftedBy(req.getInterpTime(i));
 
 					idx0 = Arrays.binarySearch(times, tm);
-					if (idx0 < 0) {
-						idx0 = -idx0 - 4;
-					} else if (idx0 > 0) {
-						idx0 = idx0 - 2;
+					if (idx0 == -1 || idx0 == -times.length - 1) {
+						throw (new RuntimeException(String.format("Requested date %s is outside the range %s to %s", tm,
+								times[0], times[times.length - 1])));
 					}
 
-					idx0 = FastMath.max(idx0, 0);
+					if (idx0 < 0) {
+						idx0 = -idx0 - 1;
+					}
+
+					idx0 = FastMath.max(idx0 - 3, 0);
 					idx1 = FastMath.min(idx0 + 5, times.length);
+					if (idx1 - idx0 < 5) {
+						idx0 = FastMath.max(idx1 - 5, 0);
+					}
 
 					output.add(new Measurements.Measurement(TimeStampedPVCoordinates.interpolate(tm,
 							CartesianDerivativesFilter.USE_P, states.subList(idx0, idx1)), null));
